@@ -317,6 +317,7 @@ Entities:
       Class: Sample.BallController
       Fields:
         Camera: {Entity: 7310000000000000001}
+        SparklePrefab: {Prefab: Assets/Prefabs/Sparkle.mprefab}
   - ID: 7310000000000000003
     Name: Sphere
     Parent: 7310000000000000002

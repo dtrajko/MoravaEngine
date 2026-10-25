@@ -67,7 +67,7 @@ struct ScriptCameraSettings
 };
 
 // A script field's value between C++ and C# (ScriptField.h has the engine's own ScriptFieldValue). Type: ScriptFieldType.
-// Text is UTF-16: a String's characters. GetField: C++ gives Text room for TextCapacity characters, C# writes what fits
+// Text is UTF-16: a String's characters, a Prefab's file (relative to the project). GetField: C++ gives Text room for TextCapacity characters, C# writes what fits
 // and sets TextLength to the string's full length.
 struct ScriptValue
 {
@@ -180,6 +180,15 @@ struct ScriptNativeApi
 	// Camera (6.3): 0 when the entity has no CameraComponent. Primary set: the other cameras stop being primary
 	int32_t (*Camera_GetSettings)(uint64_t entity, ScriptCameraSettings* out);
 	int32_t (*Camera_SetSettings)(uint64_t entity, const ScriptCameraSettings* value);
+
+	// Scene (6.2). Instantiate: the prefab file (relative to the project) placed at once under parent (0: at the top), at
+	// position and rotation in the parent's space; its root, 0 when it can't be placed (logged). Load: the scene file
+	// (relative to the project, ".mscene" may be left out) at the end of the frame, nullptr: the current one again; 0 when
+	// there is no such file. The current scene's name and file (relative to the project): as Entity_GetName
+	uint64_t (*Scene_Instantiate)(const char16_t* prefab, int length, const glm::vec3* position, const ScriptQuat* rotation, uint64_t parent);
+	int32_t (*Scene_Load)(const char16_t* scene, int length);
+	int32_t (*Scene_GetName)(char16_t* buffer, int capacity);
+	int32_t (*Scene_GetPath)(char16_t* buffer, int capacity);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

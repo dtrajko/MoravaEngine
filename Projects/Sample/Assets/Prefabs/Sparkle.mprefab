@@ -1,0 +1,28 @@
+Prefab:
+  Version: 1
+  Name: Sparkle
+Entities:
+  - ID: 1
+    Name: Sparkle
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.08, 0.08, 0.08]
+    Model:
+      File: Models/Primitives/cube.obj
+    Script:
+      Class: Sample.Sparkle
+  - ID: 2
+    Name: Cube
+    Parent: 1
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup

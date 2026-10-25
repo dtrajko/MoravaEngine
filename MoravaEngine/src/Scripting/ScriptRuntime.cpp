@@ -33,22 +33,46 @@ void ScriptRuntime::Start(EnvMapVulkanScene& scene)
 	Stop();
 	m_ExceptionCount = 0;
 	m_LastException.clear();
+	m_Scene = &scene; // also without scripts now: a prefab placed later may bring some
 
 	std::vector<EnvMapVulkanEntityID> scripted;
 	CollectScripted(scene, scene.GetRoots(), scripted);
+	CreateInstances(scripted, true);
+}
+
+void ScriptRuntime::AddEntities(const std::vector<EnvMapVulkanEntityID>& entities)
+{
+	if (!m_Scene)
+	{
+		return;
+	}
+	std::vector<EnvMapVulkanEntityID> scripted;
+	for (EnvMapVulkanEntityID entity : entities)
+	{
+		if (m_Scene->Has<ScriptComponent>(entity))
+		{
+			scripted.push_back(entity);
+		}
+	}
+	CreateInstances(scripted, false);
+}
+
+void ScriptRuntime::CreateInstances(const std::vector<EnvMapVulkanEntityID>& scripted, bool atStart)
+{
 	if (scripted.empty())
 	{
 		return;
 	}
+	EnvMapVulkanScene& scene = *m_Scene;
 	if (!ScriptHost::IsGameAssemblyLoaded())
 	{
 		Log::GetLogger()->error("Scripts: {0} entities have a script, but no game assembly is loaded ({1}): they don't run", scripted.size(),
 			ScriptHost::IsAvailable() ? "Project Settings: Script Assembly" : "C# scripting isn't available");
 		return;
 	}
-	m_Scene = &scene;
 
 	// First every instance, then their fields (a field can refer to another entity's script), then each OnCreate
+	const size_t first = m_Instances.size();
 	std::set<std::string> classes;
 	for (EnvMapVulkanEntityID entity : scripted)
 	{
@@ -77,12 +101,17 @@ void ScriptRuntime::Start(EnvMapVulkanScene& scene)
 		m_Instances.push_back(std::move(instance));
 		classes.insert(script.ClassName);
 	}
-	for (const Instance& instance : m_Instances)
+	const size_t end = m_Instances.size();
+	for (size_t i = first; i < end; i++)
 	{
-		ApplyFields(instance, scene.Get<ScriptComponent>(instance.Entity));
+		ApplyFields(m_Instances[i], scene.Get<ScriptComponent>(m_Instances[i].Entity));
 	}
-	Log::GetLogger()->info("Scripts: {0} instance(s) of {1} class(es)", m_Instances.size(), classes.size());
-	for (size_t i = 0; i < m_Instances.size(); i++)
+	if (atStart)
+	{
+		Log::GetLogger()->info("Scripts: {0} instance(s) of {1} class(es)", m_Instances.size(), classes.size());
+	}
+	// An OnCreate that places a prefab makes its instances (and calls their OnCreate) before it returns: not again here
+	for (size_t i = first; i < end; i++)
 	{
 		if (!ScriptHost::InvokeCreate(m_Instances[i].Handle))
 		{
@@ -135,9 +164,13 @@ void ScriptRuntime::ApplyFields(const Instance& instance, const ScriptComponent&
 	}
 }
 
+// The update loops call the instances there were when they began: one a script places in them starts in the next update
+// (its OnCreate has run). They go by index, as an instance placed during a call may move the others in memory
+
 void ScriptRuntime::FixedUpdate(float fixedStep)
 {
-	for (size_t i = 0; i < m_Instances.size(); i++)
+	const size_t count = m_Instances.size();
+	for (size_t i = 0; i < count; i++)
 	{
 		if (!ScriptHost::InvokeFixedUpdate(m_Instances[i].Handle, fixedStep))
 		{
@@ -148,7 +181,8 @@ void ScriptRuntime::FixedUpdate(float fixedStep)
 
 void ScriptRuntime::Update(float frameTime)
 {
-	for (size_t i = 0; i < m_Instances.size(); i++)
+	const size_t count = m_Instances.size();
+	for (size_t i = 0; i < count; i++)
 	{
 		if (!ScriptHost::InvokeUpdate(m_Instances[i].Handle, frameTime))
 		{
@@ -174,19 +208,22 @@ void ScriptRuntime::DispatchEvents(const std::vector<ScenePhysics::Event>& event
 		case ScenePhysics::EventType::TriggerEnter:   kind = ScriptCollisionKind::TriggerEnter; method = "OnTriggerEnter"; break;
 		case ScenePhysics::EventType::TriggerExit:    kind = ScriptCollisionKind::TriggerExit; method = "OnTriggerExit"; break;
 		}
-		// Each side gets the other one; the normal points from the receiving entity towards the other
+		// Each side gets the other one; the normal points from the receiving entity towards the other. By index: a call
+		// that places a prefab may move the instances in memory
 		if (const Instance* instance = Find(event.Entity))
 		{
+			const size_t index = size_t(instance - m_Instances.data());
 			if (!ScriptHost::InvokeCollision(instance->Handle, kind, event.Other, event.Point, event.Normal))
 			{
-				Threw(*instance, method);
+				Threw(m_Instances[index], method);
 			}
 		}
 		if (const Instance* instance = Find(event.Other))
 		{
+			const size_t index = size_t(instance - m_Instances.data());
 			if (!ScriptHost::InvokeCollision(instance->Handle, kind, event.Entity, event.Point, -event.Normal))
 			{
-				Threw(*instance, method);
+				Threw(m_Instances[index], method);
 			}
 		}
 	}

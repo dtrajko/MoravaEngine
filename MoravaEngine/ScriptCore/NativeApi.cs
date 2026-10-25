@@ -68,6 +68,11 @@ namespace Morava
 
         public delegate* unmanaged<ulong, NativeCameraSettings*, int> Camera_GetSettings;
         public delegate* unmanaged<ulong, NativeCameraSettings*, int> Camera_SetSettings;
+
+        public delegate* unmanaged<char*, int, Vector3*, Quaternion*, ulong, ulong> Scene_Instantiate;
+        public delegate* unmanaged<char*, int, int> Scene_Load;
+        public delegate* unmanaged<char*, int, int> Scene_GetName;
+        public delegate* unmanaged<char*, int, int> Scene_GetPath;
     }
 
     [StructLayout(LayoutKind.Sequential)]

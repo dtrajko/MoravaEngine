@@ -23,6 +23,9 @@ class InputSystem;
  *
  * A fixed step: the scripts' OnFixedUpdate, what they destroyed, the physics step, its collisions and triggers to the
  * scripts, what those destroyed. A frame: the bodies' interpolated transforms, the scripts' OnUpdate, what it destroyed.
+ *
+ * Scene.Load (6.2) is the owner's to do at the end of the frame (the player, the editor's Play: they know where the scene
+ * goes): TakeSceneLoad says what was asked for, the owner opens it into the same scene and calls Restart.
  */
 class GameSystems : public GameLoopSystems
 {
@@ -33,6 +36,16 @@ public:
 	// and the scripts); a character stands where it is, since its game moves it.
 	void Begin(EnvMapVulkanScene* scene, InputSystem* input);
 	~GameSystems() override { ScriptBindings::SetContext(nullptr); }
+	// The scene's name and file (absolute; empty: never saved), for the scripts' Scene.Name and Scene.Path: before Begin
+	// and Restart (OnCreate may ask for them)
+	void SetSceneInfo(const std::string& name, const std::string& path);
+
+	// Scene.Load asked for a scene in this frame: true once, with its file (absolute), or an empty path for the current
+	// scene again (Scene.Reload)
+	bool TakeSceneLoad(std::string& path);
+	// The game again on its scene, whose content the owner replaced (Scene.Load): bodies, sounds and scripts made anew,
+	// the clock going on
+	void Restart();
 
 	virtual void FixedUpdate(float fixedStep) override;
 	virtual void Update(float frameTime, float alpha) override;
@@ -52,6 +65,8 @@ public:
 	static void LoadScripts();
 
 private:
+	void Start(bool keepClock);
+
 	EnvMapVulkanScene* m_Scene = nullptr;
 	InputSystem* m_Input = nullptr;
 	ScenePhysics m_Physics;

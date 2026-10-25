@@ -17,7 +17,8 @@ class EnvMapVulkanScene;
  * entity with a ScriptComponent, called by GameSystems at its place in the game loop. Start makes them all, gives each the
  * fields the scene sets, then calls each one's OnCreate, so a script's OnCreate can use any other script's fields. The
  * collisions and triggers of a physics step go to the scripts of both entities. An instance whose entity is gone (a
- * script destroyed it, or the editor removed it during Play) is dropped.
+ * script destroyed it, or the editor removed it during Play) is dropped. Entities placed while the game runs (a prefab,
+ * Scene.Instantiate: 6.2) get theirs at once, the same way: AddEntities.
  *
  * Every call that throws counts as an exception (C# has logged it with the script's class, method, file and line): the
  * editor pauses Play on it.
@@ -29,6 +30,9 @@ public:
 
 	void Start(EnvMapVulkanScene& scene);
 	void Stop();
+	// Entities new in the running game (in the Scene Hierarchy's order): the scripts of those that have one, with their
+	// fields, then each one's OnCreate, before it returns
+	void AddEntities(const std::vector<EnvMapVulkanEntityID>& entities);
 	bool IsRunning() const { return m_Scene != nullptr; }
 
 	void FixedUpdate(float fixedStep);
@@ -59,6 +63,8 @@ public:
 	const std::vector<Instance>& GetInstances() const { return m_Instances; }
 
 private:
+	// Instances of the entities' scripts, their fields, then their OnCreate (atStart: logged as the game's scripts)
+	void CreateInstances(const std::vector<EnvMapVulkanEntityID>& scripted, bool atStart);
 	void ApplyFields(const Instance& instance, const ScriptComponent& script);
 	void Threw(const Instance& instance, const char* method);
 	const Instance* Find(EnvMapVulkanEntityID entity) const;

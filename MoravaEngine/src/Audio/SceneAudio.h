@@ -18,7 +18,7 @@ struct ma_sound;
 
 /**
  * A running game's sounds (docs/engine/Game_Engine_Runtime_Guide.html, 5.1), in AudioEngine's engine: a sound for each
- * AudioSourceComponent, made when the game starts (the ones with PlayOnStart start playing), and the one-shots the game
+ * AudioSourceComponent, made when the game starts or the entity is placed (the ones with PlayOnStart start playing), and the one-shots the game
  * plays (Audio.PlayOneShot). GameSystems owns it, the same in the player and in the editor's Play.
  *
  * Each frame (Update): the listener (the entity with an active AudioListenerComponent, else the primary game camera) and the
@@ -35,6 +35,8 @@ public:
 	SceneAudio& operator=(const SceneAudio&) = delete;
 
 	void Start(EnvMapVulkanScene& scene);
+	// Entities new in the running game (a prefab placed, 6.2): their sounds, the Play on Start ones playing
+	void AddEntities(const std::vector<EnvMapVulkanEntityID>& entities);
 	void Update(float frameTime);
 	void Stop();
 	bool IsRunning() const { return m_Scene != nullptr; }

@@ -159,7 +159,7 @@ static void ReportScriptField(void*, const ScriptFieldReport* report)
 	field.Default.Number = value.Number;
 	field.Default.Vector = value.Vector;
 	field.Default.Entity = value.Entity;
-	if (field.Type == ScriptFieldType::String)
+	if (field.Type == ScriptFieldType::String || field.Type == ScriptFieldType::Prefab)
 	{
 		field.Default.Text = ScriptUtf16ToUtf8(value.Text, value.TextLength);
 	}
@@ -502,7 +502,7 @@ bool ScriptHost::SetField(void* instance, const ScriptFieldInfo& field, const Sc
 	native.Vector = value.Vector;
 	native.Entity = value.Entity;
 	std::u16string text;
-	if (value.Type == ScriptFieldType::String)
+	if (value.Type == ScriptFieldType::String || value.Type == ScriptFieldType::Prefab)
 	{
 		text = ScriptUtf8ToUtf16(value.Text);
 		native.Text = text.data();
@@ -532,7 +532,8 @@ bool ScriptHost::GetField(void* instance, const ScriptFieldInfo& field, ScriptFi
 	{
 		return false;
 	}
-	if (native.Type == int32_t(ScriptFieldType::String) && native.TextLength > native.TextCapacity)
+	const bool hasText = native.Type == int32_t(ScriptFieldType::String) || native.Type == int32_t(ScriptFieldType::Prefab);
+	if (hasText && native.TextLength > native.TextCapacity)
 	{
 		// A longer string: again, with room for it
 		text.assign(size_t(native.TextLength), u'\0');
@@ -549,7 +550,7 @@ bool ScriptHost::GetField(void* instance, const ScriptFieldInfo& field, ScriptFi
 	value.Number = native.Number;
 	value.Vector = native.Vector;
 	value.Entity = native.Entity;
-	if (value.Type == ScriptFieldType::String)
+	if (hasText)
 	{
 		value.Text = ScriptUtf16ToUtf8(native.Text, std::min(native.TextLength, native.TextCapacity));
 	}

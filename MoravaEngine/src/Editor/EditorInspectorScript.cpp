@@ -7,13 +7,17 @@
 #include "Scripting/ScriptHost.h"
 #include "Scripting/ScriptRuntime.h"
 
+#include "Project/Project.h"
+
 #include "imgui.h"
 
 #include <algorithm>
 #include <cctype>
 #include <climits>
 #include <cstdio>
+#include <filesystem>
 #include <string>
+#include <system_error>
 
 
 #include "EditorState.h"
@@ -92,6 +96,34 @@ static void EntityChoices(const std::vector<EnvMapVulkanEntityID>& entities, con
 	}
 }
 
+// A Prefab field's value as a label: the file's name ("Sparkle"), None when empty
+static std::string PrefabLabel(const std::string& stored)
+{
+	return stored.empty() ? "None" : std::filesystem::u8path(stored).stem().u8string();
+}
+
+// The prefab files of the project's asset folder (with its subfolders), relative to the project, sorted
+static std::vector<std::string> FindProjectPrefabs()
+{
+	std::vector<std::string> prefabs;
+	const Project* project = Project::GetOpen();
+	if (!project)
+	{
+		return prefabs;
+	}
+	std::error_code error;
+	for (std::filesystem::recursive_directory_iterator it(std::filesystem::u8path(project->GetAssetFolder()), error), end; !error && it != end;
+		it.increment(error))
+	{
+		if (it->is_regular_file(error) && IsPrefabFile(it->path().u8string()))
+		{
+			prefabs.push_back(ProjectPaths::ToStored(it->path().u8string()));
+		}
+	}
+	std::sort(prefabs.begin(), prefabs.end());
+	return prefabs;
+}
+
 // The widget for a field's value, by its type; true when it changed
 static bool FieldWidget(const char* id, const ScriptFieldInfo& field, ScriptFieldValue& value)
 {
@@ -159,6 +191,45 @@ static bool FieldWidget(const char* id, const ScriptFieldInfo& field, ScriptFiel
 			ImGui::EndDragDropTarget();
 		}
 		break;
+	case ScriptFieldType::Prefab:
+		if (ImGui::BeginCombo(id, PrefabLabel(value.Text).c_str()))
+		{
+			if (ImGui::Selectable("None", value.Text.empty()))
+			{
+				value.Text.clear();
+				changed = true;
+			}
+			const std::vector<std::string> prefabs = FindProjectPrefabs();
+			for (const std::string& prefab : prefabs)
+			{
+				if (ImGui::Selectable(prefab.c_str(), prefab == value.Text))
+				{
+					value.Text = prefab;
+					changed = true;
+				}
+			}
+			if (prefabs.empty())
+			{
+				ImGui::TextDisabled("The project has no prefabs (Scene Hierarchy: Save as Prefab...)");
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::IsItemHovered() && !value.Text.empty())
+		{
+			ImGui::SetTooltip("%s", value.Text.c_str());
+		}
+		// A prefab dragged from the Content Browser
+		if (ImGui::BeginDragDropTarget())
+		{
+			std::string file;
+			if (AcceptFileDrop(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), IsPrefabFile, "a prefab (.mprefab)", file))
+			{
+				value.Text = ProjectPaths::ToStored(file);
+				changed = true;
+			}
+			ImGui::EndDragDropTarget();
+		}
+		break;
 	case ScriptFieldType::Enum:
 		if (ImGui::BeginCombo(id, value.Text.c_str()))
 		{
@@ -195,6 +266,7 @@ static std::string ValueText(const ScriptFieldValue& value)
 	case ScriptFieldType::Entity:  return EntityLabel(value.Entity);
 	case ScriptFieldType::String:  return "\"" + value.Text + "\"";
 	case ScriptFieldType::Enum:    return value.Text;
+	case ScriptFieldType::Prefab:  return value.Text.empty() ? "None" : value.Text;
 	}
 	return "";
 }
