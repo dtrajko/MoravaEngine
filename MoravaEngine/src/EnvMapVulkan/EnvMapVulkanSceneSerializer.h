@@ -5,7 +5,10 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <functional>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 
 /**
@@ -53,6 +56,20 @@ namespace EnvMapVulkanSceneSerializer
 		const EditorView* editorView = nullptr);
 	// The editor's view a scene file was saved with: false when it has none (saved before 6.3, or by the player)
 	bool ReadEditorView(const std::string& filepath, EditorView& view);
+
+	// Prefab files (.mprefab, 6.1): "Prefab: { Version, Name }" and the prefab's entities as a scene file writes them, the
+	// root first (Parent 0), with IDs that only number them within the file (EnvMapVulkanPrefab makes them)
+	constexpr const char* PrefabExtension = ".mprefab";
+	constexpr const char* PrefabsFolder = "Prefabs"; // in the project's asset folder
+	// The text of a prefab file: the scene holds the prefab's entities only, under one root
+	std::string SerializePrefab(EnvMapVulkanScene& prefab, const std::string& name);
+	// Reads a prefab file's entities into the scene under parent. newId gives each its ID by its place in the file (0: the
+	// root; NoEntity or nullptr: a new random one); script fields that point at another of them point at its new ID.
+	// created gets them in the file's order (created[0]: the root), materialRefs each part's material. False (error says
+	// why) when the file can't be read; then nothing was created
+	bool DeserializePrefab(const std::string& filepath, EnvMapVulkanScene& scene, EnvMapVulkanEntityID parent,
+		const std::function<EnvMapVulkanEntityID(size_t)>& newId, std::unordered_map<EnvMapVulkanEntityID, MaterialRef>& materialRefs,
+		std::vector<EnvMapVulkanEntityID>& created, std::string& error);
 
 	// Reads a scene file into the (empty) scene. sceneName, renderSettings and each part's material reference (by entity)
 	// come back to the caller. False (error explains) when the file can't be read.

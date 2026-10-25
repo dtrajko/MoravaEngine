@@ -1,0 +1,49 @@
+Prefab:
+  Version: 1
+  Name: Pickup
+Entities:
+  - ID: 1
+    Name: Pickup
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
+  - ID: 2
+    Name: Cube
+    Parent: 1
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup

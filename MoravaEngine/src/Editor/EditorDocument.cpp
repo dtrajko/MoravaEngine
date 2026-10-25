@@ -207,6 +207,19 @@ void SaveSceneAs()
 	}
 }
 
+void SaveSceneOnExit()
+{
+	if (s_SceneFilePath.empty())
+	{
+		Log::GetLogger()->warn("--save-scene: the scene was never saved, it has no file to save to");
+		return;
+	}
+	if (SaveSceneTo(s_SceneFilePath))
+	{
+		Log::GetLogger()->info("--save-scene: '{0}' saved", ProjectPaths::ToStored(s_SceneFilePath));
+	}
+}
+
 void SaveScene()
 {
 	if (RefusedWhilePlaying("Save"))
@@ -308,6 +321,8 @@ static bool OpenSceneNow(const std::string& filepath)
 	MarkSceneSaved();
 	Log::GetLogger()->info("Scene '{0}' opened from '{1}': {2} entities", s_SceneName, ProjectPaths::ToStored(s_SceneFilePath),
 		s_Scene.GetEntityCount());
+	// After it counts as saved: instances brought up to date are a change of the scene (its file has the old ones)
+	UpdatePrefabInstancesOfOpenedScene();
 	return true;
 }
 

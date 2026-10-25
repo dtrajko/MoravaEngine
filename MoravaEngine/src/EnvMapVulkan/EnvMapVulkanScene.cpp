@@ -384,6 +384,77 @@ void EnvMapVulkanScene::CopyFrom(const EnvMapVulkanScene& other)
 	m_Roots = other.m_Roots;
 }
 
+std::vector<EnvMapVulkanEntityID> EnvMapVulkanScene::GetSubtree(EnvMapVulkanEntityID root) const
+{
+	std::vector<EnvMapVulkanEntityID> subtree;
+	auto add = [&](auto& add, EnvMapVulkanEntityID id) -> void
+	{
+		subtree.push_back(id);
+		for (EnvMapVulkanEntityID child : GetChildren(id))
+		{
+			add(add, child);
+		}
+	};
+	if (Exists(root))
+	{
+		add(add, root);
+	}
+	return subtree;
+}
+
+EnvMapVulkanEntityID EnvMapVulkanScene::CopySubtree(const EnvMapVulkanScene& from, EnvMapVulkanEntityID root, EnvMapVulkanEntityID parent,
+	const std::function<EnvMapVulkanEntityID(size_t)>& newId, std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanEntityID>* copies)
+{
+	// The entities first, parents before their children: a copy's parent is the copy of its source's parent
+	const std::vector<EnvMapVulkanEntityID> sources = from.GetSubtree(root);
+	std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanEntityID> copyOf;
+	for (size_t i = 0; i < sources.size(); i++)
+	{
+		const EnvMapVulkanEntityID source = sources[i];
+		const EnvMapVulkanEntityID copyParent = i == 0 ? parent : copyOf.at(from.GetParent(source));
+		copyOf[source] = CreateEntity(from.Get<NameComponent>(source).Name, copyParent, newId ? newId(i) : NoEntity);
+	}
+
+	// Their components (the name and the place in the hierarchy are the copy's own already)
+	SceneComponents::ForEach([&](auto type)
+	{
+		using T = typename decltype(type)::Type;
+		if constexpr (!std::is_same_v<T, NameComponent> && !std::is_same_v<T, HierarchyComponent>)
+		{
+			for (EnvMapVulkanEntityID source : sources)
+			{
+				if (const T* component = from.TryGet<T>(source))
+				{
+					m_Registry.emplace_or_replace<T>(Handle(copyOf.at(source)), *component);
+				}
+			}
+		}
+	});
+
+	// References inside the subtree go to the copies (a reference outside it stays: the same entity, when this is that scene)
+	for (const auto& [source, copy] : copyOf)
+	{
+		if (ScriptComponent* script = TryGet<ScriptComponent>(copy))
+		{
+			for (ScriptComponent::Field& field : script->Fields)
+			{
+				if (field.Value.Type == ScriptFieldType::Entity)
+				{
+					if (auto it = copyOf.find(field.Value.Entity); it != copyOf.end())
+					{
+						field.Value.Entity = it->second;
+					}
+				}
+			}
+		}
+	}
+	if (copies)
+	{
+		*copies = copyOf;
+	}
+	return sources.empty() ? NoEntity : copyOf.at(root);
+}
+
 const std::vector<EnvMapVulkanEntityID>& EnvMapVulkanScene::GetChildren(EnvMapVulkanEntityID id) const
 {
 	static const std::vector<EnvMapVulkanEntityID> s_None;
@@ -618,6 +689,48 @@ bool EnvMapVulkanScene::SelfTest()
 	if (scene.GetEntityCount() != 0 || !scene.GetRoots().empty())
 	{
 		return fail("clear");
+	}
+
+	// A subtree copied (prefabs, 6.1): new IDs as given, the hierarchy's order, components copied, a script field that
+	// points inside the subtree pointing at the copy, one that points outside left as it is
+	{
+		const EnvMapVulkanEntityID a = scene.CreateEntity("A");
+		const EnvMapVulkanEntityID b = scene.CreateEntity("B", a);
+		const EnvMapVulkanEntityID c = scene.CreateEntity("C", a);
+		const EnvMapVulkanEntityID outside = scene.CreateEntity("Outside");
+		scene.Get<TransformComponent>(b).Translation = glm::vec3(1.0f, 2.0f, 3.0f);
+		ScriptComponent& script = scene.Add<ScriptComponent>(c);
+		ScriptFieldValue inside, away;
+		inside.Type = away.Type = ScriptFieldType::Entity;
+		inside.Entity = b;
+		away.Entity = outside;
+		script.SetField("Inside", inside);
+		script.SetField("Away", away);
+
+		EnvMapVulkanScene copy;
+		std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanEntityID> copies;
+		const EnvMapVulkanEntityID root = copy.CopySubtree(scene, a, NoEntity, [](size_t i) { return EnvMapVulkanEntityID(i + 1); }, &copies);
+		if (root != 1 || copy.GetEntityCount() != 3 || copy.GetChildren(1) != std::vector<EnvMapVulkanEntityID>{ 2, 3 } ||
+			copies.at(c) != 3 || copy.Get<NameComponent>(2).Name != "B")
+		{
+			return fail("copy subtree: IDs and hierarchy");
+		}
+		if (copy.Get<TransformComponent>(2).Translation != glm::vec3(1.0f, 2.0f, 3.0f) || !copy.Has<ScriptComponent>(3))
+		{
+			return fail("copy subtree: components");
+		}
+		const ScriptComponent& copied = copy.Get<ScriptComponent>(3);
+		if (copied.FindField("Inside")->Entity != 2 || copied.FindField("Away")->Entity != outside)
+		{
+			return fail("copy subtree: entity references");
+		}
+		// Into the same scene, under another entity, with random IDs
+		const EnvMapVulkanEntityID again = scene.CopySubtree(scene, a, outside);
+		if (again == a || scene.GetParent(again) != outside || scene.GetSubtree(again).size() != 3 || scene.GetEntityCount() != 7)
+		{
+			return fail("copy subtree into its own scene");
+		}
+		scene.Clear();
 	}
 
 	Log::GetLogger()->info("EnvMapVulkanScene self-test passed");

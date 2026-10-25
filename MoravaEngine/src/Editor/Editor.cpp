@@ -155,15 +155,9 @@ void Editor::OnImGuiRender()
 			bool showSceneHierarchyPanel = true;
 			// H2M::VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
 
-			// Content Browser (shared with SceneHazelEnvMap): drag .hdr files onto the Environment panel and
-			// model files onto the Models and Meshes panel's "Load Model" button
-			static H2M::ContentBrowserPanelH2M* s_ContentBrowserPanel = nullptr;
-			static bool s_ShowContentBrowserPanel = true;
-			if (!s_ContentBrowserPanel)
-			{
-				s_ContentBrowserPanel = new H2M::ContentBrowserPanelH2M();
-			}
-			s_ContentBrowserPanel->OnImGuiRender(&s_ShowContentBrowserPanel);
+			// Content Browser (6.1): the project's files (or the engine's), dragged onto the panels; entities dropped on it
+			// become prefabs
+			OnImGuiRenderContentBrowser();
 
 			bool showMaterialEditorPanel = true;
 			// H2M::VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&showMaterialEditorPanel);
@@ -431,6 +425,7 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 		s_PendingPaste = false;
 		PasteClipboard();
 	}
+	ProcessPrefabOperations(); // saving, placing, Apply, Revert
 	ExtractLights(); // after the scene changes above
 	ExtractWater();
 	ExtractProbeVolume();
@@ -525,6 +520,10 @@ void Editor::Shutdown()
 	ShutdownScriptBuild();
 	EnvMapVulkanRenderer::WaitIdle();
 	ShutdownPlayMode();
+	if (Application::Get()->GetCommandLine().SaveScene)
+	{
+		SaveSceneOnExit(); // the edited scene, back after a Play
+	}
 	EnvMapVulkanRenderer::SetScene(nullptr, nullptr, nullptr);
 	// The editor's references, released here while the device works: as statics they would be destroyed after main
 	// returns, when Vulkan (its validation layer) may already be torn down
