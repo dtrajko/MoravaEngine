@@ -6,7 +6,7 @@ using System.Reflection;
 namespace Morava
 {
     // The kinds of public fields the editor shows and the scene saves: ScriptFieldType's values (src/Scripting/ScriptField.h)
-    enum FieldKind { Bool, Int, Float, Double, String, Vector2, Vector3, Vector4, Entity, Enum }
+    enum FieldKind { Bool, Int, Float, Double, String, Vector2, Vector3, Vector4, Entity, Enum, Prefab }
 
     // A script's public fields for the engine (docs/engine/Game_Engine_Runtime_Guide.html, 4.5): which ones there are, with
     // the values a new instance has, and setting and reading them by name. Reflection, never cached: a cached Type or
@@ -30,6 +30,7 @@ namespace Morava
             if (type == typeof(Vector4)) return FieldKind.Vector4;
             if (typeof(Entity).IsAssignableFrom(type)) return FieldKind.Entity;
             if (type.IsEnum) return FieldKind.Enum;
+            if (type == typeof(Prefab)) return FieldKind.Prefab;
             return null;
         }
 
@@ -102,6 +103,7 @@ namespace Morava
                     FieldKind.String => "string", _ => field.FieldType.Name,
                 };
                 if (kind == FieldKind.String) text = value as string ?? "";
+                if (kind == FieldKind.Prefab) text = (value as Prefab)?.Path ?? "";
                 if (kind == FieldKind.Enum)
                 {
                     enumNames = string.Join('\n', Enum.GetNames(field.FieldType));
@@ -177,6 +179,7 @@ namespace Morava
                 FieldKind.Vector4 => native->Vector,
                 FieldKind.Entity => Interop.EntityFor(native->Entity),
                 FieldKind.Enum => Enum.ToObject(field.FieldType, native->Integer),
+                FieldKind.Prefab => native->Text != null && native->TextLength > 0 ? new Prefab(new string(native->Text, 0, native->TextLength)) : null,
                 _ => null,
             };
             // A field of a script class (public PlayerController Player): the entity must have that script
@@ -197,9 +200,9 @@ namespace Morava
             FieldKind kind = KindOf(field.FieldType)!.Value;
             object? value = field.GetValue(script);
             ToNative(kind, value, native);
-            if (kind == FieldKind.String)
+            if (kind == FieldKind.String || kind == FieldKind.Prefab)
             {
-                string text = value as string ?? "";
+                string text = (kind == FieldKind.Prefab ? (value as Prefab)?.Path : value as string) ?? "";
                 native->TextLength = text.Length;
                 if (native->Text != null && text.Length <= native->TextCapacity)
                     text.AsSpan().CopyTo(new Span<char>(native->Text, native->TextCapacity));

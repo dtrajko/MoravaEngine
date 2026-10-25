@@ -12,6 +12,8 @@
 
 #include "Input/InputSystem.h"
 
+#include <string>
+
 
 struct GLFWwindow;
 
@@ -21,7 +23,8 @@ struct GLFWwindow;
  * the scene given with --scene, seen through its camera entity, over the whole window, run by the game loop with the
  * game's systems. Input comes from the project's input file while the window has the focus. Opening the scene fails: the
  * player closes with exit code 1. Alt+Enter and F11 switch between fullscreen and a maximized window, and Escape leaves
- * fullscreen unless the game binds it (it may have a pause menu there); Alt+F4 closes the game.
+ * fullscreen unless the game binds it (it may have a pause menu there); Alt+F4 closes the game. A scene a script loads
+ * (Scene.Load, 6.2) replaces the scene's content at the end of the frame, and the game goes on in it.
  */
 class PlayerLayer : public H2M::LayerH2M
 {
@@ -38,11 +41,15 @@ public:
 	void Draw();
 
 private:
+	// Scene.Load: the file's entities in place of the scene's (a file that can't be opened: logged, the game goes on)
+	void LoadScene(const std::string& path);
+
 	// Fullscreen and a window: Alt+Enter and F11 switch, Escape leaves fullscreen when the game doesn't bind it
 	void UpdateFullscreenKeys(GLFWwindow* window);
 	void SetFullscreen(GLFWwindow* window, bool fullscreen);
 
 	EnvMapVulkanScene m_Scene;
+	std::string m_ScenePath; // the scene's file: Scene.Reload opens it again
 	EnvMapVulkanRenderSettings m_RenderSettings;
 	Camera m_Camera;
 	GameLoop m_GameLoop;

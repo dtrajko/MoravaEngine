@@ -1,9 +1,12 @@
 #include "ScriptBindings.h"
 
 #include "ScriptHost.h"
+#include "ScriptRuntime.h"
 
+#include "EnvMapVulkan/EnvMapVulkanPrefab.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanScene.h"
+#include "EnvMapVulkan/EnvMapVulkanSceneSerializer.h"
 
 #include "Audio/AudioEngine.h"
 #include "Audio/SceneAudio.h"
@@ -14,10 +17,15 @@
 
 #include "Project/Project.h"
 
+#include "Core/Log.h"
+
 #include <glm/gtc/quaternion.hpp>
 
 #include <algorithm>
+#include <chrono>
 #include <cstring>
+#include <filesystem>
+#include <system_error>
 
 
 static ScriptContext* s_Context = nullptr;
@@ -330,6 +338,112 @@ static int32_t SceneFindEntitiesWithTag(const char16_t* text, int length, uint64
 		}
 	});
 	return count;
+}
+
+// A file a script names, relative to the project (extension added when it has none): absolute, as the editor keeps paths;
+// empty when there is no such file
+static std::string FindProjectFile(const std::string& path, const char* extension)
+{
+	std::filesystem::path stored = std::filesystem::u8path(path);
+	if (!stored.has_extension())
+	{
+		stored += extension;
+	}
+	const std::string resolved = ProjectPaths::Resolve(stored.generic_u8string());
+	std::error_code error;
+	return std::filesystem::is_regular_file(std::filesystem::u8path(resolved), error) ? ProjectPaths::Normalize(resolved) : std::string();
+}
+
+static uint64_t SceneInstantiate(const char16_t* text, int length, const glm::vec3* position, const ScriptQuat* rotation, uint64_t parent)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	if (!scene)
+	{
+		return NoEntity;
+	}
+	const std::string path = ToUtf8(text, length);
+	const std::string file = FindProjectFile(path, EnvMapVulkanSceneSerializer::PrefabExtension);
+	if (file.empty())
+	{
+		Log::GetLogger()->error("Scene.Instantiate: there is no prefab '{0}' in the project", path);
+		return NoEntity;
+	}
+	if (parent != NoEntity && !scene->Exists(parent))
+	{
+		Log::GetLogger()->error("Scene.Instantiate: '{0}' was to be placed under an entity that doesn't exist (any more)", path);
+		return NoEntity;
+	}
+	const auto start = std::chrono::steady_clock::now();
+	std::string error;
+	const EnvMapVulkanEntityID root = EnvMapVulkanPrefab::Instantiate(*scene, file, parent, error);
+	if (root == NoEntity)
+	{
+		Log::GetLogger()->error("Scene.Instantiate: the prefab '{0}' could not be placed: {1}", path, error);
+		return NoEntity;
+	}
+	TransformComponent& transform = scene->Get<TransformComponent>(root);
+	transform.Translation = *position;
+	transform.Rotation = QuatToEuler(ToGlm(*rotation));
+
+	// What the game runs on them: the bodies and the sounds, then the scripts (OnCreate may ask for a Rigidbody, play a sound)
+	const std::vector<EnvMapVulkanEntityID> entities = scene->GetSubtree(root);
+	if (s_Context->Physics)
+	{
+		s_Context->Physics->AddEntities(entities);
+	}
+	if (s_Context->Audio)
+	{
+		s_Context->Audio->AddEntities(entities);
+	}
+	if (s_Context->Scripts)
+	{
+		s_Context->Scripts->AddEntities(entities);
+	}
+
+	// The first of each prefab in the log, with what it took (its models are loaded from their files each time)
+	const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+	if (s_Context->InstantiatedPrefabs.insert(file).second)
+	{
+		Log::GetLogger()->info("Scene.Instantiate: '{0}', {1} entities, {2:.1f} ms (the first one; the next ones in the Engine Details)",
+			ProjectPaths::ToStored(file), entities.size(), ms);
+	}
+	else
+	{
+		Log::GetLogger()->trace("Scene.Instantiate: '{0}', {1} entities, {2:.1f} ms", ProjectPaths::ToStored(file), entities.size(), ms);
+	}
+	return root;
+}
+
+static int32_t SceneLoad(const char16_t* text, int length)
+{
+	if (!GetScene())
+	{
+		return 0;
+	}
+	std::string file;
+	if (text && length > 0)
+	{
+		const std::string path = ToUtf8(text, length);
+		file = FindProjectFile(path, EnvMapVulkanSceneSerializer::FileExtension);
+		if (file.empty())
+		{
+			Log::GetLogger()->error("Scene.Load: there is no scene '{0}' in the project", path);
+			return 0;
+		}
+	}
+	s_Context->SceneLoadRequested = true; // the last one asked for in a frame is loaded
+	s_Context->SceneLoadPath = file;
+	return 1;
+}
+
+static int32_t SceneGetName(char16_t* buffer, int capacity)
+{
+	return s_Context ? CopyString(s_Context->SceneName, buffer, capacity) : 0;
+}
+
+static int32_t SceneGetPath(char16_t* buffer, int capacity)
+{
+	return s_Context ? CopyString(ProjectPaths::ToStored(s_Context->ScenePath), buffer, capacity) : 0;
 }
 
 // ---- Input
@@ -743,6 +857,10 @@ namespace ScriptBindings
 		api.Audio_SetVolumes = AudioSetVolumes;
 		api.Camera_GetSettings = CameraGetSettings;
 		api.Camera_SetSettings = CameraSetSettings;
+		api.Scene_Instantiate = SceneInstantiate;
+		api.Scene_Load = SceneLoad;
+		api.Scene_GetName = SceneGetName;
+		api.Scene_GetPath = SceneGetPath;
 	}
 
 	void SetContext(ScriptContext* context)

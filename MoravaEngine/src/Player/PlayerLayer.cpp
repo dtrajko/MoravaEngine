@@ -16,6 +16,7 @@
 
 #include <glm/glm.hpp>
 
+#include <chrono>
 #include <string>
 
 
@@ -62,8 +63,10 @@ void PlayerLayer::OnAttach()
 	EnvMapVulkanRenderer::SetScene(&m_Scene, &m_RenderSettings, nullptr);
 
 	// The project's scripts, then the game: the scripts' instances are made when it starts
+	m_ScenePath = ProjectPaths::Normalize(scenePath);
 	GameSystems::LoadScripts();
 	m_Input.SetMap(GameSystems::LoadInputMap());
+	m_Systems.SetSceneInfo(name, m_ScenePath);
 	m_Systems.Begin(&m_Scene, &m_Input);
 	m_Playing = true;
 }
@@ -97,6 +100,11 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	UpdateFullscreenKeys(window);
 	m_Input.Update(window, glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE, ts.GetSeconds());
 	m_GameLoop.Frame(ts.GetSeconds(), &m_Systems);
+	std::string load;
+	if (m_Systems.TakeSceneLoad(load))
+	{
+		LoadScene(load.empty() ? m_ScenePath : load);
+	}
 
 	// The view fills the window: the camera's aspect ratio follows it (the swapchain's size, in pixels)
 	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
@@ -108,6 +116,26 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	{
 		EnvMapVulkanSceneData::PlaceGameCamera(m_Camera, m_Scene, cameraEntity);
 	}
+}
+
+void PlayerLayer::LoadScene(const std::string& path)
+{
+	const auto start = std::chrono::steady_clock::now();
+	EnvMapVulkanRenderer::WaitIdle(); // the scene's models may still be drawn by frames in flight
+	std::string name, error;
+	EnvMapVulkanRenderSettings settings;
+	if (!EnvMapVulkanSceneLoader::Open(path, m_Scene, name, settings, error))
+	{
+		Log::GetLogger()->error("Scene.Load: '{0}' could not be opened: {1} (the game goes on in this scene)", ProjectPaths::ToStored(path), error);
+		return;
+	}
+	m_RenderSettings = settings;
+	m_ScenePath = ProjectPaths::Normalize(path);
+	EnvMapVulkanRenderer::OnSceneReplaced(); // what the probes gathered belongs to the scene that went
+	m_Systems.SetSceneInfo(name, m_ScenePath);
+	m_Systems.Restart();
+	Log::GetLogger()->info("Scene.Load: scene '{0}' from '{1}': {2} entities, {3:.0f} ms", name, ProjectPaths::ToStored(m_ScenePath),
+		m_Scene.GetEntityCount(), std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count());
 }
 
 // A key's press: down now, up in the last frame

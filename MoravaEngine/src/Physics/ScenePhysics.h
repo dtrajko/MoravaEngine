@@ -37,7 +37,8 @@ class ScenePhysicsContactListener;
  * each after the step they happen in (GetEvents); Raycast, SphereCast and the Overlap functions ask what is where, between
  * the steps. GetDebugLines draws the shapes and the contacts for the editor's debug views.
  *
- * An entity destroyed while the game runs takes its body with it at the next step (Phase 4.4: scripts destroy entities).
+ * An entity destroyed while the game runs takes its body with it at the next step (Phase 4.4: scripts destroy entities);
+ * entities placed while it runs (a prefab, Scene.Instantiate: 6.2) get theirs at once (AddEntities).
  */
 class ScenePhysics
 {
@@ -51,6 +52,8 @@ public:
 	void Start(EnvMapVulkanScene& scene, const PhysicsCollisionMatrix& collisions = PhysicsCollisionMatrix());
 	void Stop();
 	bool IsRunning() const { return m_World != nullptr; }
+	// Entities new in the running game: their bodies and characters, where the entities are now
+	void AddEntities(const std::vector<EnvMapVulkanEntityID>& entities);
 
 	void Step(float fixedStep);
 	// The dynamic bodies' entities where the bodies are, alpha of the way from their previous step to their last one
@@ -188,6 +191,13 @@ private:
 		glm::vec3 Written = glm::vec3(0.0f); // the entity's translation as physics last left it
 	};
 
+	// The body or the character of an entity, as its components ask (counted by kind, for the log)
+	struct AddCounts
+	{
+		uint32_t Motions[3] = {}; // by JPH::EMotionType: static, kinematic, dynamic (the triggers apart)
+		uint32_t Triggers = 0, Failed = 0;
+	};
+	void AddEntity(EnvMapVulkanEntityID entity, AddCounts& counts);
 	// The body of body.Entity, added to the world (false: its shape could not be made, or the world is full)
 	bool CreateBody(Body& body, const ColliderComponent& collider, const RigidBodyComponent* rigidBody);
 	void CreateCharacter(Character& character, const CharacterControllerComponent& settings);

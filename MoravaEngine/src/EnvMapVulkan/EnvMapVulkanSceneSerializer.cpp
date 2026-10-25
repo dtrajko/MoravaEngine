@@ -100,6 +100,7 @@ namespace EnvMapVulkanSceneSerializer
 	//     Speed: {Float: 4}
 	//     Camera: {Entity: 4797481855757227527}
 	//     Around: {Enum: Y}
+	//     Effect: {Prefab: Assets/Prefabs/Sparkle.mprefab}
 	static void WriteScript(YAML::Emitter& out, const ScriptComponent& script)
 	{
 		out << YAML::Key << "Script" << YAML::Value << YAML::BeginMap;
@@ -122,7 +123,8 @@ namespace EnvMapVulkanSceneSerializer
 				case ScriptFieldType::Vector4: out << YAML::Flow << YAML::BeginSeq << v.Vector.x << v.Vector.y << v.Vector.z << v.Vector.w << YAML::EndSeq; break;
 				case ScriptFieldType::Entity:  out << v.Entity; break;
 				case ScriptFieldType::String:
-				case ScriptFieldType::Enum:    out << v.Text; break;
+				case ScriptFieldType::Enum:
+				case ScriptFieldType::Prefab:  out << v.Text; break;
 				}
 				out << YAML::EndMap;
 			}
@@ -165,7 +167,8 @@ namespace EnvMapVulkanSceneSerializer
 				break;
 			case ScriptFieldType::Entity: v.Entity = value.as<uint64_t>(0); break;
 			case ScriptFieldType::String:
-			case ScriptFieldType::Enum:   v.Text = value.as<std::string>(""); break;
+			case ScriptFieldType::Enum:
+			case ScriptFieldType::Prefab: v.Text = value.as<std::string>(""); break;
 			}
 			script.Fields.push_back({ entry.first.as<std::string>(), v });
 		}

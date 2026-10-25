@@ -22,27 +22,67 @@
 
 void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 {
-	m_Scripts.Stop();
 	m_Scene = scene;
 	m_Input = input;
+	Start(false);
+}
+
+void GameSystems::Restart()
+{
+	Start(true);
+}
+
+void GameSystems::SetSceneInfo(const std::string& name, const std::string& path)
+{
+	m_ScriptContext.SceneName = name;
+	m_ScriptContext.ScenePath = path;
+}
+
+bool GameSystems::TakeSceneLoad(std::string& path)
+{
+	if (!m_ScriptContext.SceneLoadRequested)
+	{
+		return false;
+	}
+	path = m_ScriptContext.SceneLoadPath;
+	m_ScriptContext.SceneLoadRequested = false;
+	m_ScriptContext.SceneLoadPath.clear();
+	return true;
+}
+
+void GameSystems::Start(bool keepClock)
+{
+	m_Scripts.Stop();
 	m_Physics.Stop();
 	m_Audio.Stop();
 	AudioEngine::SetPaused(false);
 
-	// The scripts' API on this game (a fresh clock), or on none
+	// The scripts' API on this game (a fresh clock, unless a loaded scene goes on with it), or on none. The scene's name
+	// and file are the owner's (SetSceneInfo, before Begin: OnCreate may ask for them)
+	ScriptContext previous = std::move(m_ScriptContext);
 	m_ScriptContext = ScriptContext();
-	m_ScriptContext.Scene = scene;
+	m_ScriptContext.SceneName = std::move(previous.SceneName);
+	m_ScriptContext.ScenePath = std::move(previous.ScenePath);
+	if (keepClock)
+	{
+		m_ScriptContext.Time = previous.Time;
+		m_ScriptContext.FrameCount = previous.FrameCount;
+		m_ScriptContext.FixedStepCount = previous.FixedStepCount;
+		m_ScriptContext.InstantiatedPrefabs = std::move(previous.InstantiatedPrefabs);
+	}
+	m_ScriptContext.Scene = m_Scene;
 	m_ScriptContext.Physics = &m_Physics;
 	m_ScriptContext.Audio = &m_Audio;
-	m_ScriptContext.Input = input;
+	m_ScriptContext.Scripts = &m_Scripts;
+	m_ScriptContext.Input = m_Input;
 	m_ScriptContext.FixedDeltaTime = GameLoop::FixedStep;
 	ScriptBindings::Bind();
-	ScriptBindings::SetContext(scene ? &m_ScriptContext : nullptr);
+	ScriptBindings::SetContext(m_Scene ? &m_ScriptContext : nullptr);
 
 	if (m_Scene)
 	{
-		// The controllers the game can read (in the log: "why doesn't my gamepad work?")
-		if (m_Input)
+		// The controllers the game can read (in the log: "why doesn't my gamepad work?"), once per game
+		if (m_Input && !keepClock)
 		{
 			for (const InputGamepadInfo& gamepad : InputSystem::GetGamepads())
 			{

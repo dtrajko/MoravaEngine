@@ -426,59 +426,89 @@ void ScenePhysics::Start(EnvMapVulkanScene& scene, const PhysicsCollisionMatrix&
 	m_Listener->Collect = m_CollectContacts;
 	m_World->GetSystem().SetContactListener(m_Listener.get());
 
-	uint32_t counts[3] = {}; // by JPH::EMotionType: static, kinematic, dynamic (the triggers apart)
-	uint32_t triggers = 0;
-	uint32_t failed = 0;
-	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, ColliderComponent& collider)
+	AddCounts counts;
+	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, ColliderComponent&)
 	{
-		if (scene.Has<CharacterControllerComponent>(entity))
-		{
-			Log::GetLogger()->warn("Physics: '{0}' is a character: its Collider and Rigid Body aren't used", scene.Get<NameComponent>(entity).Name);
-			return;
-		}
-		Body body;
-		body.Entity = entity;
-		if (CreateBody(body, collider, scene.TryGet<RigidBodyComponent>(entity)))
-		{
-			if (body.Trigger)
-			{
-				triggers++;
-			}
-			else
-			{
-				counts[(int)body.Motion]++;
-			}
-			m_BodyInfo[body.ID.GetIndexAndSequenceNumber()] = { entity, body.Trigger };
-			m_Bodies.push_back(body);
-		}
-		else
-		{
-			failed++;
-		}
+		AddEntity(entity, counts);
 	});
 	scene.Each<RigidBodyComponent>([&](EnvMapVulkanEntityID entity, RigidBodyComponent&)
 	{
-		if (!scene.Has<ColliderComponent>(entity) && !scene.Has<CharacterControllerComponent>(entity))
+		if (!scene.Has<ColliderComponent>(entity))
 		{
-			Log::GetLogger()->warn("Physics: '{0}' has a rigid body but no collider: not simulated", scene.Get<NameComponent>(entity).Name);
+			AddEntity(entity, counts); // a warning, or a character
 		}
 	});
-
-	scene.Each<CharacterControllerComponent>([&](EnvMapVulkanEntityID entity, CharacterControllerComponent& settings)
+	scene.Each<CharacterControllerComponent>([&](EnvMapVulkanEntityID entity, CharacterControllerComponent&)
 	{
-		Character character;
-		character.Entity = entity;
-		CreateCharacter(character, settings);
-		m_BodyInfo[character.Controller->GetInnerBodyID().GetIndexAndSequenceNumber()] = { entity, false };
-		m_Characters.push_back(character);
+		if (!scene.Has<ColliderComponent>(entity) && !scene.Has<RigidBodyComponent>(entity))
+		{
+			AddEntity(entity, counts);
+		}
 	});
 
 	// The bodies added one by one: the broad phase's trees are rebuilt once, for a first step as fast as the next ones
 	m_World->GetSystem().OptimizeBroadPhase();
 	Log::GetLogger()->info("Physics: {0} bodies ({1} dynamic, {2} kinematic, {3} static, {4} trigger{5}), {6} character{7}{8}", m_Bodies.size(),
-		counts[(int)JPH::EMotionType::Dynamic], counts[(int)JPH::EMotionType::Kinematic], counts[(int)JPH::EMotionType::Static], triggers,
-		triggers == 1 ? "" : "s", m_Characters.size(), m_Characters.size() == 1 ? "" : "s",
-		failed > 0 ? ", " + std::to_string(failed) + " could not be made" : std::string());
+		counts.Motions[(int)JPH::EMotionType::Dynamic], counts.Motions[(int)JPH::EMotionType::Kinematic], counts.Motions[(int)JPH::EMotionType::Static],
+		counts.Triggers, counts.Triggers == 1 ? "" : "s", m_Characters.size(), m_Characters.size() == 1 ? "" : "s",
+		counts.Failed > 0 ? ", " + std::to_string(counts.Failed) + " could not be made" : std::string());
+}
+
+void ScenePhysics::AddEntities(const std::vector<EnvMapVulkanEntityID>& entities)
+{
+	if (!m_World)
+	{
+		return;
+	}
+	AddCounts counts;
+	for (EnvMapVulkanEntityID entity : entities)
+	{
+		AddEntity(entity, counts);
+	}
+}
+
+void ScenePhysics::AddEntity(EnvMapVulkanEntityID entity, AddCounts& counts)
+{
+	EnvMapVulkanScene& scene = *m_Scene;
+	const ColliderComponent* collider = scene.TryGet<ColliderComponent>(entity);
+	if (const CharacterControllerComponent* settings = scene.TryGet<CharacterControllerComponent>(entity))
+	{
+		if (collider || scene.Has<RigidBodyComponent>(entity))
+		{
+			Log::GetLogger()->warn("Physics: '{0}' is a character: its Collider and Rigid Body aren't used", scene.Get<NameComponent>(entity).Name);
+		}
+		Character character;
+		character.Entity = entity;
+		CreateCharacter(character, *settings);
+		m_BodyInfo[character.Controller->GetInnerBodyID().GetIndexAndSequenceNumber()] = { entity, false };
+		m_Characters.push_back(character);
+		return;
+	}
+	if (!collider)
+	{
+		if (scene.Has<RigidBodyComponent>(entity))
+		{
+			Log::GetLogger()->warn("Physics: '{0}' has a rigid body but no collider: not simulated", scene.Get<NameComponent>(entity).Name);
+		}
+		return;
+	}
+	Body body;
+	body.Entity = entity;
+	if (!CreateBody(body, *collider, scene.TryGet<RigidBodyComponent>(entity)))
+	{
+		counts.Failed++;
+		return;
+	}
+	if (body.Trigger)
+	{
+		counts.Triggers++;
+	}
+	else
+	{
+		counts.Motions[(int)body.Motion]++;
+	}
+	m_BodyInfo[body.ID.GetIndexAndSequenceNumber()] = { entity, body.Trigger };
+	m_Bodies.push_back(body);
 }
 
 void ScenePhysics::Stop()

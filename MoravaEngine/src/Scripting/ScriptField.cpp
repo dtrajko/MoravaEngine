@@ -4,7 +4,7 @@
 #include <iterator>
 
 
-static const char* const s_TypeNames[] = { "Bool", "Int", "Float", "Double", "String", "Vector2", "Vector3", "Vector4", "Entity", "Enum" };
+static const char* const s_TypeNames[] = { "Bool", "Int", "Float", "Double", "String", "Vector2", "Vector3", "Vector4", "Entity", "Enum", "Prefab" };
 
 bool ScriptFieldValue::operator==(const ScriptFieldValue& other) const
 {
@@ -23,7 +23,8 @@ bool ScriptFieldValue::operator==(const ScriptFieldValue& other) const
 	case ScriptFieldType::Vector4: return Vector == other.Vector;
 	case ScriptFieldType::Entity:  return Entity == other.Entity;
 	case ScriptFieldType::String:
-	case ScriptFieldType::Enum:    return Text == other.Text;
+	case ScriptFieldType::Enum:
+	case ScriptFieldType::Prefab:  return Text == other.Text;
 	}
 	return false;
 }

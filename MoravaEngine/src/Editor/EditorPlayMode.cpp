@@ -16,17 +16,25 @@
 //
 // Scripts (4.5): a script that throws pauses Play, with a notification (the exception is in the log with its file and
 // line), so the scene is there to look at as it was. Play on, or Step, carries on.
+//
+// Scene.Load (6.2): another scene's file opened into s_Scene at the end of the frame, and the game goes on in it; the
+// edited scene still waits in its copy. Scene.Reload of the scene Play started with takes it from that copy, as it was at
+// Play (unsaved changes too), without loading its models again.
 
 
 #include "Audio/AudioEngine.h"
 
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
+#include "EnvMapVulkan/EnvMapVulkanSceneLoader.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneSerializer.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
 #include "Core/ResourceManager.h"
+
+#include "Project/Project.h"
+
 #include "H2M/Renderer/ModelH2M.h"
 
 #include "imgui.h"
@@ -35,6 +43,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include <chrono>
 #include <utility>
 
 
@@ -66,6 +75,7 @@ static EnvMapVulkanScene s_EditedScene;
 static EnvMapVulkanRenderSettings s_EditedRenderSettings;
 static std::vector<std::pair<H2M::RefH2M<H2M::ModelH2M>, std::vector<glm::mat4>>> s_EditedMeshTransforms;
 static std::string s_EditedSceneText; // the edited scene as text: at Stop, the scene that came back must be the same
+static std::string s_PlayedScenePath; // a scene the game loaded (Scene.Load), empty: the edited one
 
 // The game's view: the editor's view options without the grid and the selection's overlays
 static EnvMapVulkanViewOptions s_GameViewOptions;
@@ -138,6 +148,7 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 	s_EditedRenderSettings = s_RenderSettings;
 	s_EditedSceneText = SerializeScene();
 	s_EditedMeshTransforms.clear();
+	s_PlayedScenePath.clear();
 	for (EnvMapVulkanEntityID model : GetModels(s_Scene))
 	{
 		H2M::RefH2M<H2M::ModelH2M> modelRef = GetModel(s_Scene, model);
@@ -153,6 +164,7 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 	s_Paused = false;
 	s_GameLoop.Reset();
 	s_ScriptExceptionsSeen = 0;
+	s_GameSystems.SetSceneInfo(s_SceneName, s_SceneFilePath);
 	if (state == PlayState::Play)
 	{
 		// The project's input file is read at each Play: an edit of it counts at the next Play
@@ -166,6 +178,77 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 		s_GameSystems.Begin(&s_Scene, nullptr); // no input: physics only
 	}
 	Log::GetLogger()->info("{0}: scene '{1}', {2} entities", state == PlayState::Play ? "Play" : "Simulate", s_SceneName, s_Scene.GetEntityCount());
+}
+
+// The edited scene into s_Scene, as it was at Play: its entities, its render settings and its models' meshes' matrices
+// (the models are shared: the game moved their parts). The GPU is idle (the game's models go)
+static void CopyEditedScene()
+{
+	s_Scene.CopyFrom(s_EditedScene);
+	s_RenderSettings = s_EditedRenderSettings;
+	for (auto& [model, transforms] : s_EditedMeshTransforms)
+	{
+		std::vector<H2M::RefH2M<H2M::MeshH2M>>& meshes = model->GetMeshes();
+		for (size_t i = 0; i < meshes.size() && i < transforms.size(); i++)
+		{
+			meshes[i]->Transform = transforms[i];
+		}
+	}
+}
+
+// Scene.Load (6.2), at the end of the frame: path (absolute), or empty for the scene being played again. The edited scene
+// again comes from its copy; a file that can't be opened leaves the game as it is
+static void LoadSceneInPlay(const std::string& requested)
+{
+	const auto start = std::chrono::steady_clock::now();
+	const std::string path = requested.empty() ? s_PlayedScenePath : ProjectPaths::Normalize(requested);
+	EnvMapVulkanRenderer::WaitIdle(); // the game's models may still be drawn by frames in flight
+	std::string name;
+	if (path.empty())
+	{
+		CopyEditedScene();
+		name = s_SceneName;
+	}
+	else
+	{
+		std::string error;
+		EnvMapVulkanRenderSettings settings;
+		if (!EnvMapVulkanSceneLoader::Open(path, s_Scene, name, settings, error))
+		{
+			Log::GetLogger()->error("Scene.Load: '{0}' could not be opened: {1} (the game goes on in this scene)", ProjectPaths::ToStored(path), error);
+			ShowNotification("Scene.Load: " + ProjectPaths::ToStored(path) + " could not be opened (the log says why)", true);
+			return;
+		}
+		s_RenderSettings = settings;
+	}
+	s_PlayedScenePath = path;
+
+	// As when a scene opens: nothing selected, the probes start again, and the sun stays as the scene has it when the
+	// scene brings another map (a map loaded for it doesn't turn the sun to the map's)
+	ForgetSceneEntities();
+	const EnvironmentComponent* environment = s_Scene.TryGet<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
+	s_PendingSunAlign = false;
+	s_KeepSunOnNextEnvironmentLoad = environment && !environment->FilePath.empty() &&
+		environment->FilePath != EnvMapVulkanRenderer::GetEnvironmentMapFile();
+	ExtractEnvironment();
+	ExtractLights();
+	ExtractWater();
+
+	s_GameSystems.SetSceneInfo(name, path.empty() ? s_SceneFilePath : path);
+	s_GameSystems.Restart();
+	Log::GetLogger()->info("Scene.Load: scene '{0}'{1}: {2} entities, {3:.0f} ms", name,
+		path.empty() ? " (the edited one, as at Play)" : " from '" + ProjectPaths::ToStored(path) + "'", s_Scene.GetEntityCount(),
+		std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count());
+}
+
+// After a frame of the game: the scene a script asked for
+static void ProcessSceneLoad()
+{
+	std::string path;
+	if (s_GameSystems.TakeSceneLoad(path))
+	{
+		LoadSceneInPlay(path);
+	}
 }
 
 // camera: placed where the edited scene's camera entity is (nullptr: at exit, no view to restore)
@@ -184,18 +267,10 @@ static void StopPlay()
 	const std::string playedMap = playedEnvironment ? playedEnvironment->FilePath : std::string();
 	const bool playedSunExtracted = playedEnvironment && playedEnvironment->ExtractSun;
 
-	s_Scene.CopyFrom(s_EditedScene);
+	CopyEditedScene();
 	s_EditedScene.Clear();
-	s_RenderSettings = s_EditedRenderSettings;
-	for (auto& [model, transforms] : s_EditedMeshTransforms)
-	{
-		std::vector<H2M::RefH2M<H2M::MeshH2M>>& meshes = model->GetMeshes();
-		for (size_t i = 0; i < meshes.size() && i < transforms.size(); i++)
-		{
-			meshes[i]->Transform = transforms[i];
-		}
-	}
 	s_EditedMeshTransforms.clear();
+	s_PlayedScenePath.clear();
 
 	const EnvironmentComponent* environment = s_Scene.TryGet<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
 	if (environment && (environment->FilePath != playedMap || environment->ExtractSun != playedSunExtracted))
@@ -303,6 +378,7 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 	{
 		s_GameInput.Update(window, gameInput, frameTime);
 		s_GameLoop.Frame(frameTime, &s_GameSystems);
+		ProcessSceneLoad();
 		PlaceGameCamera(camera); // where the game put the camera entity
 		PauseOnScriptException();
 	}
@@ -314,6 +390,7 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 		if (step)
 		{
 			s_GameLoop.Frame(GameLoop::FixedStep, &s_GameSystems);
+			ProcessSceneLoad();
 			PauseOnScriptException();
 		}
 	}

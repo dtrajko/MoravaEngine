@@ -147,6 +147,36 @@ void SceneAudio::Start(EnvMapVulkanScene& scene)
 	}
 }
 
+void SceneAudio::AddEntities(const std::vector<EnvMapVulkanEntityID>& entities)
+{
+	if (!m_Scene)
+	{
+		return;
+	}
+	for (EnvMapVulkanEntityID entity : entities)
+	{
+		const AudioSourceComponent* source = m_Scene->TryGet<AudioSourceComponent>(entity);
+		if (!source || m_Sounds.count(entity) > 0)
+		{
+			continue;
+		}
+		auto sound = std::make_unique<EntitySound>();
+		CreateSound(*sound, *source);
+		// Where its entity is before it plays (not from where the last sound was)
+		if (sound->Initialized && sound->Spatial)
+		{
+			sound->Position = glm::vec3(m_Scene->GetWorldTransform(entity)[3]);
+			sound->Placed = true;
+			ma_sound_set_position(&sound->Sound, sound->Position.x, sound->Position.y, sound->Position.z);
+		}
+		m_Sounds[entity] = std::move(sound);
+		if (source->PlayOnStart)
+		{
+			Play(entity);
+		}
+	}
+}
+
 void SceneAudio::Stop()
 {
 	if (!AudioEngine::IsAvailable())
