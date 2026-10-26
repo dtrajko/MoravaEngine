@@ -412,6 +412,74 @@ static bool ClipControls(AnimatorState& state, const H2M::RefH2M<H2M::ModelH2M>&
 	return changed;
 }
 
+// A state's events: a name and a time in its clip each (0 its start, 1 its end), put in time order once a time is edited
+static bool EventControls(AnimatorState& state, const SceneAnimation::Info* live)
+{
+	bool changed = false;
+	bool sort = false;
+	int deleted = -1;
+	ImGui::TextUnformatted("Events");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Moments of the clip the state's scripts hear of (Entity.OnAnimationEvent): a foot down (Footstep),\n"
+			"a take-off. In a looped state they come in each loop; during a crossfade only the state that weighs more fires");
+	}
+	for (size_t e = 0; e < state.Events.size(); e++)
+	{
+		AnimatorEvent& event = state.Events[e];
+		ImGui::PushID((int)e);
+		std::string edited;
+		ImGui::SetNextItemWidth(120.0f);
+		if (NameField("##Name", event.Name, edited) && !edited.empty())
+		{
+			event.Name = edited;
+			changed = true;
+		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(80.0f);
+		changed |= ImGui::DragFloat("##Time", &event.Time, 0.002f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+		sort |= ImGui::IsItemDeactivatedAfterEdit();
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Where in the clip: 0 its start, 1 its end");
+		}
+		ImGui::SameLine();
+		if (ImGui::SmallButton("x"))
+		{
+			deleted = (int)e;
+		}
+		ImGui::PopID();
+	}
+	if (deleted >= 0)
+	{
+		state.Events.erase(state.Events.begin() + deleted);
+		changed = true;
+	}
+	const bool playing = live && live->State == state.Name;
+	const float now = playing ? live->NormalizedTime - std::floor(live->NormalizedTime) : 0.0f;
+	if (ImGui::SmallButton(playing ? "Add Event Here" : "Add Event"))
+	{
+		state.Events.push_back({ state.Events.empty() ? std::string("Footstep") : state.Events.back().Name, playing ? now : 0.0f });
+		changed = sort = true;
+	}
+	if (ImGui::IsItemHovered())
+	{
+		if (playing)
+		{
+			ImGui::SetTooltip("An event where the clip is now (%.3f): Pause the game to pick the moment", now);
+		}
+		else
+		{
+			ImGui::SetTooltip("An event at the clip's start");
+		}
+	}
+	if (sort)
+	{
+		AnimatorController::SortEvents(state);
+	}
+	return changed;
+}
+
 static bool StateControls(AnimatorController& controller, const H2M::RefH2M<H2M::ModelH2M>& model, const SceneAnimation::Info* live)
 {
 	bool changed = false;
@@ -495,6 +563,7 @@ static bool StateControls(AnimatorController& controller, const H2M::RefH2M<H2M:
 			{
 				ImGui::TextColored(s_PlayingColor, "%.2f s played (%.2f of the clip)", live->StateTime, live->NormalizedTime);
 			}
+			changed |= EventControls(state, live);
 			if (ImGui::SmallButton("Delete State"))
 			{
 				deleted = (int)s;

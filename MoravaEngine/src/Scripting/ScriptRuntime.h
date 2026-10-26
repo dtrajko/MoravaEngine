@@ -2,6 +2,7 @@
 
 #include "EnvMapVulkan/EnvMapVulkanComponents.h"
 
+#include "Animation/SceneAnimation.h"
 #include "Physics/ScenePhysics.h"
 
 #include <cstdint>
@@ -39,6 +40,8 @@ public:
 	void Update(float frameTime);
 	// The step's collision and trigger events (ScenePhysics::GetEvents), to both entities' scripts
 	void DispatchEvents(const std::vector<ScenePhysics::Event>& events);
+	// The frame's animation events (SceneAnimation::GetEvents), to the animated entities' scripts
+	void DispatchAnimationEvents(const std::vector<SceneAnimation::Event>& events);
 	// Drops the instances of entities that are gone
 	void RemoveDestroyed();
 

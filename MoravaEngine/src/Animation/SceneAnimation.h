@@ -27,6 +27,10 @@ class EnvMapVulkanScene;
  * shown then, so there is no jump. A controller edited during the game (the Animator panel) is taken at the next frame,
  * its states kept by name. The editor also runs one outside the game (Sync each frame): its scene's animators in their
  * entry states, as the game starts them.
+ *
+ * The events of the states' clips (AnimatorState::Events) that a frame's time passes are collected for the frame
+ * (GetEvents; GameSystems gives them to the scripts). During a crossfade only the state that weighs more fires its events,
+ * so a foot coming down in both clips is heard once.
  */
 class SceneAnimation
 {
@@ -59,11 +63,22 @@ public:
 		bool InTransition = false;
 		float FadeProgress = 0.0f;           // 0 to 1
 		uint64_t Transitions = 0;            // taken since the game started
+		uint64_t Events = 0;                 // fired since the game started
+		std::string LastEvent;               // the last one's name and state, as "Footstep (Walk)" ("" when none yet)
 		std::vector<float> Values;           // the parameters', in the controller's order
 		std::string Problem;                 // why it doesn't animate ("" when it does)
 	};
 	bool GetInfo(EnvMapVulkanEntityID entity, Info& info) const;
 	std::shared_ptr<AnimatorController> GetController(EnvMapVulkanEntityID entity) const;
+
+	// The events the last Update fired, in order (cleared by the next one)
+	struct Event
+	{
+		EnvMapVulkanEntityID Entity = NoEntity;
+		std::string Name;
+		std::string State;
+	};
+	const std::vector<Event>& GetEvents() const { return m_Events; }
 	uint32_t GetAnimatorCount() const { return (uint32_t)m_Animators.size(); }
 
 private:
@@ -92,6 +107,8 @@ private:
 		bool Fading = false;
 		AnimationPose Snapshot, From, To, Pose;
 		uint64_t Transitions = 0;
+		uint64_t Events = 0;
+		std::string LastEvent;
 		std::string Problem;
 	};
 
@@ -103,7 +120,11 @@ private:
 	float GetNormalizedTime(const Animator& animator, int state, float time) const;
 	float GetStateSpeed(const Animator& animator, int state) const;
 	void SampleState(const Animator& animator, int state, float time, AnimationPose& pose) const;
+	// The state's events between two of its times (seconds played, before and after the frame)
+	void FireEvents(Animator& animator, int state, float from, float to);
 
 	EnvMapVulkanScene* m_Scene = nullptr;
 	std::map<EnvMapVulkanEntityID, Animator> m_Animators;
+	std::vector<Event> m_Events;
+	std::vector<size_t> m_PassedEvents; // FireEvents' (kept: no allocation per frame)
 };

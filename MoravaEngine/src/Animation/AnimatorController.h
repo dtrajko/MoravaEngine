@@ -34,6 +34,14 @@ struct AnimatorCondition
 	float Value = 0.0f;
 };
 
+// A moment of a state's clip the game hears of (Entity.OnAnimationEvent): a foot down (Footstep), a take-off. Time is
+// normalized, 0 the clip's start and 1 its end; in a looped state it comes again in each loop
+struct AnimatorEvent
+{
+	std::string Name;
+	float Time = 0.0f;
+};
+
 struct AnimatorState
 {
 	std::string Name;
@@ -45,6 +53,7 @@ struct AnimatorState
 	std::string SpeedParameter;  // a Float parameter the speed is multiplied by (empty: none)
 	bool Loop = true;            // else held on its last frame
 	bool InPlace = false;        // the clip's root (the hips) doesn't move across the ground: a walk without root motion
+	std::vector<AnimatorEvent> Events; // sorted by time
 };
 
 // From one state (or from any: FromAny) to another, when every condition holds and, with an exit time, once the state
@@ -83,6 +92,13 @@ struct AnimatorController
 	static bool FromText(const std::string& text, const std::string& filepath, AnimatorController& controller, std::string& error);
 	static bool Load(const std::string& filepath, AnimatorController& controller, std::string& error);
 	bool Save(const std::string& filepath, std::string& error) const;
+
+	// The state's events in time order (after one was added or its time edited)
+	static void SortEvents(AnimatorState& state);
+	// The state's events a frame passed, from one normalized time of its clip to another (backwards: to below from), in the
+	// order passed: [from, to), the clip's end included when not looped; a looped state's in each loop passed (a frame
+	// longer than a loop: each event once)
+	static void GetPassedEvents(const AnimatorState& state, float from, float to, std::vector<size_t>& events);
 
 	static const char* GetParameterTypeName(AnimatorParameterType type);
 	static const char* GetConditionTestName(AnimatorConditionTest test);

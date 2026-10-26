@@ -12,6 +12,8 @@ namespace Sample
     /// a jump faster than it is a running jump: the RunJump trigger, the push up RunJumpDelay later. The animator's
     /// controller picks the states and crossfades: Idle, Walk (and Run) by Speed, Use or Jump from any state. It needs a
     /// Character (Inspector: Physics) and an Animator.
+    /// With a FootstepSound, the controller's Footstep events (each foot down in the walk and run clips) are heard, louder
+    /// the faster it goes; a JumpSound at the push up and a LandSound when it comes down, louder the faster it falls.
     /// </summary>
     public class AnimatedCharacter : Entity
     {
@@ -42,12 +44,35 @@ namespace Sample
         /// <summary>Forward is where this entity looks (none: along -Z).</summary>
         public Entity? Camera;
 
+        /// <summary>The sound of a step, at each Footstep event of the animator; {0} in it: one of 1 to FootstepVariants, at random.</summary>
+        public string FootstepSound = "";
+
+        /// <summary>How many sounds {0} in FootstepSound picks from (a step never sounds like the one before).</summary>
+        public int FootstepVariants = 1;
+
+        /// <summary>A step's volume at Speed; at RunSpeed and faster: RunFootstepVolume.</summary>
+        public float FootstepVolume = 0.45f;
+
+        public float RunFootstepVolume = 0.8f;
+
+        /// <summary>At the push up of a jump.</summary>
+        public string JumpSound = "";
+
+        /// <summary>When it comes down from a jump or a fall (after LandAfter seconds in the air).</summary>
+        public string LandSound = "";
+
+        public float LandAfter = 0.2f;
+
         CharacterController character = null!;
         Animator animator = null!;
         Vector3 walk;
         float speed; // the horizontal speed the character really has (a wall stops it), smoothed for the animator
         float jumpIn = -1.0f; // seconds to the push up of a jump pressed (negative: none)
         bool rising;          // pushed up and still going up: not on the ground, even where it still touches it
+        float airTime;        // seconds off the ground
+        float fallSpeed;      // meters per second down, the last step in the air
+        int lastFootstep;
+        readonly Random random = new Random();
 
         protected override void OnCreate()
         {
@@ -76,11 +101,27 @@ namespace Sample
                 animator.SetBool("Grounded", character.IsGrounded && !rising);
             }
 
+            // Down after a while in the air: the landing, louder the faster it fell (8 m/s: at full volume)
+            bool grounded = character.IsGrounded && !rising;
+            if (grounded && airTime > LandAfter && LandSound.Length > 0)
+                Audio.PlayOneShot(LandSound, WorldPosition, Math.Clamp(fallSpeed / 8.0f, 0.3f, 1.0f), AudioBus.Effects, Pitch());
+            if (grounded)
+            {
+                airTime = 0;
+            }
+            else
+            {
+                airTime += dt;
+                fallSpeed = Math.Max(0, -character.Velocity.Y);
+            }
+
             float up;
             if (jumpIn >= 0 && (jumpIn -= dt) < 0)
             {
                 up = JumpSpeed;
                 rising = true;
+                if (JumpSound.Length > 0)
+                    Audio.PlayOneShot(JumpSound, WorldPosition, 0.7f, AudioBus.Effects, Pitch());
             }
             else
             {
@@ -92,6 +133,27 @@ namespace Sample
             if (Input.WasPressed("Use"))
                 animator.SetTrigger("Use");
         }
+
+        protected override void OnAnimationEvent(AnimationEvent animationEvent)
+        {
+            if (animationEvent.Name != "Footstep" || FootstepSound.Length == 0 || !character.IsGrounded)
+                return;
+            // Another sound than the last step's
+            int variant = 1;
+            if (FootstepVariants > 1)
+            {
+                variant = random.Next(1, lastFootstep == 0 ? FootstepVariants + 1 : FootstepVariants);
+                if (lastFootstep != 0 && variant >= lastFootstep)
+                    variant++;
+            }
+            lastFootstep = variant;
+            float fast = RunSpeed > Speed ? Math.Clamp((speed - Speed) / (RunSpeed - Speed), 0.0f, 1.0f) : 0.0f;
+            float volume = FootstepVolume + (RunFootstepVolume - FootstepVolume) * fast;
+            Audio.PlayOneShot(string.Format(FootstepSound, variant), WorldPosition, volume, AudioBus.Effects, Pitch());
+        }
+
+        // A little higher or lower each time, so no two sound the same
+        float Pitch() => 0.94f + 0.12f * (float)random.NextDouble();
 
         protected override void OnUpdate(float dt)
         {

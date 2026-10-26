@@ -7,6 +7,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <map>
@@ -42,6 +43,61 @@ int AnimatorController::GetEntryState() const
 {
 	const int entry = FindState(Entry);
 	return entry >= 0 ? entry : (States.empty() ? -1 : 0);
+}
+
+void AnimatorController::SortEvents(AnimatorState& state)
+{
+	std::stable_sort(state.Events.begin(), state.Events.end(), [](const AnimatorEvent& a, const AnimatorEvent& b) { return a.Time < b.Time; });
+}
+
+void AnimatorController::GetPassedEvents(const AnimatorState& state, float from, float to, std::vector<size_t>& events)
+{
+	events.clear();
+	if (state.Events.empty() || from == to)
+	{
+		return;
+	}
+	const bool forward = to > from;
+	auto passed = [&](float at, float a, float b) { return forward ? at >= a && at < b : at > a && at <= b; };
+	if (!state.Loop)
+	{
+		const float a = std::clamp(std::min(from, to), 0.0f, 1.0f), b = std::clamp(std::max(from, to), 0.0f, 1.0f);
+		for (size_t e = 0; e < state.Events.size(); e++)
+		{
+			const float at = state.Events[e].Time;
+			if (passed(at, a, b) || (forward && at >= a && b >= 1.0f && a < 1.0f))
+			{
+				events.push_back(e);
+			}
+		}
+	}
+	else
+	{
+		const float a = std::min(from, to), b = std::max(from, to);
+		if (b - a >= 1.0f)
+		{
+			// A frame longer than a loop: each event once
+			for (size_t e = 0; e < state.Events.size(); e++)
+			{
+				events.push_back(e);
+			}
+			return; // in time order either way
+		}
+		for (float loop = std::floor(a); loop <= std::floor(b); loop += 1.0f) // the frame's loop, and the next one
+		{
+			for (size_t e = 0; e < state.Events.size(); e++)
+			{
+				if (passed(loop + state.Events[e].Time, a, b))
+				{
+					events.push_back(e);
+				}
+			}
+		}
+	}
+	if (!forward)
+	{
+		std::reverse(events.begin(), events.end()); // played backwards: the later ones first
+	}
 }
 
 const char* AnimatorController::GetParameterTypeName(AnimatorParameterType type)
@@ -109,6 +165,18 @@ std::string AnimatorController::ToText() const
 		}
 		out << YAML::Key << "Loop" << YAML::Value << state.Loop;
 		out << YAML::Key << "InPlace" << YAML::Value << state.InPlace;
+		if (!state.Events.empty())
+		{
+			out << YAML::Key << "Events" << YAML::Value << YAML::BeginSeq;
+			for (const AnimatorEvent& event : state.Events)
+			{
+				out << YAML::Flow << YAML::BeginMap;
+				out << YAML::Key << "Name" << YAML::Value << event.Name;
+				out << YAML::Key << "Time" << YAML::Value << event.Time;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+		}
 		out << YAML::EndMap;
 	}
 	out << YAML::EndSeq;
@@ -257,6 +325,22 @@ bool AnimatorController::FromText(const std::string& text, const std::string& fi
 				state.SpeedParameter = node["SpeedParameter"].as<std::string>("");
 				state.Loop = node["Loop"].as<bool>(state.Loop);
 				state.InPlace = node["InPlace"].as<bool>(state.InPlace);
+				if (const YAML::Node events = node["Events"]; events && events.IsSequence())
+				{
+					for (const YAML::Node& eventNode : events)
+					{
+						AnimatorEvent event;
+						event.Name = eventNode["Name"].as<std::string>("");
+						event.Time = std::clamp(eventNode["Time"].as<float>(0.0f), 0.0f, 1.0f);
+						if (event.Name.empty())
+						{
+							Log::GetLogger()->warn("Animator '{0}': an event of state '{1}' has no name: left out", filepath, state.Name);
+							continue;
+						}
+						state.Events.push_back(std::move(event));
+					}
+					SortEvents(state);
+				}
 				result.States.push_back(std::move(state));
 			}
 		}

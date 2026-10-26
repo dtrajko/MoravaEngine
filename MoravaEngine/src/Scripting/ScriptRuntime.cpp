@@ -229,6 +229,21 @@ void ScriptRuntime::DispatchEvents(const std::vector<ScenePhysics::Event>& event
 	}
 }
 
+void ScriptRuntime::DispatchAnimationEvents(const std::vector<SceneAnimation::Event>& events)
+{
+	for (const SceneAnimation::Event& event : events)
+	{
+		if (const Instance* instance = Find(event.Entity))
+		{
+			const size_t index = size_t(instance - m_Instances.data());
+			if (!ScriptHost::InvokeAnimationEvent(instance->Handle, event.Name, event.State))
+			{
+				Threw(m_Instances[index], "OnAnimationEvent");
+			}
+		}
+	}
+}
+
 void ScriptRuntime::RemoveDestroyed()
 {
 	if (!m_Scene)

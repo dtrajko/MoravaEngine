@@ -19,12 +19,18 @@ Animator:
       SpeedParameter: Speed
       Loop: true
       InPlace: true
+      Events:
+        - {Name: Footstep, Time: 0.34}
+        - {Name: Footstep, Time: 0.83}
     - Name: Run
       Clip: {File: Models/Erika_Archer/running.dae, Name: ""}
       Speed: 0.265
       SpeedParameter: Speed
       Loop: true
       InPlace: true
+      Events:
+        - {Name: Footstep, Time: 0.36}
+        - {Name: Footstep, Time: 0.86}
     - Name: Jump
       Clip: {File: Models/Erika_Archer/jump.dae, Name: ""}
       Speed: 1

@@ -64,6 +64,8 @@ public:
 	static bool InvokeFixedUpdate(void* instance, float dt);
 	// other: the entity it touched or that entered or left (a trigger); point and normal for CollisionEnter
 	static bool InvokeCollision(void* instance, ScriptCollisionKind kind, uint64_t other, const glm::vec3& point, const glm::vec3& normal);
+	// An event of the entity's animator: its name, and the state whose clip fired it
+	static bool InvokeAnimationEvent(void* instance, const std::string& name, const std::string& state);
 
 	// A public field of an instance (field: of its class, GetClasses). The value must be of the field's type (an Enum by
 	// its name); false when it isn't, or C# refused it (logged)

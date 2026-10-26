@@ -296,8 +296,12 @@ void GameSystems::Update(float frameTime, float alpha)
 	ScriptBindings::DestroyQueued(m_ScriptContext);
 	m_Scripts.RemoveDestroyed();
 
-	// The poses, from the parameters the scripts set (in OnUpdate, or in the fixed steps before it)
+	// The poses, from the parameters the scripts set (in OnUpdate, or in the fixed steps before it), then the events their
+	// clips passed to the scripts (a footstep's sound: where the frame left the entity), and what those destroyed
 	m_Animation.Update(frameTime);
+	m_Scripts.DispatchAnimationEvents(m_Animation.GetEvents());
+	ScriptBindings::DestroyQueued(m_ScriptContext);
+	m_Scripts.RemoveDestroyed();
 
 	// The listener and the sounds where the frame left their entities (the sounds of destroyed ones go)
 	m_Audio.Update(frameTime);

@@ -150,6 +150,9 @@ namespace Morava
         /// <summary>Something left this trigger, or this entity left one.</summary>
         protected internal virtual void OnTriggerExit(Entity other) { }
 
+        /// <summary>The clip of the entity's animator passed one of its events (a foot down: Footstep), in the frame after OnUpdate.</summary>
+        protected internal virtual void OnAnimationEvent(AnimationEvent animationEvent) { }
+
         void Check(int result)
         {
             if (result == 0) throw NoEntity();
@@ -180,6 +183,18 @@ namespace Morava
                 return $"Entity {Id}";
             return $"{Name} ({Id})";
         }
+    }
+
+    /// <summary>A moment of an animator state's clip (Entity.OnAnimationEvent): the events are set per state in the Animator panel.</summary>
+    public sealed class AnimationEvent
+    {
+        internal AnimationEvent(string name, string state) { Name = name; State = state; }
+
+        /// <summary>The event's name, as the controller has it: Footstep.</summary>
+        public string Name { get; }
+
+        /// <summary>The state whose clip fired it: Walk.</summary>
+        public string State { get; }
     }
 
     /// <summary>Two bodies that started touching (Entity.OnCollisionEnter).</summary>

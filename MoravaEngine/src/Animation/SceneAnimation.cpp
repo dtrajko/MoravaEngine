@@ -326,8 +326,31 @@ void SceneAnimation::SampleState(const Animator& animator, int state, float time
 	AnimationSampling::SampleClip(*animator.Clips[state].Clip, animator.Clips[state].Binding, time, settings.Loop, settings.InPlace, pose);
 }
 
+void SceneAnimation::FireEvents(Animator& animator, int state, float from, float to)
+{
+	if (state < 0 || state >= (int)animator.Clips.size() || from == to)
+	{
+		return;
+	}
+	const AnimatorState& settings = animator.Controller->States[state];
+	if (settings.Events.empty())
+	{
+		return;
+	}
+	std::vector<size_t>& passed = m_PassedEvents;
+	AnimatorController::GetPassedEvents(settings, GetNormalizedTime(animator, state, from), GetNormalizedTime(animator, state, to), passed);
+	for (size_t e : passed)
+	{
+		const AnimatorEvent& event = settings.Events[e];
+		m_Events.push_back({ animator.Entity, event.Name, settings.Name });
+		animator.Events++;
+		animator.LastEvent = event.Name + " (" + settings.Name + ")";
+	}
+}
+
 void SceneAnimation::Update(float frameTime)
 {
+	m_Events.clear();
 	if (!m_Scene)
 	{
 		return;
@@ -360,20 +383,33 @@ void SceneAnimation::Update(float frameTime)
 			}
 		}
 
-		// The clips move on by the frame (each state at its speed), and the crossfade with them
+		// The clips move on by the frame (each state at its speed), and the crossfade with them. The events passed: the
+		// state that weighs more's (the one faded to, from halfway through the crossfade)
+		const float currentTime = animator.CurrentTime;
 		animator.CurrentTime += frameTime * GetStateSpeed(animator, animator.Current);
+		bool currentFires = true;
 		if (animator.Fading)
 		{
+			animator.FadeElapsed += frameTime;
+			currentFires = animator.FadeDuration <= 0.0f || animator.FadeElapsed >= 0.5f * animator.FadeDuration;
 			if (animator.Previous >= 0)
 			{
+				const float previousTime = animator.PreviousTime;
 				animator.PreviousTime += frameTime * GetStateSpeed(animator, animator.Previous);
+				if (!currentFires)
+				{
+					FireEvents(animator, animator.Previous, previousTime, animator.PreviousTime);
+				}
 			}
-			animator.FadeElapsed += frameTime;
 			if (animator.FadeElapsed >= animator.FadeDuration)
 			{
 				animator.Fading = false;
 				animator.Previous = -1;
 			}
+		}
+		if (currentFires)
+		{
+			FireEvents(animator, animator.Current, currentTime, animator.CurrentTime);
 		}
 
 		// The first transition that may be taken: from Any State first, then from the current state. Its triggers are used up
@@ -434,6 +470,7 @@ void SceneAnimation::Stop()
 		}
 	}
 	m_Animators.clear();
+	m_Events.clear();
 	m_Scene = nullptr;
 }
 
@@ -517,6 +554,8 @@ bool SceneAnimation::GetInfo(EnvMapVulkanEntityID entity, Info& info) const
 	info.Controller = animator.ControllerFile;
 	info.Problem = animator.Problem;
 	info.Transitions = animator.Transitions;
+	info.Events = animator.Events;
+	info.LastEvent = animator.LastEvent;
 	info.Values = animator.Values;
 	auto stateName = [&](int state)
 	{

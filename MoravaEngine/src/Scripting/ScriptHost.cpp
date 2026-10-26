@@ -489,6 +489,17 @@ bool ScriptHost::InvokeCollision(void* instance, ScriptCollisionKind kind, uint6
 	return s_Available && instance && s_Managed.InvokeCollision(instance, int(kind), other, &point, &normal) == 0;
 }
 
+bool ScriptHost::InvokeAnimationEvent(void* instance, const std::string& name, const std::string& state)
+{
+	if (!s_Available || !instance)
+	{
+		return false;
+	}
+	const std::u16string name16 = ScriptUtf8ToUtf16(name);
+	const std::u16string state16 = ScriptUtf8ToUtf16(state);
+	return s_Managed.InvokeAnimationEvent(instance, name16.c_str(), int(name16.size()), state16.c_str(), int(state16.size())) == 0;
+}
+
 bool ScriptHost::SetField(void* instance, const ScriptFieldInfo& field, const ScriptFieldValue& value)
 {
 	if (!s_Available || !instance || value.Type != field.Type)

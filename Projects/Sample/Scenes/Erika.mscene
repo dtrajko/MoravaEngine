@@ -344,6 +344,10 @@ Entities:
         JumpDelay: {Float: 0.57}
         RunJumpSpeed: {Float: 2.4}
         RunJumpDelay: {Float: 0.1}
+        FootstepSound: {String: "Assets/Audio/Footstep_{0}.wav"}
+        FootstepVariants: {Int: 4}
+        JumpSound: {String: Assets/Audio/JumpTakeoff.wav}
+        LandSound: {String: Assets/Audio/Land.wav}
     Animator: {Controller: Assets/Animators/Erika.manim}
   - ID: 7310463185520941002
     Name: Eyes
