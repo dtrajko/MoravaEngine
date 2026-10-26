@@ -28,6 +28,8 @@ namespace H2M
 		TriangleFan
 	};
 
+	class PipelineH2M;
+
 	struct PipelineSpecificationH2M
 	{
 		RefH2M<ShaderH2M> Shader;
@@ -47,6 +49,10 @@ namespace H2M
 		// drawn over the same surface
 		float DepthBiasConstant = 0.0f;
 		float DepthBiasSlope = 0.0f;
+		// Vulkan: the layout of this pipeline instead of one made from the shader, for a variant of it with another shader
+		// that is drawn with the same descriptor sets and push constants (the shader must declare nothing the layout
+		// lacks). It must outlive this pipeline.
+		RefH2M<PipelineH2M> LayoutFrom;
 
 		std::string DebugName;
 	};

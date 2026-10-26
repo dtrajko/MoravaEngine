@@ -7,8 +7,11 @@ namespace Sample
     /// <summary>
     /// A character with an animated model: Move walks it (forward being away from the camera; Run held: faster), it turns
     /// to face where it walks, and its animator is told how fast it goes (the Speed parameter, meters per second) and when
-    /// to use what is in front of it (Use: the trigger, on the Use action). The animator's controller picks the states and
-    /// crossfades: Idle and Walk by Speed, Use from any state. It needs a Character (Inspector: Physics) and an Animator.
+    /// to use what is in front of it (Use: the trigger, on the Use action). With a JumpSpeed, Jump jumps: the Jump trigger
+    /// at once, the push up JumpDelay later (when the clip leaves the ground), and Grounded each step. With a RunJumpSpeed,
+    /// a jump faster than it is a running jump: the RunJump trigger, the push up RunJumpDelay later. The animator's
+    /// controller picks the states and crossfades: Idle, Walk (and Run) by Speed, Use or Jump from any state. It needs a
+    /// Character (Inspector: Physics) and an Animator.
     /// </summary>
     public class AnimatedCharacter : Entity
     {
@@ -24,6 +27,18 @@ namespace Sample
         /// <summary>Meters per second squared.</summary>
         public float Gravity = 20.0f;
 
+        /// <summary>Meters per second up at the jump (0: no jumping; the controller then needs no Jump and Grounded).</summary>
+        public float JumpSpeed = 0.0f;
+
+        /// <summary>Seconds from the Jump press to the push up: the jump clip's crouch.</summary>
+        public float JumpDelay = 0.0f;
+
+        /// <summary>Meters per second above which a jump is a running jump (0: none; the controller then needs no RunJump).</summary>
+        public float RunJumpSpeed = 0.0f;
+
+        /// <summary>Seconds from the Jump press to the push up in a running jump: its clip's take-off.</summary>
+        public float RunJumpDelay = 0.0f;
+
         /// <summary>Forward is where this entity looks (none: along -Z).</summary>
         public Entity? Camera;
 
@@ -31,6 +46,8 @@ namespace Sample
         Animator animator = null!;
         Vector3 walk;
         float speed; // the horizontal speed the character really has (a wall stops it), smoothed for the animator
+        float jumpIn = -1.0f; // seconds to the push up of a jump pressed (negative: none)
+        bool rising;          // pushed up and still going up: not on the ground, even where it still touches it
 
         protected override void OnCreate()
         {
@@ -48,7 +65,28 @@ namespace Sample
             Vector3 right = Vector3.Cross(forward, Vector3.UnitY);
             walk = (right * move.X + forward * move.Y) * (Input.IsHeld("Run") ? RunSpeed : Speed);
 
-            float up = character.IsGrounded ? 0 : character.Velocity.Y - Gravity * dt;
+            if (JumpSpeed > 0)
+            {
+                if (Input.WasPressed("Jump") && character.IsGrounded && jumpIn < 0 && !rising)
+                {
+                    bool running = RunJumpSpeed > 0 && speed > RunJumpSpeed;
+                    animator.SetTrigger(running ? "RunJump" : "Jump");
+                    jumpIn = running ? RunJumpDelay : JumpDelay;
+                }
+                animator.SetBool("Grounded", character.IsGrounded && !rising);
+            }
+
+            float up;
+            if (jumpIn >= 0 && (jumpIn -= dt) < 0)
+            {
+                up = JumpSpeed;
+                rising = true;
+            }
+            else
+            {
+                rising &= character.Velocity.Y > 0;
+                up = character.IsGrounded && !rising ? 0 : character.Velocity.Y - Gravity * dt;
+            }
             character.Move(new Vector3(walk.X, up, walk.Z));
 
             if (Input.WasPressed("Use"))

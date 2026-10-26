@@ -10,6 +10,9 @@ void main()
 	// Texture toggles and values come from the material (push constants, editable in the Material Editor), the same
 	// way as in the G-buffer prepass (Include/MeshMaterial.glslh)
 	vec2 texCoord = MaterialTexCoord(Input.TexCoord);
+#ifdef MATERIAL_CUTOUT
+	MaterialCutAway(texCoord); // the cutout variants (HazelPBR_Cutout_Static.glsl...): passes without the prepass's depth
+#endif
 
 	m_Params.Albedo = MaterialAlbedo(texCoord);
 	m_Params.Metalness = MaterialMetalness(texCoord);

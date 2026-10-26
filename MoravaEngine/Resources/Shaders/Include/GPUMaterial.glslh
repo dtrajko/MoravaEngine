@@ -21,12 +21,13 @@ struct GPUMaterial
 	float Tiling;            // the texture coordinate scale the maps are read with
 	float EmissiveIntensity; // multiplies the emissive map
 	float IOR;               // glass: its index of refraction (a ray that passes through it: the path tracer)
-	uint Padding1;
+	float Cutoff;            // cutout: the albedo map's alpha below which there is no surface (GPUMaterialFlagCutout)
 };
 
 const uint GPUMaterialNoMap = 0xFFFFFFFFu;
 const uint GPUMaterialFlagGlass = 1u;
 const uint GPUMaterialFlagMetalRoughPacked = 2u; // glTF: roughness in G, metalness in B of their map; otherwise both in R
 const uint GPUMaterialFlagGlassSolid = 4u;       // glass: a solid body (light bends entering and leaving); otherwise thin
+const uint GPUMaterialFlagCutout = 8u;           // opaque with holes where the albedo map's alpha is below Cutoff
 
 #endif

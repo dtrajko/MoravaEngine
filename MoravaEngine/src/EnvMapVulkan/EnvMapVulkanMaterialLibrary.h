@@ -54,7 +54,11 @@ public:
 	//   moved by the refraction, tinted by the albedo color (or map), blurred by the roughness (frosted glass) and rippled
 	//   by the normal map; it reflects the environment and the lights more at grazing angles (Fresnel). Metalness and AO
 	//   don't apply. Drawn after the opaque meshes and the water, sorted back to front (see EnvMapVulkanGlass).
-	enum class Surface : uint32_t { Opaque = 0, Glass = 1 };
+	// - Cutout: opaque, with holes: where the albedo map's alpha is below the cutoff there is no surface at all (leaves,
+	//   eyelashes, a fence). The passes that write depth (the G-buffer prepass, the shadow maps, the water's reflection)
+	//   draw it with pipelines that discard those pixels; the scene pass then shades only what is left (depth EQUAL). The
+	//   ray tracing and the probes see it as opaque.
+	enum class Surface : uint32_t { Opaque = 0, Glass = 1, Cutout = 2 };
 	// The glass values (used only by glass)
 	enum GlassValue : uint32_t
 	{
@@ -68,6 +72,10 @@ public:
 	Surface GetSurface() const { return m_Surface; }
 	void SetSurface(Surface surface) { m_Surface = surface; }
 	bool IsGlass() const { return m_Surface == Surface::Glass; }
+	bool IsCutout() const { return m_Surface == Surface::Cutout; }
+	// Cutout: the alpha below which the surface is cut away (0 to 1); edited in place by the Material Editor
+	float& GetCutoff() { return m_Cutoff; }
+	float GetCutoff() const { return m_Cutoff; }
 	// Edited in place by the Material Editor, like Get<float>
 	float& GetGlassValue(GlassValue value) { return m_GlassValues[value]; }
 	float GetGlassValue(GlassValue value) const { return m_GlassValues[value]; }
@@ -97,12 +105,13 @@ public:
 		FirstMapProperty, // a map slot's property (its texture and its toggle): FirstMapProperty + Map
 		SurfaceProperty = FirstMapProperty + MapCount,
 		FirstGlassProperty, // a glass value's property: FirstGlassProperty + GlassValue
-		PropertyCount = FirstGlassProperty + GlassValueCount
+		CutoffProperty = FirstGlassProperty + GlassValueCount,
+		PropertyCount
 	};
 	static Property GetMapProperty(uint32_t slot) { return (Property)(FirstMapProperty + slot); }
 	static Property GetGlassProperty(GlassValue value) { return (Property)(FirstGlassProperty + value); }
 	static bool IsMapProperty(Property property) { return property >= FirstMapProperty && property < FirstMapProperty + MapCount; }
-	static bool IsGlassProperty(Property property) { return property >= FirstGlassProperty && property < PropertyCount; }
+	static bool IsGlassProperty(Property property) { return property >= FirstGlassProperty && property < CutoffProperty; }
 	static const char* GetPropertyKey(Property property); // as in material files: "AlbedoColor", "Metalness"... "AlbedoMap"...
 
 	bool IsVariant() const { return m_ParentID != 0; }
@@ -124,6 +133,7 @@ private:
 		std::array<float, MapCount> Toggles{};
 		Surface SurfaceType = Surface::Opaque;
 		std::array<float, GlassValueCount> Glass{};
+		float Cutoff = 0.5f;
 	};
 	State CaptureState();
 	static bool PropertyEquals(const State& a, const State& b, Property property);
@@ -145,6 +155,7 @@ private:
 	std::array<H2M::RefH2M<H2M::Texture2D_H2M>, MapCount> m_Maps; // keeps the bound images alive (null: placeholder bound)
 	Surface m_Surface = Surface::Opaque;
 	std::array<float, GlassValueCount> m_GlassValues = { 1.5f, 0.2f, 0.0f, 1.0f }; // see GlassValue
+	float m_Cutoff = 0.5f;
 
 	std::string m_SourceFile;
 	uint32_t m_SourceIndex = 0;

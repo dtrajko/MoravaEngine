@@ -49,12 +49,13 @@ public:
 		float Tiling = 1.0f;             // the texture coordinate scale the maps are read with
 		float EmissiveIntensity = 0.0f;  // multiplies the emissive map
 		float IOR = 1.5f;                // glass: its index of refraction
-		uint32_t Padding1 = 0;
+		float Cutoff = 0.0f;             // cutout: the albedo map's alpha below which there is no surface
 	};
 	static constexpr uint32_t NoMap = EnvMapVulkanTextureTable::NoSlot;
 	static constexpr uint32_t FlagGlass = 1u << 0;
 	static constexpr uint32_t FlagMetalRoughPacked = 1u << 1; // glTF: roughness in G, metalness in B of their map
 	static constexpr uint32_t FlagGlassSolid = 1u << 2;       // glass: a solid body; otherwise thin (a pane, a shell)
+	static constexpr uint32_t FlagCutout = 1u << 3;           // opaque with holes: see Cutoff
 
 	void Create();
 	void Destroy();

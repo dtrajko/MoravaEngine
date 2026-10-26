@@ -1,0 +1,27 @@
+Material:
+  Version: 1
+  ID: 4125353244449587187
+  Name: Erika_Clothes
+  Source:
+    File: Models/Erika_Archer/Erika_Archer.dae
+    Index: 0
+  AlbedoColor: [1, 1, 1]
+  Metalness: 0
+  Roughness: 0.8
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 0
+    Solid: 1
+  Maps:
+    Albedo:
+      File: Models/Erika_Archer/textures/Erika_Archer_Clothes_diffuse.png
+      Enabled: true
+    Normal:
+      File: Models/Erika_Archer/textures/Erika_Archer_Clothes_normal.png
+      Enabled: true

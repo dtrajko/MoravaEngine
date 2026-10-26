@@ -154,10 +154,13 @@ struct EnvMapVulkanShadowPipeline
 {
 	VkPipeline Pipeline = VK_NULL_HANDLE;
 	VkPipelineLayout Layout = VK_NULL_HANDLE;
+	bool OwnsLayout = true;
 
-	// usedLocations: the vertex attributes the shader reads (only these are described, the others are skipped)
+	// usedLocations: the vertex attributes the shader reads (only these are described, the others are skipped).
+	// layout: another pipeline's layout to draw with (the cutout variants: the PBR pipelines', so a mesh's material sets
+	// bind as in the scene pass); it must outlive this pipeline. None: one made from the shader.
 	void Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader, const H2M::VertexBufferLayoutH2M& vertexLayout, const std::vector<uint32_t>& usedLocations,
-		VkRenderPass renderPass);
+		VkRenderPass renderPass, VkPipelineLayout layout = VK_NULL_HANDLE);
 	void Destroy();
 };
 

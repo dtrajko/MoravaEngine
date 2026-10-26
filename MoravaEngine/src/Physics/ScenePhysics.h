@@ -188,6 +188,7 @@ private:
 		float StepHeight = 0.0f;
 		glm::vec3 WantedVelocity = glm::vec3(0.0f);
 		glm::vec3 PreviousPosition = glm::vec3(0.0f), Position = glm::vec3(0.0f);
+		glm::vec3 Moved = glm::vec3(0.0f);  // how it really moved in the last step, per second (CharacterState::Velocity)
 		glm::vec3 Written = glm::vec3(0.0f); // the entity's translation as physics last left it
 	};
 

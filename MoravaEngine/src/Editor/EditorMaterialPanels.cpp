@@ -589,20 +589,40 @@ void OnImGuiRenderMaterialEditor()
 
 	ImGui::Separator();
 
-	// The surface: opaque (PBR) or glass, and the glass values
+	// The surface: opaque (PBR), glass or cutout (opaque with holes), and their values. The combo's items are in the
+	// order of EnvMapVulkanMaterial::Surface
 	bool inherited = beginProperty(EnvMapVulkanMaterial::SurfaceProperty);
-	int surface = material->IsGlass() ? 1 : 0;
-	if (ImGui::Combo("Surface", &surface, "Opaque\0Glass\0"))
+	int surface = (int)material->GetSurface();
+	if (ImGui::Combo("Surface", &surface, "Opaque\0Glass\0Cutout\0"))
 	{
-		material->SetSurface(surface == 1 ? EnvMapVulkanMaterial::Surface::Glass : EnvMapVulkanMaterial::Surface::Opaque);
+		material->SetSurface((EnvMapVulkanMaterial::Surface)surface);
 	}
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("Opaque: light is reflected or scattered back, nothing passes through.\n"
 			"Glass: light passes through it, bent by its index of refraction. The albedo color (or map) tints it,\n"
-			"the roughness frosts it, the normal map ripples it. Metalness and AO don't apply.");
+			"the roughness frosts it, the normal map ripples it. Metalness and AO don't apply.\n"
+			"Cutout: opaque, with holes where the albedo map's alpha is below the cutoff (leaves, eyelashes, a fence).");
 	}
 	endProperty(EnvMapVulkanMaterial::SurfaceProperty, inherited);
+	if (material->IsCutout())
+	{
+		ImGui::Indent();
+		inherited = beginProperty(EnvMapVulkanMaterial::CutoffProperty);
+		ImGui::SliderFloat("Cutoff", &material->GetCutoff(), 0.0f, 1.0f, "%.2f");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Where the albedo map's alpha is below this, the surface is cut away (in the shadows too).\n"
+				"Higher: thinner shapes. The ray tracing and the probes see the whole surface.");
+		}
+		endProperty(EnvMapVulkanMaterial::CutoffProperty, inherited);
+		if (!material->HasMap(EnvMapVulkanMaterial::Albedo) || material->Get<float>("u_MaterialUniforms.AlbedoTexToggle") < 0.5f)
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "No albedo map: nothing is cut away");
+		}
+		ImGui::Unindent();
+		ImGui::Separator();
+	}
 	const bool glass = material->IsGlass();
 	if (glass)
 	{

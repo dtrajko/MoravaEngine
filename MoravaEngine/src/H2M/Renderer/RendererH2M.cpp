@@ -140,9 +140,13 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/BloomPass.glsl");         // SceneEnvMapVulkan: bloom downsample/upsample chain
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Anim.glsl"); // skinned meshes (SceneEnvMapVulkan)
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Cutout_Static.glsl"); // SceneEnvMapVulkan: cutout materials without the prepass (the water's reflection)
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Cutout_Anim.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Glass_Static.glsl"); // SceneEnvMapVulkan: meshes with a glass material
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Static.glsl"); // SceneEnvMapVulkan: the G-buffer prepass
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Anim.glsl");   // SceneEnvMapVulkan: the G-buffer prepass (skinned)
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Cutout_Static.glsl"); // SceneEnvMapVulkan: the prepass of cutout materials
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Cutout_Anim.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Water.glsl");         // SceneEnvMapVulkan: the water plane
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/WaterFog.glsl");      // SceneEnvMapVulkan: the water volume (underwater fog)
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/WaterCaustics.glsl"); // SceneEnvMapVulkan: the light the waves focus under the water
@@ -154,6 +158,8 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EditorVectors_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth.glsl");      // SceneEnvMapVulkan: shadow map cascades
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth_Cutout.glsl");      // SceneEnvMapVulkan: shadows of cutout materials
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth_Cutout_Anim.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowMapView.glsl");    // SceneEnvMapVulkan: spot / point shadow map viewer
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeEnvFill.glsl");     // SceneEnvMapVulkan: the probe volume, filled from the environment
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeSpheres.glsl");     // SceneEnvMapVulkan: the probes shown as balls

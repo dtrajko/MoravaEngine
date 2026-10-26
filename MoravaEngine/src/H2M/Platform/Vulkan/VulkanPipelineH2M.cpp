@@ -137,7 +137,14 @@ namespace H2M
 			pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
 			pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
 
-			VK_CHECK_RESULT_H2M(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &m_PipelineLayout));
+			if (m_Specification.LayoutFrom)
+			{
+				m_PipelineLayout = m_Specification.LayoutFrom.As<VulkanPipelineH2M>()->GetVulkanPipelineLayout();
+			}
+			else
+			{
+				VK_CHECK_RESULT_H2M(vkCreatePipelineLayout(device, &pPipelineLayoutCreateInfo, nullptr, &m_PipelineLayout));
+			}
 
 			// Create the graphics pipeline used in this example
 			// Vulkan uses the concept of rendering pipelines to encapsulate fixed states, replacing OpenGL's complex state machine

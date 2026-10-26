@@ -24,7 +24,8 @@
  *   1  motion              RG16F    screen-space motion in UV units, this frame's position minus the previous one's
  *   2  depth               the scene framebuffer's depth image (this module only makes a view of it), cleared to 1
  *
- * The prepass pipelines (GBufferPrepass_Static.glsl, GBufferPrepass_Anim.glsl) share the vertex stages of the PBR shaders
+ * The prepass pipelines (GBufferPrepass_Static.glsl, GBufferPrepass_Anim.glsl, and their cutout variants for the
+ * materials with holes, GBufferPrepass_Cutout_Static.glsl and GBufferPrepass_Cutout_Anim.glsl) share the vertex stages of the PBR shaders
  * and are created with the PBR pipelines' layouts and vertex layouts: the renderer draws the meshes into the G-buffer with
  * the same frame, material and bone sets and push constants as in the scene pass (RenderModelVulkan, MeshPass::GBuffer).
  *
@@ -34,7 +35,7 @@
  * matrix per draw (SetPreviousTransforms), picked by the draw's firstInstance.
  *
  * Owns: the normal and motion images, the render pass (created once: the formats don't change), the view of the scene's
- * depth, the framebuffer, the buffer of the previous transforms and the two prepass pipelines (not their layouts: those belong to the PBR pipelines). After the render pass the normal and motion images are in SHADER_READ_ONLY_OPTIMAL and the
+ * depth, the framebuffer, the buffer of the previous transforms and the four prepass pipelines (not their layouts: those belong to the PBR pipelines). After the render pass the normal and motion images are in SHADER_READ_ONLY_OPTIMAL and the
  * depth in DEPTH_STENCIL_ATTACHMENT_OPTIMAL.
  */
 class EnvMapVulkanGBuffer
@@ -72,7 +73,11 @@ public:
 	bool IsValid() const { return m_Framebuffer != VK_NULL_HANDLE; }
 
 	VkRenderPass GetRenderPass() const { return m_RenderPass; }
-	VkPipeline GetPipeline(bool skinned) const { return skinned ? m_SkinnedPipeline : m_StaticPipeline; }
+	// cutout: for a mesh whose material is Surface::Cutout (it discards the pixels the material cuts away)
+	VkPipeline GetPipeline(bool skinned, bool cutout = false) const
+	{
+		return cutout ? (skinned ? m_SkinnedCutoutPipeline : m_StaticCutoutPipeline) : (skinned ? m_SkinnedPipeline : m_StaticPipeline);
+	}
 	uint32_t GetWidth() const { return m_Width; }
 	uint32_t GetHeight() const { return m_Height; }
 	// For descriptor sets that sample the G-buffer (nearest filtering, SHADER_READ_ONLY_OPTIMAL)
@@ -105,6 +110,8 @@ private:
 	VkSampler m_Sampler = VK_NULL_HANDLE;
 	VkPipeline m_StaticPipeline = VK_NULL_HANDLE;
 	VkPipeline m_SkinnedPipeline = VK_NULL_HANDLE;
+	VkPipeline m_StaticCutoutPipeline = VK_NULL_HANDLE;
+	VkPipeline m_SkinnedCutoutPipeline = VK_NULL_HANDLE;
 	// Vertex buffer binding 1 of the prepass pipelines (instance rate): a mat4 per draw
 	VkBuffer m_PreviousTransformBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory m_PreviousTransformMemory = VK_NULL_HANDLE;
