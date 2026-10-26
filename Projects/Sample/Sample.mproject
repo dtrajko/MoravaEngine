@@ -1,7 +1,7 @@
 Project:
   Version: 1
   Name: Sample
-  StartScene: Scenes/Erika.mscene
+  StartScene: Scenes/RollABall.mscene
   AssetDirectory: Assets
   InputMap: Settings/Input.minput
   ScriptAssembly: Scripts/bin/Sample.dll
