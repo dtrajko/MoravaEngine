@@ -10,7 +10,7 @@ namespace Morava
         public Entity Entity { get; internal set; } = null!;
 
         // The engine's numbers for the kinds (ScriptComponent in src/Scripting/ScriptApi.h)
-        internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5 }
+        internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5, Animator = 6 }
 
         internal static Kind KindOf(Type type)
         {
@@ -20,6 +20,7 @@ namespace Morava
             if (type == typeof(AudioSource)) return Kind.AudioSource;
             if (type == typeof(AudioListener)) return Kind.AudioListener;
             if (type == typeof(Camera)) return Kind.Camera;
+            if (type == typeof(Animator)) return Kind.Animator;
             throw new ArgumentException($"{type.Name} is not a component of the engine");
         }
 
@@ -257,5 +258,99 @@ namespace Morava
 
         /// <summary>Meters: nothing farther is drawn.</summary>
         public float FarClip { get => Settings.FarClip; set { var s = Settings; s.FarClip = value; Settings = s; } }
+    }
+
+    /// <summary>
+    /// Plays the entity's animated model by its controller (Inspector: Animator; the .manim file in the Animator panel):
+    /// the state it is in, and the transitions to others when the parameters say so. Set the parameters from the game
+    /// (SetFloat("Speed", ...), SetTrigger("Jump")); the animator crossfades on its own. The names are the controller's:
+    /// a name it doesn't have throws.
+    /// </summary>
+    public sealed unsafe class Animator : Component
+    {
+        // The engine's numbers (AnimatorParameterType in src/Animation/AnimatorController.h)
+        const int FloatType = 0, BoolType = 1, TriggerType = 2;
+
+        void Set(string name, int type, float value, string typeName)
+        {
+            int result;
+            fixed (char* chars = name)
+                result = Interop.Game->Animator_SetParameter(Entity.Id, chars, name.Length, type, value);
+            Check(result, $"{typeName} parameter '{name}'");
+        }
+
+        float Get(string name, int type, string typeName)
+        {
+            float value;
+            int result;
+            fixed (char* chars = name)
+                result = Interop.Game->Animator_GetParameter(Entity.Id, chars, name.Length, type, &value);
+            Check(result, $"{typeName} parameter '{name}'");
+            return value;
+        }
+
+        void Check(int result, string what)
+        {
+            if (result == 0) throw Missing("animator");
+            if (result < 0) throw new ArgumentException($"The animator of {Entity} has no {what} (see its controller in the Animator panel)");
+        }
+
+        /// <summary>A Float parameter: a transition may test it (Speed greater than 0.1), a state's speed follow it.</summary>
+        public void SetFloat(string name, float value) => Set(name, FloatType, value, "Float");
+        /// <summary>A Float parameter's value.</summary>
+        public float GetFloat(string name) => Get(name, FloatType, "Float");
+
+        /// <summary>A Bool parameter: a transition may test it (Grounded true).</summary>
+        public void SetBool(string name, bool value) => Set(name, BoolType, value ? 1 : 0, "Bool");
+        /// <summary>A Bool parameter's value.</summary>
+        public bool GetBool(string name) => Get(name, BoolType, "Bool") != 0;
+
+        /// <summary>A Trigger parameter: set until a transition that tests it is taken (Jump: once per press).</summary>
+        public void SetTrigger(string name) => Set(name, TriggerType, 1, "Trigger");
+        /// <summary>A trigger no transition took yet: unset again.</summary>
+        public void ResetTrigger(string name) => Set(name, TriggerType, 0, "Trigger");
+
+        /// <summary>To the state at once, whatever the transitions say, crossfading for fade seconds (0: a cut).</summary>
+        public void Play(string state, float fade = 0.0f)
+        {
+            int result;
+            fixed (char* chars = state)
+                result = Interop.Game->Animator_Play(Entity.Id, chars, state.Length, fade);
+            Check(result, $"state '{state}'");
+        }
+
+        /// <summary>The state it is in ("" when its controller has none, or can't be read).</summary>
+        public string CurrentState
+        {
+            get
+            {
+                char* buffer = stackalloc char[256];
+                int length = Interop.Game->Animator_GetState(Entity.Id, buffer, 256);
+                if (length == -2) throw Missing("animator");
+                return length >= 0 ? new string(buffer, 0, length) : "";
+            }
+        }
+
+        NativeAnimatorInfo Info
+        {
+            get
+            {
+                NativeAnimatorInfo info;
+                if (Interop.Game->Animator_GetInfo(Entity.Id, &info) == 0) throw Missing("animator");
+                return info;
+            }
+        }
+
+        /// <summary>Seconds played in the current state (times its speed).</summary>
+        public float StateTime => Info.StateTime;
+
+        /// <summary>How far the current state's clip has played: 1 at its end, more after loops.</summary>
+        public float NormalizedTime => Info.NormalizedTime;
+
+        /// <summary>A crossfade into the current state runs.</summary>
+        public bool IsInTransition => Info.InTransition != 0;
+
+        /// <summary>How far that crossfade is, 0 to 1.</summary>
+        public float TransitionProgress => Info.FadeProgress;
     }
 }

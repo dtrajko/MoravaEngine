@@ -67,6 +67,9 @@ static bool s_GameViewportFocused = false; // the Viewport panel had the focus i
 static GLFWwindow* s_GameWindow = nullptr;  // the OS window the Viewport panel is in (the main one, or its own when dragged out)
 static bool s_FocusViewport = false;       // Play: the Viewport panel gets the focus, so the game has input at once
 static uint64_t s_ScriptExceptionsSeen = 0; // Play pauses when a script throws: the ones it paused for already
+// Edit: the scene's animators in their entry states, as the game starts them (else a model would show its file's own
+// clip, a walk where the game begins idle). The game's own animators take over at Play
+static SceneAnimation s_EditAnimation;
 
 // The edited scene while the game runs: the scene, its render settings, and the matrices of its models' meshes. The
 // models are shared with the game (CopyFrom doesn't load them again), and a part's transform is written into its mesh
@@ -144,6 +147,7 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 		ShowNotification("The scene has no camera: the game is seen from the editor's view (Scene Hierarchy: Add > Camera)", true);
 	}
 
+	s_EditAnimation.Stop(); // the game poses the models now
 	s_EditedScene.CopyFrom(s_Scene);
 	s_EditedRenderSettings = s_RenderSettings;
 	s_EditedSceneText = SerializeScene();
@@ -351,6 +355,12 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 	}
 	if (!IsPlaying())
 	{
+		if (!s_EditAnimation.IsRunning())
+		{
+			s_EditAnimation.Start(s_Scene);
+		}
+		s_EditAnimation.Sync();
+		s_EditAnimation.Update(frameTime);
 		return;
 	}
 	// Paused, the sounds stop where they are (a Step doesn't play them: its frame is too short to hear)
@@ -430,6 +440,11 @@ SceneAudio* GetGameAudio()
 	return s_PlayState == PlayState::Play ? &s_GameSystems.GetAudio() : nullptr;
 }
 
+SceneAnimation* GetGameAnimation()
+{
+	return IsPlaying() ? &s_GameSystems.GetAnimation() : nullptr;
+}
+
 ScriptRuntime* GetGameScripts()
 {
 	return s_PlayState == PlayState::Play ? &s_GameSystems.GetScripts() : nullptr;
@@ -497,6 +512,7 @@ void ShutdownPlayMode()
 	{
 		StopPlay();
 	}
+	s_EditAnimation.Stop();
 }
 
 const EnvMapVulkanViewOptions* GetDrawnViewOptions()

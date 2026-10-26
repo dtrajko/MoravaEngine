@@ -190,6 +190,8 @@ ScenePhysics* GetGamePhysics();
 SceneAudio* GetGameAudio();
 // The running game's scripts, for the Inspector (nullptr: no game, or Simulate: no scripts run)
 ScriptRuntime* GetGameScripts();
+// The running game's animators, for the Inspector and the Animator panel (nullptr: no game; Simulate has them too)
+SceneAnimation* GetGameAnimation();
 
 // Hot reload (EditorScriptReload.cpp): each frame, after Play and Stop, a newer build of the project's scripts is loaded
 // (while the game doesn't run). RequestScriptReload: load the scripts again now (the Project panel's Reload)
@@ -550,6 +552,9 @@ void OnImGuiRenderInspector();
 void ScriptPropertiesControls(EnvMapVulkanEntityID entity);
 // The Inspector's Audio section (EditorInspectorAudio.cpp, 5.3): the entity's Audio Source and Audio Listener
 void AudioControls(EnvMapVulkanEntityID entity);
+// The Inspector's Animator section (EditorInspectorAnimator.cpp, 6.4): the model's controller, and while the game runs
+// its state, crossfade and parameters
+void AnimatorControls(EnvMapVulkanEntityID entity);
 
 // ---- Lights (EditorLightsPanel.cpp)
 
@@ -615,6 +620,18 @@ void OnImGuiRenderInputPanel();
 // collision layers (View > Physics)
 void OnImGuiRenderPhysicsPanel();
 void OnImGuiRenderAudioPanel();
+
+// ---- The Animator panel (EditorAnimatorPanel.cpp, 6.4)
+
+// An animator controller's parameters, states and transitions, edited in place (the running game takes edits at once),
+// saved to its .manim file (View > Animator). It shows the selected entity's controller, or the one opened here
+extern bool s_ShowAnimatorPanel;
+void OnImGuiRenderAnimatorPanel();
+// The panel shows (and edits) the controller of this file, and opens
+void OpenAnimatorController(const std::string& path);
+// A new controller for the model: a state for each of its clips, the first the entry (Assets/Animators/<name>.manim);
+// its file, empty when it can't be written (notified)
+std::string CreateAnimatorController(const H2M::RefH2M<H2M::ModelH2M>& model, const std::string& name);
 
 // A line the viewport draws over the scene, in the world, in its color (ImGui's)
 struct EditorWorldLine

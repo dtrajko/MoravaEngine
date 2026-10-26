@@ -7,6 +7,8 @@
 // knew the engine's folder.
 
 
+#include "Animation/AnimatorController.h"
+
 #include "EnvMapVulkan/EnvMapVulkanSceneLoader.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneSerializer.h"
 
@@ -98,6 +100,7 @@ static ImU32 GetFileColor(const ContentEntry& entry)
 	if (e == ".wav" || e == ".mp3" || e == ".ogg" || e == ".flac")       return IM_COL32(80, 220, 200, 255);
 	if (e == ".png" || e == ".jpg" || e == ".jpeg" || e == ".tga" || e == ".hdr" || e == ".bmp") return IM_COL32(240, 170, 90, 255);
 	if (e == ".mmat")                                                    return IM_COL32(255, 120, 170, 255);
+	if (e == AnimatorController::FileExtension)                          return IM_COL32(255, 160, 220, 255);
 	if (e == Project::FileExtension || e == ".minput")                   return IM_COL32(220, 220, 120, 255);
 	if (EnvMapVulkanSceneLoader::IsModelFile(entry.Path.u8string()))     return IM_COL32(200, 200, 215, 255);
 	return IM_COL32(150, 150, 155, 255);
@@ -158,6 +161,10 @@ static void OpenEntry(const ContentEntry& entry)
 	{
 		s_PendingMaterialFiles.push_back(path); // into the Material Library at the start of the next frame
 	}
+	else if (entry.Extension == AnimatorController::FileExtension)
+	{
+		OpenAnimatorController(path);
+	}
 	else if (EnvMapVulkanSceneLoader::IsModelFile(path))
 	{
 		s_PendingModelFilename = path; // loaded at the start of the next frame, where the camera looks
@@ -181,6 +188,7 @@ static const char* GetOpenHint(const ContentEntry& entry)
 	if (entry.Extension == ".cs")                                        return "Double-click: open it in the code editor";
 	if (entry.Extension == ".hdr")                                       return "Double-click: the environment map";
 	if (entry.Extension == ".mmat")                                      return "Double-click: load it into the Material Library";
+	if (entry.Extension == AnimatorController::FileExtension)            return "Double-click: edit it in the Animator panel.\nDrag it onto an Animator's controller (Inspector)";
 	if (EnvMapVulkanSceneLoader::IsModelFile(entry.Path.u8string()))    return "Double-click: load the model.\nDrag it onto the viewport to place it";
 	return "Double-click: open it in the system's program. Drag it onto a field that takes it";
 }

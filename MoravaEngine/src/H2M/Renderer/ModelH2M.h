@@ -21,8 +21,11 @@
 #include "Shader/MoravaShader.h"
 #include "Texture/MoravaTexture.h"
 
+#include "Animation/AnimationClip.h"
+
 #include <glm/glm.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -63,20 +66,42 @@ namespace H2M
 		uint32_t IDs[4] = { 0, 0,0, 0 };
 		float Weights[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-		void AddBoneData(uint32_t BoneID, float Weight)
+		// The four largest weights are kept (the skinning shaders read four): false when a weight was left out, after which
+		// NormalizeWeights makes the kept ones add up to 1 again
+		bool AddBoneData(uint32_t BoneID, float Weight)
 		{
+			size_t smallest = 0;
 			for (size_t i = 0; i < 4; i++)
 			{
 				if (Weights[i] == 0.0)
 				{
 					IDs[i] = BoneID;
 					Weights[i] = Weight;
-					return;
+					return true;
+				}
+				if (Weights[i] < Weights[smallest])
+				{
+					smallest = i;
 				}
 			}
+			if (Weight > Weights[smallest])
+			{
+				IDs[smallest] = BoneID;
+				Weights[smallest] = Weight;
+			}
+			return false;
+		}
 
-			// TODO: Keep top weights
-			Log::GetLogger()->warn("Vertex has more than four bones/weights affecting it, extra data will be discarded (BoneID={0}, Weight={1})", BoneID, Weight);
+		void NormalizeWeights()
+		{
+			const float sum = Weights[0] + Weights[1] + Weights[2] + Weights[3];
+			if (sum > 0.0f)
+			{
+				for (float& weight : Weights)
+				{
+					weight /= sum;
+				}
+			}
 		}
 	};
 
@@ -92,7 +117,6 @@ namespace H2M
 	struct BoneInfo
 	{
 		glm::mat4 BoneOffset;
-		glm::mat4 FinalTransformation;
 	};
 
 	struct VertexBoneData
@@ -242,7 +266,7 @@ namespace H2M
 		// True if the vertex buffer has bone IDs and weights (the model was loaded with animations)
 		bool IsSkinned() const { return !m_AnimatedVertices.empty(); }
 		uint32_t GetBoneCount() const { return m_BoneCount; }
-		// The bone matrices start with the inverse root node transform (see ReadNodeHierarchy): rigged meshes are drawn with
+		// The bone matrices start with the inverse root node transform (see AnimationSkeleton): rigged meshes are drawn with
 		// the model transform * this root transform (unit scale / axis conversion of the file)
 		glm::mat4 GetRootTransform() const { return glm::inverse(m_InverseTransform); }
 		uint32_t GetAnimationCount() const;
@@ -255,6 +279,14 @@ namespace H2M
 		float& TimeMultiplier() { return m_TimeMultiplier; }
 		bool& AnimationPlaying() { return m_AnimationPlaying; }
 
+		// The skeleton and the file's own clips (Animation/AnimationClip.h): nullptr and empty for a model without animations
+		const AnimationSkeleton* GetSkeleton() const { return m_Skeleton.get(); }
+		const std::vector<AnimationClip>& GetClips() const { return m_Clips; }
+		// A pose from outside (the animator, 6.4): the bone matrices are its until ReleasePose, and OnUpdate leaves them
+		void SetPose(const AnimationPose& pose);
+		void ReleasePose();
+		bool IsPosedByAnimator() const { return m_PosedByAnimator; }
+
 		// Setters
 		inline void SetBaseMaterial(RefH2M<MaterialH2M> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
@@ -266,17 +298,9 @@ namespace H2M
 		void CloneMesh(RefH2M<MeshH2M> mesh);
 
 	private:
+		// The bone matrices of the played clip at time (in ticks; the bind pose when the model isn't animated)
 		void BoneTransform(float time);
-		void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
 		void TraverseNodes(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
-
-		aiNodeAnim* FindNodeAnim(const aiAnimation* animation, const std::string& nodeName);
-		uint32_t FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		uint32_t FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		uint32_t FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
-		glm::vec3 InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim);
-		glm::quat InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim);
-		glm::vec3 InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim);
 
 		void ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 
@@ -329,6 +353,11 @@ namespace H2M
 		float m_TimeMultiplier = 1.0f;
 		bool m_AnimationPlaying = true;
 		uint32_t m_AnimationIndex = 0; // which of the file's animations is played
+		std::shared_ptr<AnimationSkeleton> m_Skeleton;
+		std::vector<AnimationClip> m_Clips;
+		std::vector<AnimationBinding> m_ClipBindings; // m_Clips' on m_Skeleton
+		AnimationPose m_Pose;                         // the played clip's, reused each frame
+		bool m_PosedByAnimator = false;
 
 		friend class RendererH2M;
 		friend class SceneHierarchyPanelH2M;

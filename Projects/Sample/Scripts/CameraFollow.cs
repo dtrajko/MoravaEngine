@@ -37,6 +37,9 @@ namespace Sample
         /// <summary>Meters from the target, behind it.</summary>
         public float BehindDistance = 4.0f;
 
+        /// <summary>Meters above the target's origin the view turns around, behind it (a ball: its center; a character: its feet).</summary>
+        public float BehindHeight = 0.5f;
+
         /// <summary>Degrees the view looks down, behind the target, when it switches there.</summary>
         public float BehindPitch = 20.0f;
 
@@ -112,7 +115,7 @@ namespace Sample
                 case CameraView.Behind:
                 {
                     // Back and up from a point above the target, as far as no wall is in between
-                    Vector3 pivot = target + Vector3.UnitY * 0.5f;
+                    Vector3 pivot = target + Vector3.UnitY * BehindHeight;
                     Vector3 back = -forward * MathF.Cos(pitchRadians) + Vector3.UnitY * MathF.Sin(pitchRadians);
                     float distance = BehindDistance;
                     if (Physics.SphereCast(pivot, 0.25f, back, BehindDistance, out RaycastHit hit, PhysicsLayers.Solid, Target))

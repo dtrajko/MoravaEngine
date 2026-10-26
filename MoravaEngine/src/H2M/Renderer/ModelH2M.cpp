@@ -8,6 +8,8 @@
 
 #include "ModelH2M.h"
 
+#include <algorithm>
+
 // #include <GL/glew.h>
 
 #include <glm/ext/matrix_transform.hpp>
@@ -427,6 +429,7 @@ namespace H2M
 		// Bones
 		if (m_IsAnimated)
 		{
+			std::vector<uint32_t> trimmedVertices; // with more than four weights: the largest four are kept
 			for (size_t m = 0; m < scene->mNumMeshes; m++)
 			{
 				aiMesh* sourceMesh = scene->mMeshes[m];
@@ -459,17 +462,41 @@ namespace H2M
 					{
 						int VertexID = mesh->BaseVertex + bone->mWeights[j].mVertexId;
 						float Weight = bone->mWeights[j].mWeight;
-						if (m_AnimatedVertices.size() > VertexID) {
-							m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
+						if (m_AnimatedVertices.size() > VertexID && !m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight)) {
+							trimmedVertices.push_back((uint32_t)VertexID);
 						}
 					}
 				}
+			}
+			if (!trimmedVertices.empty())
+			{
+				std::sort(trimmedVertices.begin(), trimmedVertices.end());
+				trimmedVertices.erase(std::unique(trimmedVertices.begin(), trimmedVertices.end()), trimmedVertices.end());
+				for (uint32_t vertex : trimmedVertices)
+				{
+					m_AnimatedVertices[vertex].NormalizeWeights();
+				}
+				Log::GetLogger()->info("ModelH2M: '{0}': {1} vertices have more than four bone weights: the largest four are kept",
+					m_FilePath, trimmedVertices.size());
 			}
 
 			// The Vulkan skinning shader (HazelPBR_Anim.glsl) has room for 128 bone matrices
 			if (m_BoneCount > 128)
 			{
 				Log::GetLogger()->warn("ModelH2M: '{0}' has {1} bones; the Vulkan skinning shader supports 128, the others are not animated.", m_FilePath, m_BoneCount);
+			}
+
+			// The skeleton and the file's clips, sampled by BoneTransform and by the animator (Animation/AnimationClip.h)
+			std::vector<glm::mat4> boneOffsets;
+			for (const BoneInfo& bone : m_BoneInfo)
+			{
+				boneOffsets.push_back(bone.BoneOffset);
+			}
+			m_Skeleton = std::make_shared<AnimationSkeleton>(scene, m_BoneMapping, boneOffsets);
+			for (uint32_t a = 0; a < scene->mNumAnimations; a++)
+			{
+				m_Clips.emplace_back(scene->mAnimations[a], a);
+				m_ClipBindings.push_back(AnimationBinding::Bind(*m_Skeleton, m_Clips.back()));
 			}
 		}
 
@@ -1255,6 +1282,10 @@ namespace H2M
 
 	void ModelH2M::OnUpdate(TimestepH2M ts, bool debug)
 	{
+		if (m_PosedByAnimator)
+		{
+			return; // the animator's pose (SetPose)
+		}
 		// m_IsAnimated can be switched on in the UI; only animate models that actually have animations
 		if (m_IsAnimated && HasAnimations())
 		{
@@ -1314,162 +1345,6 @@ namespace H2M
 		}
 	}
 
-	uint32_t ModelH2M::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
-	{
-		for (uint32_t i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
-		{
-			if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime)
-			{
-				return i;
-			}
-		}
-
-		return 0;
-	}
-
-	uint32_t ModelH2M::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
-	{
-		if (pNodeAnim->mNumRotationKeys <= 0)
-		{
-			Log::GetLogger()->error("pNodeAnim->mNumRotationKeys <= 0");
-		}
-
-		for (uint32_t i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
-		{
-			if (AnimationTime < (float)pNodeAnim->mRotationKeys[i + 1].mTime)
-			{
-				return i;
-			}
-		}
-
-		return 0;
-	}
-
-	uint32_t ModelH2M::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
-	{
-		if (pNodeAnim->mNumScalingKeys <= 0)
-		{
-			Log::GetLogger()->error("pNodeAnim->mNumScalingKeys <= 0");
-		}
-
-		for (uint32_t i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++)
-		{
-			if (AnimationTime < (float)pNodeAnim->mScalingKeys[i + 1].mTime)
-			{
-				return i;
-			}
-		}
-
-		return 0;
-	}
-
-	glm::vec3 ModelH2M::InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim)
-	{
-		if (nodeAnim->mNumPositionKeys == 1)
-		{
-			// No interpolation necessary for single value
-			auto v = nodeAnim->mPositionKeys[0].mValue;
-			return { v.x, v.y, v.z };
-		}
-
-		uint32_t PositionIndex = FindPosition(animationTime, nodeAnim);
-		uint32_t NextPositionIndex = (PositionIndex + 1);
-
-		if (NextPositionIndex >= nodeAnim->mNumPositionKeys)
-			Log::GetLogger()->error("NextPositionIndex >= nodeAnim->mNumPositionKeys");
-
-		float DeltaTime = (float)(nodeAnim->mPositionKeys[NextPositionIndex].mTime - nodeAnim->mPositionKeys[PositionIndex].mTime);
-		float Factor = (animationTime - (float)nodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
-		if (Factor < 0.0f)
-		{
-			Factor = 0.0f;
-		}
-
-		if (Factor > 1.0f)
-		{
-			Log::GetLogger()->error("Factor must be below 1.0f");
-		}
-
-		const aiVector3D& Start = nodeAnim->mPositionKeys[PositionIndex].mValue;
-		const aiVector3D& End = nodeAnim->mPositionKeys[NextPositionIndex].mValue;
-		aiVector3D Delta = End - Start;
-		auto aiVec = Start + Factor * Delta;
-		return { aiVec.x, aiVec.y, aiVec.z };
-	}
-
-	glm::quat ModelH2M::InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim)
-	{
-		if (nodeAnim->mNumRotationKeys == 1)
-		{
-			// No interpolation necessary for single value
-			auto v = nodeAnim->mRotationKeys[0].mValue;
-			return glm::quat(v.w, v.x, v.y, v.z);
-		}
-
-		uint32_t RotationIndex = FindRotation(animationTime, nodeAnim);
-		uint32_t NextRotationIndex = (RotationIndex + 1);
-
-		if (NextRotationIndex >= nodeAnim->mNumRotationKeys)
-		{
-			Log::GetLogger()->error("NextRotationIndex >= nodeAnim->mNumRotationKeys");
-		}
-
-		float DeltaTime = (float)(nodeAnim->mRotationKeys[NextRotationIndex].mTime - nodeAnim->mRotationKeys[RotationIndex].mTime);
-		float Factor = (animationTime - (float)nodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
-		if (Factor < 0.0f)
-		{
-			Factor = 0.0f;
-		}
-
-		if (Factor > 1.0f)
-		{
-			Log::GetLogger()->error("Factor must be below 1.0f");
-		}
-
-		const aiQuaternion& StartRotationQ = nodeAnim->mRotationKeys[RotationIndex].mValue;
-		const aiQuaternion& EndRotationQ = nodeAnim->mRotationKeys[NextRotationIndex].mValue;
-		auto q = aiQuaternion();
-		aiQuaternion::Interpolate(q, StartRotationQ, EndRotationQ, Factor);
-		q = q.Normalize();
-		return glm::quat(q.w, q.x, q.y, q.z);
-	}
-
-	glm::vec3 ModelH2M::InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim)
-	{
-		if (nodeAnim->mNumScalingKeys == 1)
-		{
-			// No interpolation necessary for single value
-			auto v = nodeAnim->mScalingKeys[0].mValue;
-			return { v.x, v.y, v.z };
-		}
-
-		uint32_t index = FindScaling(animationTime, nodeAnim);
-		uint32_t nextIndex = (index + 1);
-
-		if (nextIndex >= nodeAnim->mNumScalingKeys)
-		{
-			Log::GetLogger()->error("nextIndex >= nodeAnim->mNumScalingKeys");
-		}
-
-		float deltaTime = (float)(nodeAnim->mScalingKeys[nextIndex].mTime - nodeAnim->mScalingKeys[index].mTime);
-		float factor = (animationTime - (float)nodeAnim->mScalingKeys[index].mTime) / deltaTime;
-		if (factor < 0.0f)
-		{
-			factor = 0.0f;
-		}
-
-		if (factor > 1.0f)
-		{
-			Log::GetLogger()->error("Factor must be below 1.0f");
-		}
-
-		const auto& start = nodeAnim->mScalingKeys[index].mValue;
-		const auto& end = nodeAnim->mScalingKeys[nextIndex].mValue;
-		auto delta = end - start;
-		auto aiVec = start + factor * delta;
-		return { aiVec.x, aiVec.y, aiVec.z };
-	}
-
 	void ModelH2M::SetupDefaultBaseMaterial()
 	{
 		// Setup default Material
@@ -1496,61 +1371,6 @@ namespace H2M
 		}
 
 		return m_BaseTexture;
-	}
-
-	void ModelH2M::ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& parentTransform)
-	{
-		std::string name(pNode->mName.data);
-		glm::mat4 nodeTransform(Math::Mat4FromAssimpMat4(pNode->mTransformation));
-
-		aiAnimation* animation;
-		aiNodeAnim* nodeAnim;
-
-		if (m_IsAnimated && m_Scene->mAnimations)
-		{
-			animation = m_Scene->mAnimations[m_AnimationIndex < m_Scene->mNumAnimations ? m_AnimationIndex : 0];
-			nodeAnim = FindNodeAnim(animation, name);
-
-			if (nodeAnim)
-			{
-				glm::vec3 translation = InterpolateTranslation(AnimationTime, nodeAnim);
-				glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(translation.x, translation.y, translation.z));
-
-				glm::quat rotation = InterpolateRotation(AnimationTime, nodeAnim);
-				glm::mat4 rotationMatrix = glm::toMat4(rotation);
-
-				glm::vec3 scale = InterpolateScale(AnimationTime, nodeAnim);
-				glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(scale.x, scale.y, scale.z));
-
-				nodeTransform = translationMatrix * rotationMatrix * scaleMatrix;
-			}
-		}
-
-		glm::mat4 transform = parentTransform * nodeTransform;
-
-		if (m_BoneMapping.find(name) != m_BoneMapping.end())
-		{
-			uint32_t BoneIndex = m_BoneMapping[name];
-			m_BoneInfo[BoneIndex].FinalTransformation = m_InverseTransform * transform * m_BoneInfo[BoneIndex].BoneOffset;
-		}
-
-		for (uint32_t i = 0; i < pNode->mNumChildren; i++)
-		{
-			ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], transform);
-		}
-	}
-
-	aiNodeAnim* ModelH2M::FindNodeAnim(const aiAnimation* animation, const std::string& nodeName)
-	{
-		for (uint32_t i = 0; i < animation->mNumChannels; i++)
-		{
-			aiNodeAnim* nodeAnim = animation->mChannels[i];
-			if (std::string(nodeAnim->mNodeName.data) == nodeName)
-			{
-				return nodeAnim;
-			}
-		}
-		return nullptr;
 	}
 
 	void ModelH2M::DeleteMesh(RefH2M<MeshH2M> mesh)
@@ -1600,13 +1420,33 @@ namespace H2M
 
 	void ModelH2M::BoneTransform(float time)
 	{
-		ReadNodeHierarchy(time, m_Scene->mRootNode, glm::mat4(1.0f));
-		m_BoneTransforms.resize(m_BoneCount);
-		for (size_t i = 0; i < m_BoneCount; i++)
+		if (!m_Skeleton)
 		{
-			m_BoneTransforms[i] = m_BoneInfo[i].FinalTransformation;
+			return;
+		}
+		m_Skeleton->GetBindPose(m_Pose);
+		if (m_IsAnimated && m_AnimationIndex < m_Clips.size())
+		{
+			const AnimationClip& clip = m_Clips[m_AnimationIndex];
+			AnimationSampling::SampleClip(clip, m_ClipBindings[m_AnimationIndex], time / GetAnimationTicksPerSecond(), true, false, m_Pose);
+		}
+		m_Skeleton->ComputeBoneTransforms(m_Pose, m_BoneTransforms);
+	}
+
+	void ModelH2M::SetPose(const AnimationPose& pose)
+	{
+		if (m_Skeleton)
+		{
+			m_Skeleton->ComputeBoneTransforms(pose, m_BoneTransforms);
+			m_PosedByAnimator = true;
 		}
 	}
+
+	void ModelH2M::ReleasePose()
+	{
+		m_PosedByAnimator = false;
+	}
+
 
 	void ModelH2M::DumpVertexBuffer()
 	{

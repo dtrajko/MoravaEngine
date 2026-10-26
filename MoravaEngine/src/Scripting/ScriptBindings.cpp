@@ -9,6 +9,8 @@
 #include "EnvMapVulkan/EnvMapVulkanSceneSerializer.h"
 
 #include "Audio/AudioEngine.h"
+#include "Animation/SceneAnimation.h"
+
 #include "Audio/SceneAudio.h"
 
 #include "Input/InputSystem.h"
@@ -278,6 +280,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::AudioSource:       return scene->Has<AudioSourceComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::AudioListener:     return scene->Has<AudioListenerComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Camera:            return scene->Has<CameraComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::Animator:          return scene->Has<AnimatorComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -385,7 +388,8 @@ static uint64_t SceneInstantiate(const char16_t* text, int length, const glm::ve
 	transform.Translation = *position;
 	transform.Rotation = QuatToEuler(ToGlm(*rotation));
 
-	// What the game runs on them: the bodies and the sounds, then the scripts (OnCreate may ask for a Rigidbody, play a sound)
+	// What the game runs on them: the bodies, the sounds and the animators, then the scripts (OnCreate may ask for a Rigidbody,
+	// play a sound, set an animator's parameter)
 	const std::vector<EnvMapVulkanEntityID> entities = scene->GetSubtree(root);
 	if (s_Context->Physics)
 	{
@@ -394,6 +398,10 @@ static uint64_t SceneInstantiate(const char16_t* text, int length, const glm::ve
 	if (s_Context->Audio)
 	{
 		s_Context->Audio->AddEntities(entities);
+	}
+	if (s_Context->Animation)
+	{
+		s_Context->Animation->AddEntities(entities);
 	}
 	if (s_Context->Scripts)
 	{
@@ -804,6 +812,75 @@ static int32_t CameraSetSettings(uint64_t entity, const ScriptCameraSettings* va
 	return 1;
 }
 
+// ---- Animator (6.4)
+
+static SceneAnimation* GetAnimation()
+{
+	return s_Context ? s_Context->Animation : nullptr;
+}
+
+static int32_t ToScriptResult(SceneAnimation::Result result)
+{
+	switch (result)
+	{
+		case SceneAnimation::Result::Done:       return 1;
+		case SceneAnimation::Result::NoAnimator: return 0;
+		default:                                 return -1;
+	}
+}
+
+static int32_t AnimatorSetParameter(uint64_t entity, const char16_t* name, int length, int32_t type, float value)
+{
+	SceneAnimation* animation = GetAnimation();
+	if (!animation || type < 0 || type > (int32_t)AnimatorParameterType::Trigger)
+	{
+		return 0;
+	}
+	return ToScriptResult(animation->SetParameter(entity, ToUtf8(name, length), (AnimatorParameterType)type, value));
+}
+
+static int32_t AnimatorGetParameter(uint64_t entity, const char16_t* name, int length, int32_t type, float* out)
+{
+	SceneAnimation* animation = GetAnimation();
+	if (!animation || type < 0 || type > (int32_t)AnimatorParameterType::Trigger)
+	{
+		return 0;
+	}
+	return ToScriptResult(animation->GetParameter(entity, ToUtf8(name, length), (AnimatorParameterType)type, *out));
+}
+
+static int32_t AnimatorPlay(uint64_t entity, const char16_t* state, int length, float fade)
+{
+	SceneAnimation* animation = GetAnimation();
+	return animation ? ToScriptResult(animation->Play(entity, ToUtf8(state, length), std::max(fade, 0.0f))) : 0;
+}
+
+static int32_t AnimatorGetInfo(uint64_t entity, ScriptAnimatorInfo* out)
+{
+	SceneAnimation* animation = GetAnimation();
+	SceneAnimation::Info info;
+	if (!animation || !animation->GetInfo(entity, info))
+	{
+		return 0;
+	}
+	out->StateTime = info.StateTime;
+	out->NormalizedTime = info.NormalizedTime;
+	out->FadeProgress = info.FadeProgress;
+	out->InTransition = info.InTransition ? 1 : 0;
+	return 1;
+}
+
+static int32_t AnimatorGetState(uint64_t entity, char16_t* buffer, int capacity)
+{
+	SceneAnimation* animation = GetAnimation();
+	SceneAnimation::Info info;
+	if (!animation || !animation->GetInfo(entity, info))
+	{
+		return -2;
+	}
+	return CopyString(info.State, buffer, capacity);
+}
+
 namespace ScriptBindings
 {
 	void Bind()
@@ -861,6 +938,11 @@ namespace ScriptBindings
 		api.Scene_Load = SceneLoad;
 		api.Scene_GetName = SceneGetName;
 		api.Scene_GetPath = SceneGetPath;
+		api.Animator_SetParameter = AnimatorSetParameter;
+		api.Animator_GetParameter = AnimatorGetParameter;
+		api.Animator_Play = AnimatorPlay;
+		api.Animator_GetInfo = AnimatorGetInfo;
+		api.Animator_GetState = AnimatorGetState;
 	}
 
 	void SetContext(ScriptContext* context)

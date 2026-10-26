@@ -164,6 +164,27 @@ jobs:
             exit 1
           fi
 
+      # The animator (6.4): the sample's Character scene, its character posed by its controller (clips from three files
+      # of one rig), the script that sets the parameters running
+      - name: Animator smoke test
+        if: matrix.player-smoke-test
+        working-directory: MoravaEngine
+        run: |
+          set -o pipefail
+          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 ../build/MoravaPlayer --project ../Projects/Sample/Sample.mproject --scene ../Projects/Sample/Scenes/Character.mscene --exit-after 10 2>&1 | tee animator-smoke-test.log
+          if grep -q VulkanDebugCallback animator-smoke-test.log; then
+            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
+            exit 1
+          fi
+          if ! grep -q "Animation: 1 animator(s), 1 animating" animator-smoke-test.log || grep -E "Animator of |Animator '.*' could not be loaded|Animation: .*(could not be read|doesn't exist|has no animations)" animator-smoke-test.log; then
+            echo "::error::The Character scene's animator didn't start, or a controller or clip of it couldn't be loaded (see the log)"
+            exit 1
+          fi
+          if ! grep -q "Scripts: [1-9][0-9]* instance(s)" animator-smoke-test.log || grep -q "Script error:" animator-smoke-test.log; then
+            echo "::error::The Character scene's scripts didn't run, or one of them threw an exception (see the log)"
+            exit 1
+          fi
+
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)
         uses: actions/upload-artifact@v7.0.2
@@ -172,6 +193,7 @@ jobs:
           path: |
             MoravaEngine/smoke-test.log
             MoravaEngine/player-smoke-test.log
+            MoravaEngine/animator-smoke-test.log
           if-no-files-found: ignore
 
   # One job per graphics API: each compiles only its own API's code, so a missing #if or include shows up here
