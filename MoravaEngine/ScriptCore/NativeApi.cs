@@ -73,6 +73,12 @@ namespace Morava
         public delegate* unmanaged<char*, int, int> Scene_Load;
         public delegate* unmanaged<char*, int, int> Scene_GetName;
         public delegate* unmanaged<char*, int, int> Scene_GetPath;
+
+        public delegate* unmanaged<ulong, char*, int, int, float, int> Animator_SetParameter;
+        public delegate* unmanaged<ulong, char*, int, int, float*, int> Animator_GetParameter;
+        public delegate* unmanaged<ulong, char*, int, float, int> Animator_Play;
+        public delegate* unmanaged<ulong, NativeAnimatorInfo*, int> Animator_GetInfo;
+        public delegate* unmanaged<ulong, char*, int, int> Animator_GetState;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -115,6 +121,13 @@ namespace Morava
         public int Primary;
         public float FieldOfView;
         public float NearClip, FarClip;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeAnimatorInfo
+    {
+        public float StateTime, NormalizedTime, FadeProgress;
+        public int InTransition;
     }
 
     [StructLayout(LayoutKind.Sequential)]

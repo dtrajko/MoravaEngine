@@ -10,20 +10,22 @@
 
 class EnvMapVulkanScene;
 class InputSystem;
+class SceneAnimation;
 class SceneAudio;
 class ScenePhysics;
 class ScriptRuntime;
 
 /**
  * What the scripts' C# API works on while a game runs (docs/engine/Game_Engine_Runtime_Guide.html, 4.4): the running
- * game's scene, its physics, its sounds, its scripts and its input, and where the game loop is. GameSystems owns it and
- * keeps it current.
+ * game's scene, its physics, its sounds, its animators, its scripts and its input, and where the game loop is. GameSystems
+ * owns it and keeps it current.
  */
 struct ScriptContext
 {
 	EnvMapVulkanScene* Scene = nullptr;
 	ScenePhysics* Physics = nullptr;
 	SceneAudio* Audio = nullptr;
+	SceneAnimation* Animation = nullptr;
 	ScriptRuntime* Scripts = nullptr;
 	InputSystem* Input = nullptr;   // nullptr: no input (Simulate, where scripts don't run)
 

@@ -973,6 +973,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 	InputTestControls(selectedModel);
 	ScriptPropertiesControls(selectedModel);
 	AudioControls(selectedModel);
+	AnimatorControls(selectedModel);
 
 	ImGui::Separator();
 	if (ImGui::Button("Remove Model"))
@@ -1003,6 +1004,11 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 	{
 		ImGui::Separator();
 		ImGui::Text("Animation");
+		if (s_Scene.Has<AnimatorComponent>(selectedModel))
+		{
+			ImGui::SameLine();
+			ImGui::TextDisabled(model->IsPosedByAnimator() ? "(posed by its Animator)" : "(its Animator doesn't pose it: the log says why)");
+		}
 
 		ImGui::Checkbox("Animated", &model->IsAnimated());
 		if (ImGui::IsItemHovered())

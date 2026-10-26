@@ -66,6 +66,15 @@ struct ScriptCameraSettings
 	float NearClip = 0.01f, FarClip = 1000.0f;
 };
 
+// What an animator does now (Animator's properties; its state's name comes apart, Animator_GetState)
+struct ScriptAnimatorInfo
+{
+	float StateTime = 0.0f;      // seconds played in the current state (times its speed)
+	float NormalizedTime = 0.0f; // 1 at its clip's end
+	float FadeProgress = 0.0f;   // 0 to 1 while InTransition
+	int32_t InTransition = 0;
+};
+
 // A script field's value between C++ and C# (ScriptField.h has the engine's own ScriptFieldValue). Type: ScriptFieldType.
 // Text is UTF-16: a String's characters, a Prefab's file (relative to the project). GetField: C++ gives Text room for TextCapacity characters, C# writes what fits
 // and sets TextLength to the string's full length.
@@ -97,7 +106,8 @@ struct ScriptFieldReport
 };
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
-enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5 };
+enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
+	Animator = 6 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -189,6 +199,15 @@ struct ScriptNativeApi
 	int32_t (*Scene_Load)(const char16_t* scene, int length);
 	int32_t (*Scene_GetName)(char16_t* buffer, int capacity);
 	int32_t (*Scene_GetPath)(char16_t* buffer, int capacity);
+
+	// Animator (6.4): 0 when the entity has no animator in the running game; -1 when its controller has no parameter of that
+	// name and type (type: AnimatorParameterType), or no state of that name. A trigger: value 1 sets it, 0 resets it.
+	// Play: to the state at once, crossfading for fade seconds. GetState: the current state's name, as Entity_GetName
+	int32_t (*Animator_SetParameter)(uint64_t entity, const char16_t* name, int length, int32_t type, float value);
+	int32_t (*Animator_GetParameter)(uint64_t entity, const char16_t* name, int length, int32_t type, float* out);
+	int32_t (*Animator_Play)(uint64_t entity, const char16_t* state, int length, float fade);
+	int32_t (*Animator_GetInfo)(uint64_t entity, ScriptAnimatorInfo* out);
+	int32_t (*Animator_GetState)(uint64_t entity, char16_t* buffer, int capacity);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

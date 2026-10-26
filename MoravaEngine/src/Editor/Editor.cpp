@@ -184,6 +184,7 @@ void Editor::OnImGuiRender()
 			OnImGuiRenderInputPanel();
 			OnImGuiRenderPhysicsPanel();
 			OnImGuiRenderAudioPanel();
+			OnImGuiRenderAnimatorPanel();
 			OnImGuiRenderScriptsPanel();
 			OnImGuiRenderConsolePanel();
 			OnImGuiRenderNewScriptDialog();
@@ -237,6 +238,7 @@ void Editor::OnImGuiRender()
 					ImGui::MenuItem("Input", nullptr, &s_ShowInputPanel);
 					ImGui::MenuItem("Physics", nullptr, &s_ShowPhysicsPanel);
 					ImGui::MenuItem("Audio", nullptr, &s_ShowAudioPanel);
+					ImGui::MenuItem("Animator", nullptr, &s_ShowAnimatorPanel);
 					ImGui::MenuItem("Scripts", nullptr, &s_ShowScriptsPanel);
 					ImGui::MenuItem("Console", nullptr, &s_ShowConsolePanel);
 					ImGui::Separator();

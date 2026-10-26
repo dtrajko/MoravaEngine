@@ -303,6 +303,14 @@ struct AudioListenerComponent
 	bool Active = true;
 };
 
+// The entity's skinned model is posed by an animator controller while the game runs (docs/engine/Game_Engine_Runtime_Guide.html,
+// 6.4): its states, transitions and parameters (Animation/AnimatorController.h), played by SceneAnimation; scripts set the
+// parameters (Animator.SetFloat...). Outside the game the model shows its own animation (the Inspector's Animation section)
+struct AnimatorComponent
+{
+	std::string Controller; // the .manim file: absolute here, relative to the project in the scene file
+};
+
 // The root of a placed prefab (docs/engine/Game_Engine_Runtime_Guide.html, 6.1): the prefab file it came from, and what
 // it was when it last matched it, to tell what changed since (EnvMapVulkanPrefab). The root's translation and rotation
 // are the instance's own (where it is placed); the rest of the instance is the prefab's
@@ -335,4 +343,4 @@ struct ComponentList
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
-	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, PrefabComponent>;
+	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, PrefabComponent>;

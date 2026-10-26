@@ -2,6 +2,8 @@
 
 #include "GameLoop.h"
 
+#include "Animation/SceneAnimation.h"
+
 #include "Audio/SceneAudio.h"
 
 #include "Input/InputMap.h"
@@ -18,11 +20,13 @@ class InputSystem;
 /**
  * The game's systems, run by the game loop on the running game's scene: the same in the player and in the editor's Play.
  * Now the input test (InputTestComponent), physics (ScenePhysics), the C# scripts (ScriptRuntime) and what their API works
- * on (ScriptContext: time, and the entities scripts destroy, at the end of each update), and the sounds (SceneAudio, 5.1:
- * at the end of each frame, where the frame left the entities); animation comes with its phase.
+ * on (ScriptContext: time, and the entities scripts destroy, at the end of each update), the animators (SceneAnimation,
+ * 6.4: each frame, after the scripts set their parameters; also in Simulate) and the sounds (SceneAudio, 5.1: at the end
+ * of each frame, where the frame left the entities).
  *
  * A fixed step: the scripts' OnFixedUpdate, what they destroyed, the physics step, its collisions and triggers to the
- * scripts, what those destroyed. A frame: the bodies' interpolated transforms, the scripts' OnUpdate, what it destroyed.
+ * scripts, what those destroyed. A frame: the bodies' interpolated transforms, the scripts' OnUpdate, what it destroyed,
+ * the animators' poses, the sounds.
  *
  * Scene.Load (6.2) is the owner's to do at the end of the frame (the player, the editor's Play: they know where the scene
  * goes): TakeSceneLoad says what was asked for, the owner opens it into the same scene and calls Restart.
@@ -53,6 +57,7 @@ public:
 	ScenePhysics& GetPhysics() { return m_Physics; }
 	ScriptRuntime& GetScripts() { return m_Scripts; }
 	SceneAudio& GetAudio() { return m_Audio; }
+	SceneAnimation& GetAnimation() { return m_Animation; }
 	const ScriptContext& GetScriptContext() const { return m_ScriptContext; }
 
 	// The game's actions: the open project's input file, else (no project, a project without one, or a file that can't be
@@ -73,4 +78,5 @@ private:
 	ScriptContext m_ScriptContext; // what the scripts' C# API works on (ScriptBindings)
 	ScriptRuntime m_Scripts;
 	SceneAudio m_Audio;
+	SceneAnimation m_Animation;
 };

@@ -28,6 +28,8 @@
 #include "EnvMapVulkanViewOptions.h"
 
 
+#include "Animation/AnimationSelfTest.h"
+
 #include "Core/ResourceManager.h"
 
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
@@ -1709,9 +1711,10 @@ void EnvMapVulkanRenderer::Init()
 	s_PathTracer.Resize(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
 	WriteBloomDescriptorSets(); // the viewport composite samples the G-buffer and the ray-traced views (debug views)
 
-	// The scene (EnvMapVulkanScene): its operations are checked once at startup
+	// The scene (EnvMapVulkanScene), the prefabs and the animation code: checked once at startup
 	EnvMapVulkanScene::SelfTest();
 	EnvMapVulkanPrefab::SelfTest();
+	AnimationSelfTest::Run();
 
 	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 	H2M::RenderPassSpecificationH2M renderPassSpec;

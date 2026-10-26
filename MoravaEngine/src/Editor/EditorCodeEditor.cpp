@@ -384,7 +384,7 @@ struct PanelSetting
 };
 static const PanelSetting s_PanelSettings[] = {
 	{ "ShowRendererStats", &s_ShowRendererStats }, { "ShowViewportFps", &s_ShowViewportFps }, { "ShowProject", &s_ShowProjectPanel },
-	{ "ShowInput", &s_ShowInputPanel }, { "ShowPhysics", &s_ShowPhysicsPanel }, { "ShowAudio", &s_ShowAudioPanel }, { "ShowScripts", &s_ShowScriptsPanel },
+	{ "ShowInput", &s_ShowInputPanel }, { "ShowPhysics", &s_ShowPhysicsPanel }, { "ShowAudio", &s_ShowAudioPanel }, { "ShowAnimator", &s_ShowAnimatorPanel }, { "ShowScripts", &s_ShowScriptsPanel },
 	{ "ShowConsole", &s_ShowConsolePanel },
 };
 

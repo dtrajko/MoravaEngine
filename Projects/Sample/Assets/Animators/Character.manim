@@ -1,0 +1,49 @@
+Animator:
+  Version: 1
+  Entry: Idle
+  Parameters:
+    - {Name: Speed, Type: Float, Default: 0}
+    - {Name: Use, Type: Trigger}
+  States:
+    - Name: Idle
+      Clip: {File: Models/PirateVoid/idle.dae, Name: ""}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: Walk
+      Clip: {File: "", Name: ""}
+      Speed: 0.6060606
+      SpeedParameter: Speed
+      Loop: true
+      InPlace: true
+    - Name: Use
+      Clip: {File: Models/PirateVoid/using0.dae, Name: ""}
+      Speed: 1
+      Loop: false
+      InPlace: true
+  Transitions:
+    - From: Idle
+      To: Walk
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Speed, Test: Greater, Value: 0.1}
+    - From: Walk
+      To: Idle
+      Fade: 0.25
+      Conditions:
+        - {Parameter: Speed, Test: Less, Value: 0.1}
+    - FromAny: true
+      To: Use
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Use}
+    - From: Use
+      To: Idle
+      Fade: 0.4
+      ExitTime: 1
+      Conditions: []
+    - From: Use
+      To: Walk
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Speed, Test: Greater, Value: 0.1}

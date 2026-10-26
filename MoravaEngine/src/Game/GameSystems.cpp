@@ -55,6 +55,7 @@ void GameSystems::Start(bool keepClock)
 	m_Scripts.Stop();
 	m_Physics.Stop();
 	m_Audio.Stop();
+	m_Animation.Stop();
 	AudioEngine::SetPaused(false);
 
 	// The scripts' API on this game (a fresh clock, unless a loaded scene goes on with it), or on none. The scene's name
@@ -73,6 +74,7 @@ void GameSystems::Start(bool keepClock)
 	m_ScriptContext.Scene = m_Scene;
 	m_ScriptContext.Physics = &m_Physics;
 	m_ScriptContext.Audio = &m_Audio;
+	m_ScriptContext.Animation = &m_Animation;
 	m_ScriptContext.Scripts = &m_Scripts;
 	m_ScriptContext.Input = m_Input;
 	m_ScriptContext.FixedDeltaTime = GameLoop::FixedStep;
@@ -101,8 +103,12 @@ void GameSystems::Start(bool keepClock)
 		const Project* project = Project::GetOpen();
 		m_Physics.Start(*m_Scene, project ? project->Collisions : PhysicsCollisionMatrix());
 
-		// The sounds, mixed at the project's volumes, and the scripts after the bodies and the sounds: OnCreate may ask for
-		// its Rigidbody or play a sound (not in Simulate: no game logic there, and no sound)
+		// The animators, in their entry states (in Simulate too: nothing sets their parameters there)
+		m_Animation.Start(*m_Scene);
+
+		// The sounds, mixed at the project's volumes, and the scripts after the bodies, the animators and the sounds:
+		// OnCreate may ask for its Rigidbody, set a parameter or play a sound (not in Simulate: no game logic there, and no
+		// sound)
 		if (m_Input)
 		{
 			AudioEngine::SetVolumes(project ? project->Volumes : AudioVolumes());
@@ -258,8 +264,13 @@ void GameSystems::Update(float frameTime, float alpha)
 
 	m_ScriptContext.DeltaTime = frameTime;
 	m_ScriptContext.FrameCount++;
-	if (!m_Scene || !m_Input)
+	if (!m_Scene)
 	{
+		return;
+	}
+	if (!m_Input)
+	{
+		m_Animation.Update(frameTime); // Simulate: the animators in their entry states, as nothing sets their parameters
 		return;
 	}
 
@@ -284,6 +295,9 @@ void GameSystems::Update(float frameTime, float alpha)
 	// What the game destroyed in this frame
 	ScriptBindings::DestroyQueued(m_ScriptContext);
 	m_Scripts.RemoveDestroyed();
+
+	// The poses, from the parameters the scripts set (in OnUpdate, or in the fixed steps before it)
+	m_Animation.Update(frameTime);
 
 	// The listener and the sounds where the frame left their entities (the sounds of destroyed ones go)
 	m_Audio.Update(frameTime);

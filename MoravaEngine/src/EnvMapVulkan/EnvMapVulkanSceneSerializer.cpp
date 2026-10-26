@@ -328,6 +328,12 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "Active" << YAML::Value << listener->Active;
 			out << YAML::EndMap;
 		}
+		if (const AnimatorComponent* animator = scene.TryGet<AnimatorComponent>(entity))
+		{
+			out << YAML::Key << "Animator" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "Controller" << YAML::Value << ProjectPaths::ToStored(animator->Controller);
+			out << YAML::EndMap;
+		}
 		if (const PrefabComponent* prefab = scene.TryGet<PrefabComponent>(entity))
 		{
 			out << YAML::Key << "Prefab" << YAML::Value << YAML::Flow << YAML::BeginMap;
@@ -577,6 +583,11 @@ namespace EnvMapVulkanSceneSerializer
 		if (YAML::Node listenerNode = node["AudioListener"]; listenerNode && listenerNode.IsMap())
 		{
 			Read(listenerNode, "Active", scene.Add<AudioListenerComponent>(entity).Active);
+		}
+		if (YAML::Node animatorNode = node["Animator"]; animatorNode && animatorNode.IsMap())
+		{
+			const std::string controller = animatorNode["Controller"].as<std::string>("");
+			scene.Add<AnimatorComponent>(entity).Controller = controller.empty() ? std::string() : ProjectPaths::Resolve(controller);
 		}
 		if (YAML::Node prefabNode = node["Prefab"]; prefabNode && prefabNode.IsMap())
 		{
