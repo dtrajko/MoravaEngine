@@ -19,6 +19,9 @@ layout (location = 1) out vec2 o_Motion;          // screen-space motion in UV u
 void main()
 {
 	vec2 texCoord = MaterialTexCoord(Input.TexCoord);
+#ifdef MATERIAL_CUTOUT
+	MaterialCutAway(texCoord); // the cutout variants (GBufferPrepass_Cutout_Static.glsl...): the scene pass shades only what is left
+#endif
 	o_NormalRoughness = vec4(MaterialNormal(texCoord, Input.Normal, Input.WorldNormals), MaterialRoughness(texCoord));
 	// NDC to UV is a scale by 0.5 (the offset cancels out). The camera, the mesh's transform and its bones all count.
 	o_Motion = (v_ClipPosition.xy / v_ClipPosition.w - v_PreviousClipPosition.xy / v_PreviousClipPosition.w) * 0.5;

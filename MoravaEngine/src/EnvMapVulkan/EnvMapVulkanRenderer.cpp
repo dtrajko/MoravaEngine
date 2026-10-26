@@ -150,6 +150,10 @@ static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnim; // skinned models (Haze
 // draw where there is no prepass (the water's reflection) and lend their layouts to the prepass pipelines.
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineDepthEqual;
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnimDepthEqual;
+// Cutout materials (Surface::Cutout) in the passes without the prepass's depth (the water's reflection): the PBR pipelines
+// with the pixels the material cuts away discarded (HazelPBR_Cutout_*.glsl), on the PBR pipelines' layouts
+static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineCutout;
+static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnimCutout;
 static uint64_t s_ViewportImageID = 0;                // the viewport image's ID in the user interface (GetViewportImage)
 static bool s_ViewportTextureNeedsUpdate = false;     // the viewport framebuffer was recreated (resize)
 
@@ -363,6 +367,9 @@ static EnvMapVulkanExtractedSun s_ExtractedSun;   // of the current environment 
 static EnvMapVulkanShadowMap s_ShadowMap;
 static EnvMapVulkanShadowPipeline s_ShadowPipeline;     // ShadowDepth.glsl (static models)
 static EnvMapVulkanShadowPipeline s_ShadowPipelineAnim; // ShadowDepth_Anim.glsl (skinned models)
+// Meshes with a cutout material (ShadowDepth_Cutout*.glsl): the holes let the light through. On the PBR pipelines' layouts
+static EnvMapVulkanShadowPipeline s_ShadowPipelineCutout;
+static EnvMapVulkanShadowPipeline s_ShadowPipelineAnimCutout;
 // Shadow maps of the spot and point lights (see EnvMapVulkanShadows.h): a layer per shadowed spot light, a cube per
 // shadowed point light (only when the GPU supports cube map arrays)
 static EnvMapVulkanShadowMap s_SpotShadowMaps;
@@ -1432,6 +1439,8 @@ void EnvMapVulkanRenderer::OnResize(uint32_t width, uint32_t height)
 // flight may still use the old shadow map.
 static void CreateShadowMap(uint32_t resolution, bool writeDescriptor)
 {
+	s_ShadowPipelineAnimCutout.Destroy();
+	s_ShadowPipelineCutout.Destroy();
 	s_ShadowPipelineAnim.Destroy();
 	s_ShadowPipeline.Destroy();
 	s_ShadowMap.Create(resolution, ShadowCascadeCount);
@@ -1455,6 +1464,10 @@ static void CreateShadowMap(uint32_t resolution, bool writeDescriptor)
 		};
 		s_ShadowPipeline.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth").As<H2M::VulkanShaderH2M>(), staticLayout, { 0 }, s_ShadowMap.GetRenderPass());
 		s_ShadowPipelineAnim.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth_Anim").As<H2M::VulkanShaderH2M>(), animLayout, { 0, 5, 6 }, s_ShadowMap.GetRenderPass());
+		s_ShadowPipelineCutout.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth_Cutout").As<H2M::VulkanShaderH2M>(), staticLayout, { 0, 4 },
+			s_ShadowMap.GetRenderPass(), s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout());
+		s_ShadowPipelineAnimCutout.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth_Cutout_Anim").As<H2M::VulkanShaderH2M>(), animLayout, { 0, 4, 5, 6 },
+			s_ShadowMap.GetRenderPass(), s_MeshPipelineAnim.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout());
 	}
 	if (writeDescriptor)
 	{
@@ -1599,6 +1612,16 @@ void EnvMapVulkanRenderer::Init()
 		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static");
 		pipelineSpecification.DebugName = "PBR-Static-DepthEqual";
 		s_MeshPipelineDepthEqual = H2M::PipelineH2M::Create(pipelineSpecification);
+
+		// The cutout variants: as the first two pipelines, drawn with their layouts
+		for (bool skinned : { false, true })
+		{
+			H2M::PipelineSpecificationH2M cutoutSpecification = (skinned ? s_MeshPipelineAnim : s_MeshPipeline)->GetSpecification();
+			cutoutSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get(skinned ? "HazelPBR_Cutout_Anim" : "HazelPBR_Cutout_Static");
+			cutoutSpecification.LayoutFrom = skinned ? s_MeshPipelineAnim : s_MeshPipeline;
+			cutoutSpecification.DebugName = skinned ? "PBR-Anim-Cutout" : "PBR-Static-Cutout";
+			(skinned ? s_MeshPipelineAnimCutout : s_MeshPipelineCutout) = H2M::PipelineH2M::Create(cutoutSpecification);
+		}
 	}
 	/**** END: to be removed from VulkanRenderer ****/
 
@@ -1902,6 +1925,8 @@ void EnvMapVulkanRenderer::SetEnvironmentMapFile(const std::string& filepath)
 
 void EnvMapVulkanRenderer::Shutdown()
 {
+	s_ShadowPipelineAnimCutout.Destroy();
+	s_ShadowPipelineCutout.Destroy();
 	s_ShadowPipelineAnim.Destroy();
 	s_ShadowPipeline.Destroy();
 	s_ShadowMap.Destroy();
@@ -1960,6 +1985,8 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_MeshPipelineAnim = {};
 	s_MeshPipelineDepthEqual = {};
 	s_MeshPipelineAnimDepthEqual = {};
+	s_MeshPipelineCutout = {};
+	s_MeshPipelineAnimCutout = {};
 	s_EnvMapCompute = EnvMapComputeResources();
 	s_Data = VulkanRendererData();
 }
@@ -2019,17 +2046,22 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 	VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 	vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-	// The pipelines of all passes have the PBR pipelines' layouts: everything bound below is valid for each of them
+	// The pipelines of all passes have the PBR pipelines' layouts: everything bound below is valid for each of them. A mesh
+	// with a cutout material is drawn with the pass's cutout pipeline, which discards the pixels the material cuts away;
+	// the scene pass needs none (depth EQUAL: only what the prepass kept)
 	VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline(); // MeshPass::WaterReflection
+	VkPipeline cutoutPipeline = (skinned ? s_MeshPipelineAnimCutout : s_MeshPipelineCutout).As<H2M::VulkanPipelineH2M>()->GetVulkanPipeline();
 	if (pass == MeshPass::GBuffer)
 	{
 		pipeline = s_GBuffer.GetPipeline(skinned);
+		cutoutPipeline = s_GBuffer.GetPipeline(skinned, true);
 	}
 	else if (pass == MeshPass::Scene)
 	{
 		pipeline = (skinned ? s_MeshPipelineAnimDepthEqual : s_MeshPipelineDepthEqual).As<H2M::VulkanPipelineH2M>()->GetVulkanPipeline();
+		cutoutPipeline = pipeline;
 	}
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+	VkPipeline boundPipeline = VK_NULL_HANDLE; // bound per mesh: by its material
 
 	// Set 0 (per frame) was bound once for all meshes in GeometryPass. It stays bound across the static and skinned
 	// pipelines: their layouts declare set 0 and the push constants identically ("compatible for set 0").
@@ -2065,6 +2097,12 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		if (materialDescriptorSet == VK_NULL_HANDLE)
 		{
 			continue; // drawing with a missing descriptor set is undefined behavior in Vulkan
+		}
+		const VkPipeline meshPipeline = material->IsCutout() ? cutoutPipeline : pipeline;
+		if (meshPipeline != boundPipeline)
+		{
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipeline);
+			boundPipeline = meshPipeline;
 		}
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::MaterialDescriptorSet, 1,
 			&materialDescriptorSet, 0, nullptr);
@@ -2322,16 +2360,12 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 				continue;
 			}
 		}
-		const EnvMapVulkanShadowPipeline& pipeline = skinned ? s_ShadowPipelineAnim : s_ShadowPipeline;
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-		if (skinned)
+		const EnvMapVulkanShadowPipeline& opaquePipeline = skinned ? s_ShadowPipelineAnim : s_ShadowPipeline;
+		const EnvMapVulkanShadowPipeline& cutoutPipeline = skinned ? s_ShadowPipelineAnimCutout : s_ShadowPipelineCutout;
+		const VkDescriptorSet boneDescriptorSet = skinned ? model->GetObjectDescriptorSet() : VK_NULL_HANDLE;
+		if (skinned && boneDescriptorSet == VK_NULL_HANDLE)
 		{
-			VkDescriptorSet boneDescriptorSet = model->GetObjectDescriptorSet();
-			if (boneDescriptorSet == VK_NULL_HANDLE)
-			{
-				continue; // no bone buffer: the skinned vertices can't be placed
-			}
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, 0, 1, &boneDescriptorSet, 0, nullptr);
+			continue; // no bone buffer: the skinned vertices can't be placed
 		}
 
 		VkBuffer vertexBuffer = model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
@@ -2341,6 +2375,7 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 
 		const auto& meshes = model->GetMeshes();
 		const auto& materials = s_SubmittedModels[m].Materials;
+		const EnvMapVulkanShadowPipeline* boundPipeline = nullptr; // per mesh: by its material
 		for (size_t s = 0; s < meshes.size(); s++)
 		{
 			const H2M::RefH2M<H2M::MeshH2M>& mesh = meshes[s];
@@ -2350,8 +2385,42 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 			{
 				continue;
 			}
-			glm::mat4 matrices[2] = { viewProjection, EnvMapVulkanSceneData::GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform) };
-			vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
+			// A cutout material: its holes let the light through. Its pipeline has the PBR layout: the per-frame set (the
+			// material entries, the samplers), the bones as set 2, the material's maps and values as in the scene pass
+			H2M::RefH2M<EnvMapVulkanMaterial> material = s < materials.size() ? materials[s] : H2M::RefH2M<EnvMapVulkanMaterial>();
+			const VkDescriptorSet materialDescriptorSet = material && material->IsCutout() ? material->GetDescriptorSet() : VK_NULL_HANDLE;
+			const bool cutout = materialDescriptorSet != VK_NULL_HANDLE && cutoutPipeline.Pipeline != VK_NULL_HANDLE;
+			const EnvMapVulkanShadowPipeline& pipeline = cutout ? cutoutPipeline : opaquePipeline;
+			if (&pipeline != boundPipeline)
+			{
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+				if (cutout)
+				{
+					vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
+						&s_Data.FrameDescriptorSet.DescriptorSets[0], 0, nullptr);
+				}
+				if (skinned)
+				{
+					const uint32_t boneSet = cutout ? H2M::VulkanShaderH2M::ObjectDescriptorSet : 0;
+					vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, boneSet, 1, &boneDescriptorSet, 0, nullptr);
+				}
+				boundPipeline = &pipeline;
+			}
+			const glm::mat4 meshTransform = EnvMapVulkanSceneData::GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform);
+			if (cutout)
+			{
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, H2M::VulkanShaderH2M::MaterialDescriptorSet, 1,
+					&materialDescriptorSet, 0, nullptr);
+				const glm::mat4 lightTransform = viewProjection * meshTransform;
+				H2M::BufferH2M values = material->GetUniformStorageBuffer();
+				vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(lightTransform), &lightTransform);
+				vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), values.Size, values.Data);
+			}
+			else
+			{
+				glm::mat4 matrices[2] = { viewProjection, meshTransform };
+				vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
+			}
 			vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
 			EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
 		}

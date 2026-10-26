@@ -1,0 +1,469 @@
+Scene:
+  Version: 1
+  Name: Erika
+EditorCamera:
+  Translation: [0, 8, 9]
+  Rotation: [30, 0, 0]
+  FieldOfView: 45
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 4797481855757227527
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 8, 9]
+      Rotation: [30, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 45
+      NearClip: 0.01
+      FarClip: 1000
+    Script:
+      Class: Sample.CameraFollow
+      Fields:
+        Target: {Entity: 7310463185520941001}
+        View: {Enum: Behind}
+        BehindDistance: {Float: 3.5}
+        BehindHeight: {Float: 1.2}
+        BehindPitch: {Float: 16}
+  - ID: 16040318626583559303
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 17664899364368859239
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0.0067483177, 0.0065134675, -87.970924]
+      Scale: [0.99996686, 0.99999785, 0.9999558]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 8601021745167664655
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 4645328179557402687
+    Name: Cube
+    Parent: 8601021745167664655
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 11173523489358520666
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [11, 11, 2]
+      Rotation: [0, -0, -90]
+      Scale: [9.999993, 0.9999972, 7.9999247]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 11005680830479748476
+    Name: Cube
+    Parent: 11173523489358520666
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 10946202904542493917
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [11, 6, -8]
+      Rotation: [0, -0, -90]
+      Scale: [10, 0.9999972, 1.9998641]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 12347905251721334247
+    Name: Cube
+    Parent: 10946202904542493917
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4411623245843787822
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -11]
+      Rotation: [90, 4.3089303e-06, -90]
+      Scale: [9.999842, 0.99993837, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3390355051436957147
+    Name: Cube
+    Parent: 4411623245843787822
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4760625982631271431
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, 11]
+      Rotation: [90, 4.308828e-06, -90]
+      Scale: [9.999682, 0.9999284, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 4372998666035804560
+    Name: Cube
+    Parent: 4760625982631271431
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 16332770661743169074
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-11, 11, 0]
+      Rotation: [0, -0, -90]
+      Scale: [9.999993, 0.9999972, 9.999189]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 8715774543680231152
+    Name: Cube
+    Parent: 16332770661743169074
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 191337683009812853
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 22, 0]
+      Rotation: [0, -0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 1610167032220544294
+    Name: Cube
+    Parent: 191337683009812853
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 7310463185520941001
+    Name: Erika
+    Parent: 0
+    Transform:
+      Translation: [0, 1, 2]
+      Rotation: [0, 180, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Models/Erika_Archer/Erika_Archer.dae
+    CharacterController:
+      Height: 1.7
+      Radius: 0.3
+      Offset: [0, 0.85, 0]
+      MaxSlopeDegrees: 45
+      StepHeight: 0.35
+      Mass: 60
+      PushStrength: 100
+    Script:
+      Class: Sample.AnimatedCharacter
+      Fields:
+        Camera: {Entity: 4797481855757227527}
+        Speed: {Float: 1.6}
+        RunSpeed: {Float: 3.8}
+        Gravity: {Float: 19.6}
+        JumpSpeed: {Float: 4.9}
+        JumpDelay: {Float: 0.57}
+        RunJumpSpeed: {Float: 2.4}
+        RunJumpDelay: {Float: 0.1}
+    Animator: {Controller: Assets/Animators/Erika.manim}
+  - ID: 7310463185520941002
+    Name: Eyes
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2594931541428410605
+        File: Assets/Materials/Erika_Eyes.mmat
+        Name: Erika_Eyes
+  - ID: 7310463185520941003
+    Name: Clothes
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 4125353244449587187
+        File: Assets/Materials/Erika_Clothes.mmat
+        Name: Erika_Clothes
+  - ID: 7310463185520941005
+    Name: Eyelashes
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 1049005126665139121
+        File: Assets/Materials/Erika_Eyelashes.mmat
+        Name: Erika_Eyelashes
+  - ID: 7310463185520941004
+    Name: Body
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 630468455590023961
+        File: Assets/Materials/Erika_Body.mmat
+        Name: Erika_Body
+  - ID: 6151200438114250001
+    Name: Spinning Cube
+    Parent: 0
+    Transform:
+      Translation: [-3, 2.5, -2]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    Script:
+      Class: Sample.Spinner
+      Fields:
+        DegreesPerSecond: {Float: 90}
+  - ID: 6151200438114250002
+    Name: Cube
+    Parent: 6151200438114250001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 3318840571902216447
+    Name: Player Light
+    Parent: 0
+    Transform:
+      Translation: [0, 7, 3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 30
+      Range: 18
+      CastShadows: true
+  - ID: 12292673721498952904
+    Name: Probe Volume
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -4.7683716e-06]
+      Rotation: [0, -0, 0]
+      Scale: [25.399996, 25.4, 25.399862]
+    ProbeVolume:
+      Enabled: true
+      Counts: [8, 8, 8]
+      NormalBias: 0.25
+      ViewBias: 0.25
+      AutoUpdate: true
+      ProbesPerFrame: 8
+      TracedProbesPerFrame: 1024
+      RaysPerProbe: 192
+      Hysteresis: 0.9
+      RelocateProbes: true
+      OccludeReflections: true
+      ShowProbes: false
+      ProbeRadius: 0.12
+      Show: 0

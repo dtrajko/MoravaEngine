@@ -610,6 +610,8 @@ void ScenePhysics::Step(float fixedStep)
 			system.GetDefaultLayerFilter(ObjectLayers::Character), JPH::BodyFilter(), JPH::ShapeFilter(), m_World->GetTempAllocator());
 		character.PreviousPosition = character.Position;
 		character.Position = ToGlm(controller.GetPosition());
+		// Not the controller's velocity: against a wall, on the ground, it keeps the one asked for
+		character.Moved = (character.Position - character.PreviousPosition) / fixedStep;
 	}
 
 	if (m_Listener->Collect)
@@ -815,7 +817,7 @@ bool ScenePhysics::GetCharacterState(EnvMapVulkanEntityID entity, CharacterState
 		if (character.Entity == entity)
 		{
 			state.Ground = ToCharacterGround(character.Controller->GetGroundState());
-			state.Velocity = ToGlm(character.Controller->GetLinearVelocity());
+			state.Velocity = character.Moved;
 			state.GroundNormal = ToGlm(character.Controller->GetGroundNormal());
 			return true;
 		}

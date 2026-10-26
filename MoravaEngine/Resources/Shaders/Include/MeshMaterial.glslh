@@ -5,6 +5,9 @@
 #define MESH_MATERIAL_GLSLH
 
 #include "MaterialMaps.glslh"
+#ifdef MATERIAL_CUTOUT
+#include "FrameSet.glslh" // u_Materials: the cutoff
+#endif
 
 layout (push_constant) uniform Material
 {
@@ -64,5 +67,17 @@ vec3 MaterialNormal(vec2 texCoord, vec3 vertexNormal, mat3 worldNormals)
 	}
 	return normal;
 }
+
+#ifdef MATERIAL_CUTOUT
+// A cutout material (EnvMapVulkanMaterial::Surface::Cutout), in the cutout pipelines of the passes that write depth: no
+// surface where the albedo map's alpha is below the material's cutoff. Without the map nothing is cut away.
+void MaterialCutAway(vec2 texCoord)
+{
+	if (u_MaterialUniforms.AlbedoTexToggle > 0.5 && texture(u_AlbedoTexture, texCoord).a < u_Materials[uint(u_MaterialUniforms.MaterialIndex)].Cutoff)
+	{
+		discard;
+	}
+}
+#endif
 
 #endif

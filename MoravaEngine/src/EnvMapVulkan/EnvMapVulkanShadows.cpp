@@ -377,12 +377,14 @@ static VkFormat ToVulkanFormat(H2M::ShaderDataTypeH2M type)
 }
 
 void EnvMapVulkanShadowPipeline::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader, const H2M::VertexBufferLayoutH2M& vertexLayout,
-	const std::vector<uint32_t>& usedLocations, VkRenderPass renderPass)
+	const std::vector<uint32_t>& usedLocations, VkRenderPass renderPass, VkPipelineLayout layout)
 {
 	Destroy();
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
-	// Layout: the shader's descriptor sets (the bone buffer of ShadowDepth_Anim.glsl) and push constants
+	// Layout: the one given, or the shader's descriptor sets (the bone buffer of ShadowDepth_Anim.glsl) and push constants
+	OwnsLayout = layout == VK_NULL_HANDLE;
+	Layout = layout;
 	std::vector<VkDescriptorSetLayout> setLayouts = shader->GetAllDescriptorSetLayouts();
 	std::vector<VkPushConstantRange> pushConstantRanges;
 	for (const auto& range : shader->GetPushConstantRanges())
@@ -395,7 +397,10 @@ void EnvMapVulkanShadowPipeline::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader
 	layoutInfo.pSetLayouts = setLayouts.data();
 	layoutInfo.pushConstantRangeCount = (uint32_t)pushConstantRanges.size();
 	layoutInfo.pPushConstantRanges = pushConstantRanges.data();
-	VK_CHECK_RESULT_H2M(vkCreatePipelineLayout(device, &layoutInfo, nullptr, &Layout));
+	if (OwnsLayout)
+	{
+		VK_CHECK_RESULT_H2M(vkCreatePipelineLayout(device, &layoutInfo, nullptr, &Layout));
+	}
 
 	// Vertex input: the model's full vertex (stride), with only the attributes the shader reads
 	VkVertexInputBindingDescription binding = { 0, vertexLayout.GetStride(), VK_VERTEX_INPUT_RATE_VERTEX };
@@ -479,11 +484,11 @@ void EnvMapVulkanShadowPipeline::Destroy()
 		vkDestroyPipeline(device, Pipeline, nullptr);
 		Pipeline = VK_NULL_HANDLE;
 	}
-	if (Layout)
+	if (Layout && OwnsLayout)
 	{
 		vkDestroyPipelineLayout(device, Layout, nullptr);
-		Layout = VK_NULL_HANDLE;
 	}
+	Layout = VK_NULL_HANDLE;
 }
 
 void EnvMapVulkanShadowMapViewer::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader)

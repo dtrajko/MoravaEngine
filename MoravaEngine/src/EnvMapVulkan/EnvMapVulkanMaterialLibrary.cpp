@@ -157,6 +157,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::CreateMaterial(co
 static void CopyValuesAndMaps(H2M::RefH2M<EnvMapVulkanMaterial> material, H2M::RefH2M<EnvMapVulkanMaterial> source)
 {
 	material->SetSurface(source->GetSurface());
+	material->GetCutoff() = source->GetCutoff();
 	for (uint32_t g = 0; g < EnvMapVulkanMaterial::GlassValueCount; g++)
 	{
 		material->GetGlassValue((EnvMapVulkanMaterial::GlassValue)g) = source->GetGlassValue((EnvMapVulkanMaterial::GlassValue)g);
@@ -478,6 +479,10 @@ const char* EnvMapVulkanMaterial::GetPropertyKey(Property property)
 	{
 		return "Surface";
 	}
+	if (property == CutoffProperty)
+	{
+		return "Cutoff";
+	}
 	return IsGlassProperty(property) ? s_GlassPropertyKeys[property - FirstGlassProperty] : "";
 }
 
@@ -506,6 +511,7 @@ EnvMapVulkanMaterial::State EnvMapVulkanMaterial::CaptureState()
 	}
 	state.SurfaceType = m_Surface;
 	state.Glass = m_GlassValues;
+	state.Cutoff = m_Cutoff;
 	return state;
 }
 
@@ -522,6 +528,10 @@ bool EnvMapVulkanMaterial::PropertyEquals(const State& a, const State& b, Proper
 	if (property == SurfaceProperty)
 	{
 		return a.SurfaceType == b.SurfaceType;
+	}
+	if (property == CutoffProperty)
+	{
+		return a.Cutoff == b.Cutoff;
 	}
 	if (IsGlassProperty(property))
 	{
@@ -544,6 +554,10 @@ void EnvMapVulkanMaterial::CopyProperty(State& to, const State& from, Property p
 	else if (property == SurfaceProperty)
 	{
 		to.SurfaceType = from.SurfaceType;
+	}
+	else if (property == CutoffProperty)
+	{
+		to.Cutoff = from.Cutoff;
 	}
 	else if (IsGlassProperty(property))
 	{
@@ -570,6 +584,10 @@ void EnvMapVulkanMaterial::ApplyProperty(const State& state, Property property)
 	else if (property == SurfaceProperty)
 	{
 		m_Surface = state.SurfaceType;
+	}
+	else if (property == CutoffProperty)
+	{
+		m_Cutoff = state.Cutoff;
 	}
 	else if (IsGlassProperty(property))
 	{
@@ -625,6 +643,10 @@ uint64_t EnvMapVulkanMaterial::ComputeContentHash() const
 		else if (property == SurfaceProperty)
 		{
 			hash = HashBytes(hash, &state.SurfaceType, sizeof(state.SurfaceType));
+		}
+		else if (property == CutoffProperty)
+		{
+			hash = HashBytes(hash, &state.Cutoff, sizeof(state.Cutoff));
 		}
 		else if (IsGlassProperty(property))
 		{
@@ -796,7 +818,8 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 	{
 		out << YAML::Key << value.Key << YAML::Value << material->Get<float>(value.Uniform);
 	}
-	out << YAML::Key << "Surface" << YAML::Value << (material->IsGlass() ? "Glass" : "Opaque");
+	out << YAML::Key << "Surface" << YAML::Value << (material->IsGlass() ? "Glass" : material->IsCutout() ? "Cutout" : "Opaque");
+	out << YAML::Key << "Cutoff" << YAML::Value << material->m_Cutoff;
 	out << YAML::Key << "Glass" << YAML::Value << YAML::BeginMap;
 	for (uint32_t g = 0; g < EnvMapVulkanMaterial::GlassValueCount; g++)
 	{
@@ -909,8 +932,12 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 		}
 	}
 
-	// Files written before glass existed have neither: an opaque material with the default glass values
-	material->m_Surface = node["Surface"].as<std::string>("Opaque") == "Glass" ? EnvMapVulkanMaterial::Surface::Glass : EnvMapVulkanMaterial::Surface::Opaque;
+	// Files written before glass existed have neither: an opaque material with the default glass values (before cutout:
+	// no Cutoff, the default)
+	const std::string surface = node["Surface"].as<std::string>("Opaque");
+	material->m_Surface = surface == "Glass" ? EnvMapVulkanMaterial::Surface::Glass :
+		surface == "Cutout" ? EnvMapVulkanMaterial::Surface::Cutout : EnvMapVulkanMaterial::Surface::Opaque;
+	material->m_Cutoff = node["Cutoff"].as<float>(0.5f);
 	YAML::Node glass = node["Glass"];
 	for (uint32_t g = 0; g < EnvMapVulkanMaterial::GlassValueCount; g++)
 	{

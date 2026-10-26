@@ -1,0 +1,108 @@
+Animator:
+  Version: 1
+  Entry: Idle
+  Parameters:
+    - {Name: Speed, Type: Float, Default: 0}
+    - {Name: Grounded, Type: Bool, Default: true}
+    - {Name: Jump, Type: Trigger}
+    - {Name: RunJump, Type: Trigger}
+    - {Name: Use, Type: Trigger}
+  States:
+    - Name: Idle
+      Clip: {File: Models/Erika_Archer/idle.dae, Name: ""}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: Walk
+      Clip: {File: Models/Erika_Archer/walking.dae, Name: ""}
+      Speed: 0.595
+      SpeedParameter: Speed
+      Loop: true
+      InPlace: true
+    - Name: Run
+      Clip: {File: Models/Erika_Archer/running.dae, Name: ""}
+      Speed: 0.265
+      SpeedParameter: Speed
+      Loop: true
+      InPlace: true
+    - Name: Jump
+      Clip: {File: Models/Erika_Archer/jump.dae, Name: ""}
+      Speed: 1
+      Loop: false
+      InPlace: true
+    - Name: RunJump
+      Clip: {File: Models/Erika_Archer/Jump_01.dae, Name: ""}
+      Speed: 1
+      Loop: false
+      InPlace: true
+  Transitions:
+    - From: Idle
+      To: Walk
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Speed, Test: Greater, Value: 0.1}
+    - From: Walk
+      To: Idle
+      Fade: 0.25
+      Conditions:
+        - {Parameter: Speed, Test: Less, Value: 0.1}
+    - From: Walk
+      To: Run
+      Fade: 0.25
+      Conditions:
+        - {Parameter: Speed, Test: Greater, Value: 2.4}
+    - From: Run
+      To: Walk
+      Fade: 0.25
+      Conditions:
+        - {Parameter: Speed, Test: Less, Value: 2.2}
+    - FromAny: true
+      To: Jump
+      Fade: 0.1
+      Conditions:
+        - {Parameter: Jump}
+    - From: Jump
+      To: Run
+      Fade: 0.2
+      ExitTime: 0.75
+      Conditions:
+        - {Parameter: Grounded, Test: True}
+        - {Parameter: Speed, Test: Greater, Value: 2.4}
+    - From: Jump
+      To: Walk
+      Fade: 0.2
+      ExitTime: 0.75
+      Conditions:
+        - {Parameter: Grounded, Test: True}
+        - {Parameter: Speed, Test: Greater, Value: 0.1}
+    - From: Jump
+      To: Idle
+      Fade: 0.3
+      ExitTime: 1
+      Conditions:
+        - {Parameter: Grounded, Test: True}
+    - FromAny: true
+      To: RunJump
+      Fade: 0.1
+      Conditions:
+        - {Parameter: RunJump}
+    - From: RunJump
+      To: Run
+      Fade: 0.15
+      ExitTime: 0.9
+      Conditions:
+        - {Parameter: Grounded, Test: True}
+        - {Parameter: Speed, Test: Greater, Value: 2.4}
+    - From: RunJump
+      To: Walk
+      Fade: 0.25
+      ExitTime: 0.9
+      Conditions:
+        - {Parameter: Grounded, Test: True}
+        - {Parameter: Speed, Test: Greater, Value: 0.1}
+    - From: RunJump
+      To: Idle
+      Fade: 0.3
+      ExitTime: 1
+      Conditions:
+        - {Parameter: Grounded, Test: True}

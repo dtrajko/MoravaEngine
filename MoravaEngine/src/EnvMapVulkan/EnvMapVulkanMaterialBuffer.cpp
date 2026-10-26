@@ -146,6 +146,12 @@ EnvMapVulkanMaterialBuffer::GPUMaterial EnvMapVulkanMaterialBuffer::Pack(const H
 		entry.IOR = std::max(material->GetGlassValue(EnvMapVulkanMaterial::GlassIOR), 1.0f);
 		entry.Flags |= material->GetGlassValue(EnvMapVulkanMaterial::GlassSolid) > 0.5f ? FlagGlassSolid : 0;
 	}
+	if (material->IsCutout())
+	{
+		// The depth passes' cutout pipelines read it (Include/MeshMaterial.glslh: MaterialCutAway)
+		entry.Flags |= FlagCutout;
+		entry.Cutoff = material->GetCutoff();
+	}
 
 	// The maps themselves, for a ray hit (as the mesh shaders read them: Include/MeshMaterial.glslh)
 	const float tiling = material->Get<float>("u_MaterialUniforms.TilingFactor");
