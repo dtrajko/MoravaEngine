@@ -1,4 +1,4 @@
-// The Project panel: the open project's settings, saved as they are edited
+// The Project panel: the open project's settings, saved as they are edited, and its scenes to open
 
 
 #include "Project/Project.h"
@@ -8,8 +8,11 @@
 
 #include <glm/glm.hpp>
 
+#include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <string>
+#include <vector>
 
 
 #include "EditorState.h"
@@ -39,13 +42,108 @@ static bool InputWindowSize(const char* label, uint32_t& value)
 	return ImGui::IsItemDeactivatedAfterEdit();
 }
 
+// The project's scenes (in its Scenes folder and below), sorted, as kept paths: looked for again once a second
+static const std::vector<std::string>& GetProjectScenes(const Project& project)
+{
+	static std::vector<std::string> scenes;
+	static std::string folder;
+	static double lastScan = -1.0;
+	const double now = ImGui::GetTime();
+	if (folder != project.GetScenesFolder() || lastScan < 0.0 || now - lastScan > 1.0)
+	{
+		folder = project.GetScenesFolder();
+		lastScan = now;
+		scenes.clear();
+		std::error_code error;
+		for (std::filesystem::recursive_directory_iterator it(folder, error), end; !error && it != end; it.increment(error))
+		{
+			if (it->is_regular_file(error) && it->path().extension() == EnvMapVulkanSceneSerializer::FileExtension)
+			{
+				scenes.push_back(ProjectPaths::Normalize(it->path().generic_string()));
+			}
+		}
+		std::sort(scenes.begin(), scenes.end());
+	}
+	return scenes;
+}
+
+// The Scenes section: the project's scenes, opened with a double-click or Open (as File > Open Scene)
+static void OnImGuiRenderProjectScenes(const Project& project)
+{
+	static std::string selected;
+	const std::vector<std::string>& scenes = GetProjectScenes(project);
+	const std::string startScene = project.StartScene.empty() ? std::string() : ProjectPaths::Normalize(ProjectPaths::Resolve(project.StartScene));
+	const std::filesystem::path folder = project.GetScenesFolder();
+
+	ImGui::SeparatorText("Scenes");
+	if (scenes.empty())
+	{
+		ImGui::TextDisabled("No scenes in %s yet (File > Save Scene As)", Project::ScenesFolder);
+	}
+	else
+	{
+		const float rowHeight = ImGui::GetTextLineHeightWithSpacing();
+		const float height = rowHeight * (float)std::min<size_t>(scenes.size(), 6) + ImGui::GetStyle().WindowPadding.y * 2.0f;
+		if (ImGui::BeginChild("##Scenes", ImVec2(0.0f, height), ImGuiChildFlags_Borders))
+		{
+			for (const std::string& scene : scenes)
+			{
+				std::string label = std::filesystem::path(scene).lexically_relative(folder).replace_extension().generic_string();
+				const bool open = scene == s_SceneFilePath;
+				const bool start = scene == startScene;
+				if (open || start)
+				{
+					label += std::string("  (") + (open ? "open" : "") + (open && start ? ", " : "") + (start ? "start" : "") + ")";
+				}
+				if (ImGui::Selectable((label + "##" + scene).c_str(), selected == scene, ImGuiSelectableFlags_AllowDoubleClick))
+				{
+					selected = scene;
+					if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+					{
+						RequestOpenScene(scene);
+					}
+				}
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("%s\nDouble-click to open it", ProjectPaths::ToStored(scene).c_str());
+				}
+			}
+		}
+		ImGui::EndChild();
+	}
+
+	const bool known = std::find(scenes.begin(), scenes.end(), selected) != scenes.end();
+	ImGui::BeginDisabled(!known || IsPlaying());
+	if (ImGui::Button("Open"))
+	{
+		RequestOpenScene(selected);
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip(IsPlaying() ? "Not while the game runs: Stop first" : known ? "Opens the selected scene (unsaved changes of the open scene are asked about first)" :
+			"Select a scene in the list first");
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(IsPlaying());
+	if (ImGui::Button("Open Scene..."))
+	{
+		RequestOpenScene();
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip(IsPlaying() ? "Not while the game runs: Stop first" : "Picks a scene file (File > Open Scene, Ctrl+O)");
+	}
+}
+
 void OnImGuiRenderProjectPanel()
 {
 	if (!s_ShowProjectPanel)
 	{
 		return;
 	}
-	ImGui::SetNextWindowSize(ImVec2(440.0f, 380.0f), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(440.0f, 520.0f), ImGuiCond_FirstUseEver);
 	if (!ImGui::Begin("Project", &s_ShowProjectPanel))
 	{
 		ImGui::End();
@@ -109,6 +207,8 @@ void OnImGuiRenderProjectPanel()
 				project->StartScene.c_str());
 		}
 	}
+
+	OnImGuiRenderProjectScenes(*project);
 
 	ImGui::SeparatorText("Assets");
 	ImGui::Text("Asset folder: %s", project->AssetDirectory.c_str());

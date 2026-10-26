@@ -28,7 +28,7 @@ jobs:
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
             smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20 --play
             # A project outside the engine's folder (Projects/Sample): its start scene, its own materials, its window
-            player-smoke-test: --project ../Projects/Sample/Sample.mproject --exit-after 20
+            player-smoke-test: --project ../Projects/Sample/Sample.mproject --scene ../Projects/Sample/Scenes/RollABall.mscene --exit-after 20
           # macOS stops at OpenGL 4.1: an older scene (HAZEL_ENV_MAP needs 4.5)
           - name: Clang OpenGL
             cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=EDITOR_IMGUIZMO
@@ -125,8 +125,8 @@ jobs:
             exit 1
           fi
 
-      # The player (MoravaPlayer, without the editor) plays a project's start scene the same way, and fails on the same
-      # things, and on the project's files that could not be found
+      # The player (MoravaPlayer, without the editor) plays the sample's RollABall scene (named, not the start scene: its
+      # sounds are checked) the same way, and fails on the same things, and on the project's files that could not be found
       - name: Player smoke test
         if: matrix.player-smoke-test
         working-directory: MoravaEngine
@@ -190,6 +190,36 @@ jobs:
             exit 1
           fi
 
+      # The sample's Erika scene: cutout eyelashes, a controller with Footstep events, her sounds' files
+      - name: Erika smoke test
+        if: matrix.player-smoke-test
+        working-directory: MoravaEngine
+        env:
+          VK_LOADER_DEBUG: error,warn
+        run: |
+          set -o pipefail
+          gtimeout 600 ../build/MoravaPlayer --project ../Projects/Sample/Sample.mproject --scene ../Projects/Sample/Scenes/Erika.mscene --exit-after 10 2>&1 | tee erika-smoke-test.log
+          if grep -q VulkanDebugCallback erika-smoke-test.log; then
+            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
+            exit 1
+          fi
+          if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read|could not be opened|binding of .* is left out" erika-smoke-test.log; then
+            echo "::error::A model, texture or material of the Erika scene could not be found or loaded"
+            exit 1
+          fi
+          if ! grep -q "Animation: 1 animator(s), 1 animating" erika-smoke-test.log || grep -E "Animator of |Animator '.*' could not be loaded|Animation: .*(could not be read|doesn't exist|has no animations)|event of state" erika-smoke-test.log; then
+            echo "::error::Erika's animator didn't start, or a controller, clip or event of it couldn't be loaded (see the log)"
+            exit 1
+          fi
+          if ! grep -q "Scripts: [1-9][0-9]* instance(s)" erika-smoke-test.log || grep -q "Script error:" erika-smoke-test.log; then
+            echo "::error::The Erika scene's scripts didn't run, or one of them threw an exception (see the log)"
+            exit 1
+          fi
+          # The sounds her script plays at the animator's Footstep events, the jump and the landing
+          for sound in Footstep_1 Footstep_2 Footstep_3 Footstep_4 JumpTakeoff Land; do
+            test -f "../Projects/Sample/Assets/Audio/$sound.wav" || { echo "::error::Erika's sound $sound.wav is missing"; exit 1; }
+          done
+
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)
         uses: actions/upload-artifact@v7.0.2
@@ -199,6 +229,7 @@ jobs:
             MoravaEngine/smoke-test.log
             MoravaEngine/player-smoke-test.log
             MoravaEngine/animator-smoke-test.log
+            MoravaEngine/erika-smoke-test.log
           if-no-files-found: ignore
 
       - name: Build log

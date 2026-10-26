@@ -231,6 +231,8 @@ struct ScriptManagedApi
 	// A public field of an instance, by name: 0 done, 1 not (logged: no such field, or of another type)
 	int (*SetField)(void* instance, const char16_t* name, int length, const ScriptValue* value);
 	int (*GetField)(void* instance, const char16_t* name, int length, ScriptValue* value);
+	// An event of the entity's animator (6.4): its name and the state whose clip fired it
+	int (*InvokeAnimationEvent)(void* instance, const char16_t* name, int nameLength, const char16_t* state, int stateLength);
 };
 
 enum class ScriptCollisionKind : int32_t { CollisionEnter = 0, CollisionExit = 1, TriggerEnter = 2, TriggerExit = 3 };

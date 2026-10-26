@@ -10,7 +10,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <cmath>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 
 static bool Near(const glm::vec3& a, const glm::vec3& b)
@@ -134,7 +136,8 @@ namespace AnimationSelfTest
 			"    - {Name: Jump, Type: Trigger}\n"
 			"  States:\n"
 			"    - {Name: Idle, Clip: {File: '', Name: ''}, Speed: 1, Loop: true, InPlace: false}\n"
-			"    - {Name: Walk, Clip: {File: '', Name: Walk}, Speed: 0.6, SpeedParameter: Speed, Loop: true, InPlace: true}\n"
+			"    - {Name: Walk, Clip: {File: '', Name: Walk}, Speed: 0.6, SpeedParameter: Speed, Loop: true, InPlace: true,\n"
+			"       Events: [{Name: Footstep, Time: 0.6}, {Name: Footstep, Time: 0.1}]}\n"
 			"  Transitions:\n"
 			"    - {From: Idle, To: Walk, Fade: 0.2, Conditions: [{Parameter: Speed, Test: Greater, Value: 0.1}]}\n"
 			"    - {FromAny: true, To: Idle, Fade: 0.1, ExitTime: 0.9, Conditions: [{Parameter: Jump}, {Parameter: Grounded, Test: False}]}\n";
@@ -148,9 +151,9 @@ namespace AnimationSelfTest
 			controller.GetEntryState() != 1 || controller.Parameters[1].Default != 1.0f || controller.States[1].SpeedParameter != "Speed" ||
 			!controller.States[1].InPlace || !controller.Transitions[1].FromAny || !controller.Transitions[1].HasExitTime ||
 			controller.Transitions[1].Conditions.size() != 2 || controller.Transitions[1].Conditions[1].Test != AnimatorConditionTest::False ||
-			controller.Transitions[0].HasExitTime)
+			controller.Transitions[0].HasExitTime || controller.States[1].Events.size() != 2 || controller.States[1].Events[0].Time != 0.1f)
 		{
-			return fail("a controller's states, parameters and transitions as read");
+			return fail("a controller's states, parameters, events and transitions as read");
 		}
 		const std::string written = controller.ToText();
 		AnimatorController again;
@@ -162,6 +165,34 @@ namespace AnimationSelfTest
 		if (again.Revision <= revision)
 		{
 			return fail("a controller read again counts as a change (its revision)");
+		}
+
+		// The events a frame passes: [from, to) in each loop of a looped state, once in a held one, its end included
+		std::vector<size_t> passed;
+		auto events = [&](const AnimatorState& state, float from, float to)
+		{
+			AnimatorController::GetPassedEvents(state, from, to, passed);
+			std::string names;
+			for (size_t e : passed)
+			{
+				names += std::to_string(e);
+			}
+			return names;
+		};
+		AnimatorState walk = controller.States[1]; // events 0 at 0.1, 1 at 0.6
+		if (events(walk, 0.0f, 0.1f) != "" || events(walk, 0.0f, 0.11f) != "0" || events(walk, 0.1f, 0.6f) != "0" ||
+			events(walk, 0.5f, 1.2f) != "10" || events(walk, 3.9f, 4.65f) != "01" || events(walk, 0.0f, 5.0f) != "01" ||
+			events(walk, 0.7f, 0.05f) != "10" || events(walk, 0.2f, 0.2f) != "")
+		{
+			return fail("the events a looped state's frame passes");
+		}
+		AnimatorState once = walk;
+		once.Loop = false;
+		once.Events.push_back({ "End", 1.0f });
+		if (events(once, 0.0f, 0.5f) != "0" || events(once, 0.5f, 1.3f) != "12" || events(once, 1.3f, 1.6f) != "" ||
+			events(once, 0.95f, 1.0f) != "2")
+		{
+			return fail("the events a held state's frame passes");
 		}
 
 		Log::GetLogger()->info("Animation self-test passed");

@@ -26,6 +26,7 @@ namespace Morava
         public delegate* unmanaged<IntPtr, delegate* unmanaged<IntPtr, NativeFieldReport*, void>, int> DescribeScripts;
         public delegate* unmanaged<IntPtr, char*, int, NativeValue*, int> SetField;
         public delegate* unmanaged<IntPtr, char*, int, NativeValue*, int> GetField;
+        public delegate* unmanaged<IntPtr, char*, int, char*, int, int> InvokeAnimationEvent;
     }
 
     // The game's assembly in a context of its own that can be unloaded (hot reload). ScriptCore is the one already
@@ -94,6 +95,7 @@ namespace Morava
                 managed->DescribeScripts = &DescribeScripts;
                 managed->SetField = &SetField;
                 managed->GetField = &GetField;
+                managed->InvokeAnimationEvent = &InvokeAnimationEvent;
                 return 0;
             }
             catch (Exception) { return 1; }
@@ -252,6 +254,24 @@ namespace Morava
         {
             if (kind < 0 || kind > 3 || other == 0) { Log.Error($"InvokeCollision: no collision kind {kind}, or no other entity"); return 1; }
             return Invoke(instance, Method.OnCollisionEnter + kind, 0, other, *point, *normal);
+        }
+
+        [UnmanagedCallersOnly]
+        static int InvokeAnimationEvent(IntPtr instance, char* name, int nameLength, char* state, int stateLength)
+        {
+            Entity? entity = null;
+            try
+            {
+                if (!s_Instances.Contains(instance)) { Log.Error("OnAnimationEvent: not a script instance"); return 1; }
+                entity = (Entity)GCHandle.FromIntPtr(instance).Target!;
+                entity.OnAnimationEvent(new AnimationEvent(new string(name, 0, nameLength), new string(state, 0, stateLength)));
+                return 0;
+            }
+            catch (Exception e)
+            {
+                Log.Error($"{entity?.GetType().Name}.OnAnimationEvent: {e}");
+                return 1;
+            }
         }
 
         // The game's script classes and their fields, for the editor (ScriptFields.Describe): how many classes, -1 on an error

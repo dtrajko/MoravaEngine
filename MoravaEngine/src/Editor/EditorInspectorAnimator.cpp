@@ -123,6 +123,10 @@ static void LiveControls(EnvMapVulkanEntityID entity, SceneAnimation& game)
 		ImGui::ProgressBar(info.FadeProgress, ImVec2(-1.0f, 0.0f), overlay);
 	}
 	ImGui::TextDisabled("%llu transition(s) taken", (unsigned long long)info.Transitions);
+	if (info.Events > 0)
+	{
+		ImGui::TextDisabled("%llu event(s), the last: %s", (unsigned long long)info.Events, info.LastEvent.c_str());
+	}
 
 	const std::shared_ptr<AnimatorController> controller = game.GetController(entity);
 	if (!controller)
