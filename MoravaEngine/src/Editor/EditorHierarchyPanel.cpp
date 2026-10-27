@@ -219,7 +219,10 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 	{
 		if (CanHaveChildren(kind))
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_EntityPayload))
+			const ImGuiPayload* dragged = ImGui::GetDragDropPayload();
+			const bool allowed = !dragged || !dragged->IsDataType(s_EntityPayload) ||
+				CanBeChildOf(GetEntityKind(*(const EnvMapVulkanEntityID*)dragged->Data), kind);
+			if (const ImGuiPayload* payload = allowed ? ImGui::AcceptDragDropPayload(s_EntityPayload) : nullptr)
 			{
 				requests.Reparent = *(const EnvMapVulkanEntityID*)payload->Data;
 				requests.NewParent = entity;
@@ -245,7 +248,8 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 		{
 			StartRenaming(entity);
 		}
-		if (ImGui::MenuItem("Move to Top Level", nullptr, false, CanBeReparented(kind) && s_Scene.GetParent(entity) != NoEntity))
+		if (ImGui::MenuItem("Move to Top Level", nullptr, false, CanBeReparented(kind) && s_Scene.GetParent(entity) != NoEntity &&
+			CanBeChildOf(kind, EntityKind::Other)))
 		{
 			requests.Reparent = entity;
 			requests.NewParent = NoEntity;
@@ -398,6 +402,32 @@ void OnImGuiRenderSceneHierarchy()
 			ImGui::SetTooltip("A sound that belongs to no model: music, a waterfall, a humming machine.\n"
 				"Choose its clip in the Inspector. A model gets its own sound in its Audio section.");
 		}
+		if (ImGui::BeginMenu("UI"))
+		{
+			if (ImGui::MenuItem("Canvas"))
+			{
+				AddUIEntity(UIEntityPreset::Canvas);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The root of a screen's UI (a HUD, a menu): its elements are laid out for its reference\n"
+					"resolution and scaled to the window");
+			}
+			if (ImGui::MenuItem("Panel"))
+			{
+				AddUIEntity(UIEntityPreset::Panel);
+			}
+			if (ImGui::MenuItem("Text"))
+			{
+				AddUIEntity(UIEntityPreset::Text);
+			}
+			if (ImGui::MenuItem("Image"))
+			{
+				AddUIEntity(UIEntityPreset::Image);
+			}
+			ImGui::TextDisabled("Elements go under the selected UI entity,\nelse under the first canvas (made if none)");
+			ImGui::EndMenu();
+		}
 		ImGui::EndPopup();
 	}
 	if (ImGui::IsItemHovered())
@@ -441,7 +471,10 @@ void OnImGuiRenderSceneHierarchy()
 	}
 	if (ImGui::BeginDragDropTarget())
 	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_EntityPayload))
+		const ImGuiPayload* dragged = ImGui::GetDragDropPayload();
+		const bool allowed = !dragged || !dragged->IsDataType(s_EntityPayload) ||
+			CanBeChildOf(GetEntityKind(*(const EnvMapVulkanEntityID*)dragged->Data), EntityKind::Other);
+		if (const ImGuiPayload* payload = allowed ? ImGui::AcceptDragDropPayload(s_EntityPayload) : nullptr)
 		{
 			requests.Reparent = *(const EnvMapVulkanEntityID*)payload->Data;
 			requests.NewParent = NoEntity;

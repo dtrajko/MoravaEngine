@@ -579,6 +579,11 @@ EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 	if (s_Scene.Has<EnvironmentComponent>(entity)) return EntityKind::Environment;
 	if (s_Scene.Has<CameraComponent>(entity))      return EntityKind::Camera;
 	if (s_Scene.Has<AudioSourceComponent>(entity)) return EntityKind::Sound; // a sound alone (a model's is the model's)
+	if (s_Scene.Has<UICanvasComponent>(entity))    return EntityKind::UICanvas;
+	if (s_Scene.Has<UIRectComponent>(entity) || s_Scene.Has<UITextComponent>(entity) || s_Scene.Has<UIImageComponent>(entity))
+	{
+		return EntityKind::UIElement;
+	}
 	return EntityKind::Other;
 }
 
@@ -596,6 +601,8 @@ const char* GetEntityKindName(EntityKind kind)
 		case EntityKind::Model:       return "Model";
 		case EntityKind::Part:        return "Mesh (part of a model)";
 		case EntityKind::Sound:       return "Sound";
+		case EntityKind::UICanvas:    return "UI Canvas";
+		case EntityKind::UIElement:   return "UI Element";
 		default:                      return "Entity";
 	}
 }
@@ -615,27 +622,43 @@ ImU32 GetEntityKindColor(EntityKind kind)
 		case EntityKind::Model:       return IM_COL32(200, 200, 210, 255);
 		case EntityKind::Part:        return IM_COL32(140, 140, 150, 255);
 		case EntityKind::Sound:       return IM_COL32(80, 220, 200, 255);
+		case EntityKind::UICanvas:    return IM_COL32(250, 160, 40, 255);
+		case EntityKind::UIElement:   return IM_COL32(250, 200, 120, 255);
 		default:                      return IM_COL32(128, 128, 128, 255);
 	}
 }
 
 // Entities that can be dragged under another entity, and the ones that can take children. A part stays in its model, the
-// environment, the sun and the water stay at the top (the water is always level: a parent could tilt it).
+// environment, the sun and the water stay at the top (the water is always level: a parent could tilt it). UI elements are
+// laid out in their parent's rectangle: a canvas and UI elements take them.
 bool CanBeReparented(EntityKind kind)
 {
 	return kind == EntityKind::Model || kind == EntityKind::PointLight || kind == EntityKind::SpotLight || kind == EntityKind::Sound ||
-		kind == EntityKind::Camera;
+		kind == EntityKind::Camera || kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
 }
 
 bool CanHaveChildren(EntityKind kind)
 {
-	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight;
+	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
+		kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
+}
+
+bool CanBeChildOf(EntityKind child, EntityKind parent)
+{
+	const bool childIsUI = child == EntityKind::UICanvas || child == EntityKind::UIElement;
+	const bool parentIsUI = parent == EntityKind::UICanvas || parent == EntityKind::UIElement;
+	if (child == EntityKind::UIElement)
+	{
+		return parentIsUI;
+	}
+	return !parentIsUI || childIsUI;
 }
 
 bool CanBeDeleted(EntityKind kind)
 {
 	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
-		kind == EntityKind::Water || kind == EntityKind::ProbeVolume || kind == EntityKind::Sound || kind == EntityKind::Camera;
+		kind == EntityKind::Water || kind == EntityKind::ProbeVolume || kind == EntityKind::Sound || kind == EntityKind::Camera ||
+		kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
 }
 
 // Removes an entity (and its children): a model or a part at the start of the next frame (its GPU resources may be in use),
@@ -662,6 +685,8 @@ void DeleteEntity(EnvMapVulkanEntityID entity)
 			break;
 		case EntityKind::Sound:
 		case EntityKind::Camera:
+		case EntityKind::UICanvas:
+		case EntityKind::UIElement:
 			s_Scene.DestroyEntity(entity);
 			s_EditorSelection.Sync();
 			break;

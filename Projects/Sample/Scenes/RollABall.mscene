@@ -318,6 +318,8 @@ Entities:
       Fields:
         Camera: {Entity: 7310000000000000001}
         SparklePrefab: {Prefab: Assets/Prefabs/Sparkle.mprefab}
+        ScoreText: {Entity: 7310000000000000303}
+        MessageText: {Entity: 7310000000000000304}
   - ID: 7310000000000000003
     Name: Sphere
     Parent: 7310000000000000002
@@ -901,3 +903,55 @@ Entities:
       Spatial: false
       MinDistance: 1
       MaxDistance: 30
+  - ID: 7310000000000000301
+    Name: HUD
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
+  - ID: 7310000000000000302
+    Name: Score Panel
+    Parent: 7310000000000000301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 40], Size: [360, 96], Visible: true}
+    UIImage: {Texture: "", Color: [0.02, 0.03, 0.06, 0.6]}
+  - ID: 7310000000000000303
+    Name: Score Text
+    Parent: 7310000000000000302
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [-48, 0], Visible: true}
+    UIText:
+      Text: Score 0 / 12
+      Font: ""
+      Size: 56
+      Color: [1, 0.86, 0.3, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000304
+    Name: Message
+    Parent: 7310000000000000301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.3], AnchorMax: [0.5, 0.3], Pivot: [0.5, 0.5], Position: [0, 0], Size: [1200, 220], Visible: false}
+    UIImage: {Texture: "", Color: [0.02, 0.03, 0.06, 0.6]}
+    UIText:
+      Text: You win!
+      Font: ""
+      Size: 72
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: true
+      LineSpacing: 1.1

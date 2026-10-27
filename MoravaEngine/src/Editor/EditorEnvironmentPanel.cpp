@@ -150,6 +150,17 @@ void OnImGuiRenderEnvironment()
 				ImGuiWrapper::Property("Display Grid", s_ViewOptions.Grid);
 				ImGuiWrapper::Property("Grid Scale", s_ViewOptions.GridScale, 0.1f, 1.0f, 256.0f, PropertyFlag::DragProperty);
 				ImGuiWrapper::Property("Grid Line Width", s_ViewOptions.GridSize, 0.001f, 0.001f, 0.5f, PropertyFlag::DragProperty);
+				ImGuiWrapper::Property("Show UI (Edit)", s_ViewOptions.UI);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("The game UI (the canvases) over the viewport while editing. Play always shows it");
+				}
+				ImGuiWrapper::Property("UI Outlines", s_ViewOptions.UIOutlines);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("Debug view: the selected UI element's rectangle (orange), the rectangle it is laid out in\n"
+						"(white), its anchors (blue squares) and its pivot (white ring)");
+				}
 
 				ImGui::Columns(1);
 			}

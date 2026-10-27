@@ -23,6 +23,32 @@ namespace EnvMapVulkanSceneSerializer
 		}
 	}
 
+	static void WriteVec2(YAML::Emitter& out, const char* key, const glm::vec2& v)
+	{
+		out << YAML::Key << key << YAML::Value << YAML::Flow << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+	}
+
+	static void ReadVec2(const YAML::Node& node, glm::vec2& v)
+	{
+		if (node && node.IsSequence() && node.size() == 2)
+		{
+			v = glm::vec2(node[0].as<float>(), node[1].as<float>());
+		}
+	}
+
+	static void WriteVec4(YAML::Emitter& out, const char* key, const glm::vec4& v)
+	{
+		out << YAML::Key << key << YAML::Value << YAML::Flow << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+	}
+
+	static void ReadVec4(const YAML::Node& node, glm::vec4& v)
+	{
+		if (node && node.IsSequence() && node.size() == 4)
+		{
+			v = glm::vec4(node[0].as<float>(), node[1].as<float>(), node[2].as<float>(), node[3].as<float>());
+		}
+	}
+
 	template<typename T>
 	static void Read(const YAML::Node& node, const char* key, T& value)
 	{
@@ -342,6 +368,45 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "InstanceHash" << YAML::Value << prefab->InstanceHash;
 			out << YAML::EndMap;
 		}
+		if (const UICanvasComponent* canvas = scene.TryGet<UICanvasComponent>(entity))
+		{
+			out << YAML::Key << "UICanvas" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			WriteVec2(out, "ReferenceResolution", canvas->ReferenceResolution);
+			out << YAML::Key << "MatchWidthOrHeight" << YAML::Value << canvas->MatchWidthOrHeight;
+			out << YAML::Key << "SortOrder" << YAML::Value << canvas->SortOrder;
+			out << YAML::EndMap;
+		}
+		if (const UIRectComponent* rect = scene.TryGet<UIRectComponent>(entity))
+		{
+			out << YAML::Key << "UIRect" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			WriteVec2(out, "AnchorMin", rect->AnchorMin);
+			WriteVec2(out, "AnchorMax", rect->AnchorMax);
+			WriteVec2(out, "Pivot", rect->Pivot);
+			WriteVec2(out, "Position", rect->Position);
+			WriteVec2(out, "Size", rect->Size);
+			out << YAML::Key << "Visible" << YAML::Value << rect->Visible;
+			out << YAML::EndMap;
+		}
+		if (const UITextComponent* text = scene.TryGet<UITextComponent>(entity))
+		{
+			out << YAML::Key << "UIText" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Text" << YAML::Value << text->Text;
+			out << YAML::Key << "Font" << YAML::Value << ProjectPaths::ToStored(text->Font);
+			out << YAML::Key << "Size" << YAML::Value << text->Size;
+			WriteVec4(out, "Color", text->Color);
+			out << YAML::Key << "Align" << YAML::Value << UITextComponent::GetAlignName(text->Align);
+			out << YAML::Key << "VerticalAlign" << YAML::Value << UITextComponent::GetVerticalAlignName(text->VerticalAlign);
+			out << YAML::Key << "Wrap" << YAML::Value << text->Wrap;
+			out << YAML::Key << "LineSpacing" << YAML::Value << text->LineSpacing;
+			out << YAML::EndMap;
+		}
+		if (const UIImageComponent* image = scene.TryGet<UIImageComponent>(entity))
+		{
+			out << YAML::Key << "UIImage" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "Texture" << YAML::Value << ProjectPaths::ToStored(image->Texture);
+			WriteVec4(out, "Color", image->Color);
+			out << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -595,6 +660,51 @@ namespace EnvMapVulkanSceneSerializer
 			prefab.File = ProjectPaths::Resolve(prefabNode["File"].as<std::string>(""));
 			Read(prefabNode, "PrefabHash", prefab.PrefabHash);
 			Read(prefabNode, "InstanceHash", prefab.InstanceHash);
+		}
+		if (YAML::Node canvasNode = node["UICanvas"]; canvasNode && canvasNode.IsMap())
+		{
+			UICanvasComponent& canvas = scene.Add<UICanvasComponent>(entity);
+			ReadVec2(canvasNode["ReferenceResolution"], canvas.ReferenceResolution);
+			Read(canvasNode, "MatchWidthOrHeight", canvas.MatchWidthOrHeight);
+			Read(canvasNode, "SortOrder", canvas.SortOrder);
+		}
+		if (YAML::Node rectNode = node["UIRect"]; rectNode && rectNode.IsMap())
+		{
+			UIRectComponent& rect = scene.Add<UIRectComponent>(entity);
+			ReadVec2(rectNode["AnchorMin"], rect.AnchorMin);
+			ReadVec2(rectNode["AnchorMax"], rect.AnchorMax);
+			ReadVec2(rectNode["Pivot"], rect.Pivot);
+			ReadVec2(rectNode["Position"], rect.Position);
+			ReadVec2(rectNode["Size"], rect.Size);
+			Read(rectNode, "Visible", rect.Visible);
+		}
+		if (YAML::Node textNode = node["UIText"]; textNode && textNode.IsMap())
+		{
+			UITextComponent& text = scene.Add<UITextComponent>(entity);
+			Read(textNode, "Text", text.Text);
+			const std::string font = textNode["Font"].as<std::string>("");
+			text.Font = font.empty() ? std::string() : ProjectPaths::Resolve(font);
+			Read(textNode, "Size", text.Size);
+			ReadVec4(textNode["Color"], text.Color);
+			const std::string align = textNode["Align"].as<std::string>("Center");
+			for (UITextAlign a : { UITextAlign::Left, UITextAlign::Center, UITextAlign::Right })
+			{
+				if (align == UITextComponent::GetAlignName(a)) text.Align = a;
+			}
+			const std::string verticalAlign = textNode["VerticalAlign"].as<std::string>("Middle");
+			for (UITextVerticalAlign a : { UITextVerticalAlign::Top, UITextVerticalAlign::Middle, UITextVerticalAlign::Bottom })
+			{
+				if (verticalAlign == UITextComponent::GetVerticalAlignName(a)) text.VerticalAlign = a;
+			}
+			Read(textNode, "Wrap", text.Wrap);
+			Read(textNode, "LineSpacing", text.LineSpacing);
+		}
+		if (YAML::Node imageNode = node["UIImage"]; imageNode && imageNode.IsMap())
+		{
+			UIImageComponent& image = scene.Add<UIImageComponent>(entity);
+			const std::string texture = imageNode["Texture"].as<std::string>("");
+			image.Texture = texture.empty() ? std::string() : ProjectPaths::Resolve(texture);
+			ReadVec4(imageNode["Color"], image.Color);
 		}
 		if (YAML::Node probesNode = node["ProbeVolume"])
 		{

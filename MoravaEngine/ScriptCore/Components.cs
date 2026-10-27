@@ -10,7 +10,8 @@ namespace Morava
         public Entity Entity { get; internal set; } = null!;
 
         // The engine's numbers for the kinds (ScriptComponent in src/Scripting/ScriptApi.h)
-        internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5, Animator = 6 }
+        internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5, Animator = 6,
+            UIRect = 7, UIText = 8, UIImage = 9 }
 
         internal static Kind KindOf(Type type)
         {
@@ -21,6 +22,9 @@ namespace Morava
             if (type == typeof(AudioListener)) return Kind.AudioListener;
             if (type == typeof(Camera)) return Kind.Camera;
             if (type == typeof(Animator)) return Kind.Animator;
+            if (type == typeof(UIRect)) return Kind.UIRect;
+            if (type == typeof(UIText)) return Kind.UIText;
+            if (type == typeof(UIImage)) return Kind.UIImage;
             throw new ArgumentException($"{type.Name} is not a component of the engine");
         }
 

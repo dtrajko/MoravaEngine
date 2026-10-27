@@ -163,6 +163,11 @@ jobs:
             echo "::error::Audio didn't start, or a sound of the sample couldn't be loaded (see the log)"
             exit 1
           fi
+          # The game UI (7.2): the HUD's font made into an atlas (or read from its cache), its text and images drawn
+          if ! grep -E -q "UI font: '.*' (made|from the cache)" player-smoke-test.log || grep -E "UI font: (can't|FreeType)|UI font: .*(isn't a font|has none of the characters|didn't fit)|UI image: can't" player-smoke-test.log; then
+            echo "::error::The game UI's font or an image of the HUD could not be loaded (see the log)"
+            exit 1
+          fi
 
       # The animator (6.4): the sample's Character scene, its character posed by its controller (clips from three files
       # of one rig), the script that sets the parameters running

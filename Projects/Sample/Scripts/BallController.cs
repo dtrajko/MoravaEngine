@@ -7,8 +7,9 @@ namespace Sample
     /// <summary>
     /// The ball of Roll a Ball: Move pushes it (forward being away from the camera), Jump hops it off the ground. It needs
     /// a Rigid Body (Dynamic) and a sphere Collider: physics rolls it. It counts the pickups it collects (Pickup calls
-    /// Collect), says the score in the log, plays a sound for each pickup, each jump and the win, and scatters sparkles
-    /// where a pickup was. After the win, or a fall off the playground, the game starts again (Scene.Reload).
+    /// Collect), shows the score on the HUD (and in the log), plays a sound for each pickup, each jump and the win, and
+    /// scatters sparkles where a pickup was. After the win, or a fall off the playground, the game starts again
+    /// (Scene.Reload); the HUD's message counts down to it.
     /// </summary>
     public class BallController : Entity
     {
@@ -39,10 +40,14 @@ namespace Sample
         /// <summary>Below this height the ball has fallen off: the game starts again.</summary>
         public float FallHeight = -10.0f;
 
+        /// <summary>The HUD (UI Text elements, none: not shown): the score, and the message at the win (hidden until then).</summary>
+        public Entity? ScoreText;
+        public Entity? MessageText;
+
         Rigidbody body = null!;
         float radius;
         int total;
-        double startTime, restartTime = -1;
+        double startTime, restartTime = -1, winTime;
         readonly Random random = new();
 
         protected override void OnCreate()
@@ -53,6 +58,23 @@ namespace Sample
             total = Scene.FindEntitiesWithTag("Pickup").Length;
             startTime = Time.GameTime; // the game time goes on when the scene starts again
             Log.Info($"Roll a Ball: collect the {total} pickups");
+            ShowScore();
+        }
+
+        void ShowScore()
+        {
+            if (ScoreText?.GetComponent<UIText>() is UIText text)
+                text.Text = $"Score {Score} / {total}";
+        }
+
+        void ShowMessage(string message)
+        {
+            if (MessageText == null)
+                return;
+            if (MessageText.GetComponent<UIText>() is UIText text)
+                text.Text = message;
+            if (MessageText.GetComponent<UIRect>() is UIRect rect)
+                rect.Visible = true;
         }
 
         protected override void OnUpdate(float dt)
@@ -61,6 +83,10 @@ namespace Sample
             {
                 restartTime = -1;
                 Scene.Reload();
+            }
+            else if (restartTime >= 0)
+            {
+                ShowMessage($"You win! All {total} pickups in {winTime:0.0} s\nAgain in {Math.Ceiling(restartTime - Time.GameTime):0}");
             }
             else if (WorldPosition.Y < FallHeight)
             {
@@ -93,6 +119,7 @@ namespace Sample
         {
             Score++;
             Log.Info($"Score: {Score} / {total} ({pickup.Name})");
+            ShowScore();
             // From where the pickup was, a little higher each time
             if (PickupSound.Length > 0)
                 Audio.PlayOneShot(PickupSound, pickup.WorldPosition, 0.8f, AudioBus.Effects, 1.0f + 0.04f * (Score - 1));
@@ -108,7 +135,9 @@ namespace Sample
             }
             if (Score == total)
             {
-                Log.Info($"You win! All {total} pickups in {Time.GameTime - startTime:0.0} s" +
+                winTime = Time.GameTime - startTime;
+                ShowMessage($"You win! All {total} pickups in {winTime:0.0} s");
+                Log.Info($"You win! All {total} pickups in {winTime:0.0} s" +
                     (RestartDelay > 0 ? $": again in {RestartDelay:0} s" : ""));
                 if (WinSound.Length > 0)
                     Audio.PlayOneShot(WinSound);

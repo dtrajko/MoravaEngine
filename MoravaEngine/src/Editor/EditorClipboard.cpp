@@ -1,4 +1,4 @@
-// Copy and paste of models, mesh parts and lights
+// Copy and paste of models, mesh parts, lights and UI
 
 
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
@@ -43,6 +43,7 @@ using namespace EnvMapVulkanSceneData;
 // the selected models, parts and point and spot lights, with everything under them, so a paste works after the originals
 // were changed or removed. Paste makes new entities from it, in place (where the originals were when copied), next to
 // the originals (under the same parent, right after them; at the top level when that parent is gone), and selects them.
+// UI canvases and elements are copied with their UI components and the UI under them.
 // A model is loaded again from its file (each model entity has its own, see ModelComponent), with the parts it had then:
 // their materials, their transforms (the meshes' exact matrices). A part copied without its model becomes a model of its
 // own, with only that mesh. The sun, the water and the environment are one per scene: not copied.
@@ -67,12 +68,17 @@ struct ClipboardEntity
 	std::vector<Part> Parts;
 	PointLightComponent PointLight;
 	SpotLightComponent SpotLight;
-	std::vector<ClipboardEntity> Children;  // the models and lights under it
+	std::optional<UICanvasComponent> UICanvas;
+	std::optional<UIRectComponent> UIRect;
+	std::optional<UITextComponent> UIText;
+	std::optional<UIImageComponent> UIImage;
+	std::vector<ClipboardEntity> Children;  // the models, lights and UI under it
 };
 
 bool CanBeCopied(EntityKind kind)
 {
-	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight;
+	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
+		kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
 }
 
 static std::vector<ClipboardEntity> s_Clipboard;
@@ -165,6 +171,13 @@ static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity)
 		case EntityKind::SpotLight:
 			copy.SpotLight = s_Scene.Get<SpotLightComponent>(entity);
 			break;
+		case EntityKind::UICanvas:
+		case EntityKind::UIElement:
+			if (const UICanvasComponent* canvas = s_Scene.TryGet<UICanvasComponent>(entity)) copy.UICanvas = *canvas;
+			if (const UIRectComponent* rect = s_Scene.TryGet<UIRectComponent>(entity)) copy.UIRect = *rect;
+			if (const UITextComponent* text = s_Scene.TryGet<UITextComponent>(entity)) copy.UIText = *text;
+			if (const UIImageComponent* image = s_Scene.TryGet<UIImageComponent>(entity)) copy.UIImage = *image;
+			break;
 		default:
 			return std::nullopt;
 	}
@@ -198,7 +211,7 @@ void CopySelection()
 	}
 	if (clipboard.empty())
 	{
-		Log::GetLogger()->warn("Copy: nothing to copy (models, meshes and point and spot lights can be copied)");
+		Log::GetLogger()->warn("Copy: nothing to copy (models, meshes, point and spot lights and UI can be copied)");
 		return;
 	}
 	s_Clipboard = std::move(clipboard);
@@ -327,6 +340,14 @@ static EnvMapVulkanEntityID PasteEntity(const ClipboardEntity& copy, EnvMapVulka
 			lights.SpotShadowed += light.CastShadows ? 1 : 0;
 			break;
 		}
+		case EntityKind::UICanvas:
+		case EntityKind::UIElement:
+			entity = s_Scene.CreateEntity(copy.Name, parent);
+			if (copy.UICanvas) s_Scene.Add<UICanvasComponent>(entity) = *copy.UICanvas;
+			if (copy.UIRect) s_Scene.Add<UIRectComponent>(entity) = *copy.UIRect;
+			if (copy.UIText) s_Scene.Add<UITextComponent>(entity) = *copy.UIText;
+			if (copy.UIImage) s_Scene.Add<UIImageComponent>(entity) = *copy.UIImage;
+			break;
 		default:
 			return NoEntity;
 	}

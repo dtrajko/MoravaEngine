@@ -908,11 +908,23 @@ void OnImGuiRenderViewport()
 	// mesh under the cursor (or the water in front of it). Ctrl or Shift + click adds it to the selection or removes
 	// it (as in Unity); a double click selects the whole model of the mesh, and Ctrl or Shift + double click adds
 	// all the model's meshes (parts) to the selection.
-	if (!gameRunning && viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
-		!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+	// A UI element under the cursor comes first: it is drawn over the scene (see HandleViewportUIMouse; it also drags it)
+	SetUIViewSize(glm::vec2(s_ViewportImageSize.x, s_ViewportImageSize.y));
+	const bool clickedScene = !gameRunning && viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() &&
+		!ImGuizmo::IsUsing() && !Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f;
+	const bool toggle = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl) ||
+		Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift);
+	const glm::vec2 mouseInView(ImGui::GetMousePos().x - s_ViewportImageMin.x, ImGui::GetMousePos().y - s_ViewportImageMin.y);
+	if (HandleViewportUIMouse(mouseInView, clickedScene, toggle))
 	{
-		const bool toggle = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl) ||
-			Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift);
+		if (clickedScene)
+		{
+			ExtractLights(); // the selected light's kind and the water's selection follow the primary entity
+			ExtractWater();
+		}
+	}
+	else if (clickedScene)
+	{
 		EnvMapVulkanEntityID clicked = NoEntity;
 		EnvMapVulkanEntityID clickedModel = NoEntity;
 		LightKind lightKind;

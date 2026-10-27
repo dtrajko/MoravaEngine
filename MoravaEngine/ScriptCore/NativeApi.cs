@@ -79,6 +79,19 @@ namespace Morava
         public delegate* unmanaged<ulong, char*, int, float, int> Animator_Play;
         public delegate* unmanaged<ulong, NativeAnimatorInfo*, int> Animator_GetInfo;
         public delegate* unmanaged<ulong, char*, int, int> Animator_GetState;
+
+        public delegate* unmanaged<ulong, NativeUIRect*, int> UIRect_Get;
+        public delegate* unmanaged<ulong, NativeUIRect*, int> UIRect_Set;
+        public delegate* unmanaged<ulong, char*, int, int> UIText_GetText;
+        public delegate* unmanaged<ulong, char*, int, int> UIText_SetText;
+        public delegate* unmanaged<ulong, NativeUITextStyle*, int> UIText_GetStyle;
+        public delegate* unmanaged<ulong, NativeUITextStyle*, int> UIText_SetStyle;
+        public delegate* unmanaged<ulong, char*, int, int> UIText_GetFont;
+        public delegate* unmanaged<ulong, char*, int, int> UIText_SetFont;
+        public delegate* unmanaged<ulong, Vector4*, int> UIImage_GetColor;
+        public delegate* unmanaged<ulong, Vector4*, int> UIImage_SetColor;
+        public delegate* unmanaged<ulong, char*, int, int> UIImage_GetTexture;
+        public delegate* unmanaged<ulong, char*, int, int> UIImage_SetTexture;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -121,6 +134,21 @@ namespace Morava
         public int Primary;
         public float FieldOfView;
         public float NearClip, FarClip;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeUIRect
+    {
+        public Vector2 AnchorMin, AnchorMax, Pivot, Position, Size;
+        public int Visible, Reserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeUITextStyle
+    {
+        public Vector4 Color;
+        public float Size, LineSpacing;
+        public int Align, VerticalAlign, Wrap, Reserved;
     }
 
     [StructLayout(LayoutKind.Sequential)]
