@@ -17,7 +17,7 @@ namespace Morava
             fixed (char* chars = name) Interop.Game->Input_GetAction(chars, name.Length, &state);
             if (state.Exists == 0)
                 throw new ArgumentException($"The input map has no action '{name}' (the project's Settings/Input.minput; the View > Input panel lists them)");
-            return new InputAction(state.Value, state.Held != 0, state.Pressed != 0, state.Released != 0);
+            return new InputAction(state.Value, state.Held != 0, state.Pressed != 0, state.Released != 0, state.Gamepad != 0);
         }
 
         /// <summary>A button's or an axis' value: 0 or 1 for a button, -1 to 1 for an axis.</summary>
@@ -34,6 +34,9 @@ namespace Morava
 
         /// <summary>The button went up: in this frame (OnUpdate), or since the last fixed step (OnFixedUpdate).</summary>
         public static bool WasReleased(string name) => GetAction(name).WasReleased;
+
+        /// <summary>The action's value comes from a gamepad now (a stick: how far it is pushed means something).</summary>
+        public static bool FromGamepad(string name) => GetAction(name).FromGamepad;
 
         /// <summary>
         /// The game wants the mouse: the cursor hidden and its motion unlimited (a camera turned by the mouse), from the next
@@ -57,12 +60,13 @@ namespace Morava
     /// <summary>An input action's state (Input.GetAction).</summary>
     public readonly struct InputAction
     {
-        internal InputAction(Vector2 value, bool held, bool pressed, bool released)
+        internal InputAction(Vector2 value, bool held, bool pressed, bool released, bool fromGamepad)
         {
             Value = value;
             IsHeld = held;
             WasPressed = pressed;
             WasReleased = released;
+            FromGamepad = fromGamepad;
         }
 
         /// <summary>A button: X is 0 or 1. An axis: X. Two axes: X and Y.</summary>
@@ -76,5 +80,8 @@ namespace Morava
 
         /// <summary>Went up in this update.</summary>
         public bool WasReleased { get; }
+
+        /// <summary>The value is a gamepad's: the binding that gave it (the largest) is a gamepad's button, axis or stick.</summary>
+        public bool FromGamepad { get; }
     }
 }

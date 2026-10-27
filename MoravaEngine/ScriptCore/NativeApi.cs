@@ -62,7 +62,7 @@ namespace Morava
         public delegate* unmanaged<ulong, int*, int> AudioListener_GetActive;
         public delegate* unmanaged<ulong, int, int> AudioListener_SetActive;
 
-        public delegate* unmanaged<char*, int, Vector3*, int, float, float, int> Audio_PlayOneShot;
+        public delegate* unmanaged<char*, int, Vector3*, int, float, float, float, int> Audio_PlayOneShot;
         public delegate* unmanaged<float*, void> Audio_GetVolumes;
         public delegate* unmanaged<float*, void> Audio_SetVolumes;
 
@@ -100,7 +100,7 @@ namespace Morava
     struct NativeInputAction
     {
         public Vector2 Value;
-        public int Held, Pressed, Released, Exists;
+        public int Held, Pressed, Released, Exists, Gamepad;
     }
 
     [StructLayout(LayoutKind.Sequential)]

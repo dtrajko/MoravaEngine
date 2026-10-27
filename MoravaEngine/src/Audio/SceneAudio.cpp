@@ -393,7 +393,7 @@ bool SceneAudio::ApplySettings(EnvMapVulkanEntityID entity)
 	return true;
 }
 
-bool SceneAudio::PlayOneShot(const std::string& clip, const glm::vec3* position, AudioBus bus, float volume, float pitch)
+bool SceneAudio::PlayOneShot(const std::string& clip, const glm::vec3* position, AudioBus bus, float volume, float pitch, float minDistance)
 {
 	ma_engine* engine = AudioEngine::GetEngine();
 	ma_sound* source = m_Scene && engine ? GetClip(clip) : nullptr;
@@ -415,6 +415,7 @@ bool SceneAudio::PlayOneShot(const std::string& clip, const glm::vec3* position,
 	if (position)
 	{
 		ma_sound_set_attenuation_model(&oneShot->Sound, ma_attenuation_model_inverse);
+		ma_sound_set_min_distance(&oneShot->Sound, std::max(minDistance, 0.01f));
 		ma_sound_set_position(&oneShot->Sound, position->x, position->y, position->z);
 	}
 	ma_sound_set_volume(&oneShot->Sound, volume);

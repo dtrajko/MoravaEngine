@@ -23,14 +23,19 @@ namespace Morava
         public static bool PlayOneShot(string clip, float volume = 1.0f, AudioBus bus = AudioBus.Effects, float pitch = 1.0f)
         {
             fixed (char* chars = clip)
-                return Interop.Game->Audio_PlayOneShot(chars, clip.Length, null, (int)bus, volume, pitch) != 0;
+                return Interop.Game->Audio_PlayOneShot(chars, clip.Length, null, (int)bus, volume, pitch, 1.0f) != 0;
         }
 
-        /// <summary>Plays a sound file once from a place in the world: louder near the listener, from its side.</summary>
-        public static bool PlayOneShot(string clip, Vector3 position, float volume = 1.0f, AudioBus bus = AudioBus.Effects, float pitch = 1.0f)
+        /// <summary>
+        /// Plays a sound file once from a place in the world, from its side of the listener: at volume up to minDistance
+        /// meters from the listener, quieter farther (half as loud at twice the distance). A third-person game's sounds
+        /// of the player's character: about the camera's distance from it, so they don't get quieter with the camera.
+        /// </summary>
+        public static bool PlayOneShot(string clip, Vector3 position, float volume = 1.0f, AudioBus bus = AudioBus.Effects,
+            float pitch = 1.0f, float minDistance = 1.0f)
         {
             fixed (char* chars = clip)
-                return Interop.Game->Audio_PlayOneShot(chars, clip.Length, &position, (int)bus, volume, pitch) != 0;
+                return Interop.Game->Audio_PlayOneShot(chars, clip.Length, &position, (int)bus, volume, pitch, minDistance) != 0;
         }
 
         /// <summary>The volume everything goes through, 0 to 1. For this game: the next one starts with the project's.</summary>

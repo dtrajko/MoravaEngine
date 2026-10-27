@@ -20,10 +20,13 @@ namespace Sample
     /// (the offset and rotation it starts with, catching up smoothly), behind the target, or from its front. Behind and
     /// in front, the mouse (Look, with MouseLook: the game captures the cursor, Escape gives it back) and Orbit (Q, E, R,
     /// F, the right stick) turn the view; the target's controller moves it where the camera looks. Behind, Zoom (the
-    /// mouse wheel) brings it closer or farther. With FollowMovement, the view also turns by itself towards where the
+    /// mouse wheel, the D-pad's up and down) brings it closer or farther. With FollowMovement, the view also turns by itself towards where the
     /// target moves (not while the mouse or Orbit turns it, and not when it moves back towards the camera). Behind, the
     /// camera comes closer at once instead of going through a wall, glides back out once the wall is passed, and rises
-    /// when it is pushed close, so the target stays in view. A switch glides there in SwitchSeconds.
+    /// when it is pushed close, so the target stays in view. A switch glides there in SwitchSeconds. ControlForward is the
+    /// way the target's controller steers by: the view's, but without the view's own turns towards the movement until Move
+    /// is let go or pushed a new way (a stick never pushed exactly straight would otherwise turn the view, and so the way,
+    /// further and further).
     /// </summary>
     public class CameraFollow : Entity
     {
@@ -51,7 +54,7 @@ namespace Sample
         /// <summary>Times the mouse's turn (the input map's Look: 0.1 degrees per pixel).</summary>
         public float MouseSensitivity = 1.0f;
 
-        /// <summary>Meters closer (the wheel turned away from you) or farther per notch of Zoom, behind the target.</summary>
+        /// <summary>Meters closer (the wheel turned away from you, the D-pad's up) or farther per notch of Zoom (a press, on a gamepad), behind the target.</summary>
         public float ZoomStep = 0.5f;
 
         /// <summary>Meters Zoom keeps the camera within, behind the target.</summary>
@@ -89,6 +92,23 @@ namespace Sample
         Vector3 lastTarget;
         float sinceOrbit = float.MaxValue;
         float zoomDistance, distance = -1.0f; // behind: the distance Zoom chose; the one now (a wall: closer)
+        float controlYaw;    // ControlForward's: turned by the mouse and Orbit, the view's again at a new Move
+        Vector2 controlMove; // Move's direction when controlYaw last became the view's (zero: let go)
+
+        /// <summary>
+        /// Forward on the ground for the target's controller (Move): the view's, turned by the mouse and Orbit but not by
+        /// FollowMovement while Move is held the same way; the view's again once Move is let go or turned 20 degrees.
+        /// </summary>
+        public Vector3 ControlForward
+        {
+            get
+            {
+                if (View == CameraView.Above)
+                    return Vector3.Normalize(new Vector3(Forward.X, 0.0f, Forward.Z));
+                float radians = controlYaw * MathF.PI / 180.0f;
+                return new Vector3(-MathF.Sin(radians), 0.0f, -MathF.Cos(radians));
+            }
+        }
 
         protected override void OnCreate()
         {
@@ -96,7 +116,7 @@ namespace Sample
                 Input.CursorLocked = true;
             zoomDistance = Math.Clamp(BehindDistance, MathF.Min(MinDistance, MaxDistance), MathF.Max(MinDistance, MaxDistance));
             aboveRotation = EulerAngles;
-            yaw = aboveRotation.Y;
+            yaw = controlYaw = aboveRotation.Y;
             pitch = BehindPitch;
             if (Target != null)
             {
@@ -113,6 +133,7 @@ namespace Sample
             if (Input.WasPressed("SwitchCamera"))
             {
                 View = View == CameraView.FirstPerson ? CameraView.Above : View + 1;
+                controlMove = Vector2.Zero;
                 pitch = View == CameraView.FirstPerson ? 0.0f : BehindPitch;
                 fromTranslation = Translation;
                 fromRotation = EulerAngles;
@@ -129,11 +150,25 @@ namespace Sample
                 if (MouseLook && Input.MouseCaptured)
                     orbit += Input.GetAxis2D("Look") * MouseSensitivity;
                 yaw -= orbit.X * dt;
+                controlYaw -= orbit.X * dt;
                 pitch = View == CameraView.Behind ? Math.Clamp(pitch - orbit.Y * dt, -20.0f, 70.0f) // up: lower, the ground brings it closer
                     : Math.Clamp(pitch - orbit.Y * dt, -60.0f, 60.0f);
                 sinceOrbit = orbit.LengthSquared() > 1e-4f ? 0.0f : sinceOrbit + dt;
                 if (FollowMovement && dt > 0 && sinceOrbit >= FollowDelay)
                     FollowTheMovement(moved / dt, dt);
+
+                // The way to steer by: the view's at each new Move (let go, then pushed; or turned 20 degrees, more than a thumb wobbles)
+                Vector2 move = Input.GetAxis2D("Move");
+                if (move.LengthSquared() < 0.04f)
+                {
+                    controlMove = Vector2.Zero;
+                    controlYaw = yaw;
+                }
+                else if (controlMove == Vector2.Zero || Vector2.Dot(Vector2.Normalize(move), controlMove) < 0.94f) // 20 degrees
+                {
+                    controlMove = Vector2.Normalize(move);
+                    controlYaw = yaw;
+                }
             }
 
             Vector3 wanted;
@@ -147,7 +182,10 @@ namespace Sample
                 {
                     // Back and up from a point above the target, as far as no wall is in between: closer at once, back out
                     // smoothly (no jumps past a pillar)
-                    zoomDistance = Math.Clamp(zoomDistance - Input.GetValue("Zoom") * ZoomStep,
+                    // The wheel: its notches this frame; a gamepad's buttons: a step at each press
+                    InputAction zoom = Input.GetAction("Zoom");
+                    float notches = !zoom.FromGamepad ? zoom.Value.X : zoom.WasPressed ? MathF.Sign(zoom.Value.X) : 0.0f;
+                    zoomDistance = Math.Clamp(zoomDistance - notches * ZoomStep,
                         MathF.Min(MinDistance, MaxDistance), MathF.Max(MinDistance, MaxDistance));
                     Vector3 pivot = target + Vector3.UnitY * BehindHeight;
                     Vector3 back = -forward * MathF.Cos(pitchRadians) + Vector3.UnitY * MathF.Sin(pitchRadians);

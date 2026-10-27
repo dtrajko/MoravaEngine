@@ -467,7 +467,8 @@ static void InputGetAction(const char16_t* text, int length, ScriptInputAction* 
 		return;
 	}
 	const std::string name = ToUtf8(text, length);
-	if (!s_Context->Input->GetMap().Find(name))
+	const InputAction* action = s_Context->Input->GetMap().Find(name);
+	if (!action)
 	{
 		return; // C# says which action is missing
 	}
@@ -477,6 +478,10 @@ static void InputGetAction(const char16_t* text, int length, ScriptInputAction* 
 	out->Pressed = (s_Context->InFixedStep ? state.PressedSinceFixed : state.PressedThisFrame) ? 1 : 0;
 	out->Released = (s_Context->InFixedStep ? state.ReleasedSinceFixed : state.ReleasedThisFrame) ? 1 : 0;
 	out->Exists = 1;
+	const bool fromBinding = state.Binding >= 0 && state.Binding < (int)action->Bindings.size();
+	const InputBindingSource source = fromBinding ? action->Bindings[state.Binding].Source : InputBindingSource::Key;
+	out->Gamepad = source == InputBindingSource::GamepadButton || source == InputBindingSource::GamepadAxis ||
+		source == InputBindingSource::GamepadStick ? 1 : 0;
 }
 
 static void InputSetCursorLocked(int32_t locked)
@@ -760,14 +765,15 @@ static int32_t AudioListenerSetActive(uint64_t entity, int32_t active)
 	return 1;
 }
 
-static int32_t AudioPlayOneShot(const char16_t* clip, int length, const glm::vec3* position, int32_t bus, float volume, float pitch)
+static int32_t AudioPlayOneShot(const char16_t* clip, int length, const glm::vec3* position, int32_t bus, float volume, float pitch,
+	float minDistance)
 {
 	SceneAudio* audio = GetAudio();
 	if (!audio || bus < 0 || bus >= (int32_t)AudioBus::Count)
 	{
 		return 0;
 	}
-	return audio->PlayOneShot(ProjectPaths::Resolve(ToUtf8(clip, length)), position, (AudioBus)bus, volume, pitch) ? 1 : 0;
+	return audio->PlayOneShot(ProjectPaths::Resolve(ToUtf8(clip, length)), position, (AudioBus)bus, volume, pitch, minDistance) ? 1 : 0;
 }
 
 static void AudioGetVolumes(float* out)

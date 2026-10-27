@@ -51,9 +51,10 @@ public:
 	bool ApplySettings(EnvMapVulkanEntityID entity);
 
 	// A sound played once and forgotten: at a place in the world (position) or everywhere (nullptr). False (logged once
-	// per clip) when the clip can't be loaded. At most MaxOneShots at once: the oldest stops for a new one
+	// per clip) when the clip can't be loaded. At most MaxOneShots at once: the oldest stops for a new one. At a place:
+	// as loud as volume up to minDistance meters from the listener, quieter farther (1 / distance)
 	static constexpr size_t MaxOneShots = 64;
-	bool PlayOneShot(const std::string& clip, const glm::vec3* position, AudioBus bus, float volume, float pitch);
+	bool PlayOneShot(const std::string& clip, const glm::vec3* position, AudioBus bus, float volume, float pitch, float minDistance = 1.0f);
 
 	struct Stats
 	{

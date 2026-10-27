@@ -18,16 +18,18 @@ Actions:
     Bindings:
       - { Composite: QERF, Up: R, Down: F, Left: Q, Right: E, Scale: 120 }
       - { Gamepad: RightStick, Scale: 180, DeadZone: 0.15 }
-  - Name: Zoom          # Axis1D, notches this frame: the camera closer (the wheel turned away from you) or farther (CameraFollow)
+  - Name: Zoom          # Axis1D, notches this frame (the D-pad: a notch at each press): the camera closer (the wheel turned away from you, up) or farther (CameraFollow)
     Type: Axis1D
     Bindings:
       - { Mouse: Wheel }
+      - { Gamepad: DPadUp }
+      - { Gamepad: DPadDown, Scale: -1 }
   - Name: SwitchCamera  # the next camera view: above, behind the ball, the ball's eyes
     Type: Button
     Bindings: [ { Key: C }, { Gamepad: Y } ]
   - Name: Use           # a character uses what is in front of it (AnimatedCharacter: the animator's Use trigger)
     Type: Button
     Bindings: [ { Key: Enter }, { Gamepad: X } ]
-  - Name: Run           # held: a character runs instead of walking (AnimatedCharacter)
+  - Name: Run           # held: a character runs instead of walking (AnimatedCharacter; a stick pushed all the way runs too)
     Type: Button
-    Bindings: [ { Key: LeftShift }, { Key: RightShift }, { Gamepad: LeftThumb } ]
+    Bindings: [ { Key: LeftShift }, { Key: RightShift }, { Gamepad: RightBumper }, { Gamepad: LeftThumb } ]

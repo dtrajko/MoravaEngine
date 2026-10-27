@@ -188,6 +188,14 @@ static std::string GetScenesFolderForDialog()
 	return std::filesystem::absolute(folder, error).u8string();
 }
 
+// Where projects are: Projects in the repository, beside the engine's folder (the working directory); none: the dialog's own
+static std::string GetProjectsFolderForDialog()
+{
+	std::error_code error;
+	const std::filesystem::path folder = std::filesystem::absolute("../Projects", error).lexically_normal();
+	return !error && std::filesystem::is_directory(folder, error) ? folder.u8string() : std::string();
+}
+
 std::string GetAssetFolderForDialog()
 {
 	const Project* project = Project::GetOpen();
@@ -438,7 +446,8 @@ void RequestNewProject()
 	{
 		return;
 	}
-	const std::string folder = FileDialogs::PickFolder("New Project: a folder for it (the project is named after it)");
+	const std::string folder = FileDialogs::PickFolder("New Project: a folder for it (the project is named after it)",
+		GetProjectsFolderForDialog());
 	if (!folder.empty())
 	{
 		RequestSceneOperation(SceneOperation::NewProject, folder);
@@ -451,7 +460,7 @@ void RequestOpenProject()
 	{
 		return;
 	}
-	const std::string filepath = FileDialogs::OpenFile({ { "Project", "mproject" } });
+	const std::string filepath = FileDialogs::OpenFile({ { "Project", "mproject" } }, GetProjectsFolderForDialog());
 	if (!filepath.empty())
 	{
 		RequestSceneOperation(SceneOperation::OpenProject, filepath);
