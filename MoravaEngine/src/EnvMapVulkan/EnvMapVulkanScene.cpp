@@ -278,6 +278,30 @@ const char* RigidBodyComponent::GetTypeName(BodyType type)
 	return "Dynamic";
 }
 
+// UITextComponent
+
+const char* UITextComponent::GetAlignName(UITextAlign align)
+{
+	switch (align)
+	{
+		case UITextAlign::Left:   return "Left";
+		case UITextAlign::Center: return "Center";
+		case UITextAlign::Right:  return "Right";
+	}
+	return "Center";
+}
+
+const char* UITextComponent::GetVerticalAlignName(UITextVerticalAlign align)
+{
+	switch (align)
+	{
+		case UITextVerticalAlign::Top:    return "Top";
+		case UITextVerticalAlign::Middle: return "Middle";
+		case UITextVerticalAlign::Bottom: return "Bottom";
+	}
+	return "Middle";
+}
+
 // EnvMapVulkanScene
 
 EnvMapVulkanEntityID EnvMapVulkanScene::NewID()

@@ -280,6 +280,9 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::AudioSource:       return scene->Has<AudioSourceComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::AudioListener:     return scene->Has<AudioListenerComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Camera:            return scene->Has<CameraComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::UIRect:            return scene->Has<UIRectComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::UIText:            return scene->Has<UITextComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::UIImage:           return scene->Has<UIImageComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Animator:          return scene->Has<AnimatorComponent>(entity) ? 1 : 0;
 	}
 	return 0;
@@ -881,6 +884,154 @@ static int32_t AnimatorGetState(uint64_t entity, char16_t* buffer, int capacity)
 	return CopyString(info.State, buffer, capacity);
 }
 
+// ---- Game UI (7.1)
+
+template<typename T>
+static T* GetUIComponent(uint64_t entity)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	return scene ? scene->TryGet<T>(entity) : nullptr;
+}
+
+static int32_t UIRectGet(uint64_t entity, ScriptUIRect* out)
+{
+	const UIRectComponent* rect = GetUIComponent<UIRectComponent>(entity);
+	if (!rect)
+	{
+		return 0;
+	}
+	out->AnchorMin = rect->AnchorMin;
+	out->AnchorMax = rect->AnchorMax;
+	out->Pivot = rect->Pivot;
+	out->Position = rect->Position;
+	out->Size = rect->Size;
+	out->Visible = rect->Visible ? 1 : 0;
+	return 1;
+}
+
+static int32_t UIRectSet(uint64_t entity, const ScriptUIRect* value)
+{
+	UIRectComponent* rect = GetUIComponent<UIRectComponent>(entity);
+	if (!rect)
+	{
+		return 0;
+	}
+	rect->AnchorMin = glm::clamp(value->AnchorMin, glm::vec2(0.0f), glm::vec2(1.0f));
+	rect->AnchorMax = glm::clamp(value->AnchorMax, glm::vec2(0.0f), glm::vec2(1.0f));
+	rect->Pivot = value->Pivot;
+	rect->Position = value->Position;
+	rect->Size = value->Size;
+	rect->Visible = value->Visible != 0;
+	return 1;
+}
+
+static int32_t UITextGetText(uint64_t entity, char16_t* buffer, int capacity)
+{
+	const UITextComponent* text = GetUIComponent<UITextComponent>(entity);
+	return text ? CopyString(text->Text, buffer, capacity) : -2;
+}
+
+static int32_t UITextSetText(uint64_t entity, const char16_t* value, int length)
+{
+	UITextComponent* text = GetUIComponent<UITextComponent>(entity);
+	if (!text)
+	{
+		return 0;
+	}
+	text->Text = ToUtf8(value, length);
+	return 1;
+}
+
+static int32_t UITextGetStyle(uint64_t entity, ScriptUITextStyle* out)
+{
+	const UITextComponent* text = GetUIComponent<UITextComponent>(entity);
+	if (!text)
+	{
+		return 0;
+	}
+	out->Color = text->Color;
+	out->Size = text->Size;
+	out->LineSpacing = text->LineSpacing;
+	out->Align = (int32_t)text->Align;
+	out->VerticalAlign = (int32_t)text->VerticalAlign;
+	out->Wrap = text->Wrap ? 1 : 0;
+	return 1;
+}
+
+static int32_t UITextSetStyle(uint64_t entity, const ScriptUITextStyle* value)
+{
+	UITextComponent* text = GetUIComponent<UITextComponent>(entity);
+	if (!text)
+	{
+		return 0;
+	}
+	text->Color = value->Color;
+	text->Size = std::max(value->Size, 0.0f);
+	text->LineSpacing = value->LineSpacing;
+	text->Align = (UITextAlign)glm::clamp(value->Align, 0, 2);
+	text->VerticalAlign = (UITextVerticalAlign)glm::clamp(value->VerticalAlign, 0, 2);
+	text->Wrap = value->Wrap != 0;
+	return 1;
+}
+
+static int32_t UITextGetFont(uint64_t entity, char16_t* buffer, int capacity)
+{
+	const UITextComponent* text = GetUIComponent<UITextComponent>(entity);
+	return text ? CopyString(text->Font.empty() ? std::string() : ProjectPaths::ToStored(text->Font), buffer, capacity) : -2;
+}
+
+static int32_t UITextSetFont(uint64_t entity, const char16_t* font, int length)
+{
+	UITextComponent* text = GetUIComponent<UITextComponent>(entity);
+	if (!text)
+	{
+		return 0;
+	}
+	const std::string path = ToUtf8(font, length);
+	text->Font = path.empty() ? std::string() : ProjectPaths::Resolve(path);
+	return 1;
+}
+
+static int32_t UIImageGetColor(uint64_t entity, glm::vec4* out)
+{
+	const UIImageComponent* image = GetUIComponent<UIImageComponent>(entity);
+	if (!image)
+	{
+		return 0;
+	}
+	*out = image->Color;
+	return 1;
+}
+
+static int32_t UIImageSetColor(uint64_t entity, const glm::vec4* value)
+{
+	UIImageComponent* image = GetUIComponent<UIImageComponent>(entity);
+	if (!image)
+	{
+		return 0;
+	}
+	image->Color = *value;
+	return 1;
+}
+
+static int32_t UIImageGetTexture(uint64_t entity, char16_t* buffer, int capacity)
+{
+	const UIImageComponent* image = GetUIComponent<UIImageComponent>(entity);
+	return image ? CopyString(image->Texture.empty() ? std::string() : ProjectPaths::ToStored(image->Texture), buffer, capacity) : -2;
+}
+
+static int32_t UIImageSetTexture(uint64_t entity, const char16_t* texture, int length)
+{
+	UIImageComponent* image = GetUIComponent<UIImageComponent>(entity);
+	if (!image)
+	{
+		return 0;
+	}
+	const std::string path = ToUtf8(texture, length);
+	image->Texture = path.empty() ? std::string() : ProjectPaths::Resolve(path);
+	return 1;
+}
+
 namespace ScriptBindings
 {
 	void Bind()
@@ -943,6 +1094,18 @@ namespace ScriptBindings
 		api.Animator_Play = AnimatorPlay;
 		api.Animator_GetInfo = AnimatorGetInfo;
 		api.Animator_GetState = AnimatorGetState;
+		api.UIRect_Get = UIRectGet;
+		api.UIRect_Set = UIRectSet;
+		api.UIText_GetText = UITextGetText;
+		api.UIText_SetText = UITextSetText;
+		api.UIText_GetStyle = UITextGetStyle;
+		api.UIText_SetStyle = UITextSetStyle;
+		api.UIText_GetFont = UITextGetFont;
+		api.UIText_SetFont = UITextSetFont;
+		api.UIImage_GetColor = UIImageGetColor;
+		api.UIImage_SetColor = UIImageSetColor;
+		api.UIImage_GetTexture = UIImageGetTexture;
+		api.UIImage_SetTexture = UIImageSetTexture;
 	}
 
 	void SetContext(ScriptContext* context)

@@ -66,6 +66,30 @@ struct ScriptCameraSettings
 	float NearClip = 0.01f, FarClip = 1000.0f;
 };
 
+// A UIRectComponent as a script reads and writes it (UIRect's properties)
+struct ScriptUIRect
+{
+	glm::vec2 AnchorMin = glm::vec2(0.5f);
+	glm::vec2 AnchorMax = glm::vec2(0.5f);
+	glm::vec2 Pivot = glm::vec2(0.5f);
+	glm::vec2 Position = glm::vec2(0.0f);
+	glm::vec2 Size = glm::vec2(100.0f, 30.0f);
+	int32_t Visible = 1;
+	int32_t Reserved = 0;
+};
+
+// A UITextComponent's look (UIText's properties; the text and the font come apart, UIText_GetText...)
+struct ScriptUITextStyle
+{
+	glm::vec4 Color = glm::vec4(1.0f);
+	float Size = 32.0f;
+	float LineSpacing = 1.0f;
+	int32_t Align = 1;         // UITextAlign
+	int32_t VerticalAlign = 1; // UITextVerticalAlign
+	int32_t Wrap = 0;
+	int32_t Reserved = 0;
+};
+
 // What an animator does now (Animator's properties; its state's name comes apart, Animator_GetState)
 struct ScriptAnimatorInfo
 {
@@ -107,7 +131,7 @@ struct ScriptFieldReport
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
-	Animator = 6 };
+	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -208,6 +232,21 @@ struct ScriptNativeApi
 	int32_t (*Animator_Play)(uint64_t entity, const char16_t* state, int length, float fade);
 	int32_t (*Animator_GetInfo)(uint64_t entity, ScriptAnimatorInfo* out);
 	int32_t (*Animator_GetState)(uint64_t entity, char16_t* buffer, int capacity);
+
+	// Game UI (7.1): 0 when the entity has no such component. The text and the files (relative to the project) as
+	// Entity_GetName; an empty font or texture: the engine's font, a plain rectangle
+	int32_t (*UIRect_Get)(uint64_t entity, ScriptUIRect* out);
+	int32_t (*UIRect_Set)(uint64_t entity, const ScriptUIRect* value);
+	int32_t (*UIText_GetText)(uint64_t entity, char16_t* buffer, int capacity);
+	int32_t (*UIText_SetText)(uint64_t entity, const char16_t* text, int length);
+	int32_t (*UIText_GetStyle)(uint64_t entity, ScriptUITextStyle* out);
+	int32_t (*UIText_SetStyle)(uint64_t entity, const ScriptUITextStyle* value);
+	int32_t (*UIText_GetFont)(uint64_t entity, char16_t* buffer, int capacity);
+	int32_t (*UIText_SetFont)(uint64_t entity, const char16_t* font, int length);
+	int32_t (*UIImage_GetColor)(uint64_t entity, glm::vec4* out);
+	int32_t (*UIImage_SetColor)(uint64_t entity, const glm::vec4* value);
+	int32_t (*UIImage_GetTexture)(uint64_t entity, char16_t* buffer, int capacity);
+	int32_t (*UIImage_SetTexture)(uint64_t entity, const char16_t* texture, int length);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

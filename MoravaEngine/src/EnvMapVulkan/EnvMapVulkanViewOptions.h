@@ -90,6 +90,11 @@ struct EnvMapVulkanViewOptions
 
 	EnvMapVulkanOverlaySettings Overlays = NoOverlays();
 
+	// The game UI over the image (a game shows it; the editor in Play, and in Edit unless the Viewport's UI toggle is off),
+	// and the debug view UI Outlines: the selected UI element's rectangle, its anchors and pivot, and its parent's rectangle
+	bool UI = true;
+	bool UIOutlines = false;
+
 	// The editor's selection: drawn with the outline and the Selected overlays. The primary entity (one of them) is the
 	// light the Shadows Only view shows, when it is a light.
 	std::vector<EnvMapVulkanEntityID> Selection;
@@ -100,6 +105,7 @@ struct EnvMapVulkanViewOptions
 		EnvMapVulkanViewOptions options;
 		options.Grid = true;
 		options.Overlays = EnvMapVulkanOverlaySettings();
+		options.UIOutlines = true;
 		return options;
 	}
 

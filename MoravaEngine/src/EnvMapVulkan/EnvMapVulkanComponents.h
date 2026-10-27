@@ -321,6 +321,67 @@ struct PrefabComponent
 	uint64_t InstanceHash = 0;   // the instance's own content then (EnvMapVulkanPrefab::GetInstanceHash)
 };
 
+// ---- Game UI (docs/engine/Game_Engine_Runtime_Guide.html, 7.1): screen-space elements laid out by UI/UILayout and drawn
+// over the finished image. Units are reference pixels (the canvas's ReferenceResolution), x to the right and y down, with
+// (0, 0) at the top-left corner (as on the screen and for the mouse). A UI element is drawn only under a canvas.
+
+// The root of a screen's UI: it covers the whole view. Its elements are laid out for ReferenceResolution and scaled to
+// the real view: by its width (MatchWidthOrHeight 0), its height (1) or between them (0.5: a geometric mean, so a wider
+// or a taller window changes the size equally). Canvases are drawn by SortOrder (higher: on top), equal ones by the
+// scene's order
+struct UICanvasComponent
+{
+	glm::vec2 ReferenceResolution = glm::vec2(1920.0f, 1080.0f);
+	float MatchWidthOrHeight = 0.5f;
+	int SortOrder = 0;
+};
+
+// Where an element is in its parent's rectangle (the canvas: the whole view). The anchors are points of the parent's
+// rectangle, from (0, 0) top-left to (1, 1) bottom-right. Both at one point (AnchorMin == AnchorMax): the element keeps
+// its Size and stays at Position from that point (a score in the top-left corner stays there in any window). Apart: the
+// element stretches with the parent between them, and Size is added to that span (0: exactly the span; -20: 10 short of
+// each edge). The pivot is the element's own point that Position places (0.5, 0.5: its center); it is also the point
+// it grows from. Children are drawn over their parent, later siblings over earlier ones.
+struct UIRectComponent
+{
+	glm::vec2 AnchorMin = glm::vec2(0.5f);
+	glm::vec2 AnchorMax = glm::vec2(0.5f);
+	glm::vec2 Pivot = glm::vec2(0.5f);
+	glm::vec2 Position = glm::vec2(0.0f);
+	glm::vec2 Size = glm::vec2(100.0f, 30.0f);
+	bool Visible = true; // false hides the element and its children (a closed menu)
+};
+
+enum class UITextAlign { Left, Center, Right };
+enum class UITextVerticalAlign { Top, Middle, Bottom };
+
+// Text in the element's rectangle, in a font made into a signed distance field atlas (UI/UIFont): sharp at any size.
+// Lines are broken at "\n", and with Wrap also between words where a line would leave the rectangle. Font: a .ttf or
+// .otf file, absolute here and relative to the project in the scene file; empty: the engine's font (Open Sans)
+struct UITextComponent
+{
+	std::string Text = "Text";
+	std::string Font;
+	float Size = 32.0f;                        // the font's em size, in reference pixels
+	glm::vec4 Color = glm::vec4(1.0f);         // as it appears on the screen (not exposed or tonemapped)
+	UITextAlign Align = UITextAlign::Center;
+	UITextVerticalAlign VerticalAlign = UITextVerticalAlign::Middle;
+	bool Wrap = false;
+	float LineSpacing = 1.0f;                  // times the font's own line height
+
+	static const char* GetAlignName(UITextAlign align);
+	static const char* GetVerticalAlignName(UITextVerticalAlign align);
+};
+
+// A picture filling the element's rectangle, tinted by Color; without a texture a plain rectangle of that color (a
+// panel, a health bar). Texture: absolute here and relative to the project in the scene file. Its colors are used as
+// they are in the file: what the file shows is what the screen shows
+struct UIImageComponent
+{
+	std::string Texture;
+	glm::vec4 Color = glm::vec4(1.0f);
+};
+
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
 // ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
 template<typename T>
@@ -343,4 +404,5 @@ struct ComponentList
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
-	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, PrefabComponent>;
+	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, PrefabComponent,
+	UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent>;

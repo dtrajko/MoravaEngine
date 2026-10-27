@@ -229,6 +229,12 @@ bool Project::Create(const std::string& folder, Project& project, std::string& e
 	{
 		return false;
 	}
+	// Library: what the engine makes from the project's files (the UI's font atlases, 7.2), made again when missing
+	const std::filesystem::path gitignore = directory / ".gitignore";
+	if (!std::filesystem::exists(gitignore, fileError))
+	{
+		std::ofstream(gitignore) << "# Made by the engine from the project's files, made again when missing\nLibrary/\n";
+	}
 	return project.Save(error);
 }
 

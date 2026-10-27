@@ -526,6 +526,8 @@ const EnvMapVulkanViewOptions* GetDrawnViewOptions()
 	s_GameViewOptions.Grid = false;
 	s_GameViewOptions.Overlays = EnvMapVulkanViewOptions().Overlays;
 	s_GameViewOptions.Selection.clear();
+	s_GameViewOptions.UI = true; // the game's UI, whatever the Edit view shows
+	s_GameViewOptions.UIOutlines = false;
 	return &s_GameViewOptions;
 }
 

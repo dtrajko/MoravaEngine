@@ -1517,6 +1517,16 @@ void OnImGuiRenderInspector()
 			ImGui::TextDisabled("Play shows the primary camera; Edit and Simulate the editor's view.");
 			break;
 		}
+		case EntityKind::UICanvas:
+		case EntityKind::UIElement:
+			if (ImGui::Button(kind == EntityKind::UICanvas ? "Delete Canvas" : "Delete UI Element"))
+			{
+				DeleteEntity(entity);
+				ImGui::End();
+				return;
+			}
+			UIControls(entity);
+			break;
 		case EntityKind::Sound:
 		{
 			if (ImGui::Button("Delete Sound"))

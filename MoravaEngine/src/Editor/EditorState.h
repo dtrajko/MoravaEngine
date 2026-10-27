@@ -39,7 +39,7 @@ bool Contains(const std::vector<T>& values, const T& value)
 }
 
 // What an entity is, by its components (see GetEntityKind)
-enum class EntityKind { Other, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Model, Part, Sound };
+enum class EntityKind { Other, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Model, Part, Sound, UICanvas, UIElement };
 
 // A map assigned or removed in the Material Editor (button or drag & drop), applied at the start of the next frame (see EditorPreFrame)
 struct PendingMaterialTexture
@@ -403,6 +403,9 @@ ImU32 GetEntityKindColor(EntityKind kind);
 bool CanBeReparented(EntityKind kind);
 
 bool CanHaveChildren(EntityKind kind);
+// Whether a child of that kind may go under a parent of that kind (NoEntity's kind: the top level is Other): UI elements
+// only in UI (a canvas or another element), and UI takes only UI
+bool CanBeChildOf(EntityKind child, EntityKind parent);
 
 bool CanBeDeleted(EntityKind kind);
 
@@ -555,6 +558,20 @@ void AudioControls(EnvMapVulkanEntityID entity);
 // The Inspector's Animator section (EditorInspectorAnimator.cpp, 6.4): the model's controller, and while the game runs
 // its state, crossfade and parameters
 void AnimatorControls(EnvMapVulkanEntityID entity);
+
+// ---- The game UI (EditorUI.cpp, 7.1)
+
+enum class UIEntityPreset { Canvas, Panel, Text, Image };
+// A new canvas (at the top level), or a new element under the selected UI entity (else the first canvas, made when there
+// is none), selected
+EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset);
+// The Inspector's UI section of a canvas or a UI element: the canvas, the rectangle (anchor presets), image and text
+void UIControls(EnvMapVulkanEntityID entity);
+// The view size the UI is laid out for in the editor (the viewport image's, set by the Viewport panel each frame)
+void SetUIViewSize(const glm::vec2& size);
+// The viewport's mouse in Edit (view pixels from the image's top-left corner): a click on a UI element selects it (toggle:
+// adds or removes it) and a drag moves it. True while it has the mouse: the viewport's own picking is skipped
+bool HandleViewportUIMouse(const glm::vec2& mouseInView, bool clicked, bool toggle);
 
 // ---- Lights (EditorLightsPanel.cpp)
 

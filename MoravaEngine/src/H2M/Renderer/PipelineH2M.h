@@ -43,6 +43,9 @@ namespace H2M
 		// Vulkan: the depth test passes for an equal depth only, e.g. a pass that shades what a depth prepass wrote (each pixel
 		// once); otherwise less or equal
 		bool DepthEqual = false;
+		// Blending writes the source's alpha into the target (Vulkan); false keeps the target's alpha, e.g. UI drawn over an
+		// opaque image that is shown with its alpha (the viewport composite in the Viewport panel)
+		bool WriteAlpha = true;
 		bool Wireframe = false;
 		float LineWidth = 1.0f;
 		// Depth bias (Vulkan units; both 0: off). Negative values pull the primitives toward the camera, e.g. a wireframe

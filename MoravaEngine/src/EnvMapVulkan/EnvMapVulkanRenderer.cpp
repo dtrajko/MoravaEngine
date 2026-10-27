@@ -20,6 +20,7 @@
 #include "EnvMapVulkanPathTracer.h"
 #include "EnvMapVulkanReflections.h"
 #include "EnvMapVulkanSSAO.h"
+#include "EnvMapVulkanUI.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
 #include "EnvMapVulkanSceneData.h"
@@ -29,6 +30,8 @@
 
 
 #include "Animation/AnimationSelfTest.h"
+#include "UI/UIFont.h"
+#include "UI/UILayout.h"
 
 #include "Core/ResourceManager.h"
 
@@ -585,6 +588,9 @@ static EnvMapVulkanWater s_Water;
 // shows what was drawn before it, so a farther one is drawn first. Static meshes only: a skinned mesh with a glass
 // material is drawn with its material as opaque.
 static EnvMapVulkanGlass s_Glass;
+// The game UI (7.2): laid out from the scene's canvases every frame (UILayout), drawn over the viewport composite
+static EnvMapVulkanUI s_UI;
+static UIDrawList s_UIDrawList;
 // The G-buffer (see EnvMapVulkanGBuffer): normals, roughness, motion and the scene's depth, written by a prepass before the
 // scene pass (Phase A of docs/rendering/SSAO_GI_RayTracing_Guide.html). The scene pass loads that depth and draws the
 // opaque meshes with depth EQUAL (s_MeshPipelineDepthEqual), so their PBR shader runs once per pixel.
@@ -1699,6 +1705,7 @@ void EnvMapVulkanRenderer::Init()
 
 		CreateEditorOverlayResources(); // before CreateBloomResources: the composite samples the overlay and selection mask images
 		CreateBloomResources(); // also writes s_ViewportCompositeDescriptorSet
+		s_UI.Create(s_ViewportCompositeFramebuffer);
 	}
 
 	// Editor grid: drawn into the scene framebuffer after the meshes (see RenderGrid)
@@ -1935,6 +1942,10 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_ShadowMapViewer.Destroy();
 	s_Water.Destroy();
 	s_Glass.Destroy();
+	s_UI.Destroy();
+	s_UIDrawList.Clear();
+	UILayout::ClearImageCache();
+	UIFont::ClearCache();
 	s_MaterialBuffer.Destroy();
 	s_RayTracing.Destroy();
 	s_Probes.Destroy();
@@ -3824,6 +3835,21 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 	EnvMapVulkanProfiler::CountDraw(s_Data.QuadIndexBuffer->GetCount() / 3);
 
+	// The game UI, over the tonemapped image
+	s_UIDrawList.Clear();
+	if (s_Scene && s_ViewOptions.UI)
+	{
+		EnvMapVulkanProfiler::Scope uiScope(commandBuffer, "UI", "The game UI: the canvases' images and text as quads, over the "
+			"finished image (after tonemapping, so their colors are the colors given). Text is read from signed distance field "
+			"font atlases, sharp at any size.");
+		UILayout::Build(*s_Scene, glm::vec2((float)width, (float)height), s_UIDrawList);
+		if (s_ViewOptions.UIOutlines && s_ViewOptions.PrimarySelection != NoEntity)
+		{
+			UILayout::AddSelectionOverlay(s_UIDrawList, s_ViewOptions.PrimarySelection);
+		}
+		s_UI.Record(commandBuffer, s_UIDrawList, width, height);
+	}
+
 	vkCmdEndRenderPass(commandBuffer);
 }
 
@@ -4599,6 +4625,7 @@ void EnvMapVulkanRenderer::WaitIdle()
 void EnvMapVulkanRenderer::OnSceneReplaced()
 {
 	s_Probes.RequestReset(); // what the probes captured belongs to the scene that went
+	UILayout::ClearImageCache(); // images that couldn't be read are tried again
 }
 
 const std::string& EnvMapVulkanRenderer::GetEnvironmentMapFile()

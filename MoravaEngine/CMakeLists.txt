@@ -193,6 +193,12 @@ set(NFD_INSTALL OFF CACHE BOOL "" FORCE)
 # Windows: a dialog given a folder starts there, not in the folder a dialog was last closed in
 set(NFD_OVERRIDE_RECENT_WITH_DEFAULT ON CACHE BOOL "" FORCE)
 
+# ---- FreeType (reads the fonts the game UI's atlases are made from, Phase 7) ----
+# Only TrueType and OpenType outlines: none of its optional libraries (compressed fonts, color emoji, shaping)
+foreach(option FT_DISABLE_ZLIB FT_DISABLE_BZIP2 FT_DISABLE_PNG FT_DISABLE_HARFBUZZ FT_DISABLE_BROTLI SKIP_INSTALL_ALL)
+    set(${option} ON CACHE BOOL "" FORCE)
+endforeach()
+
 # =========================================================
 # OPTIONAL SUBDIRECTORY HELPER
 # =========================================================
@@ -232,6 +238,13 @@ if(TARGET assimp AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(assimp PRIVATE -Wno-unsafe-buffer-usage -Wno-unsafe-buffer-usage-in-libc-call)
 endif()
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/nativefiledialog-extended nfd)
+# FreeType 2.11 asks for CMake 2.8.12, which CMake 4 no longer accepts: taken as 3.5 for its folder alone
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+add_optional(${ROOT_PATH_ABS}/vendor/msdf-atlas-gen/msdfgen/freetype freetype)
+unset(CMAKE_POLICY_VERSION_MINIMUM)
+if(NOT TARGET freetype)
+    message(FATAL_ERROR "FreeType not found: git submodule update --init --recursive vendor/msdf-atlas-gen")
+endif()
 
 # =========================================================
 # SOURCES
@@ -528,6 +541,38 @@ elseif(UNIX)
 endif()
 
 # =========================================================
+# MSDF FONT ATLASES (the game UI's text, Phase 7)
+# =========================================================
+
+# msdfgen (a glyph's outline to a multi-channel signed distance field) and msdf-atlas-gen (a font's glyphs packed into one
+# atlas) as one library: their own build files are premake (msdfgen, TheCherno's fork) or build the command-line tool.
+# Without the tool's main, SVG import or Skia. A vendor's warnings are off
+set(MSDF_DIR ${ROOT_PATH_ABS}/vendor/msdf-atlas-gen)
+file(GLOB MSDF_SRC
+    ${MSDF_DIR}/msdfgen/core/*.cpp
+    ${MSDF_DIR}/msdf-atlas-gen/*.cpp
+)
+list(FILTER MSDF_SRC EXCLUDE REGEX "/msdf-atlas-gen/main\\.cpp$")
+list(APPEND MSDF_SRC
+    ${MSDF_DIR}/msdfgen/ext/import-font.cpp
+    ${MSDF_DIR}/msdfgen/ext/resolve-shape-geometry.cpp
+    ${MSDF_DIR}/msdfgen/ext/save-png.cpp
+    ${MSDF_DIR}/msdfgen/lib/lodepng.cpp
+)
+add_library(msdf STATIC ${MSDF_SRC})
+target_include_directories(msdf PUBLIC ${MSDF_DIR} ${MSDF_DIR}/msdfgen ${MSDF_DIR}/msdfgen/include)
+# MSDFGEN_CMAKE_BUILD: no #pragma comment(lib) for FreeType on Windows (CMake links it)
+target_compile_definitions(msdf PUBLIC MSDFGEN_USE_CPP11 MSDFGEN_CMAKE_BUILD)
+if(MSVC)
+    target_compile_definitions(msdf PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_options(msdf PRIVATE /w)
+else()
+    target_compile_options(msdf PRIVATE -w)
+endif()
+find_package(Threads REQUIRED)
+target_link_libraries(msdf PUBLIC freetype Threads::Threads)
+
+# =========================================================
 # LINKING
 # =========================================================
 
@@ -554,6 +599,7 @@ target_link_libraries(MoravaCore PUBLIC
     Jolt
 
     miniaudio
+    msdf
 )
 
 if(TARGET spirv-cross-core)
