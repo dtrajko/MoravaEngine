@@ -158,9 +158,17 @@ void PlayerLayer::UpdateFullscreenKeys(GLFWwindow* window)
 	{
 		SetFullscreen(window, !fullscreen);
 	}
-	else if (escape && fullscreen && !m_Input.GetMap().BindsKey(GLFW_KEY_ESCAPE))
+	else if (escape && !m_Input.GetMap().BindsKey(GLFW_KEY_ESCAPE))
 	{
-		SetFullscreen(window, false);
+		// First the mouse back to the user (a click in the window gives it to the game again), then out of fullscreen
+		if (m_Input.IsMouseCaptured())
+		{
+			m_Input.ReleaseMouseUntilClick();
+		}
+		else if (fullscreen)
+		{
+			SetFullscreen(window, false);
+		}
 	}
 }
 

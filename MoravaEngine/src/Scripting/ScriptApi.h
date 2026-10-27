@@ -247,6 +247,11 @@ struct ScriptNativeApi
 	int32_t (*UIImage_SetColor)(uint64_t entity, const glm::vec4* value);
 	int32_t (*UIImage_GetTexture)(uint64_t entity, char16_t* buffer, int capacity);
 	int32_t (*UIImage_SetTexture)(uint64_t entity, const char16_t* texture, int length);
+
+	// Input's cursor: locked = the game wants the mouse. The state: 1 locked, 2 the mouse captured now (input enabled, and
+	// the user didn't take it back)
+	void (*Input_SetCursorLocked)(int32_t locked);
+	int32_t (*Input_GetCursorState)();
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

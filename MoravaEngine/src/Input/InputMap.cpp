@@ -223,13 +223,17 @@ static bool ReadBinding(const YAML::Node& node, InputBinding& binding, std::stri
 		{
 			binding.Source = InputBindingSource::MouseDelta;
 		}
+		else if (name == "Wheel")
+		{
+			binding.Source = InputBindingSource::MouseWheel;
+		}
 		else
 		{
 			binding.Source = InputBindingSource::MouseButton;
 			binding.Code = FindCode(s_MouseNames, name);
 			if (binding.Code < 0)
 			{
-				error = "the mouse has no '" + name + "' (Left, Right, Middle or Delta)";
+				error = "the mouse has no '" + name + "' (Left, Right, Middle, Delta or Wheel)";
 				return false;
 			}
 		}
@@ -362,6 +366,9 @@ static void WriteBinding(YAML::Emitter& out, const InputBinding& binding)
 			break;
 		case InputBindingSource::MouseDelta:
 			out << YAML::Key << "Mouse" << YAML::Value << "Delta";
+			break;
+		case InputBindingSource::MouseWheel:
+			out << YAML::Key << "Mouse" << YAML::Value << "Wheel";
 			break;
 		case InputBindingSource::GamepadButton:
 			out << YAML::Key << "Gamepad" << YAML::Value << FindName(s_GamepadButtonNames, binding.Code);

@@ -40,6 +40,7 @@ struct ScriptContext
 	float FixedDeltaTime = 0.0f;
 	double Time = 0.0;              // the fixed steps' game time
 	uint64_t FrameCount = 0, FixedStepCount = 0;
+	bool CursorLocked = false;      // Input.CursorLocked: the game wants the mouse (kept when a scene is loaded or reloaded)
 
 	std::vector<EnvMapVulkanEntityID> DestroyQueue; // Entity.Destroy: at the end of the update it was called in
 	std::set<std::string> InstantiatedPrefabs;     // Scene.Instantiate: the files placed (the first of each is logged)

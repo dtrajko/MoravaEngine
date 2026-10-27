@@ -18,10 +18,12 @@ namespace Sample
     /// <summary>
     /// A camera that follows its target, from one of three views (SwitchCamera: C, the gamepad's Y): above the playground
     /// (the offset and rotation it starts with, catching up smoothly), behind the target, or from its front. Behind and
-    /// in front, Orbit (Q, E, R, F, the right stick) turns the view; the target's controller moves it where the camera
-    /// looks. With FollowMovement, the view also turns by itself towards where the target rolls (not while Orbit turns it,
-    /// and not when it rolls back towards the camera). Behind, the camera comes closer instead of going through a wall. A
-    /// switch glides there in SwitchSeconds.
+    /// in front, the mouse (Look, with MouseLook: the game captures the cursor, Escape gives it back) and Orbit (Q, E, R,
+    /// F, the right stick) turn the view; the target's controller moves it where the camera looks. Behind, Zoom (the
+    /// mouse wheel) brings it closer or farther. With FollowMovement, the view also turns by itself towards where the
+    /// target moves (not while the mouse or Orbit turns it, and not when it moves back towards the camera). Behind, the
+    /// camera comes closer at once instead of going through a wall, glides back out once the wall is passed, and rises
+    /// when it is pushed close, so the target stays in view. A switch glides there in SwitchSeconds.
     /// </summary>
     public class CameraFollow : Entity
     {
@@ -42,6 +44,28 @@ namespace Sample
 
         /// <summary>Degrees the view looks down, behind the target, when it switches there.</summary>
         public float BehindPitch = 20.0f;
+
+        /// <summary>The mouse turns the view (the game captures the cursor while it has the input).</summary>
+        public bool MouseLook = true;
+
+        /// <summary>Times the mouse's turn (the input map's Look: 0.1 degrees per pixel).</summary>
+        public float MouseSensitivity = 1.0f;
+
+        /// <summary>Meters closer (the wheel turned away from you) or farther per notch of Zoom, behind the target.</summary>
+        public float ZoomStep = 0.5f;
+
+        /// <summary>Meters Zoom keeps the camera within, behind the target.</summary>
+        public float MinDistance = 1.5f;
+        public float MaxDistance = 8.0f;
+
+        /// <summary>How fast it moves back out after a wall pushed it closer: higher is faster.</summary>
+        public float ReturnSmoothing = 4.0f;
+
+        /// <summary>
+        /// Meters the camera keeps from the point it turns around: pushed closer by a wall, it rises until it is this far,
+        /// looking down over the target instead of into it (a ceiling stops it).
+        /// </summary>
+        public float CloseDistance = 1.2f;
 
         /// <summary>How long a switch glides from one view to the next.</summary>
         public float SwitchSeconds = 0.4f;
@@ -64,9 +88,13 @@ namespace Sample
         Vector3 fromTranslation, fromRotation;
         Vector3 lastTarget;
         float sinceOrbit = float.MaxValue;
+        float zoomDistance, distance = -1.0f; // behind: the distance Zoom chose; the one now (a wall: closer)
 
         protected override void OnCreate()
         {
+            if (MouseLook)
+                Input.CursorLocked = true;
+            zoomDistance = Math.Clamp(BehindDistance, MathF.Min(MinDistance, MaxDistance), MathF.Max(MinDistance, MaxDistance));
             aboveRotation = EulerAngles;
             yaw = aboveRotation.Y;
             pitch = BehindPitch;
@@ -95,10 +123,13 @@ namespace Sample
             lastTarget = targetNow;
             if (View != CameraView.Above)
             {
-                // Right: clockwise seen from above; up: the view looks up
+                // Right: clockwise seen from above; up: the view looks up. The mouse only while it is the game's: a free
+                // cursor moves to the editor's panels or the window's edge
                 Vector2 orbit = Input.GetAxis2D("Orbit");
+                if (MouseLook && Input.MouseCaptured)
+                    orbit += Input.GetAxis2D("Look") * MouseSensitivity;
                 yaw -= orbit.X * dt;
-                pitch = View == CameraView.Behind ? Math.Clamp(pitch - orbit.Y * dt, -5.0f, 70.0f)
+                pitch = View == CameraView.Behind ? Math.Clamp(pitch - orbit.Y * dt, -20.0f, 70.0f) // up: lower, the ground brings it closer
                     : Math.Clamp(pitch - orbit.Y * dt, -60.0f, 60.0f);
                 sinceOrbit = orbit.LengthSquared() > 1e-4f ? 0.0f : sinceOrbit + dt;
                 if (FollowMovement && dt > 0 && sinceOrbit >= FollowDelay)
@@ -114,14 +145,34 @@ namespace Sample
             {
                 case CameraView.Behind:
                 {
-                    // Back and up from a point above the target, as far as no wall is in between
+                    // Back and up from a point above the target, as far as no wall is in between: closer at once, back out
+                    // smoothly (no jumps past a pillar)
+                    zoomDistance = Math.Clamp(zoomDistance - Input.GetValue("Zoom") * ZoomStep,
+                        MathF.Min(MinDistance, MaxDistance), MathF.Max(MinDistance, MaxDistance));
                     Vector3 pivot = target + Vector3.UnitY * BehindHeight;
                     Vector3 back = -forward * MathF.Cos(pitchRadians) + Vector3.UnitY * MathF.Sin(pitchRadians);
-                    float distance = BehindDistance;
-                    if (Physics.SphereCast(pivot, 0.25f, back, BehindDistance, out RaycastHit hit, PhysicsLayers.Solid, Target))
-                        distance = MathF.Max(0.3f, hit.Distance - 0.1f);
+                    float free = zoomDistance;
+                    if (Physics.SphereCast(pivot, 0.25f, back, zoomDistance, out RaycastHit hit, PhysicsLayers.Solid, Target))
+                        free = MathF.Max(0.3f, hit.Distance - 0.1f);
+                    if (distance < 0 || free <= distance || blend < 1.0f)
+                        distance = free;
+                    else
+                        distance += (free - distance) * (1.0f - MathF.Exp(-ReturnSmoothing * dt));
                     wanted = pivot + back * distance;
-                    rotation = new Vector3(pitch, yaw, 0.0f);
+
+                    // Pushed close: up over the target until CloseDistance from the pivot (as high as no ceiling is in the
+                    // way), still looking at the pivot
+                    if (CloseDistance > 0 && distance < CloseDistance)
+                    {
+                        float lift = MathF.Sqrt(CloseDistance * CloseDistance - distance * distance);
+                        if (Physics.SphereCast(wanted, 0.2f, Vector3.UnitY, lift + 0.2f, out RaycastHit ceiling, PhysicsLayers.Solid, Target))
+                            lift = MathF.Max(0.0f, ceiling.Distance - 0.2f);
+                        wanted += Vector3.UnitY * lift;
+                    }
+                    Vector3 look = pivot - wanted;
+                    float lookPitch = look.LengthSquared() > 1e-6f ?
+                        MathF.Asin(Math.Clamp(-look.Y / look.Length(), -1.0f, 1.0f)) * 180.0f / MathF.PI : pitch;
+                    rotation = new Vector3(lookPitch, yaw, 0.0f);
                     break;
                 }
                 case CameraView.FirstPerson:

@@ -39,6 +39,8 @@ struct InputGamepadInfo
  * (EndFixedStep). The frame's update reads ...ThisFrame.
  *
  * The mouse is captured (the cursor hidden, its motion unlimited) only while the game asks for it and its input is enabled.
+ * The game asks for it through an InputTestComponent's CaptureMouse or a script's Input.CursorLocked; ReleaseMouseUntilClick
+ * gives it back for a while (the player's Escape), until a click in the window.
  */
 class InputSystem
 {
@@ -65,6 +67,17 @@ public:
 	bool IsMouseCaptureWanted() const { return m_MouseCaptureWanted; }
 	bool IsMouseCaptured() const { return m_MouseCaptured; }
 
+	// The cursor back to the user while the game still wants the mouse (the player's Escape): captured again at a click in
+	// the window
+	void ReleaseMouseUntilClick() { m_MouseHeldBack = true; }
+	bool IsMouseHeldBack() const { return m_MouseHeldBack; }
+
+	// The wheel's notches (the window's scroll callback, any time): the next Update takes them for MouseWheel bindings
+	static void AddMouseWheel(float notches);
+
+	// The game has captured the mouse in this window (the window keeps it captured, not resetting its cursor each frame)
+	static bool IsMouseCapturedIn(GLFWwindow* window);
+
 	bool IsEnabled() const { return m_Enabled; }
 
 	static std::vector<InputGamepadInfo> GetGamepads();
@@ -78,7 +91,9 @@ private:
 	bool m_Enabled = false;
 	bool m_MouseCaptureWanted = false;
 	bool m_MouseCaptured = false;
+	bool m_MouseHeldBack = false;
 	bool m_HasMousePosition = false;
 	glm::dvec2 m_MousePosition = glm::dvec2(0.0);
 	glm::vec2 m_MouseRate = glm::vec2(0.0f); // this frame's motion, in pixels per second
+	float m_MouseWheel = 0.0f;               // this frame's notches
 };
