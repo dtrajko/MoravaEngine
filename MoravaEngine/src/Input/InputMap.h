@@ -20,6 +20,7 @@ enum class InputBindingSource
 	MouseButton,   // Code: GLFW_MOUSE_BUTTON_*
 	MouseDelta,    // the mouse's motion, in pixels per second: x right, y up (a rate, as a stick's: times the frame time, it
 	               // is the motion this frame, so mouse and stick turn a camera alike: Look * Speed * frameTime)
+	MouseWheel,    // the wheel's notches turned this frame (not a rate): x, positive away from the user (a camera's zoom in)
 	GamepadButton, // Code: GLFW_GAMEPAD_BUTTON_*
 	GamepadAxis,   // one axis of a stick, or a trigger (Code: GLFW_GAMEPAD_AXIS_*; triggers 0 to 1, stick axes up = positive)
 	GamepadStick,  // a whole stick (Code: 0 left, 1 right): x right, y up
@@ -62,7 +63,7 @@ struct InputAction
  *       Bindings: [ { Key: Space }, { Gamepad: A } ]
  *
  * Bindings: { Key: <key> }, { Composite: <any name>, Up, Down, Left, Right } (Axis1D: Negative, Positive), { Mouse: Left,
- * Right, Middle or Delta }, { Gamepad: <button>, <axis>, LeftStick or RightStick }; each can have Scale (and DeadZone for the
+ * Right, Middle, Delta or Wheel }, { Gamepad: <button>, <axis>, LeftStick or RightStick }; each can have Scale (and DeadZone for the
  * gamepad's axes). Key names: A to Z, 0 to 9, F1 to F12, Space, Enter, Escape, Tab, Backspace, Up, Down, Left, Right,
  * LeftShift, RightShift, LeftControl, RightControl, LeftAlt, RightAlt, Insert, Delete, Home, End, PageUp, PageDown and the
  * keypad's (Keypad0 to Keypad9). Gamepad names (the Xbox layout; a PlayStation controller's Cross is A, Circle B, Square X,

@@ -9,6 +9,14 @@
 #include <set>
 
 
+static float s_MouseWheel = 0.0f; // notches since the last Update
+static GLFWwindow* s_MouseCapturedWindow = nullptr; // the window the game's mouse is captured in
+
+void InputSystem::AddMouseWheel(float notches)
+{
+	s_MouseWheel += notches;
+}
+
 void InputSystem::SetMap(const InputMap& map)
 {
 	m_Map = map;
@@ -58,6 +66,9 @@ glm::vec2 InputSystem::ReadBinding(GLFWwindow* window, const InputBinding& bindi
 			break;
 		case InputBindingSource::MouseDelta:
 			value = m_MouseRate;
+			break;
+		case InputBindingSource::MouseWheel:
+			value.x = m_MouseWheel;
 			break;
 		case InputBindingSource::GamepadButton:
 		case InputBindingSource::GamepadAxis:
@@ -111,12 +122,20 @@ void InputSystem::Update(GLFWwindow* window, bool enabled, float frameTime)
 {
 	m_Enabled = enabled && window;
 
-	// The mouse: captured while the game wants it and has input; its motion, as a rate
+	// The mouse: captured while the game wants it and has input (and the user didn't take it back: until a click); its
+	// motion, as a rate, and the wheel's notches
+	if (m_MouseHeldBack && (!m_MouseCaptureWanted || (m_Enabled && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS ||
+		glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS))))
+	{
+		m_MouseHeldBack = false;
+	}
 	if (window)
 	{
-		SetMouseCaptured(window, m_Enabled && m_MouseCaptureWanted);
+		SetMouseCaptured(window, m_Enabled && m_MouseCaptureWanted && !m_MouseHeldBack);
 	}
 	m_MouseRate = glm::vec2(0.0f);
+	m_MouseWheel = m_Enabled ? s_MouseWheel : 0.0f;
+	s_MouseWheel = 0.0f;
 	if (m_Enabled)
 	{
 		glm::dvec2 position;
@@ -191,8 +210,10 @@ void InputSystem::Reset(GLFWwindow* window)
 	m_States.assign(m_Map.Actions.size(), InputActionState());
 	m_Enabled = false;
 	m_MouseCaptureWanted = false;
+	m_MouseHeldBack = false;
 	m_HasMousePosition = false;
 	m_MouseRate = glm::vec2(0.0f);
+	m_MouseWheel = 0.0f;
 }
 
 const InputActionState& InputSystem::Get(const std::string& action) const
@@ -213,12 +234,19 @@ const InputActionState& InputSystem::Get(const std::string& action) const
 	return none;
 }
 
+bool InputSystem::IsMouseCapturedIn(GLFWwindow* window)
+{
+	return window && window == s_MouseCapturedWindow;
+}
+
 void InputSystem::SetMouseCaptured(GLFWwindow* window, bool captured)
 {
-	if (captured == m_MouseCaptured)
+	// Again if something else gave the cursor back meanwhile (the editor camera's drag ending)
+	if (captured == m_MouseCaptured && (!captured || glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED))
 	{
 		return;
 	}
+	s_MouseCapturedWindow = captured ? window : (s_MouseCapturedWindow == window ? nullptr : s_MouseCapturedWindow);
 	glfwSetInputMode(window, GLFW_CURSOR, captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 	if (glfwRawMouseMotionSupported())
 	{
@@ -226,6 +254,7 @@ void InputSystem::SetMouseCaptured(GLFWwindow* window, bool captured)
 	}
 	m_MouseCaptured = captured;
 	m_HasMousePosition = false; // the cursor's coordinates change with the mode
+	Log::GetLogger()->info(captured ? "Input: the mouse is the game's (the cursor hidden)" : "Input: the mouse given back (the cursor shown)");
 }
 
 std::vector<InputGamepadInfo> InputSystem::GetGamepads()

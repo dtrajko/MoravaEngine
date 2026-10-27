@@ -34,6 +34,24 @@ namespace Morava
 
         /// <summary>The button went up: in this frame (OnUpdate), or since the last fixed step (OnFixedUpdate).</summary>
         public static bool WasReleased(string name) => GetAction(name).WasReleased;
+
+        /// <summary>
+        /// The game wants the mouse: the cursor hidden and its motion unlimited (a camera turned by the mouse), from the next
+        /// frame, while the game has the input. Kept when a scene is loaded. The user can take the cursor back (Escape, in
+        /// the editor and the player); MouseCaptured says whether the game has it now.
+        /// </summary>
+        public static bool CursorLocked
+        {
+            get => (Interop.Game->Input_GetCursorState() & 1) != 0;
+            set => Interop.Game->Input_SetCursorLocked(value ? 1 : 0);
+        }
+
+        /// <summary>
+        /// The mouse is the game's now (CursorLocked, the game has the input, and the user didn't take it back): its motion
+        /// is the player's. False: the cursor is free (moving to a window's edge or the editor's panels), so mouse motion
+        /// shouldn't turn a camera.
+        /// </summary>
+        public static bool MouseCaptured => (Interop.Game->Input_GetCursorState() & 2) != 0;
     }
 
     /// <summary>An input action's state (Input.GetAction).</summary>

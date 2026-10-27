@@ -10,6 +10,8 @@
 #include "Core/Application.h"
 #include "Core/Log.h"
 
+#include "Input/InputSystem.h"
+
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "Renderer/RendererBasic.h"
 
@@ -215,7 +217,7 @@ void GLFWWindow::ProcessEvents()
 
 	//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
 	//glfwSetCursor(m_GLFW_Window, m_ImGuiMouseCursors[imgui_cursor] ? m_ImGuiMouseCursors[imgui_cursor] : m_ImGuiMouseCursors[ImGuiMouseCursor_Arrow]);
-	if (!m_CursorCaptured)
+	if (!m_CursorCaptured && !InputSystem::IsMouseCapturedIn(m_GLFW_Window)) // the camera's drag or the game holds it
 	{
 		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
@@ -512,6 +514,7 @@ void GLFWWindow::SetCallbacksHazelDev()
 
 			H2M::MouseScrolledEventH2M event((float)xoffset, (float)yoffset);
 			data.EventCallback(event);
+			InputSystem::AddMouseWheel((float)yoffset); // the game's MouseWheel bindings
 
 			// Support for the old way of handling events
 			ScrollCallback(window, xoffset, yoffset);

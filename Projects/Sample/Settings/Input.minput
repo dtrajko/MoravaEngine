@@ -6,11 +6,10 @@ Actions:
       - { Composite: WASD, Up: W, Down: S, Left: A, Right: D }
       - { Composite: Arrows, Up: Up, Down: Down, Left: Left, Right: Right }
       - { Gamepad: LeftStick, DeadZone: 0.15 }
-  - Name: Look          # Axis2D, a rate: degrees per second
+  - Name: Look          # Axis2D, a rate: degrees per second: the mouse turns the camera's view (CameraFollow, while the cursor is captured)
     Type: Axis2D
     Bindings:
       - { Mouse: Delta, Scale: 0.1 }
-      - { Gamepad: RightStick, Scale: 180, DeadZone: 0.15 }
   - Name: Jump
     Type: Button
     Bindings: [ { Key: Space }, { Gamepad: A } ]
@@ -19,6 +18,10 @@ Actions:
     Bindings:
       - { Composite: QERF, Up: R, Down: F, Left: Q, Right: E, Scale: 120 }
       - { Gamepad: RightStick, Scale: 180, DeadZone: 0.15 }
+  - Name: Zoom          # Axis1D, notches this frame: the camera closer (the wheel turned away from you) or farther (CameraFollow)
+    Type: Axis1D
+    Bindings:
+      - { Mouse: Wheel }
   - Name: SwitchCamera  # the next camera view: above, behind the ball, the ball's eyes
     Type: Button
     Bindings: [ { Key: C }, { Gamepad: Y } ]

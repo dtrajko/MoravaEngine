@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Erika
 EditorCamera:
-  Translation: [1.2543013, 17.619614, 4.627804]
-  Rotation: [5.999998, -33.500824, 0]
+  Translation: [-2.9172046, 14.361324, -2.7864647]
+  Rotation: [9.499987, -167.40091, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:
@@ -506,9 +506,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [1.5960028, 11.259573, 8.991972]
-      Rotation: [0, -0, 5.6488967]
-      Scale: [8.519254, 0.10000006, 1]
+      Translation: [1.1921537, 11.259573, 8.991972]
+      Rotation: [0, -0, 6.9389267]
+      Scale: [8.879455, 0.10000005, 1]
     Model:
       File: Models/Primitives/cube.obj
     Collider:

@@ -70,6 +70,7 @@ void GameSystems::Start(bool keepClock)
 		m_ScriptContext.FrameCount = previous.FrameCount;
 		m_ScriptContext.FixedStepCount = previous.FixedStepCount;
 		m_ScriptContext.InstantiatedPrefabs = std::move(previous.InstantiatedPrefabs);
+		m_ScriptContext.CursorLocked = previous.CursorLocked; // no flicker of the cursor at Scene.Reload
 	}
 	m_ScriptContext.Scene = m_Scene;
 	m_ScriptContext.Physics = &m_Physics;
@@ -287,7 +288,7 @@ void GameSystems::Update(float frameTime, float alpha)
 		transform.Rotation.y -= turn * test.TurnSpeed * frameTime; // right: clockwise, seen from above
 		captureMouse |= test.CaptureMouse;
 	});
-	m_Input->SetMouseCaptureWanted(captureMouse);
+	m_Input->SetMouseCaptureWanted(captureMouse || m_ScriptContext.CursorLocked);
 
 	m_Scripts.RemoveDestroyed();
 	m_Scripts.Update(frameTime);

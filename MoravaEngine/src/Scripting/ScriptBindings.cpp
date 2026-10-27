@@ -479,6 +479,23 @@ static void InputGetAction(const char16_t* text, int length, ScriptInputAction* 
 	out->Exists = 1;
 }
 
+static void InputSetCursorLocked(int32_t locked)
+{
+	if (s_Context)
+	{
+		s_Context->CursorLocked = locked != 0;
+	}
+}
+
+static int32_t InputGetCursorState()
+{
+	if (!s_Context)
+	{
+		return 0;
+	}
+	return (s_Context->CursorLocked ? 1 : 0) | (s_Context->Input && s_Context->Input->IsMouseCaptured() ? 2 : 0);
+}
+
 // ---- Rigidbody and CharacterController
 
 static ScenePhysics* GetPhysics()
@@ -1106,6 +1123,8 @@ namespace ScriptBindings
 		api.UIImage_SetColor = UIImageSetColor;
 		api.UIImage_GetTexture = UIImageGetTexture;
 		api.UIImage_SetTexture = UIImageSetTexture;
+		api.Input_SetCursorLocked = InputSetCursorLocked;
+		api.Input_GetCursorState = InputGetCursorState;
 	}
 
 	void SetContext(ScriptContext* context)

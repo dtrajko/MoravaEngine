@@ -92,6 +92,8 @@ namespace Morava
         public delegate* unmanaged<ulong, Vector4*, int> UIImage_SetColor;
         public delegate* unmanaged<ulong, char*, int, int> UIImage_GetTexture;
         public delegate* unmanaged<ulong, char*, int, int> UIImage_SetTexture;
+        public delegate* unmanaged<int, void> Input_SetCursorLocked;
+        public delegate* unmanaged<int> Input_GetCursorState;
     }
 
     [StructLayout(LayoutKind.Sequential)]
