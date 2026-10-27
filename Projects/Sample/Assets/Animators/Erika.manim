@@ -4,7 +4,6 @@ Animator:
   Parameters:
     - {Name: Speed, Type: Float, Default: 0}
     - {Name: Grounded, Type: Bool, Default: true}
-    - {Name: Jump, Type: Trigger}
     - {Name: RunJump, Type: Trigger}
     - {Name: Use, Type: Trigger}
   States:
@@ -31,11 +30,6 @@ Animator:
       Events:
         - {Name: Footstep, Time: 0.36}
         - {Name: Footstep, Time: 0.86}
-    - Name: Jump
-      Clip: {File: Models/Erika_Archer/jump.dae, Name: ""}
-      Speed: 1
-      Loop: false
-      InPlace: true
     - Name: RunJump
       Clip: {File: Models/Erika_Archer/Jump_01.dae, Name: ""}
       Speed: 1
@@ -62,31 +56,6 @@ Animator:
       Fade: 0.25
       Conditions:
         - {Parameter: Speed, Test: Less, Value: 2.2}
-    - FromAny: true
-      To: Jump
-      Fade: 0.1
-      Conditions:
-        - {Parameter: Jump}
-    - From: Jump
-      To: Run
-      Fade: 0.2
-      ExitTime: 0.75
-      Conditions:
-        - {Parameter: Grounded, Test: True}
-        - {Parameter: Speed, Test: Greater, Value: 2.4}
-    - From: Jump
-      To: Walk
-      Fade: 0.2
-      ExitTime: 0.75
-      Conditions:
-        - {Parameter: Grounded, Test: True}
-        - {Parameter: Speed, Test: Greater, Value: 0.1}
-    - From: Jump
-      To: Idle
-      Fade: 0.3
-      ExitTime: 1
-      Conditions:
-        - {Parameter: Grounded, Test: True}
     - FromAny: true
       To: RunJump
       Fade: 0.1

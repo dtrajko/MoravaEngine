@@ -9,7 +9,8 @@ namespace Sample
     /// to face where it walks, and its animator is told how fast it goes (the Speed parameter, meters per second) and when
     /// to use what is in front of it (Use: the trigger, on the Use action). With a JumpSpeed, Jump jumps: the Jump trigger
     /// at once, the push up JumpDelay later (when the clip leaves the ground), and Grounded each step. With a RunJumpSpeed,
-    /// a jump faster than it is a running jump: the RunJump trigger, the push up RunJumpDelay later. The animator's
+    /// a jump faster than it is a running jump: the RunJump trigger, the push up RunJumpDelay later (without StandingJump,
+    /// every jump is one, whatever the speed). The animator's
     /// controller picks the states and crossfades: Idle, Walk (and Run) by Speed, Use or Jump from any state. It needs a
     /// Character (Inspector: Physics) and an Animator.
     /// With a FootstepSound, the controller's Footstep events (each foot down in the walk and run clips) are heard, louder
@@ -40,6 +41,12 @@ namespace Sample
 
         /// <summary>Seconds from the Jump press to the push up in a running jump: its clip's take-off.</summary>
         public float RunJumpDelay = 0.0f;
+
+        /// <summary>
+        /// A jump slower than RunJumpSpeed is the standing jump (false: with a RunJumpSpeed, every jump is a running jump;
+        /// the controller then needs no Jump).
+        /// </summary>
+        public bool StandingJump = true;
 
         /// <summary>Forward is where this entity looks (none: along -Z).</summary>
         public Entity? Camera;
@@ -94,7 +101,7 @@ namespace Sample
             {
                 if (Input.WasPressed("Jump") && character.IsGrounded && jumpIn < 0 && !rising)
                 {
-                    bool running = RunJumpSpeed > 0 && speed > RunJumpSpeed;
+                    bool running = RunJumpSpeed > 0 && (speed > RunJumpSpeed || !StandingJump);
                     animator.SetTrigger(running ? "RunJump" : "Jump");
                     jumpIn = running ? RunJumpDelay : JumpDelay;
                 }
