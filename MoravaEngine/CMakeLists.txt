@@ -198,6 +198,12 @@ set(NFD_OVERRIDE_RECENT_WITH_DEFAULT ON CACHE BOOL "" FORCE)
 foreach(option FT_DISABLE_ZLIB FT_DISABLE_BZIP2 FT_DISABLE_PNG FT_DISABLE_HARFBUZZ FT_DISABLE_BROTLI SKIP_INSTALL_ALL)
     set(${option} ON CACHE BOOL "" FORCE)
 endforeach()
+# Its own copy of zlib (gzip module, always built) doesn't compile on macOS: the SDK defines TARGET_OS_MAC, and FreeType
+# 2.11's ftzconf.h then leaves out the Byte type. The system's zlib there (the SDK always has it)
+if(APPLE)
+    set(FT_DISABLE_ZLIB OFF CACHE BOOL "" FORCE)
+    set(FT_REQUIRE_ZLIB ON CACHE BOOL "" FORCE)
+endif()
 
 # =========================================================
 # OPTIONAL SUBDIRECTORY HELPER
@@ -560,7 +566,8 @@ list(APPEND MSDF_SRC
     ${MSDF_DIR}/msdfgen/lib/lodepng.cpp
 )
 add_library(msdf STATIC ${MSDF_SRC})
-target_include_directories(msdf PUBLIC ${MSDF_DIR} ${MSDF_DIR}/msdfgen ${MSDF_DIR}/msdfgen/include)
+# SYSTEM: the engine's sources that include its headers (UIFont.cpp) aren't failed by their warnings (-Werror)
+target_include_directories(msdf SYSTEM PUBLIC ${MSDF_DIR} ${MSDF_DIR}/msdfgen ${MSDF_DIR}/msdfgen/include)
 # MSDFGEN_CMAKE_BUILD: no #pragma comment(lib) for FreeType on Windows (CMake links it)
 target_compile_definitions(msdf PUBLIC MSDFGEN_USE_CPP11 MSDFGEN_CMAKE_BUILD)
 if(MSVC)
