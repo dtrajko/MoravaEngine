@@ -22,6 +22,7 @@ struct ScriptInputAction
 	glm::vec2 Value = glm::vec2(0.0f);
 	int32_t Held = 0, Pressed = 0, Released = 0;
 	int32_t Exists = 0; // the input map has it
+	int32_t Gamepad = 0; // the value is a gamepad's (the binding that gave it)
 };
 
 struct ScriptCharacterState
@@ -205,9 +206,11 @@ struct ScriptNativeApi
 	int32_t (*AudioListener_GetActive)(uint64_t entity, int32_t* out);
 	int32_t (*AudioListener_SetActive)(uint64_t entity, int32_t active);
 
-	// Audio: a sound played once, at a place (position) or everywhere (nullptr); 0 when its clip can't be loaded. The
+	// Audio: a sound played once, at a place (position: as loud as volume within minDistance meters) or everywhere
+	// (nullptr); 0 when its clip can't be loaded. The
 	// volumes: Master, then each bus's (AudioBus order), for this game (the project's again at the next Play)
-	int32_t (*Audio_PlayOneShot)(const char16_t* clip, int length, const glm::vec3* position, int32_t bus, float volume, float pitch);
+	int32_t (*Audio_PlayOneShot)(const char16_t* clip, int length, const glm::vec3* position, int32_t bus, float volume, float pitch,
+		float minDistance);
 	void (*Audio_GetVolumes)(float* out);
 	void (*Audio_SetVolumes)(const float* volumes);
 

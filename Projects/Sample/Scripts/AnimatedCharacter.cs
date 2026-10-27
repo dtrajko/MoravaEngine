@@ -5,7 +5,8 @@ using Morava;
 namespace Sample
 {
     /// <summary>
-    /// A character with an animated model: Move walks it (forward being away from the camera; Run held: faster), it turns
+    /// A character with an animated model: Move walks it (forward being away from the camera; Run held: faster; a gamepad's
+    /// stick: the farther it is pushed the faster, from a slow walk to the run at StickRunPush), it turns
     /// to face where it walks, and its animator is told how fast it goes (the Speed parameter, meters per second) and when
     /// to use what is in front of it (Use: the trigger, on the Use action). With a JumpSpeed, Jump jumps: the Jump trigger
     /// at once, the push up JumpDelay later (when the clip leaves the ground), and Grounded each step. With a RunJumpSpeed,
@@ -21,8 +22,14 @@ namespace Sample
         /// <summary>Meters per second (the walk clip of Models/PirateVoid covers 1.65 m/s at its own speed).</summary>
         public float Speed = 1.65f;
 
-        /// <summary>Meters per second while Run is held (Shift, the left stick pressed).</summary>
+        /// <summary>Meters per second while Run is held (Shift, the right bumper, the left stick pressed).</summary>
         public float RunSpeed = 4.0f;
+
+        /// <summary>
+        /// How far a gamepad's stick is pushed (0 to 1) for the run: halfway walks at Speed, a little push walks slowly, and
+        /// from halfway to here it speeds up to RunSpeed.
+        /// </summary>
+        public float StickRunPush = 0.9f;
 
         /// <summary>Degrees per second it turns towards where it walks.</summary>
         public float TurnSpeed = 540.0f;
@@ -48,7 +55,7 @@ namespace Sample
         /// </summary>
         public bool StandingJump = true;
 
-        /// <summary>Forward is where this entity looks (none: along -Z).</summary>
+        /// <summary>Forward is where this entity looks (none: along -Z; a CameraFollow: its ControlForward).</summary>
         public Entity? Camera;
 
         /// <summary>The sound of a step, at each Footstep event of the animator; {0} in it: one of 1 to FootstepVariants, at random.</summary>
@@ -69,6 +76,12 @@ namespace Sample
         public string LandSound = "";
 
         public float LandAfter = 0.2f;
+
+        /// <summary>
+        /// Meters from the listener within which its sounds (steps, jump, landing) are at their full volume, quieter farther:
+        /// with a camera behind it, about the camera's distance, so they don't get quieter than the camera's own place.
+        /// </summary>
+        public float SoundDistance = 1.0f;
 
         CharacterController character = null!;
         Animator animator = null!;
@@ -92,10 +105,12 @@ namespace Sample
         protected override void OnFixedUpdate(float dt)
         {
             Vector2 move = Input.GetAxis2D("Move");
-            Vector3 forward = Camera != null ? Camera.Forward : -Vector3.UnitZ;
+            // A CameraFollow's way to steer by: its view's own turns towards the walk don't turn the walk
+            Vector3 forward = Camera is CameraFollow follow ? follow.ControlForward : Camera != null ? Camera.Forward : -Vector3.UnitZ;
             forward = Vector3.Normalize(new Vector3(forward.X, 0, forward.Z));
             Vector3 right = Vector3.Cross(forward, Vector3.UnitY);
-            walk = (right * move.X + forward * move.Y) * (Input.IsHeld("Run") ? RunSpeed : Speed);
+            float push = move.Length();
+            walk = push > 1e-3f ? (right * move.X + forward * move.Y) / push * Pace(MathF.Min(push, 1.0f)) : Vector3.Zero;
 
             if (JumpSpeed > 0)
             {
@@ -111,7 +126,7 @@ namespace Sample
             // Down after a while in the air: the landing, louder the faster it fell (8 m/s: at full volume)
             bool grounded = character.IsGrounded && !rising;
             if (grounded && airTime > LandAfter && LandSound.Length > 0)
-                Audio.PlayOneShot(LandSound, WorldPosition, Math.Clamp(fallSpeed / 8.0f, 0.3f, 1.0f), AudioBus.Effects, Pitch());
+                Audio.PlayOneShot(LandSound, WorldPosition, Math.Clamp(fallSpeed / 8.0f, 0.3f, 1.0f), AudioBus.Effects, Pitch(), SoundDistance);
             if (grounded)
             {
                 airTime = 0;
@@ -128,7 +143,7 @@ namespace Sample
                 up = JumpSpeed;
                 rising = true;
                 if (JumpSound.Length > 0)
-                    Audio.PlayOneShot(JumpSound, WorldPosition, 0.7f, AudioBus.Effects, Pitch());
+                    Audio.PlayOneShot(JumpSound, WorldPosition, 0.7f, AudioBus.Effects, Pitch(), SoundDistance);
             }
             else
             {
@@ -156,7 +171,21 @@ namespace Sample
             lastFootstep = variant;
             float fast = RunSpeed > Speed ? Math.Clamp((speed - Speed) / (RunSpeed - Speed), 0.0f, 1.0f) : 0.0f;
             float volume = FootstepVolume + (RunFootstepVolume - FootstepVolume) * fast;
-            Audio.PlayOneShot(string.Format(FootstepSound, variant), WorldPosition, volume, AudioBus.Effects, Pitch());
+            Audio.PlayOneShot(string.Format(FootstepSound, variant), WorldPosition, volume, AudioBus.Effects, Pitch(), SoundDistance);
+        }
+
+        // Meters per second for Move pushed this far: the keys walk (Run held: run); a stick walks slower the less it is
+        // pushed, up to Speed at halfway, then faster up to RunSpeed at StickRunPush (Run held: runs at any push)
+        float Pace(float push)
+        {
+            if (Input.IsHeld("Run"))
+                return RunSpeed;
+            if (!Input.FromGamepad("Move"))
+                return Speed;
+            if (push <= 0.5f)
+                return Speed * push / 0.5f;
+            float t = StickRunPush > 0.5f ? Math.Clamp((push - 0.5f) / (StickRunPush - 0.5f), 0.0f, 1.0f) : 1.0f;
+            return Speed + (RunSpeed - Speed) * t;
         }
 
         // A little higher or lower each time, so no two sound the same
