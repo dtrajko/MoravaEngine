@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Erika
 EditorCamera:
-  Translation: [-2.9172046, 14.361324, -2.7864647]
-  Rotation: [9.499987, -167.40091, 0]
+  Translation: [-2.1515815, 7.6869564, -7.0489807]
+  Rotation: [-5.299966, -171.60097, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:
@@ -341,9 +341,9 @@ Entities:
         RunSpeed: {Float: 3.8}
         Gravity: {Float: 19.6}
         JumpSpeed: {Float: 4.9}
-        JumpDelay: {Float: 0.57}
         RunJumpSpeed: {Float: 2.4}
         RunJumpDelay: {Float: 0.1}
+        StandingJump: {Bool: false}
         FootstepSound: {String: "Assets/Audio/Footstep_{0}.wav"}
         FootstepVariants: {Int: 4}
         JumpSound: {String: Assets/Audio/JumpTakeoff.wav}
@@ -440,8 +440,8 @@ Entities:
     Name: Player Light
     Parent: 0
     Transform:
-      Translation: [0, 7, 3]
-      Rotation: [0, 0, 0]
+      Translation: [0.4157582, 13.836172, 1.4041194]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     PointLight:
       Enabled: true
@@ -492,6 +492,37 @@ Entities:
   - ID: 3832071018062476339
     Name: Cube
     Parent: 9744832532305759245
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 16754266349564994111
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-1.3817022, 8.219908, 3.254099]
+      Rotation: [0, -0, 0]
+      Scale: [5.7, 0.09999998, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 1536568396140416009
+    Name: Cube
+    Parent: 16754266349564994111
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, -0, 0]
