@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Erika
 EditorCamera:
-  Translation: [0, 8, 9]
-  Rotation: [30, 0, 0]
+  Translation: [1.2543013, 17.619614, 4.627804]
+  Rotation: [5.999998, -33.500824, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:
@@ -471,3 +471,127 @@ Entities:
       ShowProbes: false
       ProbeRadius: 0.12
       Show: 0
+  - ID: 9744832532305759245
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [-2.0763655, 3.4999912, -9]
+      Rotation: [0, -0, -12.4723835]
+      Scale: [8.181773, 0.09999998, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3832071018062476339
+    Name: Cube
+    Parent: 9744832532305759245
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 3015530779700741111
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [1.5960028, 11.259573, 8.991972]
+      Rotation: [0, -0, 5.6488967]
+      Scale: [8.519254, 0.10000006, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 8192145425077427165
+    Name: Cube
+    Parent: 3015530779700741111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 13426688160774921605
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [9.056939, 14.105605, -1.3675683]
+      Rotation: [90, 80.55908, 90]
+      Scale: [8.811527, 0.10000051, 0.99999654]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 13311159596631294887
+    Name: Cube
+    Parent: 13426688160774921605
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 750205669599544581
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-9, 7.701191, 1.4500747]
+      Rotation: [-90, 77.16783, -90]
+      Scale: [8.811593, 0.10000052, 0.99999654]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 18416996212806506428
+    Name: Cube
+    Parent: 750205669599544581
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
