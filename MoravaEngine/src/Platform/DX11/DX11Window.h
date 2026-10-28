@@ -99,6 +99,8 @@ public:
 	virtual void SetCursorDisabled() override {}
 	virtual void SetCursorNormal() override {}
 	virtual void SetCursorCaptured(bool captured) override {}
+	virtual void SetFullscreen(bool fullscreen) override {}
+	virtual bool IsFullscreen() override { return false; }
 	virtual bool GetShouldClose() override { return !m_IsRunning; }
 
 	virtual inline void SetEventLogging(bool enabled) override { m_EventLoggingEnabled = enabled; }

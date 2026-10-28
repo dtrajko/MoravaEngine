@@ -69,6 +69,8 @@ public:
 	virtual void SetCursorDisabled() override;
 	virtual void SetCursorNormal() override;
 	virtual void SetCursorCaptured(bool captured) override;
+	virtual void SetFullscreen(bool fullscreen) override;
+	virtual bool IsFullscreen() override;
 	virtual bool GetShouldClose() override;
 
 	bool* getKeysPrev() { return keys_prev; }; // previous states of keys
@@ -133,6 +135,10 @@ private:
 	bool mouseCursorAboveWindow;
 	float m_CursorIgnoreLimit;
 	bool m_CursorCaptured = false;
+
+	// Before fullscreen: where the window was, and whether it was maximized
+	int m_RestoreX = 100, m_RestoreY = 100, m_RestoreWidth = 1280, m_RestoreHeight = 720;
+	bool m_RestoreMaximized = false;
 
 	bool m_EventLoggingEnabled;
 

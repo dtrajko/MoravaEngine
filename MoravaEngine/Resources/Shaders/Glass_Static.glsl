@@ -130,6 +130,8 @@ void main()
 	vec2 refractedUV = screenUV;
 	bool internalReflection = false;
 	vec3 internalDirection = vec3(0.0);
+	vec3 rayTarget = vec3(0.0);  // where the bent ray meets what's behind (its estimate)
+	float rayTravel = -1.0;      // how far it goes behind the glass to get there (negative: not bent)
 	vec3 T = refract(-V, N, 1.0 / ior);
 	if (dot(T, T) > 0.0 && ior > 1.0001)
 	{
@@ -156,13 +158,25 @@ void main()
 			{
 				// NDC to texture coordinates: both run the same way as the framebuffer (half the range, same direction)
 				refractedUV = screenUV + (targetClip.xy / targetClip.w - surfaceClip.xy / surfaceClip.w) * 0.5;
+				rayTarget = exitPoint + D * travel;
+				rayTravel = travel;
 			}
 		}
 	}
 	// Off the screen, or onto something in front of the glass (nearer than this surface): not seen through it, so the
-	// unbent view is used there
-	if (any(lessThan(refractedUV, vec2(0.0))) || any(greaterThan(refractedUV, vec2(1.0))) ||
-		texture(u_SceneDepth, refractedUV).r < gl_FragCoord.z)
+	// unbent view is used there. Also onto something much nearer than where the bent ray goes (by more than half its way
+	// behind the glass): the screen has it at that pixel, but in front of the ray's path, not on it (a character
+	// standing before a glass block, its image would show inside the block)
+	bool seenThrough = all(greaterThanEqual(refractedUV, vec2(0.0))) && all(lessThanEqual(refractedUV, vec2(1.0)));
+	float refractedDepth = seenThrough ? texture(u_SceneDepth, refractedUV).r : 0.0;
+	seenThrough = seenThrough && refractedDepth >= gl_FragCoord.z;
+	if (seenThrough && rayTravel > 0.0 && refractedDepth < 1.0)
+	{
+		vec4 seen = inverse(v_ViewProjection) * vec4(refractedUV * 2.0 - 1.0, refractedDepth, 1.0);
+		float seenDistance = length(seen.xyz / seen.w - u_CameraPosition);
+		seenThrough = seenDistance > length(rayTarget - u_CameraPosition) - 0.5 * rayTravel;
+	}
+	if (!seenThrough)
 	{
 		refractedUV = screenUV;
 	}

@@ -492,6 +492,16 @@ void UpdateGameViewportFocus(bool viewportFocused)
 	}
 }
 
+bool IsGameViewportFocused()
+{
+	return s_GameViewportFocused;
+}
+
+void FocusViewportNextFrame()
+{
+	s_FocusViewport = true;
+}
+
 void HandlePlayModeShortcutKeys()
 {
 	const ImGuiIO& io = ImGui::GetIO();

@@ -797,10 +797,57 @@ static void UpdateImGuizmo(Window* mainWindow);
 
 // The Viewport panel: the scene's image, with picking (click: select, Ctrl or Shift + click: add or remove), drops (a material,
 // a model file, an .hdr map), the light icons, the gizmo and the frame rate
+void SetViewportFullscreen(bool fullscreen)
+{
+	if (fullscreen == s_ViewportFullscreen)
+	{
+		return;
+	}
+	// The other window (the fullscreen one, or the docked panel) gets the focus if the viewport had it: the game keeps
+	// its input
+	const ImGuiWindow* focused = ImGui::GetCurrentContext() ? GImGui->NavWindow : nullptr;
+	if (IsGameViewportFocused() || (focused && std::string(focused->Name).rfind("Viewport", 0) == 0))
+	{
+		FocusViewportNextFrame();
+	}
+	s_ViewportFullscreen = fullscreen;
+	Application::Get()->GetWindow()->SetFullscreen(fullscreen);
+}
+
+void HandleViewportFullscreenKeys()
+{
+	const ImGuiIO& io = ImGui::GetIO();
+	if (io.WantTextInput || s_RenamingEntity != NoEntity || ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
+	{
+		return;
+	}
+	if (ImGui::IsKeyPressed(ImGuiKey_F11, false))
+	{
+		SetViewportFullscreen(!s_ViewportFullscreen);
+	}
+	else if (s_ViewportFullscreen && !IsGameViewportFocused() && ImGui::IsKeyPressed(ImGuiKey_Escape, false))
+	{
+		SetViewportFullscreen(false);
+	}
+}
+
 void OnImGuiRenderViewport()
 {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-	ImGui::Begin("Viewport");
+	if (s_ViewportFullscreen)
+	{
+		// Over the whole main window (the panels aren't drawn; the docked Viewport panel keeps its place for later)
+		const ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(mainViewport->Pos);
+		ImGui::SetNextWindowSize(mainViewport->Size);
+		ImGui::SetNextWindowViewport(mainViewport->ID);
+		ImGui::Begin("Viewport (Fullscreen)", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking |
+			ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollWithMouse);
+	}
+	else
+	{
+		ImGui::Begin("Viewport");
+	}
 
 	// Tell ImGuiWrapper the scene is shown in this ImGui window, so camera input (CameraController)
 	// works while the viewport is hovered/focused, instead of being blocked as "mouse over an ImGui window"

@@ -53,3 +53,4 @@ bool s_ShowAudioPanel = false;
 bool s_ShowPhysicsColliders = false;
 bool s_ShowPhysicsContacts = false;
 bool s_ShowViewportFps = true;
+bool s_ViewportFullscreen = false;

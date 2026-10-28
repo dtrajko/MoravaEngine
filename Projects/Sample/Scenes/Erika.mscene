@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Erika
 EditorCamera:
-  Translation: [-1.5622147, 11.782598, -4.553247]
-  Rotation: [17.50001, 149.29935, 0]
+  Translation: [-8.813868, 5.402055, -4.711837]
+  Rotation: [50.50006, 0.9990463, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:
@@ -54,9 +54,9 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [0, 8, 9]
-      Rotation: [30, 0, 0]
-      Scale: [1, 1, 1]
+      Translation: [2.1363554, 2.8, 4.8147993]
+      Rotation: [19.999992, -0, 0]
+      Scale: [1, 0.99999994, 0.99999994]
     Camera:
       Primary: true
       FieldOfView: 45
@@ -134,9 +134,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [11, 11, 2]
+      Translation: [11, 11, 2.08]
       Rotation: [0, -0, -90]
-      Scale: [9.999993, 0.9999972, 7.9999247]
+      Scale: [9.999993, 0.9999972, 8.099895]
     Model:
       File: Models/Primitives/cube.obj
     Collider:
@@ -260,7 +260,7 @@ Entities:
     Transform:
       Translation: [-11, 11, 0]
       Rotation: [0, -0, -90]
-      Scale: [9.999993, 0.9999972, 9.999189]
+      Scale: [9.999993, 0.9999972, 10.2]
     Model:
       File: Models/Primitives/cube.obj
     Collider:
@@ -320,9 +320,9 @@ Entities:
     Name: Erika
     Parent: 0
     Transform:
-      Translation: [0, 1, 2]
-      Rotation: [0, 180, 0]
-      Scale: [1, 1, 1]
+      Translation: [2.2345302, 1, 3.25]
+      Rotation: [179.9999, -0, -179.9999]
+      Scale: [0.9999992, 0.99999994, 0.9999992]
     Model:
       File: Models/Erika_Archer/Erika_Archer.dae
     CharacterController:
@@ -434,9 +434,9 @@ Entities:
     MeshPart:
       SourceMeshIndex: 0
       Material:
-        ID: 15620937154082316693
-        File: Assets/Materials/Orange.mmat
-        Name: Orange
+        ID: 16216856275011426933
+        File: Assets/Materials/Orange_Glass.mmat
+        Name: Orange_Glass
   - ID: 3318840571902216447
     Name: Player Light
     Parent: 0
@@ -507,7 +507,7 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [-1.3817022, 9.151169, 3.254099]
+      Translation: [-1.3817022, 8.981893, 3.254099]
       Rotation: [0, -0, 0]
       Scale: [5.7, 0.09999998, 1]
     Model:
@@ -531,16 +531,16 @@ Entities:
     MeshPart:
       SourceMeshIndex: 0
       Material:
-        ID: 2039148728491603379
-        File: Assets/Materials/Walls_Blue.mmat
-        Name: Walls_Blue
+        ID: 3117841017886726524
+        File: Assets/Materials/Walls_Glass.mmat
+        Name: Walls_Glass
   - ID: 3015530779700741111
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [1.1921537, 11.0720215, 8.991972]
+      Translation: [1.4431548, 11.0720215, 8.991972]
       Rotation: [0, -0, 6.9389267]
-      Scale: [8.879455, 0.10000005, 1]
+      Scale: [8.639366, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
     Collider:
@@ -600,9 +600,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [-9.002532, 7.910711, 1.0547925]
+      Translation: [-9.002532, 7.910711, 1.3070717]
       Rotation: [-90, 79.99997, -90]
-      Scale: [9.123623, 0.10000035, 0.9999902]
+      Scale: [8.872857, 0.100000344, 0.9999902]
     Model:
       File: Models/Primitives/cube.obj
     Collider:
@@ -670,7 +670,7 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [-3.0017986, 3.5, -2.0019083]
+      Translation: [-8, 1.5, -8]
       Rotation: [0, -0, 0]
       Scale: [0.5, 0.5, 0.5]
     Model:
