@@ -86,6 +86,11 @@ public:
 	virtual void SetCursorCaptured(bool captured) = 0; // hide and lock the cursor, read raw mouse motion (e.g. while rotating the camera)
 	virtual bool GetShouldClose() = 0;
 
+	// The window covers the monitor it is on (at the monitor's resolution, no title bar); false: back to its place and
+	// size before (maximized again if it was)
+	virtual void SetFullscreen(bool fullscreen) = 0;
+	virtual bool IsFullscreen() = 0;
+
 	virtual void SetEventLogging(bool enabled) = 0;
 	virtual const bool GetEventLogging() const = 0;
 

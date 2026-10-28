@@ -99,7 +99,10 @@ void Editor::OnImGuiRender()
 
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		// F11 (fullscreen viewport): no menu bar, the dockspace kept alive but not drawn, so the panels docked in it keep
+		// their places while they aren't shown
+		const bool viewportOnly = s_ViewportFullscreen;
+		ImGuiWindowFlags window_flags = (viewportOnly ? 0 : (ImGuiWindowFlags)ImGuiWindowFlags_MenuBar) | ImGuiWindowFlags_NoDocking;
 		if (opt_fullscreen)
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -137,13 +140,14 @@ void Editor::OnImGuiRender()
 			if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 			{
 				ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-				ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+				ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags | (viewportOnly ? (ImGuiDockNodeFlags)ImGuiDockNodeFlags_KeepAliveOnly : 0));
 			}
 			else
 			{
 				// ShowDockingDisabledMessage();
 			}
 
+			HandleViewportFullscreenKeys();
 			OnImGuiRenderViewport();
 
 
@@ -157,14 +161,20 @@ void Editor::OnImGuiRender()
 
 			// Content Browser (6.1): the project's files (or the engine's), dragged onto the panels; entities dropped on it
 			// become prefabs
-			OnImGuiRenderContentBrowser();
+			if (!viewportOnly)
+			{
+				OnImGuiRenderContentBrowser();
+			}
 
 			bool showMaterialEditorPanel = true;
 			// H2M::VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&showMaterialEditorPanel);
 
 			/**** END ImGui panels ****/
 
-			OnImGuiRenderEnvironment();
+			if (!viewportOnly)
+			{
+				OnImGuiRenderEnvironment();
+			}
 
 			// Retired: their functions are in the Scene Hierarchy and the Inspector (the functions are kept, not shown)
 			// OnImGuiRenderModelsAndMeshes();
@@ -175,24 +185,27 @@ void Editor::OnImGuiRender()
 			HandlePlayModeShortcutKeys();
 			OnImGuiRenderUnsavedChangesPopup();
 			OnImGuiRenderNotification();
-			OnImGuiRenderSceneHierarchy();
-			OnImGuiRenderInspector();
-			OnImGuiRenderMaterialLibrary();
-			OnImGuiRenderMaterialEditor();
-			OnImGuiRenderRendererStats();
-			OnImGuiRenderProjectPanel();
-			OnImGuiRenderInputPanel();
-			OnImGuiRenderPhysicsPanel();
-			OnImGuiRenderAudioPanel();
-			OnImGuiRenderAnimatorPanel();
-			OnImGuiRenderScriptsPanel();
-			OnImGuiRenderConsolePanel();
-			OnImGuiRenderNewScriptDialog();
+			if (!viewportOnly)
+			{
+				OnImGuiRenderSceneHierarchy();
+				OnImGuiRenderInspector();
+				OnImGuiRenderMaterialLibrary();
+				OnImGuiRenderMaterialEditor();
+				OnImGuiRenderRendererStats();
+				OnImGuiRenderProjectPanel();
+				OnImGuiRenderInputPanel();
+				OnImGuiRenderPhysicsPanel();
+				OnImGuiRenderAudioPanel();
+				OnImGuiRenderAnimatorPanel();
+				OnImGuiRenderScriptsPanel();
+				OnImGuiRenderConsolePanel();
+				OnImGuiRenderNewScriptDialog();
+			}
 
 			/**** BEGIN DockSpace menu bar ****/
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, GetMenuBarFramePadding()); // the menus' text centered in the taller bar
-			const bool menuBar = ImGui::BeginMenuBar();
+			const bool menuBar = !viewportOnly && ImGui::BeginMenuBar();
 			ImGui::PopStyleVar();
 			if (menuBar)
 			{
@@ -235,6 +248,10 @@ void Editor::OnImGuiRender()
 				{
 					ImGui::MenuItem("Renderer Stats", nullptr, &s_ShowRendererStats);
 					ImGui::MenuItem("FPS in the Viewport", nullptr, &s_ShowViewportFps);
+					if (ImGui::MenuItem("Fullscreen Viewport", "F11", s_ViewportFullscreen))
+					{
+						SetViewportFullscreen(!s_ViewportFullscreen);
+					}
 					ImGui::MenuItem("Input", nullptr, &s_ShowInputPanel);
 					ImGui::MenuItem("Physics", nullptr, &s_ShowPhysicsPanel);
 					ImGui::MenuItem("Audio", nullptr, &s_ShowAudioPanel);

@@ -640,9 +640,11 @@ void OnImGuiRenderMaterialEditor()
 		}
 		if (ImGui::IsItemHovered())
 		{
-			ImGui::SetTooltip("Solid: a block, a ball, a bottle full of liquid. The light bends entering and leaving, as through\n"
-				"a lens: what's behind it is squeezed and turned around, more toward its outline.\n"
-				"Thin: a pane, a shell, a hollow vase. What's behind only shifts a little.");
+			ImGui::SetTooltip("Solid: a curved body, a ball, a statue, a bottle full of liquid. The light bends entering and leaving,\n"
+				"as through a lens: what's behind it is squeezed and turned around, more toward its outline.\n"
+				"Thin: flat sides or hollow: a pane, a glass floor or slab, a box, a shell, a hollow vase. What's behind\n"
+				"only shifts a little (parallel sides: the light leaves as it came in). Solid on a flat slab seen at a\n"
+				"low angle bends the view steeply, onto whatever is far off on the screen.");
 		}
 		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassSolid), inherited);
 		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassIOR));
@@ -689,11 +691,11 @@ void OnImGuiRenderMaterialEditor()
 	endProperty(EnvMapVulkanMaterial::AlbedoColorProperty, inherited);
 	inherited = beginProperty(EnvMapVulkanMaterial::MetalnessProperty);
 	ImGui::BeginDisabled(glass);
-	ImGui::SliderFloat("Metalness", &metalness, 0.0f, 1.0f);
+	ImGui::SliderFloat("Metalness", &metalness, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp); // also a typed value (Ctrl+click)
 	ImGui::EndDisabled();
 	endProperty(EnvMapVulkanMaterial::MetalnessProperty, inherited);
 	inherited = beginProperty(EnvMapVulkanMaterial::RoughnessProperty);
-	ImGui::SliderFloat(glass ? "Roughness (Frost)" : "Roughness", &roughness, 0.0f, 1.0f);
+	ImGui::SliderFloat(glass ? "Roughness (Frost)" : "Roughness", &roughness, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 	endProperty(EnvMapVulkanMaterial::RoughnessProperty, inherited);
 
 	float& tilingFactor = material->Get<float>("u_MaterialUniforms.TilingFactor");

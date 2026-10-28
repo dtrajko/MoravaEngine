@@ -111,6 +111,7 @@ extern bool s_ShowAudioPanel;                                // View > Audio (Ed
 extern bool s_ShowPhysicsColliders;                          // physics debug views in the viewport (the Physics panel)
 extern bool s_ShowPhysicsContacts;
 extern bool s_ShowViewportFps;
+extern bool s_ViewportFullscreen; // F11: the viewport alone, the window covering its monitor (the panels hidden, not closed)
 
 // Drag & drop payload of a Material Library material: an index into EnvMapVulkanMaterialLibrary::GetMaterials()
 constexpr const char* s_MaterialPayload = "VULKAN_LIBRARY_MATERIAL";
@@ -179,6 +180,10 @@ void HandlePlayModeShortcutKeys();
 // The Viewport panel, each frame: it has the focus (the game gets input in the next frame); Escape (Shift+F1 when the game
 // binds Escape) takes the focus away, giving the mouse back to the editor
 void UpdateGameViewportFocus(bool viewportFocused);
+
+// The game had the viewport's focus in the last frame (its input); the viewport gets the focus in the next frame
+bool IsGameViewportFocused();
+void FocusViewportNextFrame();
 
 // The running game's input, for the Input panel (nullptr: no game, or Simulate: it has none)
 const InputSystem* GetGameInput();
@@ -510,6 +515,12 @@ void ScaleChildLightRanges(EnvMapVulkanEntityID entity, float scale);
 // The Viewport panel: the scene's image, with picking (click: select, Ctrl or Shift + click: add or remove), drops (a material,
 // a model file, an .hdr map), the light icons, the gizmo and the frame rate
 void OnImGuiRenderViewport();
+
+// F11: the viewport fullscreen and back; Escape leaves fullscreen when the game doesn't have the input (in Play, the first
+// Escape gives the mouse back, the second leaves). Not while typing in a field or while a question is open. Before the
+// viewport each frame: Escape's first press is still the game's then
+void HandleViewportFullscreenKeys();
+void SetViewportFullscreen(bool fullscreen);
 
 // ---- Scene Hierarchy (EditorHierarchyPanel.cpp)
 

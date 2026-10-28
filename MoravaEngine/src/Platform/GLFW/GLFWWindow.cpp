@@ -363,6 +363,60 @@ void GLFWWindow::SetCursorCaptured(bool captured)
 	mouseFirstMoved = true;
 }
 
+void GLFWWindow::SetFullscreen(bool fullscreen)
+{
+	if (fullscreen == IsFullscreen())
+	{
+		return;
+	}
+	if (fullscreen)
+	{
+		// On the monitor under the window's center, at the monitor's own resolution
+		m_RestoreMaximized = glfwGetWindowAttrib(m_GLFW_Window, GLFW_MAXIMIZED) == GLFW_TRUE;
+		if (m_RestoreMaximized)
+		{
+			glfwRestoreWindow(m_GLFW_Window); // its place and size before it was maximized
+		}
+		glfwGetWindowPos(m_GLFW_Window, &m_RestoreX, &m_RestoreY);
+		glfwGetWindowSize(m_GLFW_Window, &m_RestoreWidth, &m_RestoreHeight);
+		const int cx = m_RestoreX + m_RestoreWidth / 2, cy = m_RestoreY + m_RestoreHeight / 2;
+		int count = 0;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+		GLFWmonitor* target = glfwGetPrimaryMonitor();
+		for (int i = 0; i < count; i++)
+		{
+			int mx = 0, my = 0;
+			glfwGetMonitorPos(monitors[i], &mx, &my);
+			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+			if (mode && cx >= mx && cx < mx + mode->width && cy >= my && cy < my + mode->height)
+			{
+				target = monitors[i];
+			}
+		}
+		const GLFWvidmode* mode = glfwGetVideoMode(target);
+		if (!mode)
+		{
+			return;
+		}
+		glfwSetWindowMonitor(m_GLFW_Window, target, 0, 0, mode->width, mode->height, mode->refreshRate);
+		Log::GetLogger()->info("Window: fullscreen, {0}x{1}", mode->width, mode->height);
+	}
+	else
+	{
+		glfwSetWindowMonitor(m_GLFW_Window, nullptr, m_RestoreX, m_RestoreY, m_RestoreWidth, m_RestoreHeight, 0);
+		if (m_RestoreMaximized)
+		{
+			glfwMaximizeWindow(m_GLFW_Window);
+		}
+		Log::GetLogger()->info("Window: back from fullscreen");
+	}
+}
+
+bool GLFWWindow::IsFullscreen()
+{
+	return glfwGetWindowMonitor(m_GLFW_Window) != nullptr;
+}
+
 bool GLFWWindow::GetShouldClose()
 {
 	return glfwWindowShouldClose(m_GLFW_Window);
