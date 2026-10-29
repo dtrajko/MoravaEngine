@@ -66,6 +66,10 @@ public:
 	static bool InvokeCollision(void* instance, ScriptCollisionKind kind, uint64_t other, const glm::vec3& point, const glm::vec3& normal);
 	// An event of the entity's animator: its name, and the state whose clip fired it
 	static bool InvokeAnimationEvent(void* instance, const std::string& name, const std::string& state);
+	// A UI button's click: the instance's method of that name (ScriptManagedApi::InvokeMethod: 0 called, 1 threw, 2 no such
+	// method; 1 also without C#), and the button's Clicked listeners (false: one threw)
+	static int InvokeMethod(void* instance, const std::string& name);
+	static bool InvokeButtonClicked(uint64_t button);
 
 	// A public field of an instance (field: of its class, GetClasses). The value must be of the field's type (an Enum by
 	// its name); false when it isn't, or C# refused it (logged)

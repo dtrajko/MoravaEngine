@@ -9,9 +9,12 @@ class GameLoopSystems
 public:
 	virtual ~GameLoopSystems() = default;
 	virtual void FixedUpdate(float /*fixedStep*/) {}
-	// frameTime: the frame's game time (scaled); alpha: how far the game is between its last two fixed steps (GetAlpha), for
-	// drawing what the steps move (bodies) between them
-	virtual void Update(float /*frameTime*/, float /*alpha*/) {}
+	// frameTime: the frame's game time (scaled); unscaledFrameTime: its real time (what a pause menu at time scale 0 runs
+	// on); alpha: how far the game is between its last two fixed steps (GetAlpha), for drawing what the steps move
+	// (bodies) between them
+	virtual void Update(float /*frameTime*/, float /*unscaledFrameTime*/, float /*alpha*/) {}
+	// Game time per real time, read at the start of each frame: the game's (Time.TimeScale)
+	virtual float GetTimeScale() const { return 1.0f; }
 };
 
 /**
@@ -36,8 +39,8 @@ public:
 	// Back to the start (game time 0, no steps), for the next time the game starts
 	void Reset();
 
-	// Game time per real time: 1 normal, 0.5 slow motion, 0 standing still (the loop still runs, UI keeps working)
-	void SetTimeScale(float timeScale);
+	// Game time per real time in the last frame (the systems', GameLoopSystems::GetTimeScale): 1 normal, 0.5 slow motion,
+	// 0 standing still (no fixed steps; the frame's update still runs with real time too, so the UI keeps working)
 	float GetTimeScale() const { return m_TimeScale; }
 
 	// How far the game is between its last fixed step and the next one, 0 to 1

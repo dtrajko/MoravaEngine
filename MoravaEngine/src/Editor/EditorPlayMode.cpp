@@ -65,6 +65,8 @@ static GameSystems s_GameSystems;
 static InputSystem s_GameInput;
 static bool s_GameViewportFocused = false; // the Viewport panel had the focus in the last frame: the game gets input
 static GLFWwindow* s_GameWindow = nullptr;  // the OS window the Viewport panel is in (the main one, or its own when dragged out)
+static UIPointer s_GamePointer;             // the mouse over the Viewport panel's image, for the game's UI (SetGamePointer)
+static glm::vec2 s_GameViewSize = glm::vec2(1280.0f, 720.0f);
 static bool s_FocusViewport = false;       // Play: the Viewport panel gets the focus, so the game has input at once
 static uint64_t s_ScriptExceptionsSeen = 0; // Play pauses when a script throws: the ones it paused for already
 // Edit: the scene's animators in their entry states, as the game starts them (else a model would show its file's own
@@ -386,6 +388,11 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 	const bool gameInput = !s_Paused && s_GameViewportFocused;
 	if (!s_Paused)
 	{
+		// The game UI gets the mouse first: the buttons it holds are released for the game's actions
+		UIPointer pointer = s_GamePointer;
+		pointer.Inside = pointer.Inside && gameInput && !s_GameInput.IsMouseCaptured();
+		pointer.Buttons = gameInput ? InputSystem::ReadMouseButtons(window) : 0u;
+		s_GameInput.SetBlockedMouseButtons(s_GameSystems.UpdateUIPointer(pointer, s_GameViewSize));
 		s_GameInput.Update(window, gameInput, frameTime);
 		s_GameLoop.Frame(frameTime, &s_GameSystems);
 		ProcessSceneLoad();
@@ -448,6 +455,18 @@ SceneAnimation* GetGameAnimation()
 ScriptRuntime* GetGameScripts()
 {
 	return s_PlayState == PlayState::Play ? &s_GameSystems.GetScripts() : nullptr;
+}
+
+const SceneUI* GetGameUI()
+{
+	return s_PlayState == PlayState::Play ? &s_GameSystems.GetUI() : nullptr;
+}
+
+void SetGamePointer(bool inside, const glm::vec2& position, const glm::vec2& viewSize)
+{
+	s_GamePointer.Inside = inside;
+	s_GamePointer.Position = position;
+	s_GameViewSize = viewSize;
 }
 
 // The game binds Escape: Shift+F1 gives the mouse back instead
@@ -537,7 +556,11 @@ const EnvMapVulkanViewOptions* GetDrawnViewOptions()
 	s_GameViewOptions.Overlays = EnvMapVulkanViewOptions().Overlays;
 	s_GameViewOptions.Selection.clear();
 	s_GameViewOptions.UI = true; // the game's UI, whatever the Edit view shows
+	// UI Outlines: what the game's UI does with the mouse and the gamepad (the element under the mouse, the selected button)
 	s_GameViewOptions.UIOutlines = false;
+	s_GameViewOptions.UIOutlinesInGame = s_ViewOptions.UIOutlines && s_PlayState == PlayState::Play;
+	s_GameViewOptions.UIHovered = s_GameSystems.GetUI().GetHovered();
+	s_GameViewOptions.UISelected = s_GameSystems.GetUI().GetSelected();
 	return &s_GameViewOptions;
 }
 

@@ -1,12 +1,14 @@
-// The game UI in the editor (docs/engine/Game_Engine_Runtime_Guide.html, 7.1 and 7.2): adding canvases and elements, the
-// Inspector's UI section (canvas, rectangle with anchor presets, text, image), and selecting and dragging elements in the
-// viewport. The layout is UI/UILayout's, at the viewport's size, as the renderer draws it.
+// The game UI in the editor (docs/engine/Game_Engine_Runtime_Guide.html, 7.1 to 7.3): adding canvases and elements, the
+// Inspector's UI section (canvas, rectangle with anchor presets, text, image, button), and selecting and dragging elements
+// in the viewport. The layout is UI/UILayout's, at the viewport's size, as the renderer draws it.
 
 
 #include "UI/UIFont.h"
 #include "UI/UILayout.h"
 
 #include "Project/Project.h"
+
+#include "Scripting/ScriptHost.h"
 
 #include "Core/FileDialogs.h"
 #include "Core/ResourceManager.h"
@@ -86,7 +88,7 @@ EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset)
 		return canvas;
 	}
 	const EnvMapVulkanEntityID parent = GetUIParentForNewElement();
-	const char* names[] = { "Canvas", "Panel", "Text", "Image" };
+	const char* names[] = { "Canvas", "Panel", "Text", "Image", "Button" };
 	const EnvMapVulkanEntityID entity = s_Scene.CreateEntity(names[(int)preset], parent);
 	UIRectComponent& rect = s_Scene.Add<UIRectComponent>(entity);
 	switch (preset)
@@ -103,6 +105,22 @@ EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset)
 			rect.Size = glm::vec2(200.0f, 200.0f);
 			s_Scene.Add<UIImageComponent>(entity);
 			break;
+		case UIEntityPreset::Button:
+		{
+			// Its image is its background (tinted by its state), its label a stretched child
+			rect.Size = glm::vec2(320.0f, 72.0f);
+			s_Scene.Add<UIImageComponent>(entity).Color = glm::vec4(0.16f, 0.42f, 0.78f, 1.0f);
+			s_Scene.Add<UIButtonComponent>(entity);
+			const EnvMapVulkanEntityID label = s_Scene.CreateEntity("Label", entity);
+			UIRectComponent& labelRect = s_Scene.Add<UIRectComponent>(label);
+			labelRect.AnchorMin = glm::vec2(0.0f);
+			labelRect.AnchorMax = glm::vec2(1.0f);
+			labelRect.Size = glm::vec2(0.0f);
+			UITextComponent& text = s_Scene.Add<UITextComponent>(label);
+			text.Text = "Button";
+			text.Size = 34.0f;
+			break;
+		}
 		default:
 			break;
 	}
@@ -460,6 +478,117 @@ static void ImageControls(EnvMapVulkanEntityID entity, UIImageComponent& image)
 	}
 }
 
+static std::string ButtonTargetLabel(EnvMapVulkanEntityID target)
+{
+	if (target == NoEntity)
+	{
+		return "(the button, else a parent up to the canvas)";
+	}
+	const NameComponent* name = s_Scene.TryGet<NameComponent>(target);
+	return name ? name->Name : "(missing)";
+}
+
+// The entities with a script, in the Scene Hierarchy's order, indented by depth
+static void ButtonTargetChoices(const std::vector<EnvMapVulkanEntityID>& entities, int depth, EnvMapVulkanEntityID& target)
+{
+	for (EnvMapVulkanEntityID entity : entities)
+	{
+		if (const ScriptComponent* script = s_Scene.TryGet<ScriptComponent>(entity))
+		{
+			const std::string label = std::string(depth * 2, ' ') + s_Scene.Get<NameComponent>(entity).Name + "  (" + script->ClassName + ")";
+			ImGui::PushID((int)(entity & 0x7fffffff));
+			if (ImGui::Selectable(label.c_str(), entity == target))
+			{
+				target = entity;
+			}
+			ImGui::PopID();
+		}
+		ButtonTargetChoices(s_Scene.GetChildren(entity), depth + 1, target);
+	}
+}
+
+static void ButtonControls(EnvMapVulkanEntityID entity, UIButtonComponent& button, const SceneUI* gameUI)
+{
+	if (gameUI)
+	{
+		const char* state = !button.Interactable ? "Disabled" : gameUI->GetPressed() == entity ? "Pressed" :
+			gameUI->GetSelected() == entity ? "Highlighted (selected)" : "Normal";
+		ImGui::TextDisabled("Now: %s", state);
+	}
+	ImGui::Checkbox("Interactable", &button.Interactable);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Off: the button shows its Disabled color and can't be clicked or selected (C#: button.Interactable)");
+	}
+	if (!s_Scene.Has<UIImageComponent>(entity))
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "No image: the button takes clicks but shows no state (check Image)");
+	}
+	ImGui::ColorEdit4("Normal", &button.Normal.x);
+	ImGui::ColorEdit4("Highlighted", &button.Highlighted.x);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Under the mouse, or selected with the keyboard or the gamepad (UI_Navigate)");
+	}
+	ImGui::ColorEdit4("Pressed", &button.Pressed.x);
+	ImGui::ColorEdit4("Disabled", &button.Disabled.x);
+	ImGui::DragFloat("Fade Duration", &button.FadeDuration, 0.005f, 0.0f, 2.0f, "%.2f s");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The colors multiply the image's own color. The change from one to the next takes this long,\n"
+			"in real time: a pause menu fades too while the game stands still (time scale 0)");
+	}
+	// Edit shows the state the game starts in: its tint follows the colors as they are edited
+	if (!gameUI)
+	{
+		button.TintSet = false;
+	}
+
+	ImGui::SeparatorText("On Click");
+	if (ImGui::BeginCombo("Target", ButtonTargetLabel(button.OnClickTarget).c_str()))
+	{
+		if (ImGui::Selectable("(the button, else a parent up to the canvas)", button.OnClickTarget == NoEntity))
+		{
+			button.OnClickTarget = NoEntity;
+		}
+		ButtonTargetChoices(s_Scene.GetRoots(), 0, button.OnClickTarget);
+		ImGui::EndCombo();
+	}
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("VULKAN_SCENE_ENTITY"))
+		{
+			button.OnClickTarget = *static_cast<const EnvMapVulkanEntityID*>(payload->Data);
+		}
+		ImGui::EndDragDropTarget();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Whose script's method a click calls (an entity can be dropped here from the Scene Hierarchy).\n"
+			"None: the first script that has the method, from the button up to its canvas (a menu's script on the canvas)");
+	}
+	// The method: typed, or one of the target script's (the game's assembly lists only fields, so methods are typed)
+	char method[256] = {};
+	snprintf(method, sizeof(method), "%s", button.OnClickMethod.c_str());
+	if (ImGui::InputText("Method", method, sizeof(method)))
+	{
+		button.OnClickMethod = method;
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("A method of the script without parameters, public or not: OnPlay for void OnPlay().\n"
+			"Scripts can also listen: GetComponent<UIButton>().Clicked += OnPlay");
+	}
+	if (button.OnClickTarget != NoEntity && !s_Scene.Exists(button.OnClickTarget))
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.3f, 1.0f), "The target entity is gone: choose another");
+	}
+	else if (button.OnClickTarget != NoEntity && !s_Scene.Has<ScriptComponent>(button.OnClickTarget))
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "The target has no script");
+	}
+}
+
 void UIControls(EnvMapVulkanEntityID entity)
 {
 	const EntityKind kind = GetEntityKind(entity);
@@ -468,6 +597,7 @@ void UIControls(EnvMapVulkanEntityID entity)
 		return;
 	}
 	ImGui::PushID("UI");
+	const SceneUI* gameUI = GetGameUI();
 	UIDrawList layout;
 	UILayout::Build(s_Scene, s_UIViewSize, layout);
 
@@ -494,6 +624,16 @@ void UIControls(EnvMapVulkanEntityID entity)
 		{
 			hasText ? (void)s_Scene.Add<UITextComponent>(entity) : s_Scene.Remove<UITextComponent>(entity);
 		}
+		ImGui::SameLine();
+		bool hasButton = s_Scene.Has<UIButtonComponent>(entity);
+		if (ImGui::Checkbox("Button", &hasButton))
+		{
+			hasButton ? (void)s_Scene.Add<UIButtonComponent>(entity) : s_Scene.Remove<UIButtonComponent>(entity);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The element takes clicks and the keyboard's and gamepad's selection; its image shows its state");
+		}
 		if (!s_Scene.Has<UIRectComponent>(entity))
 		{
 			ImGui::SameLine();
@@ -515,6 +655,13 @@ void UIControls(EnvMapVulkanEntityID entity)
 		if (ImGui::CollapsingHeader("Text##Section", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			TextControls(*text);
+		}
+	}
+	if (UIButtonComponent* button = s_Scene.TryGet<UIButtonComponent>(entity))
+	{
+		if (ImGui::CollapsingHeader("Button##Section", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ButtonControls(entity, *button, gameUI);
 		}
 	}
 	ImGui::PopID();

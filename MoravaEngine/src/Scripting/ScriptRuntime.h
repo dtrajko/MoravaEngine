@@ -5,7 +5,10 @@
 #include "Animation/SceneAnimation.h"
 #include "Physics/ScenePhysics.h"
 
+#include "UI/SceneUI.h"
+
 #include <cstdint>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -42,6 +45,9 @@ public:
 	void DispatchEvents(const std::vector<ScenePhysics::Event>& events);
 	// The frame's animation events (SceneAnimation::GetEvents), to the animated entities' scripts
 	void DispatchAnimationEvents(const std::vector<SceneAnimation::Event>& events);
+	// The frame's button clicks (SceneUI::GetClicks): each button's On Click method (UIButtonComponent), then its C#
+	// listeners (button.Clicked)
+	void DispatchButtonClicks(const std::vector<SceneUI::Click>& clicks);
 	// Drops the instances of entities that are gone
 	void RemoveDestroyed();
 
@@ -70,6 +76,8 @@ private:
 	void CreateInstances(const std::vector<EnvMapVulkanEntityID>& scripted, bool atStart);
 	void ApplyFields(const Instance& instance, const ScriptComponent& script);
 	void Threw(const Instance& instance, const char* method);
+	// Counted as an exception without an instance (what: "UIButton.Clicked")
+	void Threw(const std::string& what, EnvMapVulkanEntityID entity);
 	const Instance* Find(EnvMapVulkanEntityID entity) const;
 
 	EnvMapVulkanScene* m_Scene = nullptr;
@@ -77,4 +85,5 @@ private:
 	std::unordered_map<EnvMapVulkanEntityID, size_t> m_ByEntity;
 	uint64_t m_ExceptionCount = 0;
 	std::string m_LastException;
+	std::set<std::pair<EnvMapVulkanEntityID, std::string>> m_MissingMethods; // a button's method no script has: logged once
 };

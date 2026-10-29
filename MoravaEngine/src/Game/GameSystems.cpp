@@ -53,6 +53,7 @@ bool GameSystems::TakeSceneLoad(std::string& path)
 void GameSystems::Start(bool keepClock)
 {
 	m_Scripts.Stop();
+	m_UI.Stop();
 	m_Physics.Stop();
 	m_Audio.Stop();
 	m_Animation.Stop();
@@ -71,6 +72,8 @@ void GameSystems::Start(bool keepClock)
 		m_ScriptContext.FixedStepCount = previous.FixedStepCount;
 		m_ScriptContext.InstantiatedPrefabs = std::move(previous.InstantiatedPrefabs);
 		m_ScriptContext.CursorLocked = previous.CursorLocked; // no flicker of the cursor at Scene.Reload
+		m_ScriptContext.TimeScale = previous.TimeScale;
+		m_ScriptContext.UnscaledTime = previous.UnscaledTime;
 	}
 	m_ScriptContext.Scene = m_Scene;
 	m_ScriptContext.Physics = &m_Physics;
@@ -78,6 +81,7 @@ void GameSystems::Start(bool keepClock)
 	m_ScriptContext.Animation = &m_Animation;
 	m_ScriptContext.Scripts = &m_Scripts;
 	m_ScriptContext.Input = m_Input;
+	m_ScriptContext.UI = &m_UI;
 	m_ScriptContext.FixedDeltaTime = GameLoop::FixedStep;
 	ScriptBindings::Bind();
 	ScriptBindings::SetContext(m_Scene ? &m_ScriptContext : nullptr);
@@ -114,9 +118,15 @@ void GameSystems::Start(bool keepClock)
 		{
 			AudioEngine::SetVolumes(project ? project->Volumes : AudioVolumes());
 			m_Audio.Start(*m_Scene);
+			m_UI.Start(*m_Scene, m_Input->GetMap());
 			m_Scripts.Start(*m_Scene);
 		}
 	}
+}
+
+uint32_t GameSystems::UpdateUIPointer(const UIPointer& pointer, const glm::vec2& viewSize)
+{
+	return m_UI.UpdatePointer(pointer, viewSize);
 }
 
 void GameSystems::LoadScripts()
@@ -177,6 +187,7 @@ void GameSystems::FixedUpdate(float fixedStep)
 {
 	m_ScriptContext.InFixedStep = true;
 	m_ScriptContext.DeltaTime = fixedStep;
+	m_ScriptContext.UnscaledDeltaTime = fixedStep;
 	m_ScriptContext.FixedDeltaTime = fixedStep;
 	m_ScriptContext.Time += fixedStep;
 	m_ScriptContext.FixedStepCount++;
@@ -258,12 +269,14 @@ void GameSystems::FixedUpdate(float fixedStep)
 	}
 }
 
-void GameSystems::Update(float frameTime, float alpha)
+void GameSystems::Update(float frameTime, float unscaledFrameTime, float alpha)
 {
 	// The bodies where physics has them, between its last two steps
 	m_Physics.WriteTransforms(alpha);
 
 	m_ScriptContext.DeltaTime = frameTime;
+	m_ScriptContext.UnscaledDeltaTime = unscaledFrameTime;
+	m_ScriptContext.UnscaledTime += unscaledFrameTime;
 	m_ScriptContext.FrameCount++;
 	if (!m_Scene)
 	{
@@ -290,7 +303,14 @@ void GameSystems::Update(float frameTime, float alpha)
 	});
 	m_Input->SetMouseCaptureWanted(captureMouse || m_ScriptContext.CursorLocked);
 
+	// The UI in real time (a pause menu works at time scale 0), its clicks to the scripts before their OnUpdate, and what
+	// those destroyed
 	m_Scripts.RemoveDestroyed();
+	m_UI.Update(m_Input, unscaledFrameTime);
+	m_Scripts.DispatchButtonClicks(m_UI.GetClicks());
+	ScriptBindings::DestroyQueued(m_ScriptContext);
+	m_Scripts.RemoveDestroyed();
+
 	m_Scripts.Update(frameTime);
 
 	// What the game destroyed in this frame
@@ -306,4 +326,11 @@ void GameSystems::Update(float frameTime, float alpha)
 
 	// The listener and the sounds where the frame left their entities (the sounds of destroyed ones go)
 	m_Audio.Update(frameTime);
+
+	// A frame of no game time (time scale 0: a pause menu) runs no fixed step: its presses (A on the menu's Resume) are not
+	// the game's, so they don't wait for the next step (the ball would jump when the game goes on)
+	if (frameTime <= 0.0f)
+	{
+		m_Input->EndFixedStep();
+	}
 }

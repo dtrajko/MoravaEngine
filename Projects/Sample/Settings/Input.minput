@@ -33,3 +33,15 @@ Actions:
   - Name: Run           # held: a character runs instead of walking (AnimatedCharacter; a stick pushed all the way runs too)
     Type: Button
     Bindings: [ { Key: LeftShift }, { Key: RightShift }, { Gamepad: RightBumper }, { Gamepad: LeftThumb } ]
+  - Name: Pause         # the pause menu opens or closes (PauseMenu)
+    Type: Button
+    Bindings: [ { Key: Escape }, { Gamepad: Start } ]
+  - Name: UI_Navigate   # Axis2D: the game UI's selection from button to button (the engine reads it)
+    Type: Axis2D
+    Bindings:
+      - { Composite: Arrows, Up: Up, Down: Down, Left: Left, Right: Right }
+      - { Gamepad: DPad }
+      - { Gamepad: LeftStick, DeadZone: 0.15 }
+  - Name: UI_Submit     # presses the game UI's selected button (the engine reads it)
+    Type: Button
+    Bindings: [ { Key: Enter }, { Gamepad: A } ]

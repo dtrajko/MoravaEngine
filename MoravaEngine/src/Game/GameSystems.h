@@ -13,6 +13,8 @@
 #include "Scripting/ScriptBindings.h"
 #include "Scripting/ScriptRuntime.h"
 
+#include "UI/SceneUI.h"
+
 
 class EnvMapVulkanScene;
 class InputSystem;
@@ -20,13 +22,14 @@ class InputSystem;
 /**
  * The game's systems, run by the game loop on the running game's scene: the same in the player and in the editor's Play.
  * Now the input test (InputTestComponent), physics (ScenePhysics), the C# scripts (ScriptRuntime) and what their API works
- * on (ScriptContext: time, and the entities scripts destroy, at the end of each update), the animators (SceneAnimation,
- * 6.4: each frame, after the scripts set their parameters; also in Simulate) and the sounds (SceneAudio, 5.1: at the end
- * of each frame, where the frame left the entities).
+ * on (ScriptContext: time, and the entities scripts destroy, at the end of each update), the game UI's buttons (SceneUI,
+ * 7.3: each frame, before the scripts' OnUpdate, in real time), the animators (SceneAnimation, 6.4: each frame, after the
+ * scripts set their parameters; also in Simulate) and the sounds (SceneAudio, 5.1: at the end of each frame, where the
+ * frame left the entities).
  *
  * A fixed step: the scripts' OnFixedUpdate, what they destroyed, the physics step, its collisions and triggers to the
- * scripts, what those destroyed. A frame: the bodies' interpolated transforms, the scripts' OnUpdate, what it destroyed,
- * the animators' poses, the sounds.
+ * scripts, what those destroyed. A frame: the bodies' interpolated transforms, the UI's clicks to the scripts, the
+ * scripts' OnUpdate, what it destroyed, the animators' poses, the sounds.
  *
  * Scene.Load (6.2) is the owner's to do at the end of the frame (the player, the editor's Play: they know where the scene
  * goes): TakeSceneLoad says what was asked for, the owner opens it into the same scene and calls Restart.
@@ -51,13 +54,19 @@ public:
 	// the clock going on
 	void Restart();
 
+	// The mouse over the game's view (view: its size in pixels), each frame before the input is sampled: the mouse buttons
+	// the game's UI holds, for InputSystem::SetBlockedMouseButtons (0 without a game, or in Simulate)
+	uint32_t UpdateUIPointer(const UIPointer& pointer, const glm::vec2& viewSize);
+
 	virtual void FixedUpdate(float fixedStep) override;
-	virtual void Update(float frameTime, float alpha) override;
+	virtual void Update(float frameTime, float unscaledFrameTime, float alpha) override;
+	virtual float GetTimeScale() const override { return m_ScriptContext.TimeScale; }
 
 	ScenePhysics& GetPhysics() { return m_Physics; }
 	ScriptRuntime& GetScripts() { return m_Scripts; }
 	SceneAudio& GetAudio() { return m_Audio; }
 	SceneAnimation& GetAnimation() { return m_Animation; }
+	SceneUI& GetUI() { return m_UI; }
 	const ScriptContext& GetScriptContext() const { return m_ScriptContext; }
 
 	// The game's actions: the open project's input file, else (no project, a project without one, or a file that can't be
@@ -79,4 +88,5 @@ private:
 	ScriptRuntime m_Scripts;
 	SceneAudio m_Audio;
 	SceneAnimation m_Animation;
+	SceneUI m_UI;
 };

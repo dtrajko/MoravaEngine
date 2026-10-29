@@ -27,6 +27,8 @@ namespace Morava
         public delegate* unmanaged<IntPtr, char*, int, NativeValue*, int> SetField;
         public delegate* unmanaged<IntPtr, char*, int, NativeValue*, int> GetField;
         public delegate* unmanaged<IntPtr, char*, int, char*, int, int> InvokeAnimationEvent;
+        public delegate* unmanaged<IntPtr, char*, int, int> InvokeMethod;
+        public delegate* unmanaged<ulong, int> InvokeButtonClicked;
     }
 
     // The game's assembly in a context of its own that can be unloaded (hot reload). ScriptCore is the one already
@@ -96,6 +98,8 @@ namespace Morava
                 managed->SetField = &SetField;
                 managed->GetField = &GetField;
                 managed->InvokeAnimationEvent = &InvokeAnimationEvent;
+                managed->InvokeMethod = &InvokeMethod;
+                managed->InvokeButtonClicked = &InvokeButtonClicked;
                 return 0;
             }
             catch (Exception) { return 1; }
@@ -151,6 +155,7 @@ namespace Morava
             {
                 if (s_Context == null) return 0;
                 if (s_Instances.Count > 0) { Log.Error($"UnloadGameAssembly: {s_Instances.Count} script instances still exist"); return -1; }
+                UIButton.ClearListeners(); // they may be the game's code
                 WeakReference context = StartUnload();
                 for (int i = 0; i < 10 && context.IsAlive; i++)
                 {
@@ -207,6 +212,8 @@ namespace Morava
             if (s_ByEntity.TryGetValue(entity.Id, out Entity? registered) && ReferenceEquals(registered, entity))
                 s_ByEntity.Remove(entity.Id);
             handle.Free();
+            // The game is over (or restarts: Scene.Load): its buttons' listeners go with its scripts
+            if (s_Instances.Count == 0) UIButton.ClearListeners();
         }
 
         // The script's methods; the collision kinds are ScriptCollisionKind's values (2 + kind)
@@ -272,6 +279,48 @@ namespace Morava
                 Log.Error($"{entity?.GetType().Name}.OnAnimationEvent: {e}");
                 return 1;
             }
+        }
+
+        // A button's On Click method (Inspector): an instance method without parameters, public or not, of the script's class
+        // or a base class. 0 called, 1 threw, 2 no such method. Looked up each time, never cached (the game's context)
+        [UnmanagedCallersOnly]
+        static int InvokeMethod(IntPtr instance, char* name, int length)
+        {
+            string method = new string(name, 0, length);
+            Entity? entity = null;
+            try
+            {
+                if (!s_Instances.Contains(instance)) { Log.Error($"{method}: not a script instance"); return 1; }
+                entity = (Entity)GCHandle.FromIntPtr(instance).Target!;
+                for (Type? type = entity.GetType(); type != null && type != typeof(Entity); type = type.BaseType)
+                {
+                    MethodInfo? info = type.GetMethod(method, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                        BindingFlags.DeclaredOnly, null, Type.EmptyTypes, null);
+                    if (info != null)
+                    {
+                        info.Invoke(entity, null);
+                        return 0;
+                    }
+                }
+                return 2;
+            }
+            catch (TargetInvocationException e)
+            {
+                Log.Error($"{entity?.GetType().Name}.{method}: {e.InnerException ?? e}");
+                return 1;
+            }
+            catch (Exception e)
+            {
+                Log.Error($"{entity?.GetType().Name}.{method}: {e}");
+                return 1;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        static int InvokeButtonClicked(ulong button)
+        {
+            try { return UIButton.RaiseClicked(button) ? 0 : 1; }
+            catch (Exception e) { Log.Error($"UIButton.Clicked: {e}"); return 1; }
         }
 
         // The game's script classes and their fields, for the editor (ScriptFields.Describe): how many classes, -1 on an error

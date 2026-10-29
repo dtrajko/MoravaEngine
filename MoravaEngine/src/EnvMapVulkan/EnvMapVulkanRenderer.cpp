@@ -3843,7 +3843,11 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 			"finished image (after tonemapping, so their colors are the colors given). Text is read from signed distance field "
 			"font atlases, sharp at any size.");
 		UILayout::Build(*s_Scene, glm::vec2((float)width, (float)height), s_UIDrawList);
-		if (s_ViewOptions.UIOutlines && s_ViewOptions.PrimarySelection != NoEntity)
+		if (s_ViewOptions.UIOutlinesInGame)
+		{
+			UILayout::AddInteractionOverlay(s_UIDrawList, s_ViewOptions.UIHovered, s_ViewOptions.UISelected);
+		}
+		else if (s_ViewOptions.UIOutlines && s_ViewOptions.PrimarySelection != NoEntity)
 		{
 			UILayout::AddSelectionOverlay(s_UIDrawList, s_ViewOptions.PrimarySelection);
 		}

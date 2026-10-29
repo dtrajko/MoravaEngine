@@ -17,6 +17,19 @@ void InputSystem::AddMouseWheel(float notches)
 	s_MouseWheel += notches;
 }
 
+uint32_t InputSystem::ReadMouseButtons(GLFWwindow* window)
+{
+	uint32_t buttons = 0;
+	for (int button = 0; window && button <= GLFW_MOUSE_BUTTON_LAST && button < 32; button++)
+	{
+		if (glfwGetMouseButton(window, button) == GLFW_PRESS)
+		{
+			buttons |= 1u << button;
+		}
+	}
+	return buttons;
+}
+
 void InputSystem::SetMap(const InputMap& map)
 {
 	m_Map = map;
@@ -62,7 +75,8 @@ glm::vec2 InputSystem::ReadBinding(GLFWwindow* window, const InputBinding& bindi
 			}
 			break;
 		case InputBindingSource::MouseButton:
-			value.x = glfwGetMouseButton(window, binding.Code) == GLFW_PRESS ? 1.0f : 0.0f;
+			// A press that began over the game's UI is the UI's (a click on a button doesn't also fire the gun)
+			value.x = glfwGetMouseButton(window, binding.Code) == GLFW_PRESS && !IsMouseButtonBlocked(binding.Code) ? 1.0f : 0.0f;
 			break;
 		case InputBindingSource::MouseDelta:
 			value = m_MouseRate;
@@ -73,6 +87,7 @@ glm::vec2 InputSystem::ReadBinding(GLFWwindow* window, const InputBinding& bindi
 		case InputBindingSource::GamepadButton:
 		case InputBindingSource::GamepadAxis:
 		case InputBindingSource::GamepadStick:
+		case InputBindingSource::GamepadDPad:
 			// Every gamepad: the one moved most
 			for (int joystick = GLFW_JOYSTICK_1; joystick <= GLFW_JOYSTICK_LAST; joystick++)
 			{
@@ -93,6 +108,16 @@ glm::vec2 InputSystem::ReadBinding(GLFWwindow* window, const InputBinding& bindi
 					const float axis = state.axes[binding.Code];
 					// Triggers: -1 released to 1 pulled, as 0 to 1; stick axes: GLFW's y is down, ours up
 					pad.x = ApplyDeadZone(trigger ? (axis + 1.0f) * 0.5f : vertical ? -axis : axis, binding.DeadZone);
+				}
+				else if (binding.Source == InputBindingSource::GamepadDPad)
+				{
+					auto down = [&](int button) { return state.buttons[button] == GLFW_PRESS ? 1.0f : 0.0f; };
+					pad = glm::vec2(down(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT) - down(GLFW_GAMEPAD_BUTTON_DPAD_LEFT),
+						down(GLFW_GAMEPAD_BUTTON_DPAD_UP) - down(GLFW_GAMEPAD_BUTTON_DPAD_DOWN));
+					if (glm::length(pad) > 1.0f)
+					{
+						pad = glm::normalize(pad);
+					}
 				}
 				else
 				{
@@ -124,8 +149,11 @@ void InputSystem::Update(GLFWwindow* window, bool enabled, float frameTime)
 
 	// The mouse: captured while the game wants it and has input (and the user didn't take it back: until a click); its
 	// motion, as a rate, and the wheel's notches
-	if (m_MouseHeldBack && (!m_MouseCaptureWanted || (m_Enabled && (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS ||
-		glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS))))
+	auto clicked = [&](int button)
+	{
+		return glfwGetMouseButton(window, button) == GLFW_PRESS && !IsMouseButtonBlocked(button); // a click on the UI is the UI's
+	};
+	if (m_MouseHeldBack && (!m_MouseCaptureWanted || (m_Enabled && (clicked(GLFW_MOUSE_BUTTON_LEFT) || clicked(GLFW_MOUSE_BUTTON_RIGHT)))))
 	{
 		m_MouseHeldBack = false;
 	}
@@ -211,6 +239,7 @@ void InputSystem::Reset(GLFWwindow* window)
 	m_Enabled = false;
 	m_MouseCaptureWanted = false;
 	m_MouseHeldBack = false;
+	m_BlockedMouseButtons = 0;
 	m_HasMousePosition = false;
 	m_MouseRate = glm::vec2(0.0f);
 	m_MouseWheel = 0.0f;

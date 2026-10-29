@@ -98,7 +98,29 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	// camera entity
 	GLFWwindow* window = Application::Get()->GetWindow()->GetHandle();
 	UpdateFullscreenKeys(window);
-	m_Input.Update(window, glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE, ts.GetSeconds());
+	const bool focused = glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE;
+	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
+	const glm::vec2 viewSize((float)swapChain.GetWidth(), (float)swapChain.GetHeight());
+
+	// The game UI gets the mouse first: the buttons it holds are released for the game's actions
+	UIPointer pointer;
+	if (focused && !m_Input.IsMouseCaptured())
+	{
+		// The cursor is in the window's units, the view in the framebuffer's pixels (more of them on a Retina display)
+		double x = 0.0, y = 0.0;
+		int windowWidth = 0, windowHeight = 0;
+		glfwGetCursorPos(window, &x, &y);
+		glfwGetWindowSize(window, &windowWidth, &windowHeight);
+		if (windowWidth > 0 && windowHeight > 0)
+		{
+			pointer.Position = glm::vec2((float)x, (float)y) * viewSize / glm::vec2((float)windowWidth, (float)windowHeight);
+			pointer.Inside = pointer.Position.x >= 0.0f && pointer.Position.y >= 0.0f && pointer.Position.x < viewSize.x &&
+				pointer.Position.y < viewSize.y;
+		}
+	}
+	pointer.Buttons = InputSystem::ReadMouseButtons(window);
+	m_Input.SetBlockedMouseButtons(m_Systems.UpdateUIPointer(pointer, viewSize));
+	m_Input.Update(window, focused, ts.GetSeconds());
 	m_GameLoop.Frame(ts.GetSeconds(), &m_Systems);
 	std::string load;
 	if (m_Systems.TakeSceneLoad(load))
@@ -107,7 +129,6 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	}
 
 	// The view fills the window: the camera's aspect ratio follows it (the swapchain's size, in pixels)
-	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 	EnvMapVulkanRenderer::SetViewportSize(swapChain.GetWidth(), swapChain.GetHeight());
 
 	// The view of the primary game camera (a script may have switched it), with its lens

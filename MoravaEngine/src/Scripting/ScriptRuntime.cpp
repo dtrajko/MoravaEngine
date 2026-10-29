@@ -128,6 +128,7 @@ void ScriptRuntime::Stop()
 	}
 	m_Instances.clear();
 	m_ByEntity.clear();
+	m_MissingMethods.clear();
 	m_Scene = nullptr;
 }
 
@@ -244,6 +245,72 @@ void ScriptRuntime::DispatchAnimationEvents(const std::vector<SceneAnimation::Ev
 	}
 }
 
+void ScriptRuntime::DispatchButtonClicks(const std::vector<SceneUI::Click>& clicks)
+{
+	for (const SceneUI::Click& click : clicks)
+	{
+		const UIButtonComponent* button = m_Scene ? m_Scene->TryGet<UIButtonComponent>(click.Button) : nullptr;
+		if (!button)
+		{
+			continue;
+		}
+		const std::string method = button->OnClickMethod; // a copy: the method may change the button
+		const EnvMapVulkanEntityID target = button->OnClickTarget;
+		if (!method.empty())
+		{
+			// The target's script, or the first script from the button up to its canvas that has the method
+			std::vector<EnvMapVulkanEntityID> candidates;
+			if (target != NoEntity)
+			{
+				candidates.push_back(target);
+			}
+			else
+			{
+				for (EnvMapVulkanEntityID id = click.Button; id != NoEntity; id = m_Scene->GetParent(id))
+				{
+					candidates.push_back(id);
+					if (m_Scene->Has<UICanvasComponent>(id))
+					{
+						break;
+					}
+				}
+			}
+			bool found = false;
+			for (EnvMapVulkanEntityID candidate : candidates)
+			{
+				const Instance* instance = Find(candidate);
+				if (!instance)
+				{
+					continue;
+				}
+				const size_t index = size_t(instance - m_Instances.data());
+				const int result = ScriptHost::InvokeMethod(instance->Handle, method);
+				if (result == 2)
+				{
+					continue; // not this script's
+				}
+				found = true;
+				if (result != 0)
+				{
+					Threw(m_Instances[index], method.c_str());
+				}
+				break;
+			}
+			if (!found && m_MissingMethods.insert({ click.Button, method }).second)
+			{
+				const std::string where = target != NoEntity ? "its target '" + EntityName(*m_Scene, target) + "'" :
+					std::string("the button and its parents up to the canvas");
+				Log::GetLogger()->error("UI: the button '{0}' calls {1}(), but no script of {2} has a method {1} without parameters",
+					EntityName(*m_Scene, click.Button), method, where);
+			}
+		}
+		if (m_Scene->Exists(click.Button) && !ScriptHost::InvokeButtonClicked(click.Button))
+		{
+			Threw("UIButton.Clicked", click.Button);
+		}
+	}
+}
+
 void ScriptRuntime::RemoveDestroyed()
 {
 	if (!m_Scene)
@@ -282,6 +349,14 @@ const ScriptRuntime::Instance* ScriptRuntime::Find(EnvMapVulkanEntityID entity) 
 {
 	auto found = m_ByEntity.find(entity);
 	return found != m_ByEntity.end() ? &m_Instances[found->second] : nullptr;
+}
+
+void ScriptRuntime::Threw(const std::string& what, EnvMapVulkanEntityID entity)
+{
+	m_ExceptionCount++;
+	m_LastException = what;
+	Log::GetLogger()->error("Script error: {0} on '{1}' threw an exception (above, with the file and line)", what,
+		m_Scene ? EntityName(*m_Scene, entity) : std::to_string(entity));
 }
 
 void ScriptRuntime::Threw(const Instance& instance, const char* method)

@@ -962,6 +962,7 @@ void OnImGuiRenderViewport()
 	const bool toggle = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl) ||
 		Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift);
 	const glm::vec2 mouseInView(ImGui::GetMousePos().x - s_ViewportImageMin.x, ImGui::GetMousePos().y - s_ViewportImageMin.y);
+	SetGamePointer(viewportImageHovered, mouseInView, glm::vec2(s_ViewportImageSize.x, s_ViewportImageSize.y)); // the game's UI (Play)
 	if (HandleViewportUIMouse(mouseInView, clickedScene, toggle))
 	{
 		if (clickedScene)

@@ -458,25 +458,38 @@ EnvMapVulkanEntityID EnvMapVulkanScene::CopySubtree(const EnvMapVulkanScene& fro
 	// References inside the subtree go to the copies (a reference outside it stays: the same entity, when this is that scene)
 	for (const auto& [source, copy] : copyOf)
 	{
-		if (ScriptComponent* script = TryGet<ScriptComponent>(copy))
-		{
-			for (ScriptComponent::Field& field : script->Fields)
-			{
-				if (field.Value.Type == ScriptFieldType::Entity)
-				{
-					if (auto it = copyOf.find(field.Value.Entity); it != copyOf.end())
-					{
-						field.Value.Entity = it->second;
-					}
-				}
-			}
-		}
+		RemapEntityReferences(copy, copyOf);
 	}
 	if (copies)
 	{
 		*copies = copyOf;
 	}
 	return sources.empty() ? NoEntity : copyOf.at(root);
+}
+
+void EnvMapVulkanScene::RemapEntityReferences(EnvMapVulkanEntityID entity, const std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanEntityID>& to)
+{
+	auto remap = [&](EnvMapVulkanEntityID& reference)
+	{
+		if (auto it = to.find(reference); it != to.end())
+		{
+			reference = it->second;
+		}
+	};
+	if (ScriptComponent* script = TryGet<ScriptComponent>(entity))
+	{
+		for (ScriptComponent::Field& field : script->Fields)
+		{
+			if (field.Value.Type == ScriptFieldType::Entity)
+			{
+				remap(field.Value.Entity);
+			}
+		}
+	}
+	if (UIButtonComponent* button = TryGet<UIButtonComponent>(entity))
+	{
+		remap(button->OnClickTarget);
+	}
 }
 
 const std::vector<EnvMapVulkanEntityID>& EnvMapVulkanScene::GetChildren(EnvMapVulkanEntityID id) const

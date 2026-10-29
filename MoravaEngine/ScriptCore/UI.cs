@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace Morava
@@ -152,6 +153,91 @@ namespace Morava
                     if (Interop.Game->UIImage_SetTexture(Entity.Id, chars, texture.Length) == 0) throw Missing("UI image");
             }
         }
+    }
+
+    /// <summary>
+    /// A button (Inspector: Button): clicked with the mouse, or selected with UI_Navigate (the arrow keys, the D-pad) and
+    /// pressed with UI_Submit (Enter, the gamepad's A). Its image shows its state's color. A click calls the method the
+    /// Inspector names (On Click), then everything listening: button.Clicked += OnPlay.
+    /// </summary>
+    public sealed unsafe class UIButton : Component
+    {
+        // The listeners of each button, by entity: a button is asked for anew each time (GetComponent), its listeners stay
+        static readonly Dictionary<ulong, Action?> s_Clicked = new();
+
+        /// <summary>False: the button shows its Disabled color, can't be clicked or selected.</summary>
+        public bool Interactable
+        {
+            get { int value; if (Interop.Game->UIButton_GetInteractable(Entity.Id, &value) == 0) throw Missing("UI button"); return value != 0; }
+            set { if (Interop.Game->UIButton_SetInteractable(Entity.Id, value ? 1 : 0) == 0) throw Missing("UI button"); }
+        }
+
+        /// <summary>The button is the one UI_Submit presses (selected by the keyboard, the gamepad, the mouse or Select).</summary>
+        public bool IsSelected => Interop.Game->UI_GetSelected() == Entity.Id;
+
+        /// <summary>
+        /// Makes it the selected button (a menu that opens: its first button, so the gamepad can press it). False when it
+        /// can't be selected now: hidden, or not Interactable.
+        /// </summary>
+        public bool Select() => Interop.Game->UI_Select(Entity.Id) != 0;
+
+        /// <summary>After the button's On Click method, in the frame's update (before OnUpdate), also while TimeScale is 0.</summary>
+        public event Action Clicked
+        {
+            add { s_Clicked.TryGetValue(Entity.Id, out Action? listeners); s_Clicked[Entity.Id] = listeners + value; }
+            remove
+            {
+                if (s_Clicked.TryGetValue(Entity.Id, out Action? listeners))
+                {
+                    listeners -= value;
+                    if (listeners == null) s_Clicked.Remove(Entity.Id); else s_Clicked[Entity.Id] = listeners;
+                }
+            }
+        }
+
+        // Each listener, also when one before it threw (logged): true when none threw
+        internal static bool RaiseClicked(ulong button)
+        {
+            if (!s_Clicked.TryGetValue(button, out Action? listeners) || listeners == null) return true;
+            bool ok = true;
+            foreach (Action listener in listeners.GetInvocationList())
+            {
+                try { listener(); }
+                catch (Exception e)
+                {
+                    Log.Error($"{listener.Method.DeclaringType?.Name}.{listener.Method.Name} (UIButton.Clicked): {e}");
+                    ok = false;
+                }
+            }
+            return ok;
+        }
+
+        internal static void ClearListeners() => s_Clicked.Clear();
+    }
+
+    /// <summary>The game UI as a whole.</summary>
+    public static unsafe class UI
+    {
+        /// <summary>The selected button (UI_Submit presses it), null for none; set null to drop the selection.</summary>
+        public static UIButton? SelectedButton
+        {
+            get
+            {
+                ulong id = Interop.Game->UI_GetSelected();
+                return id == 0 ? null : new UIButton { Entity = Interop.EntityFor(id)! };
+            }
+            set
+            {
+                if (value == null) Interop.Game->UI_Select(0);
+                else value.Select();
+            }
+        }
+
+        /// <summary>
+        /// The mouse is over an element that catches it (an image or a button): a game reading the mouse itself can leave
+        /// it to the UI. A press that starts there doesn't reach the game's mouse actions anyway.
+        /// </summary>
+        public static bool IsPointerOverUI => Interop.Game->UI_IsPointerOver() != 0;
     }
 
     // A string the engine copies into a buffer: the length, -1 when it doesn't fit (a larger buffer then), -2 when the

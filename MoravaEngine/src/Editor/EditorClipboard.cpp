@@ -31,6 +31,8 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <tuple>
+#include <type_traits>
 #include <unordered_map>
 
 
@@ -47,12 +49,46 @@ using namespace EnvMapVulkanSceneData;
 // A model is loaded again from its file (each model entity has its own, see ModelComponent), with the parts it had then:
 // their materials, their transforms (the meshes' exact matrices). A part copied without its model becomes a model of its
 // own, with only that mesh. The sun, the water and the environment are one per scene: not copied.
+// Each copied entity and part also carries how it plays: its tags, physics (collider, rigid body, character), script,
+// sounds, animator (ClipboardGame). A part copied alone gets its model's too, the collider and the character fitted to
+// that one mesh.
+
+// Components of an entity, those it has, kept apart from the scene: put back onto another entity
+template<typename... T>
+struct ClipboardComponents
+{
+	std::tuple<std::optional<T>...> Values;
+
+	void Copy(EnvMapVulkanEntityID entity)
+	{
+		((std::get<std::optional<T>>(Values) = s_Scene.Has<T>(entity) ? std::optional<T>(s_Scene.Get<T>(entity)) : std::nullopt), ...);
+	}
+
+	void Paste(EnvMapVulkanEntityID entity) const
+	{
+		auto paste = [&](const auto& value)
+		{
+			using C = typename std::decay_t<decltype(value)>::value_type;
+			if (value)
+			{
+				(s_Scene.Has<C>(entity) ? s_Scene.Get<C>(entity) : s_Scene.Add<C>(entity)) = *value;
+			}
+		};
+		(paste(std::get<std::optional<T>>(Values)), ...);
+	}
+};
+
+// How an entity plays: copied with any entity, whatever its kind
+using ClipboardGame = ClipboardComponents<TagComponent, ColliderComponent, RigidBodyComponent, CharacterControllerComponent,
+	ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, InputTestComponent>;
+
 struct ClipboardEntity
 {
 	struct Part
 	{
 		std::string Name;
 		MeshPartComponent Component;
+		ClipboardGame Game;
 		TransformComponent Transform;
 		glm::mat4 MeshMatrix = glm::mat4(1.0f); // the mesh's matrix, as drawn
 		std::vector<ClipboardEntity> Children;
@@ -72,6 +108,9 @@ struct ClipboardEntity
 	std::optional<UIRectComponent> UIRect;
 	std::optional<UITextComponent> UIText;
 	std::optional<UIImageComponent> UIImage;
+	std::optional<UIButtonComponent> UIButton;
+	ClipboardGame Game;
+	bool RefitShapes = false;              // a part copied alone: its model's collider and character fitted to it (PasteClipboard)
 	std::vector<ClipboardEntity> Children;  // the models, lights and UI under it
 };
 
@@ -116,6 +155,7 @@ static ClipboardEntity::Part CopyPart(EnvMapVulkanEntityID partEntity, const H2M
 	part.Name = s_Scene.Get<NameComponent>(partEntity).Name;
 	part.Component = s_Scene.Get<MeshPartComponent>(partEntity);
 	part.Transform = s_Scene.Get<TransformComponent>(partEntity);
+	part.Game.Copy(partEntity);
 	if (model && part.Component.MeshIndex < model->GetMeshes().size())
 	{
 		part.MeshMatrix = model->GetMeshes()[part.Component.MeshIndex]->Transform;
@@ -137,6 +177,7 @@ static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity)
 	copy.World = s_Scene.GetWorldTransform(entity);
 	copy.Source = entity;
 	copy.SourceParent = s_Scene.GetParent(entity);
+	copy.Game.Copy(entity);
 	switch (copy.Kind)
 	{
 		case EntityKind::Model:
@@ -162,6 +203,10 @@ static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity)
 			copy.World = s_Scene.GetWorldTransform(model);
 			copy.Source = model; // pasted after the model
 			copy.SourceParent = s_Scene.GetParent(model);
+			// The model's physics, script... with its collider (and character) fitted again to this one mesh at paste: as
+			// copied they fit the whole model
+			copy.Game.Copy(model);
+			copy.RefitShapes = true;
 			copy.Parts.push_back(CopyPart(entity, GetModel(s_Scene, model)));
 			return copy;
 		}
@@ -177,6 +222,7 @@ static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity)
 			if (const UIRectComponent* rect = s_Scene.TryGet<UIRectComponent>(entity)) copy.UIRect = *rect;
 			if (const UITextComponent* text = s_Scene.TryGet<UITextComponent>(entity)) copy.UIText = *text;
 			if (const UIImageComponent* image = s_Scene.TryGet<UIImageComponent>(entity)) copy.UIImage = *image;
+			if (const UIButtonComponent* button = s_Scene.TryGet<UIButtonComponent>(entity)) copy.UIButton = *button;
 			break;
 		default:
 			return std::nullopt;
@@ -295,6 +341,7 @@ static EnvMapVulkanEntityID PasteModel(const ClipboardEntity& copy, EnvMapVulkan
 		// The mesh as it was: its exact matrix, and the transform it was written from (see ApplyPartTransforms)
 		model->GetMeshes()[component.MeshIndex]->Transform = part.MeshMatrix;
 		s_Scene.Get<TransformComponent>(partEntity) = part.Transform;
+		part.Game.Paste(partEntity);
 		PasteChildren(part.Children, partEntity, lights);
 	}
 	return entity;
@@ -347,12 +394,14 @@ static EnvMapVulkanEntityID PasteEntity(const ClipboardEntity& copy, EnvMapVulka
 			if (copy.UIRect) s_Scene.Add<UIRectComponent>(entity) = *copy.UIRect;
 			if (copy.UIText) s_Scene.Add<UITextComponent>(entity) = *copy.UIText;
 			if (copy.UIImage) s_Scene.Add<UIImageComponent>(entity) = *copy.UIImage;
+			if (copy.UIButton) s_Scene.Add<UIButtonComponent>(entity) = *copy.UIButton;
 			break;
 		default:
 			return NoEntity;
 	}
 	if (entity != NoEntity)
 	{
+		copy.Game.Paste(entity);
 		PasteChildren(copy.Children, entity, lights);
 	}
 	return entity;
@@ -381,6 +430,18 @@ void PasteClipboard()
 			continue;
 		}
 		s_Scene.SetWorldTransform(entity, copy.World);
+		// A part copied alone: its model's collider and character fitted to it (FitCharacter takes the world scale)
+		if (copy.RefitShapes)
+		{
+			if (ColliderComponent* collider = s_Scene.TryGet<ColliderComponent>(entity))
+			{
+				ScenePhysics::FitCollider(s_Scene, entity, *collider);
+			}
+			if (CharacterControllerComponent* character = s_Scene.TryGet<CharacterControllerComponent>(entity))
+			{
+				ScenePhysics::FitCharacter(s_Scene, entity, *character);
+			}
+		}
 		// Right after the original, when it is still there under the same parent
 		if (s_Scene.Exists(copy.Source) && s_Scene.GetParent(copy.Source) == parent)
 		{

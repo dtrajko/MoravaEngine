@@ -19,6 +19,8 @@
 
 #include "Project/Project.h"
 
+#include "UI/SceneUI.h"
+
 #include "Core/Log.h"
 
 #include <glm/gtc/quaternion.hpp>
@@ -283,6 +285,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::UIRect:            return scene->Has<UIRectComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::UIText:            return scene->Has<UITextComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::UIImage:           return scene->Has<UIImageComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::UIButton:          return scene->Has<UIButtonComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Animator:          return scene->Has<AnimatorComponent>(entity) ? 1 : 0;
 	}
 	return 0;
@@ -481,7 +484,7 @@ static void InputGetAction(const char16_t* text, int length, ScriptInputAction* 
 	const bool fromBinding = state.Binding >= 0 && state.Binding < (int)action->Bindings.size();
 	const InputBindingSource source = fromBinding ? action->Bindings[state.Binding].Source : InputBindingSource::Key;
 	out->Gamepad = source == InputBindingSource::GamepadButton || source == InputBindingSource::GamepadAxis ||
-		source == InputBindingSource::GamepadStick ? 1 : 0;
+		source == InputBindingSource::GamepadStick || source == InputBindingSource::GamepadDPad ? 1 : 0;
 }
 
 static void InputSetCursorLocked(int32_t locked)
@@ -639,6 +642,17 @@ static void TimeGet(ScriptTime* out)
 		out->Time = s_Context->Time;
 		out->FrameCount = s_Context->FrameCount;
 		out->FixedStepCount = s_Context->FixedStepCount;
+		out->UnscaledDeltaTime = s_Context->UnscaledDeltaTime;
+		out->TimeScale = s_Context->TimeScale;
+		out->UnscaledTime = s_Context->UnscaledTime;
+	}
+}
+
+static void TimeSetTimeScale(float scale)
+{
+	if (s_Context)
+	{
+		s_Context->TimeScale = scale > 0.0f ? scale : 0.0f; // below 0 (and NaN): standing still
 	}
 }
 
@@ -1055,6 +1069,45 @@ static int32_t UIImageSetTexture(uint64_t entity, const char16_t* texture, int l
 	return 1;
 }
 
+// ---- Buttons and the selection (7.3)
+
+static int32_t UIButtonGetInteractable(uint64_t entity, int32_t* out)
+{
+	const UIButtonComponent* button = GetUIComponent<UIButtonComponent>(entity);
+	if (!button)
+	{
+		return 0;
+	}
+	*out = button->Interactable ? 1 : 0;
+	return 1;
+}
+
+static int32_t UIButtonSetInteractable(uint64_t entity, int32_t interactable)
+{
+	UIButtonComponent* button = GetUIComponent<UIButtonComponent>(entity);
+	if (!button)
+	{
+		return 0;
+	}
+	button->Interactable = interactable != 0;
+	return 1;
+}
+
+static uint64_t UIGetSelected()
+{
+	return s_Context && s_Context->UI ? s_Context->UI->GetSelected() : NoEntity;
+}
+
+static int32_t UISelect(uint64_t entity)
+{
+	return s_Context && s_Context->UI && s_Context->UI->Select(entity) ? 1 : 0;
+}
+
+static int32_t UIIsPointerOver()
+{
+	return s_Context && s_Context->UI && s_Context->UI->IsPointerOverUI() ? 1 : 0;
+}
+
 namespace ScriptBindings
 {
 	void Bind()
@@ -1131,6 +1184,12 @@ namespace ScriptBindings
 		api.UIImage_SetTexture = UIImageSetTexture;
 		api.Input_SetCursorLocked = InputSetCursorLocked;
 		api.Input_GetCursorState = InputGetCursorState;
+		api.UIButton_GetInteractable = UIButtonGetInteractable;
+		api.UIButton_SetInteractable = UIButtonSetInteractable;
+		api.UI_GetSelected = UIGetSelected;
+		api.UI_Select = UISelect;
+		api.UI_IsPointerOver = UIIsPointerOver;
+		api.Time_SetTimeScale = TimeSetTimeScale;
 	}
 
 	void SetContext(ScriptContext* context)

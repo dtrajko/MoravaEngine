@@ -382,6 +382,31 @@ struct UIImageComponent
 	glm::vec4 Color = glm::vec4(1.0f);
 };
 
+// A button (docs/engine/Game_Engine_Runtime_Guide.html, 7.3): its rectangle takes the mouse's clicks, and the keyboard and
+// gamepad move between buttons (the actions UI_Navigate and UI_Submit). UI/SceneUI runs it while the game does. The
+// element's own image is multiplied by the color of its state: Normal, Highlighted (under the mouse, or selected by the
+// keyboard or the gamepad), Pressed, Disabled (not Interactable); the change fades over FadeDuration seconds of real time
+// (a pause menu at time scale 0 still fades). A click calls OnClickMethod, a method without parameters, of the script of
+// OnClickTarget; no target: of the first script that has the method, from the button up to its canvas. C# scripts can
+// also listen to it: button.Clicked += ...
+struct UIButtonComponent
+{
+	bool Interactable = true;
+	glm::vec4 Normal = glm::vec4(0.85f, 0.85f, 0.85f, 1.0f);
+	glm::vec4 Highlighted = glm::vec4(1.0f);
+	glm::vec4 Pressed = glm::vec4(0.65f, 0.65f, 0.65f, 1.0f);
+	glm::vec4 Disabled = glm::vec4(0.55f, 0.55f, 0.55f, 0.5f);
+	float FadeDuration = 0.1f;
+	EnvMapVulkanEntityID OnClickTarget = NoEntity;
+	std::string OnClickMethod;
+
+	// Runtime: not saved. The color the image is multiplied by now (SceneUI fades it; not set: the state's own)
+	glm::vec4 Tint = glm::vec4(1.0f);
+	bool TintSet = false;
+
+	glm::vec4 GetTint() const { return TintSet ? Tint : (Interactable ? Normal : Disabled); }
+};
+
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
 // ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
 template<typename T>
@@ -405,4 +430,4 @@ struct ComponentList
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, PrefabComponent,
-	UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent>;
+	UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent>;

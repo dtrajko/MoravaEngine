@@ -500,6 +500,21 @@ bool ScriptHost::InvokeAnimationEvent(void* instance, const std::string& name, c
 	return s_Managed.InvokeAnimationEvent(instance, name16.c_str(), int(name16.size()), state16.c_str(), int(state16.size())) == 0;
 }
 
+int ScriptHost::InvokeMethod(void* instance, const std::string& name)
+{
+	if (!s_Available || !instance)
+	{
+		return 1;
+	}
+	const std::u16string name16 = ScriptUtf8ToUtf16(name);
+	return s_Managed.InvokeMethod(instance, name16.c_str(), int(name16.size()));
+}
+
+bool ScriptHost::InvokeButtonClicked(uint64_t button)
+{
+	return !s_Available || s_Managed.InvokeButtonClicked(button) == 0;
+}
+
 bool ScriptHost::SetField(void* instance, const ScriptFieldInfo& field, const ScriptFieldValue& value)
 {
 	if (!s_Available || !instance || value.Type != field.Type)

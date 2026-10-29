@@ -425,6 +425,15 @@ void OnImGuiRenderSceneHierarchy()
 			{
 				AddUIEntity(UIEntityPreset::Image);
 			}
+			if (ImGui::MenuItem("Button"))
+			{
+				AddUIEntity(UIEntityPreset::Button);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("An image that takes clicks, and the keyboard's and gamepad's selection, with a text label\n"
+					"under it. Its On Click calls a method of a script (Inspector: Button)");
+			}
 			ImGui::TextDisabled("Elements go under the selected UI entity,\nelse under the first canvas (made if none)");
 			ImGui::EndMenu();
 		}

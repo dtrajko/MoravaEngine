@@ -254,6 +254,11 @@ static bool ReadBinding(const YAML::Node& node, InputBinding& binding, std::stri
 		{
 			binding.Source = InputBindingSource::GamepadStick;
 		}
+		else if (name == "DPad")
+		{
+			binding.Source = InputBindingSource::GamepadDPad;
+			binding.Code = 0;
+		}
 		else
 		{
 			error = "a gamepad has no '" + name + "'";
@@ -379,6 +384,9 @@ static void WriteBinding(YAML::Emitter& out, const InputBinding& binding)
 		case InputBindingSource::GamepadStick:
 			out << YAML::Key << "Gamepad" << YAML::Value << FindName(s_GamepadStickNames, binding.Code);
 			break;
+		case InputBindingSource::GamepadDPad:
+			out << YAML::Key << "Gamepad" << YAML::Value << "DPad";
+			break;
 	}
 	if (binding.Scale != 1.0f)
 	{
@@ -468,6 +476,14 @@ InputMap InputMap::Default()
 		gamepad(InputBindingSource::GamepadStick, 1, "RightStick", 180.0f) } });
 	map.Actions.push_back({ "Jump", InputActionType::Button, {
 		key(GLFW_KEY_SPACE, "Space"),
+		gamepad(InputBindingSource::GamepadButton, GLFW_GAMEPAD_BUTTON_A, "A") } });
+	// The game UI's (UI/SceneUI): between buttons, and pressing the selected one
+	map.Actions.push_back({ UINavigateAction, InputActionType::Axis2D, {
+		composite("Arrows", GLFW_KEY_UP, GLFW_KEY_DOWN, GLFW_KEY_LEFT, GLFW_KEY_RIGHT),
+		gamepad(InputBindingSource::GamepadDPad, 0, "DPad"),
+		gamepad(InputBindingSource::GamepadStick, 0, "LeftStick") } });
+	map.Actions.push_back({ UISubmitAction, InputActionType::Button, {
+		key(GLFW_KEY_ENTER, "Enter"),
 		gamepad(InputBindingSource::GamepadButton, GLFW_GAMEPAD_BUTTON_A, "A") } });
 	return map;
 }

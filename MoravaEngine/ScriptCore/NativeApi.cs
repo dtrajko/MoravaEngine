@@ -94,6 +94,13 @@ namespace Morava
         public delegate* unmanaged<ulong, char*, int, int> UIImage_SetTexture;
         public delegate* unmanaged<int, void> Input_SetCursorLocked;
         public delegate* unmanaged<int> Input_GetCursorState;
+
+        public delegate* unmanaged<ulong, int*, int> UIButton_GetInteractable;
+        public delegate* unmanaged<ulong, int, int> UIButton_SetInteractable;
+        public delegate* unmanaged<ulong> UI_GetSelected;
+        public delegate* unmanaged<ulong, int> UI_Select;
+        public delegate* unmanaged<int> UI_IsPointerOver;
+        public delegate* unmanaged<float, void> Time_SetTimeScale;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -166,6 +173,8 @@ namespace Morava
         public float DeltaTime, FixedDeltaTime;
         public double Time;
         public ulong FrameCount, FixedStepCount;
+        public float UnscaledDeltaTime, TimeScale;
+        public double UnscaledTime;
     }
 
     // A script field's value (ScriptValue). Type: FieldKind. GetField: C++ gives Text room for TextCapacity characters
