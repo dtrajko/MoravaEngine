@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Erika
 EditorCamera:
-  Translation: [-8.813868, 5.402055, -4.711837]
-  Rotation: [50.50006, 0.9990463, 0]
+  Translation: [9.751194, 13.814761, -2.401509]
+  Rotation: [57.800045, -172.70016, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:
@@ -340,7 +340,7 @@ Entities:
         Speed: {Float: 1.6}
         RunSpeed: {Float: 3.8}
         Gravity: {Float: 19.6}
-        JumpSpeed: {Float: 4.9}
+        JumpSpeed: {Float: 6}
         RunJumpSpeed: {Float: 2.4}
         RunJumpDelay: {Float: 0.1}
         StandingJump: {Bool: false}
@@ -507,7 +507,7 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [-1.3817022, 8.981893, 3.254099]
+      Translation: [-1.3817022, 8.8, 3.254099]
       Rotation: [0, -0, 0]
       Scale: [5.7, 0.09999998, 1]
     Model:
@@ -555,6 +555,223 @@ Entities:
   - ID: 8192145425077427165
     Name: Cube
     Parent: 3015530779700741111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 2657276933636257178
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [9, 1.9, 9]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2130137511374636833
+    Name: Cube
+    Parent: 2657276933636257178
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 13437185202548278813
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [6.3, 2.9, 9]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 15388956057732450523
+    Name: Cube
+    Parent: 13437185202548278813
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 4483521497984482327
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [9.01, 3.8, 6.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3525495174675653304
+    Name: Cube
+    Parent: 4483521497984482327
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 3699939575447726428
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [9.01, 4.8, 3.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 7259106303276860897
+    Name: Cube
+    Parent: 3699939575447726428
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 18296130322567512679
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [9.01, 5.8, 0.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 13827153790416690540
+    Name: Cube
+    Parent: 18296130322567512679
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 1102313167722508566
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [5.993131, 6.8, 0.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 5973582546733750583
+    Name: Cube
+    Parent: 1102313167722508566
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 12595852348508654723
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [5.993131, 7.8, 3.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 14070998640209950311
+    Name: Cube
+    Parent: 12595852348508654723
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, -0, 0]
@@ -695,6 +912,68 @@ Entities:
   - ID: 14780282414355964718
     Name: Cube
     Parent: 1984439874942264348
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 15671194134533540959
+    Name: cylinder.obj
+    Parent: 0
+    Transform:
+      Translation: [6.0020866, 3.867928, 0.18816209]
+      Rotation: [0, -0, 0]
+      Scale: [0.40000004, 2.85, 0.40000004]
+    Model:
+      File: Models/Primitives/cylinder.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 15944616858556305450
+    Name: Cylinder
+    Parent: 15671194134533540959
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 306931338365361037
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [6.0020866, 4.34524, 3.2026339]
+      Rotation: [0, -0, 0]
+      Scale: [0.40000004, 3.35, 0.40000004]
+    Model:
+      File: Models/Primitives/cylinder.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2761252527749029922
+    Name: Cylinder
+    Parent: 306931338365361037
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, -0, 0]

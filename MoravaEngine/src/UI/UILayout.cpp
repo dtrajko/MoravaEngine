@@ -255,6 +255,7 @@ namespace
 		UIDrawList& Out;
 		EnvMapVulkanEntityID Canvas;
 		float Scale;
+		bool ElementsOnly;
 	};
 
 	void LayoutElement(LayoutContext& context, EnvMapVulkanEntityID entity, const glm::vec2& parentMin, const glm::vec2& parentMax)
@@ -288,17 +289,22 @@ namespace
 			element.Scale = context.Scale;
 		}
 
-		if (const UIImageComponent* image = scene.TryGet<UIImageComponent>(entity))
+		const UIImageComponent* image = context.ElementsOnly ? nullptr : scene.TryGet<UIImageComponent>(entity);
+		if (image)
 		{
 			H2M::RefH2M<H2M::Texture2D_H2M> texture = image->Texture.empty() ? H2M::RefH2M<H2M::Texture2D_H2M>() : GetImage(image->Texture);
-			if (image->Color.a > 0.0f && (texture || image->Texture.empty()))
+			// A button's image: times the color of its state (UIButtonComponent)
+			const UIButtonComponent* button = scene.TryGet<UIButtonComponent>(entity);
+			const glm::vec4 color = button ? image->Color * button->GetTint() : image->Color;
+			if (color.a > 0.0f && (texture || image->Texture.empty()))
 			{
 				// Image files are loaded with their bottom row first (H2M's textures): the top-left corner reads v = 1
-				context.Out.AddQuad(min, max, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), image->Color, texture);
+				context.Out.AddQuad(min, max, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), color, texture);
 				context.Out.ImageQuads++;
 			}
 		}
-		if (const UITextComponent* text = scene.TryGet<UITextComponent>(entity))
+		const UITextComponent* text = context.ElementsOnly ? nullptr : scene.TryGet<UITextComponent>(entity);
+		if (text)
 		{
 			if (text->Color.a > 0.0f)
 			{
@@ -328,7 +334,7 @@ namespace
 	}
 }
 
-void UILayout::Build(const EnvMapVulkanScene& scene, const glm::vec2& viewSize, UIDrawList& out)
+void UILayout::Build(const EnvMapVulkanScene& scene, const glm::vec2& viewSize, UIDrawList& out, bool elementsOnly)
 {
 	out.Clear();
 	if (viewSize.x < 1.0f || viewSize.y < 1.0f)
@@ -357,7 +363,7 @@ void UILayout::Build(const EnvMapVulkanScene& scene, const glm::vec2& viewSize, 
 		{
 			continue;
 		}
-		LayoutContext context = { scene, out, canvas, GetCanvasScale(scene.Get<UICanvasComponent>(canvas), viewSize) };
+		LayoutContext context = { scene, out, canvas, GetCanvasScale(scene.Get<UICanvasComponent>(canvas), viewSize), elementsOnly };
 		LayoutElement(context, canvas, glm::vec2(0.0f), viewSize);
 	}
 }
@@ -386,5 +392,22 @@ void UILayout::AddSelectionOverlay(UIDrawList& out, EnvMapVulkanEntityID selecte
 		}
 		// The pivot: a ring
 		out.AddOutline(element.Pivot - glm::vec2(5.0f), element.Pivot + glm::vec2(5.0f), 2.0f, glm::vec4(1.0f));
+	}
+}
+
+void UILayout::AddInteractionOverlay(UIDrawList& out, EnvMapVulkanEntityID hovered, EnvMapVulkanEntityID selected)
+{
+	const size_t count = out.Elements.size();
+	for (size_t i = 0; i < count; i++)
+	{
+		const UIElementRect element = out.Elements[i];
+		if (element.Entity == selected)
+		{
+			out.AddOutline(element.Min - glm::vec2(3.0f), element.Max + glm::vec2(3.0f), 2.0f, glm::vec4(1.0f, 0.85f, 0.1f, 1.0f));
+		}
+		if (element.Entity == hovered)
+		{
+			out.AddOutline(element.Min - glm::vec2(1.0f), element.Max + glm::vec2(1.0f), 2.0f, glm::vec4(0.2f, 1.0f, 0.4f, 1.0f));
+		}
 	}
 }

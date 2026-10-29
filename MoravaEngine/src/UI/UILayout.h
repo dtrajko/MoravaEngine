@@ -34,7 +34,7 @@ struct UIDrawBatch
 	uint32_t IndexCount = 0;
 };
 
-// Where an element ended up (view pixels), for the debug view and, in 7.3, for the mouse
+// Where an element ended up (view pixels), for the debug view, the editor and the mouse (UI/SceneUI)
 struct UIElementRect
 {
 	EnvMapVulkanEntityID Entity = NoEntity;
@@ -80,11 +80,14 @@ struct UIDrawList
  */
 namespace UILayout
 {
-	void Build(const EnvMapVulkanScene& scene, const glm::vec2& viewSize, UIDrawList& out);
+	// elementsOnly: only the elements' rectangles, no quads (the mouse's and the navigation's, UI/SceneUI)
+	void Build(const EnvMapVulkanScene& scene, const glm::vec2& viewSize, UIDrawList& out, bool elementsOnly = false);
 
 	// The debug view, added to the list: the selected element's rectangle, the rectangle it is laid out in, its anchors and
 	// its pivot
 	void AddSelectionOverlay(UIDrawList& list, EnvMapVulkanEntityID selected);
+	// The debug view in a running game: the element under the mouse (green) and the selected button (yellow)
+	void AddInteractionOverlay(UIDrawList& list, EnvMapVulkanEntityID hovered, EnvMapVulkanEntityID selected);
 
 	// View pixels per reference pixel for this canvas in a view of that size
 	float GetCanvasScale(const UICanvasComponent& canvas, const glm::vec2& viewSize);

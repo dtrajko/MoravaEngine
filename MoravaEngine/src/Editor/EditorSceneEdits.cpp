@@ -580,7 +580,8 @@ EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 	if (s_Scene.Has<CameraComponent>(entity))      return EntityKind::Camera;
 	if (s_Scene.Has<AudioSourceComponent>(entity)) return EntityKind::Sound; // a sound alone (a model's is the model's)
 	if (s_Scene.Has<UICanvasComponent>(entity))    return EntityKind::UICanvas;
-	if (s_Scene.Has<UIRectComponent>(entity) || s_Scene.Has<UITextComponent>(entity) || s_Scene.Has<UIImageComponent>(entity))
+	if (s_Scene.Has<UIRectComponent>(entity) || s_Scene.Has<UITextComponent>(entity) || s_Scene.Has<UIImageComponent>(entity) ||
+		s_Scene.Has<UIButtonComponent>(entity))
 	{
 		return EntityKind::UIElement;
 	}

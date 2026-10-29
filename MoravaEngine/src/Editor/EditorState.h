@@ -190,6 +190,11 @@ const InputSystem* GetGameInput();
 
 // The running game's physics, for the Inspector and the Physics panel (nullptr: no game)
 ScenePhysics* GetGamePhysics();
+// The running game's UI (Play, not Simulate; nullptr otherwise): its selected button, the element under the mouse
+const SceneUI* GetGameUI();
+// The mouse over the Viewport panel's image (view pixels from its top-left corner; inside: the image is hovered) and the
+// image's size, each frame: the game's UI reads it (Play)
+void SetGamePointer(bool inside, const glm::vec2& position, const glm::vec2& viewSize);
 
 // The running game's sounds, for the Inspector and the Audio panel (nullptr: no game, or Simulate: no sound)
 SceneAudio* GetGameAudio();
@@ -572,11 +577,11 @@ void AnimatorControls(EnvMapVulkanEntityID entity);
 
 // ---- The game UI (EditorUI.cpp, 7.1)
 
-enum class UIEntityPreset { Canvas, Panel, Text, Image };
+enum class UIEntityPreset { Canvas, Panel, Text, Image, Button };
 // A new canvas (at the top level), or a new element under the selected UI entity (else the first canvas, made when there
 // is none), selected
 EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset);
-// The Inspector's UI section of a canvas or a UI element: the canvas, the rectangle (anchor presets), image and text
+// The Inspector's UI section of a canvas or a UI element: the canvas, the rectangle (anchor presets), image, text, button
 void UIControls(EnvMapVulkanEntityID entity);
 // The view size the UI is laid out for in the editor (the viewport image's, set by the Viewport panel each frame)
 void SetUIViewSize(const glm::vec2& size);

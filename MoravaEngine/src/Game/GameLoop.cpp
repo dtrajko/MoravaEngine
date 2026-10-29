@@ -5,7 +5,9 @@
 
 void GameLoop::Frame(float frameTime, GameLoopSystems* systems)
 {
-	const float gameFrameTime = std::clamp(frameTime, 0.0f, MaxFrameTime) * m_TimeScale;
+	m_TimeScale = systems ? std::max(systems->GetTimeScale(), 0.0f) : 1.0f;
+	const float realFrameTime = std::clamp(frameTime, 0.0f, MaxFrameTime);
+	const float gameFrameTime = realFrameTime * m_TimeScale;
 	m_Accumulator += gameFrameTime;
 
 	while (m_Accumulator >= FixedStep)
@@ -25,7 +27,7 @@ void GameLoop::Frame(float frameTime, GameLoopSystems* systems)
 	// scene changes the frame asked for (destroyed entities, a scene to load)
 	if (systems)
 	{
-		systems->Update(gameFrameTime, m_Alpha);
+		systems->Update(gameFrameTime, realFrameTime, m_Alpha);
 	}
 	m_GameTime += gameFrameTime;
 	m_FrameCount++;
@@ -38,9 +40,4 @@ void GameLoop::Reset()
 	m_FrameCount = 0;
 	m_FixedStepCount = 0;
 	m_GameTime = 0.0;
-}
-
-void GameLoop::SetTimeScale(float timeScale)
-{
-	m_TimeScale = std::max(timeScale, 0.0f);
 }

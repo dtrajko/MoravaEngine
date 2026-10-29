@@ -47,6 +47,9 @@ struct ScriptTime
 	double Time = 0.0;           // game time since the game started, in seconds (the fixed steps')
 	uint64_t FrameCount = 0;
 	uint64_t FixedStepCount = 0;
+	float UnscaledDeltaTime = 0.0f; // the frame's real time (a fixed step's: the step)
+	float TimeScale = 1.0f;         // game time per real time
+	double UnscaledTime = 0.0;      // real time since the game started, in seconds
 };
 
 // An AudioSourceComponent's settings as a script reads and writes them (AudioSource's properties). Bus: AudioBus
@@ -132,7 +135,7 @@ struct ScriptFieldReport
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
-	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9 };
+	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -255,6 +258,17 @@ struct ScriptNativeApi
 	// the user didn't take it back)
 	void (*Input_SetCursorLocked)(int32_t locked);
 	int32_t (*Input_GetCursorState)();
+
+	// Game UI (7.3). UIButton: 0 when the entity has no button. The selection (UI/SceneUI): the selected button, 0 for none;
+	// UI_Select(0) drops it, and returns 0 when the button can't be selected now (hidden, not Interactable). Pointer over:
+	// 1 when the mouse is over an element that catches it
+	int32_t (*UIButton_GetInteractable)(uint64_t entity, int32_t* out);
+	int32_t (*UIButton_SetInteractable)(uint64_t entity, int32_t interactable);
+	uint64_t (*UI_GetSelected)();
+	int32_t (*UI_Select)(uint64_t entity);
+	int32_t (*UI_IsPointerOver)();
+	// Time.TimeScale: game time per real time from the next frame on (0: standing still; below 0 counts as 0)
+	void (*Time_SetTimeScale)(float scale);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke
@@ -280,6 +294,11 @@ struct ScriptManagedApi
 	int (*GetField)(void* instance, const char16_t* name, int length, ScriptValue* value);
 	// An event of the entity's animator (6.4): its name and the state whose clip fired it
 	int (*InvokeAnimationEvent)(void* instance, const char16_t* name, int nameLength, const char16_t* state, int stateLength);
+	// A UI button's click (7.3): a method of the instance without parameters, by name (public or not): 0 called, 1 threw,
+	// 2 its class has no such method
+	int (*InvokeMethod)(void* instance, const char16_t* name, int length);
+	// The button's Clicked event, to its C# listeners: 0, or 1 when one threw
+	int (*InvokeButtonClicked)(uint64_t button);
 };
 
 enum class ScriptCollisionKind : int32_t { CollisionEnter = 0, CollisionExit = 1, TriggerEnter = 2, TriggerExit = 3 };

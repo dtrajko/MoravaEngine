@@ -47,6 +47,9 @@ public:
 		std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanEntityID>* copies = nullptr);
 	// The entity and its descendants in the hierarchy's order (the root first, each entity before its children)
 	std::vector<EnvMapVulkanEntityID> GetSubtree(EnvMapVulkanEntityID root) const;
+	// The entity's references to other entities (script fields, a button's click target) that are in to: to those
+	// (copies made, a prefab's entities read with new IDs); the others stay
+	void RemapEntityReferences(EnvMapVulkanEntityID entity, const std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanEntityID>& to);
 
 	bool Exists(EnvMapVulkanEntityID id) const { return m_Entities.find(id) != m_Entities.end(); }
 	size_t GetEntityCount() const { return m_Entities.size(); }

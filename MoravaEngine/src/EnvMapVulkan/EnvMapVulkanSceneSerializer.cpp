@@ -407,6 +407,21 @@ namespace EnvMapVulkanSceneSerializer
 			WriteVec4(out, "Color", image->Color);
 			out << YAML::EndMap;
 		}
+		if (const UIButtonComponent* button = scene.TryGet<UIButtonComponent>(entity))
+		{
+			out << YAML::Key << "UIButton" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Interactable" << YAML::Value << button->Interactable;
+			WriteVec4(out, "Normal", button->Normal);
+			WriteVec4(out, "Highlighted", button->Highlighted);
+			WriteVec4(out, "Pressed", button->Pressed);
+			WriteVec4(out, "Disabled", button->Disabled);
+			out << YAML::Key << "FadeDuration" << YAML::Value << button->FadeDuration;
+			out << YAML::Key << "OnClick" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "Target" << YAML::Value << button->OnClickTarget;
+			out << YAML::Key << "Method" << YAML::Value << button->OnClickMethod;
+			out << YAML::EndMap;
+			out << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -706,6 +721,21 @@ namespace EnvMapVulkanSceneSerializer
 			image.Texture = texture.empty() ? std::string() : ProjectPaths::Resolve(texture);
 			ReadVec4(imageNode["Color"], image.Color);
 		}
+		if (YAML::Node buttonNode = node["UIButton"]; buttonNode && buttonNode.IsMap())
+		{
+			UIButtonComponent& button = scene.Add<UIButtonComponent>(entity);
+			Read(buttonNode, "Interactable", button.Interactable);
+			ReadVec4(buttonNode["Normal"], button.Normal);
+			ReadVec4(buttonNode["Highlighted"], button.Highlighted);
+			ReadVec4(buttonNode["Pressed"], button.Pressed);
+			ReadVec4(buttonNode["Disabled"], button.Disabled);
+			Read(buttonNode, "FadeDuration", button.FadeDuration);
+			if (YAML::Node onClick = buttonNode["OnClick"]; onClick && onClick.IsMap())
+			{
+				button.OnClickTarget = onClick["Target"].as<uint64_t>(NoEntity);
+				button.OnClickMethod = onClick["Method"].as<std::string>("");
+			}
+		}
 		if (YAML::Node probesNode = node["ProbeVolume"])
 		{
 			EnvMapVulkanProbeVolumeSettings& p = scene.Add<ProbeVolumeComponent>(entity).Settings;
@@ -867,19 +897,7 @@ namespace EnvMapVulkanSceneSerializer
 		// References between the prefab's entities: to their new IDs
 		for (EnvMapVulkanEntityID entity : created)
 		{
-			if (ScriptComponent* script = scene.TryGet<ScriptComponent>(entity))
-			{
-				for (ScriptComponent::Field& field : script->Fields)
-				{
-					if (field.Value.Type == ScriptFieldType::Entity)
-					{
-						if (auto it = newOf.find(field.Value.Entity); it != newOf.end())
-						{
-							field.Value.Entity = it->second;
-						}
-					}
-				}
-			}
+			scene.RemapEntityReferences(entity, newOf);
 		}
 		return true;
 	}

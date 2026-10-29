@@ -24,6 +24,7 @@ enum class InputBindingSource
 	GamepadButton, // Code: GLFW_GAMEPAD_BUTTON_*
 	GamepadAxis,   // one axis of a stick, or a trigger (Code: GLFW_GAMEPAD_AXIS_*; triggers 0 to 1, stick axes up = positive)
 	GamepadStick,  // a whole stick (Code: 0 left, 1 right): x right, y up
+	GamepadDPad,   // the D-pad's four buttons as a stick: x right, y up (menus: UI_Navigate)
 };
 
 /**
@@ -63,16 +64,24 @@ struct InputAction
  *       Bindings: [ { Key: Space }, { Gamepad: A } ]
  *
  * Bindings: { Key: <key> }, { Composite: <any name>, Up, Down, Left, Right } (Axis1D: Negative, Positive), { Mouse: Left,
- * Right, Middle, Delta or Wheel }, { Gamepad: <button>, <axis>, LeftStick or RightStick }; each can have Scale (and DeadZone for the
+ * Right, Middle, Delta or Wheel }, { Gamepad: <button>, <axis>, LeftStick, RightStick or DPad }; each can have Scale (and DeadZone for the
  * gamepad's axes). Key names: A to Z, 0 to 9, F1 to F12, Space, Enter, Escape, Tab, Backspace, Up, Down, Left, Right,
  * LeftShift, RightShift, LeftControl, RightControl, LeftAlt, RightAlt, Insert, Delete, Home, End, PageUp, PageDown and the
  * keypad's (Keypad0 to Keypad9). Gamepad names (the Xbox layout; a PlayStation controller's Cross is A, Circle B, Square X,
  * Triangle Y): A, B, X, Y, LeftBumper, RightBumper, Back, Start, Guide, LeftThumb, RightThumb, DPadUp, DPadRight, DPadDown,
- * DPadLeft, LeftTrigger, RightTrigger, LeftStickX, LeftStickY, RightStickX, RightStickY, LeftStick, RightStick.
+ * DPadLeft, LeftTrigger, RightTrigger, LeftStickX, LeftStickY, RightStickX, RightStickY, LeftStick, RightStick, DPad (its four
+ * buttons as one Axis2D).
+ *
+ * The game UI (7.3, UI/SceneUI) reads two actions of its own when the map has them: UI_Navigate (Axis2D: from button to
+ * button) and UI_Submit (Button: presses the selected one). Without them, menus work with the mouse only.
  */
 struct InputMap
 {
 	static constexpr const char* FileExtension = ".minput";
+
+	// The game UI's actions (UI/SceneUI)
+	static constexpr const char* UINavigateAction = "UI_Navigate";
+	static constexpr const char* UISubmitAction = "UI_Submit";
 
 	// A Button action with an analog binding is held from here (a trigger pulled halfway)
 	static constexpr float PressPoint = 0.5f;
@@ -85,7 +94,8 @@ struct InputMap
 	bool BindsKey(int key) const;
 
 	// Move (WASD, the arrow keys, the left stick), Look (the mouse, 0.1 degrees per pixel; the right stick, 180 degrees per
-	// second) and Jump (Space, A): what a new project starts with, and what a game without a project gets
+	// second), Jump (Space, A), UI_Navigate (the arrow keys, the D-pad, the left stick) and UI_Submit (Enter, A): what a new
+	// project starts with, and what a game without a project gets
 	static InputMap Default();
 
 	// Reads an input file. False (error explains) when it can't be read; a binding it doesn't understand is left out, with

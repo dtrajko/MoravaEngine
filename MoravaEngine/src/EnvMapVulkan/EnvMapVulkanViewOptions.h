@@ -94,6 +94,10 @@ struct EnvMapVulkanViewOptions
 	// and the debug view UI Outlines: the selected UI element's rectangle, its anchors and pivot, and its parent's rectangle
 	bool UI = true;
 	bool UIOutlines = false;
+	// UI Outlines while the game runs (7.3): the element under the mouse and the selected button, instead of the selection
+	bool UIOutlinesInGame = false;
+	EnvMapVulkanEntityID UIHovered = NoEntity;
+	EnvMapVulkanEntityID UISelected = NoEntity;
 
 	// The editor's selection: drawn with the outline and the Selected overlays. The primary entity (one of them) is the
 	// light the Shadows Only view shows, when it is a light.

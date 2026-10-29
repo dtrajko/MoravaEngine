@@ -4,6 +4,7 @@
 
 #include <glm/glm.hpp>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -72,6 +73,13 @@ public:
 	void ReleaseMouseUntilClick() { m_MouseHeldBack = true; }
 	bool IsMouseHeldBack() const { return m_MouseHeldBack; }
 
+	// Mouse buttons (bit i: GLFW_MOUSE_BUTTON_1 + i) whose bindings read released: their press began over the game's UI,
+	// which takes it (UI/SceneUI). Set before Update, each frame
+	void SetBlockedMouseButtons(uint32_t buttons) { m_BlockedMouseButtons = buttons; }
+	bool IsMouseButtonBlocked(int button) const { return button >= 0 && button < 32 && (m_BlockedMouseButtons >> button) & 1u; }
+	// The mouse buttons held down in the window now (bit i: GLFW_MOUSE_BUTTON_1 + i)
+	static uint32_t ReadMouseButtons(GLFWwindow* window);
+
 	// The wheel's notches (the window's scroll callback, any time): the next Update takes them for MouseWheel bindings
 	static void AddMouseWheel(float notches);
 
@@ -92,6 +100,7 @@ private:
 	bool m_MouseCaptureWanted = false;
 	bool m_MouseCaptured = false;
 	bool m_MouseHeldBack = false;
+	uint32_t m_BlockedMouseButtons = 0;
 	bool m_HasMousePosition = false;
 	glm::dvec2 m_MousePosition = glm::dvec2(0.0);
 	glm::vec2 m_MouseRate = glm::vec2(0.0f); // this frame's motion, in pixels per second
