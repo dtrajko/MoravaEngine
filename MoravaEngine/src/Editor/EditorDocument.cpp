@@ -684,19 +684,48 @@ void ProcessSceneOperations()
 	}
 }
 
-// Unsaved changes: the scene's text compared with the saved one, a few times a second
+// Unsaved changes: the scene's text compared with the saved one. Writing the text takes a while (32 ms for the sample's
+// Erika scene in a Debug build: a slow frame), so it is compared only when the scene may have changed: after the user's
+// input (a click, a key, the mouse wheel; a drop ends with a release) once it has settled (no mouse button held, no
+// field being typed in or dragged), and once more a second later, for what that input queued for the next frames (a
+// model loading, a prefab applied); also when the game stops. At most every 0.3 s. Watching the scene costs nothing.
 void UpdateSceneUnsavedChanges()
 {
+	static bool s_WasPlaying = false;
+	static bool s_InputSeen = true;   // the first frame compares
+	static double s_FollowUpAt = -1.0;
+	static double s_LastCheck = -1.0;
 	if (IsPlaying())
 	{
+		s_WasPlaying = true;
 		return; // what the game changes isn't a change of the scene: it stays as it was at Play
 	}
-	static double s_LastCheck = -1.0;
+
+	// This frame's input: a press or release of any key or mouse button (ImGui's named keys include the mouse buttons),
+	// the wheel, typed characters
+	const ImGuiIO& io = ImGui::GetIO();
+	bool input = s_WasPlaying || io.MouseWheel != 0.0f || io.MouseWheelH != 0.0f || io.InputQueueCharacters.Size > 0;
+	s_WasPlaying = false;
+	for (int key = ImGuiKey_NamedKey_BEGIN; key < ImGuiKey_NamedKey_END && !input; key++)
+	{
+		input = ImGui::IsKeyPressed((ImGuiKey)key, false) || ImGui::IsKeyReleased((ImGuiKey)key);
+	}
+	s_InputSeen = s_InputSeen || input;
+
+	bool mouseHeld = false;
+	for (int button = 0; button < ImGuiMouseButton_COUNT; button++)
+	{
+		mouseHeld = mouseHeld || ImGui::IsMouseDown(button);
+	}
+	const bool settled = !mouseHeld && !ImGui::IsAnyItemActive();
 	const double now = ImGui::GetTime();
-	if (now - s_LastCheck < 0.3)
+	const bool followUp = s_FollowUpAt >= 0.0 && now >= s_FollowUpAt;
+	if (!((s_InputSeen && settled) || followUp) || now - s_LastCheck < 0.3)
 	{
 		return;
 	}
+	s_FollowUpAt = s_InputSeen ? now + 1.0 : -1.0;
+	s_InputSeen = false;
 	s_LastCheck = now;
 	s_SceneHasUnsavedChanges = SerializeSceneForComparison() != s_SavedSceneText;
 }

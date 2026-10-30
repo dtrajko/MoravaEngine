@@ -1,0 +1,2 @@
+# Shell scripts run in WSL, Linux and macOS: LF on every checkout (autocrlf would give CRLF on Windows)
+*.sh text eol=lf

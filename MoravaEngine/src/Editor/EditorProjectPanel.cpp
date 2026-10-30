@@ -164,6 +164,19 @@ void OnImGuiRenderProjectPanel()
 		{
 			RequestOpenProject();
 		}
+
+		// A scene of its own, as the File menu does it (Ctrl+N, Ctrl+O): it asks about unsaved changes, not while playing
+		ImGui::Spacing();
+		ImGui::TextDisabled("Or work on a scene without a project:");
+		if (ImGui::Button("New Scene"))
+		{
+			RequestNewScene();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Open Scene..."))
+		{
+			RequestOpenScene();
+		}
 		ImGui::End();
 		return;
 	}
@@ -351,10 +364,12 @@ void OnImGuiRenderProjectPanel()
 	{
 		ImGui::SetTooltip("The primary monitor, at its resolution (the width and height are the windowed size)");
 	}
-	save |= ImGui::Checkbox("VSync", &project->Window.VSync);
+	save |= ImGui::Checkbox("VSync (player)", &project->Window.VSync);
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("Frames wait for the display's refresh: no tearing, and no more frames than the display shows");
+		ImGui::SetTooltip("Frames wait for the display's refresh: no tearing, and no more frames than the display shows.\n"
+			"Used by MoravaPlayer when it starts; the editor always runs without VSync, so its frame times are what\n"
+			"a frame really costs");
 	}
 	ImGui::PopItemWidth();
 
