@@ -71,6 +71,9 @@ public:
 	static int InvokeMethod(void* instance, const std::string& name);
 	static bool InvokeButtonClicked(uint64_t button);
 
+	// The managed heap in bytes and the garbage collections since startup (false without C#)
+	static bool GetMemory(int64_t& bytes, int32_t& collections);
+
 	// A public field of an instance (field: of its class, GetClasses). The value must be of the field's type (an Enum by
 	// its name); false when it isn't, or C# refused it (logged)
 	static bool SetField(void* instance, const ScriptFieldInfo& field, const ScriptFieldValue& value);

@@ -6,6 +6,6 @@ Project:
   InputMap: Settings/Input.minput
   ScriptAssembly: Scripts/bin/Sample.dll
   ScriptProject: Scripts/Sample.csproj
-  Window: {Width: 1280, Height: 720, Fullscreen: true, VSync: true, Title: Morava Sample}
+  Window: {Width: 1280, Height: 720, Fullscreen: true, VSync: false, Title: Morava Sample}
   Physics: {Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, Dynamic-Character, Dynamic-Trigger, Character-Character, Character-Trigger]}
   Audio: {Master: 1, Music: 0.51, Effects: 1, UI: 0.69}

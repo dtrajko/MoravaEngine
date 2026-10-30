@@ -27,6 +27,8 @@
 #include <functional>
 
 
+struct DebugOverlayGame;
+
 class EnvMapVulkanRenderer : public H2M::RendererAPI_H2M
 {
 public:
@@ -81,6 +83,9 @@ public:
 	// The user interface over the scene (the editor's ImGui windows): recorded into the given command buffer of the window's
 	// render pass while the window's image is recorded. Without one the window shows only the scene.
 	static void SetUserInterface(const std::function<void(VkCommandBuffer)>& recordUserInterface);
+	// The debug overlay (7.4, UI/DebugOverlay) over the view, after the game UI, from the next frame on: shown or not, the
+	// running game's numbers (nullptr: no game runs, only the frame's) and the display's content scale. Copied
+	static void SetDebugOverlay(bool shown, const DebugOverlayGame* game = nullptr, float scale = 1.0f);
 
 	// --- What the editor asks the renderer (src/Editor)
 

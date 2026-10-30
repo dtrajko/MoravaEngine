@@ -196,7 +196,7 @@ jobs:
         working-directory: MoravaEngine
         run: |
           set -o pipefail
-          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 ../build/MoravaPlayer --project ../Projects/Sample/Sample.mproject --scene ../Projects/Sample/Scenes/Erika.mscene --exit-after 10 2>&1 | tee erika-smoke-test.log
+          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 ../build/MoravaPlayer --project ../Projects/Sample/Sample.mproject --scene ../Projects/Sample/Scenes/Erika.mscene --exit-after 10 --debug-overlay 2>&1 | tee erika-smoke-test.log
           if grep -q VulkanDebugCallback erika-smoke-test.log; then
             echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
             exit 1
@@ -211,6 +211,11 @@ jobs:
           fi
           if ! grep -q "Scripts: [1-9][0-9]* instance(s)" erika-smoke-test.log || grep -q "Script error:" erika-smoke-test.log; then
             echo "::error::The Erika scene's scripts didn't run, or one of them threw an exception (see the log)"
+            exit 1
+          fi
+          # Played with the debug overlay (F3, 7.4) over it: drawn every frame with the game's numbers
+          if ! grep -q "Debug overlay: shown" erika-smoke-test.log; then
+            echo "::error::The player didn't show the debug overlay (--debug-overlay)"
             exit 1
           fi
           # The sounds her script plays at the animator's Footstep events, the jump and the landing

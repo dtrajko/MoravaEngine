@@ -35,6 +35,8 @@
 
 #include "Project/Project.h"
 
+#include "UI/DebugOverlay.h"
+
 #include "H2M/Renderer/ModelH2M.h"
 
 #include "imgui.h"
@@ -562,6 +564,30 @@ const EnvMapVulkanViewOptions* GetDrawnViewOptions()
 	s_GameViewOptions.UIHovered = s_GameSystems.GetUI().GetHovered();
 	s_GameViewOptions.UISelected = s_GameSystems.GetUI().GetSelected();
 	return &s_GameViewOptions;
+}
+
+void UpdateDebugOverlay()
+{
+	static bool commandLineRead = false;
+	if (!commandLineRead)
+	{
+		s_DebugOverlay = s_DebugOverlay || Application::Get()->GetCommandLine().DebugOverlay;
+		commandLineRead = true;
+	}
+	if (!s_DebugOverlay)
+	{
+		EnvMapVulkanRenderer::SetDebugOverlay(false);
+		return;
+	}
+	float scaleX = 1.0f, scaleY = 1.0f;
+	glfwGetWindowContentScale(s_GameWindow ? s_GameWindow : Application::Get()->GetWindow()->GetHandle(), &scaleX, &scaleY);
+	if (!IsPlaying())
+	{
+		EnvMapVulkanRenderer::SetDebugOverlay(true, nullptr, scaleY);
+		return;
+	}
+	const DebugOverlayGame game = DebugOverlayGame::Gather(s_GameLoop, s_GameSystems, s_Scene, s_SceneName);
+	EnvMapVulkanRenderer::SetDebugOverlay(true, &game, scaleY);
 }
 
 // The toolbar's icons, drawn in a button's square

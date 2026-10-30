@@ -11,6 +11,8 @@
 
 #include "Project/Project.h"
 
+#include "UI/DebugOverlay.h"
+
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
@@ -64,6 +66,12 @@ void PlayerLayer::OnAttach()
 
 	// The project's scripts, then the game: the scripts' instances are made when it starts
 	m_ScenePath = ProjectPaths::Normalize(scenePath);
+	m_SceneName = name;
+	m_DebugOverlay = Application::Get()->GetCommandLine().DebugOverlay;
+	if (m_DebugOverlay)
+	{
+		Log::GetLogger()->info("Debug overlay: shown (F3 hides it)");
+	}
 	GameSystems::LoadScripts();
 	m_Input.SetMap(GameSystems::LoadInputMap());
 	m_Systems.SetSceneInfo(name, m_ScenePath);
@@ -80,6 +88,7 @@ void PlayerLayer::OnDetach()
 	}
 
 	m_Input.Reset(Application::Get()->GetWindow()->GetHandle()); // the mouse given back
+	EnvMapVulkanRenderer::SetDebugOverlay(false);
 	m_Systems.Begin(nullptr, nullptr);
 
 	// The application waited for the device: no frame in flight draws the scene's models any more
@@ -137,6 +146,28 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	{
 		EnvMapVulkanSceneData::PlaceGameCamera(m_Camera, m_Scene, cameraEntity);
 	}
+	UpdateDebugOverlay(window);
+}
+
+void PlayerLayer::UpdateDebugOverlay(GLFWwindow* window)
+{
+	const bool f3 = glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS;
+	if (f3 && !m_F3Down)
+	{
+		m_DebugOverlay = !m_DebugOverlay;
+		Log::GetLogger()->info(m_DebugOverlay ? "Debug overlay: shown (F3 hides it)" : "Debug overlay: hidden");
+	}
+	m_F3Down = f3;
+	if (!m_DebugOverlay)
+	{
+		EnvMapVulkanRenderer::SetDebugOverlay(false);
+		return;
+	}
+	// Pixels per point of the display the window is on (2 on a Retina display, 1.5 at 150% scaling on Windows)
+	float scaleX = 1.0f, scaleY = 1.0f;
+	glfwGetWindowContentScale(window, &scaleX, &scaleY);
+	const DebugOverlayGame game = DebugOverlayGame::Gather(m_GameLoop, m_Systems, m_Scene, m_SceneName);
+	EnvMapVulkanRenderer::SetDebugOverlay(true, &game, scaleY);
 }
 
 void PlayerLayer::LoadScene(const std::string& path)
@@ -152,6 +183,7 @@ void PlayerLayer::LoadScene(const std::string& path)
 	}
 	m_RenderSettings = settings;
 	m_ScenePath = ProjectPaths::Normalize(path);
+	m_SceneName = name;
 	EnvMapVulkanRenderer::OnSceneReplaced(); // what the probes gathered belongs to the scene that went
 	m_Systems.SetSceneInfo(name, m_ScenePath);
 	m_Systems.Restart();

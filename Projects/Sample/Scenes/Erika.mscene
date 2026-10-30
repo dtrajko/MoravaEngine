@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Erika
 EditorCamera:
-  Translation: [9.751194, 13.814761, -2.401509]
-  Rotation: [57.800045, -172.70016, 0]
+  Translation: [-0.045146182, 2.8, 4.8147993]
+  Rotation: [19.999992, 0, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:
@@ -54,7 +54,7 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [2.1363554, 2.8, 4.8147993]
+      Translation: [-0.045146182, 2.8, 4.8147993]
       Rotation: [19.999992, -0, 0]
       Scale: [1, 0.99999994, 0.99999994]
     Camera:
@@ -320,7 +320,7 @@ Entities:
     Name: Erika
     Parent: 0
     Transform:
-      Translation: [2.2345302, 1, 3.25]
+      Translation: [-0.19276077, 1, 3.25]
       Rotation: [179.9999, -0, -179.9999]
       Scale: [0.9999992, 0.99999994, 0.9999992]
     Model:

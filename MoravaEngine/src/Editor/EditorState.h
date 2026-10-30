@@ -56,6 +56,8 @@ struct PendingMaterialTexture
 extern EnvMapVulkanScene s_Scene;
 extern EnvMapVulkanRenderSettings s_RenderSettings;
 extern EnvMapVulkanViewOptions s_ViewOptions;
+// The debug overlay (7.4) over the viewport: F3, the Environment panel, --debug-overlay
+extern bool s_DebugOverlay;
 // The editor's camera (the viewport's): given to OnUpdate every frame
 extern H2M::CameraH2M* s_Camera;
 extern EditorSelection s_EditorSelection;
@@ -298,6 +300,9 @@ bool RefusedWhilePlaying(const char* what);
 // The view options the renderer draws with: the editor's, or while the game runs the game's (no grid, no selection)
 const EnvMapVulkanViewOptions* GetDrawnViewOptions();
 
+// The debug overlay to the renderer, each frame: shown or not, with the game's numbers while Play or Simulate runs
+void UpdateDebugOverlay();
+
 // Play, Pause and Step, centered in the menu bar (as in Unity), and the game's frame and time while it runs
 void OnImGuiRenderPlayToolbar();
 
@@ -523,7 +528,7 @@ void OnImGuiRenderViewport();
 
 // F11: the viewport fullscreen and back; Escape leaves fullscreen when the game doesn't have the input (in Play, the first
 // Escape gives the mouse back, the second leaves). Not while typing in a field or while a question is open. Before the
-// viewport each frame: Escape's first press is still the game's then
+// viewport each frame: Escape's first press is still the game's then. F3 shows and hides the debug overlay
 void HandleViewportFullscreenKeys();
 void SetViewportFullscreen(bool fullscreen);
 

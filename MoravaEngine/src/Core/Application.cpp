@@ -69,6 +69,7 @@ Application* Application::Get()
 //   --simulate              the same with Simulate: physics only, seen through the editor's camera
 //   --save-scene            the editor saves the open scene to its file when it closes: with --exit-after, a scene opened
 //                           and saved unattended (what opening it changed: prefab links, a newer file format)
+//   --debug-overlay         start with the debug overlay shown (F3 shows and hides it)
 ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 {
 	ApplicationCommandLine commandLine;
@@ -111,6 +112,10 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 			{
 				commandLine.DebugView = (int)view;
 			}
+		}
+		else if (option == "--debug-overlay")
+		{
+			commandLine.DebugOverlay = true;
 		}
 		else if (option == "--no-ray-tracing")
 		{

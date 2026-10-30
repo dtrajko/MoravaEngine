@@ -161,6 +161,12 @@ void OnImGuiRenderEnvironment()
 					ImGui::SetTooltip("Debug view: the selected UI element's rectangle (orange), the rectangle it is laid out in\n"
 						"(white), its anchors (blue squares) and its pivot (white ring)");
 				}
+				ImGuiWrapper::Property("Debug Overlay (F3)", s_DebugOverlay);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("The frame rate, the frame times, draw calls and the GPU's passes over the viewport, and while\n"
+						"the game runs its physics, scripts and sounds: what F3 shows in the player");
+				}
 
 				ImGui::Columns(1);
 			}

@@ -29,6 +29,7 @@ namespace Morava
         public delegate* unmanaged<IntPtr, char*, int, char*, int, int> InvokeAnimationEvent;
         public delegate* unmanaged<IntPtr, char*, int, int> InvokeMethod;
         public delegate* unmanaged<ulong, int> InvokeButtonClicked;
+        public delegate* unmanaged<long*, int*, void> GetMemory;
     }
 
     // The game's assembly in a context of its own that can be unloaded (hot reload). ScriptCore is the one already
@@ -100,6 +101,7 @@ namespace Morava
                 managed->InvokeAnimationEvent = &InvokeAnimationEvent;
                 managed->InvokeMethod = &InvokeMethod;
                 managed->InvokeButtonClicked = &InvokeButtonClicked;
+                managed->GetMemory = &GetMemory;
                 return 0;
             }
             catch (Exception) { return 1; }
@@ -321,6 +323,14 @@ namespace Morava
         {
             try { return UIButton.RaiseClicked(button) ? 0 : 1; }
             catch (Exception e) { Log.Error($"UIButton.Clicked: {e}"); return 1; }
+        }
+
+        // The managed heap now (bytes, without collecting) and the garbage collections since startup, for the debug overlay
+        [UnmanagedCallersOnly]
+        static void GetMemory(long* bytes, int* collections)
+        {
+            *bytes = GC.GetTotalMemory(false);
+            *collections = GC.CollectionCount(0);
         }
 
         // The game's script classes and their fields, for the editor (ScriptFields.Describe): how many classes, -1 on an error

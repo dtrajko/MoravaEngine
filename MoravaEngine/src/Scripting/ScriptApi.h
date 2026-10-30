@@ -299,6 +299,8 @@ struct ScriptManagedApi
 	int (*InvokeMethod)(void* instance, const char16_t* name, int length);
 	// The button's Clicked event, to its C# listeners: 0, or 1 when one threw
 	int (*InvokeButtonClicked)(uint64_t button);
+	// The managed heap in bytes (without collecting) and the garbage collections since startup (7.4's debug overlay)
+	void (*GetMemory)(int64_t* bytes, int32_t* collections);
 };
 
 enum class ScriptCollisionKind : int32_t { CollisionEnter = 0, CollisionExit = 1, TriggerEnter = 2, TriggerExit = 3 };

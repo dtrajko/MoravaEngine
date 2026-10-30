@@ -368,6 +368,16 @@ void UILayout::Build(const EnvMapVulkanScene& scene, const glm::vec2& viewSize, 
 	}
 }
 
+void UILayout::AddText(UIDrawList& list, const UITextComponent& text, const glm::vec2& min, const glm::vec2& max, float scale)
+{
+	::AddText(list, text, min, max, scale);
+}
+
+float UILayout::MeasureText(const UIFont& font, const std::string& line)
+{
+	return MeasureRun(font, line, 0, line.size());
+}
+
 void UILayout::AddSelectionOverlay(UIDrawList& out, EnvMapVulkanEntityID selected)
 {
 	const H2M::RefH2M<H2M::Texture2D_H2M> none;

@@ -44,6 +44,7 @@ struct ApplicationCommandLine
 	bool Play = false;             // --play: the editor starts the game (Play) once the startup scene is open
 	bool Simulate = false;         // --simulate: the editor starts Simulate (physics only) once the startup scene is open
 	bool SaveScene = false;        // --save-scene: the editor saves the open scene when it closes (after a Play's Stop)
+	bool DebugOverlay = false;     // --debug-overlay: the debug overlay (7.4) shown at startup
 
 	static ApplicationCommandLine Parse(int argc, char** argv);
 };
