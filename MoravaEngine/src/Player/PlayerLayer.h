@@ -24,7 +24,7 @@ struct GLFWwindow;
  * game's systems. Input comes from the project's input file while the window has the focus. Opening the scene fails: the
  * player closes with exit code 1. Alt+Enter and F11 switch between fullscreen and a maximized window. Escape, unless the
  * game binds it (it may have a pause menu there), first gives a captured mouse back (a click in the window captures it
- * again), then leaves fullscreen. Alt+F4 closes the game. A scene a script loads (Scene.Load, 6.2)
+ * again), then leaves fullscreen. F3 shows and hides the debug overlay (7.4), whatever the game binds. Alt+F4 closes the game. A scene a script loads (Scene.Load, 6.2)
  * replaces the scene's content at the end of the frame, and the game goes on in it.
  */
 class PlayerLayer : public H2M::LayerH2M
@@ -48,14 +48,18 @@ private:
 	// Fullscreen and a window: Alt+Enter and F11 switch, Escape gives the mouse back, then leaves fullscreen (unless the game binds it)
 	void UpdateFullscreenKeys(GLFWwindow* window);
 	void SetFullscreen(GLFWwindow* window, bool fullscreen);
+	// F3, and the overlay's numbers to the renderer
+	void UpdateDebugOverlay(GLFWwindow* window);
 
 	EnvMapVulkanScene m_Scene;
 	std::string m_ScenePath; // the scene's file: Scene.Reload opens it again
+	std::string m_SceneName;
 	EnvMapVulkanRenderSettings m_RenderSettings;
 	Camera m_Camera;
 	GameLoop m_GameLoop;
 	GameSystems m_Systems;
 	InputSystem m_Input;
 	bool m_Playing = false; // the scene is open
-	bool m_EnterDown = false, m_F11Down = false, m_EscapeDown = false; // last frame's, for the keys' presses
+	bool m_EnterDown = false, m_F11Down = false, m_EscapeDown = false, m_F3Down = false; // last frame's, for the keys' presses
+	bool m_DebugOverlay = false;
 };

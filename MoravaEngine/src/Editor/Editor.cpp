@@ -571,4 +571,5 @@ void Editor::OnUpdate(H2M::CameraH2M* camera, float frameTime)
 	s_ViewOptions.PrimarySelection = s_EditorSelection.GetPrimary();
 	// The editor's view, or while the game runs the game's
 	EnvMapVulkanRenderer::SetScene(&s_Scene, &s_RenderSettings, GetDrawnViewOptions());
+	UpdateDebugOverlay();
 }

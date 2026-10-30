@@ -821,6 +821,10 @@ void HandleViewportFullscreenKeys()
 	{
 		return;
 	}
+	if (ImGui::IsKeyPressed(ImGuiKey_F3, false))
+	{
+		s_DebugOverlay = !s_DebugOverlay;
+	}
 	if (ImGui::IsKeyPressed(ImGuiKey_F11, false))
 	{
 		SetViewportFullscreen(!s_ViewportFullscreen);

@@ -48,6 +48,8 @@ public:
 
 	uint64_t GetFrameCount() const { return m_FrameCount; }
 	uint64_t GetFixedStepCount() const { return m_FixedStepCount; }
+	// Fixed steps per second of real time, measured over the last whole second (60 at time scale 1, 0 standing still)
+	float GetStepsPerSecond() const { return m_StepsPerSecond; }
 	double GetGameTime() const { return m_GameTime; } // in seconds, scaled
 
 private:
@@ -56,5 +58,8 @@ private:
 	float m_Alpha = 0.0f;
 	uint64_t m_FrameCount = 0;
 	uint64_t m_FixedStepCount = 0;
+	uint32_t m_RateSteps = 0;   // steps and real time since the rate was last measured
+	float m_RateTime = 0.0f;
+	float m_StepsPerSecond = 0.0f;
 	double m_GameTime = 0.0;
 };

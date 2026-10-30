@@ -9,6 +9,7 @@
 EnvMapVulkanScene s_Scene;
 EnvMapVulkanRenderSettings s_RenderSettings;
 EnvMapVulkanViewOptions s_ViewOptions = EnvMapVulkanViewOptions::Editor();
+bool s_DebugOverlay = false;
 H2M::CameraH2M* s_Camera = nullptr;
 EditorSelection s_EditorSelection(s_Scene); // see EditorSelection
 

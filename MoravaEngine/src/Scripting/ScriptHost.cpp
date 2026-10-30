@@ -292,7 +292,7 @@ static bool StartRuntime()
 		result = getFunctionPointer(SCRIPT_HOST_STR("Morava.Interop, Morava.ScriptCore"), SCRIPT_HOST_STR("Initialize"),
 			UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, reinterpret_cast<void**>(&initializeCore));
 	}
-	if (result != 0 || !initializeCore || initializeCore(&s_Native, &s_Managed) != 0 || !s_Managed.GetField)
+	if (result != 0 || !initializeCore || initializeCore(&s_Native, &s_Managed) != 0 || !s_Managed.GetMemory)
 	{
 		Log::GetLogger()->error("C# scripting is not available: '{0}' could not be loaded ({1})", coreDll.u8string(), ResultCode(result));
 		s_Managed = {};
@@ -513,6 +513,18 @@ int ScriptHost::InvokeMethod(void* instance, const std::string& name)
 bool ScriptHost::InvokeButtonClicked(uint64_t button)
 {
 	return !s_Available || s_Managed.InvokeButtonClicked(button) == 0;
+}
+
+bool ScriptHost::GetMemory(int64_t& bytes, int32_t& collections)
+{
+	bytes = 0;
+	collections = 0;
+	if (!s_Available)
+	{
+		return false;
+	}
+	s_Managed.GetMemory(&bytes, &collections);
+	return true;
 }
 
 bool ScriptHost::SetField(void* instance, const ScriptFieldInfo& field, const ScriptFieldValue& value)

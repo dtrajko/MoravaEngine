@@ -12,6 +12,7 @@
 #include <vector>
 
 class EnvMapVulkanScene;
+class UIFont;
 
 
 // One corner of a UI quad, in the view's pixels (top-left origin, y down). Mode 0: the texture's color times Color (no
@@ -88,6 +89,12 @@ namespace UILayout
 	void AddSelectionOverlay(UIDrawList& list, EnvMapVulkanEntityID selected);
 	// The debug view in a running game: the element under the mouse (green) and the selected button (yellow)
 	void AddInteractionOverlay(UIDrawList& list, EnvMapVulkanEntityID hovered, EnvMapVulkanEntityID selected);
+
+	// Text in a rectangle of view pixels, as a UI Text draws it (its Size times scale pixels per em): for text that isn't a
+	// UI entity (the debug overlay, 7.4)
+	void AddText(UIDrawList& list, const UITextComponent& text, const glm::vec2& min, const glm::vec2& max, float scale = 1.0f);
+	// The width of a line of text in ems, kerning included
+	float MeasureText(const UIFont& font, const std::string& line);
 
 	// View pixels per reference pixel for this canvas in a view of that size
 	float GetCanvasScale(const UICanvasComponent& canvas, const glm::vec2& viewSize);

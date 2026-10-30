@@ -30,6 +30,7 @@
 
 
 #include "Animation/AnimationSelfTest.h"
+#include "UI/DebugOverlay.h"
 #include "UI/UIFont.h"
 #include "UI/UILayout.h"
 
@@ -591,6 +592,11 @@ static EnvMapVulkanGlass s_Glass;
 // The game UI (7.2): laid out from the scene's canvases every frame (UILayout), drawn over the viewport composite
 static EnvMapVulkanUI s_UI;
 static UIDrawList s_UIDrawList;
+// The debug overlay (7.4): its owner's choice and the running game's numbers (SetDebugOverlay), added to the UI's list
+static bool s_DebugOverlayShown = false;
+static bool s_DebugOverlayHasGame = false;
+static DebugOverlayGame s_DebugOverlayGame;
+static float s_DebugOverlayScale = 1.0f;
 // The G-buffer (see EnvMapVulkanGBuffer): normals, roughness, motion and the scene's depth, written by a prepass before the
 // scene pass (Phase A of docs/rendering/SSAO_GI_RayTracing_Guide.html). The scene pass loads that depth and draws the
 // opaque meshes with depth EQUAL (s_MeshPipelineDepthEqual), so their PBR shader runs once per pixel.
@@ -3755,6 +3761,32 @@ static void RecordBloomPasses(VkCommandBuffer commandBuffer)
 
 // Draws s_Framebuffer (linear HDR) into s_ViewportCompositeFramebuffer with exposure, ACES tonemapping and gamma
 // (Resources/Shaders/SceneComposite.glsl). The Viewport panel shows the result.
+// The debug overlay's frame numbers: the profiler's last finished frame and this frame's culling
+static DebugOverlayFrame GatherDebugOverlayFrame()
+{
+	DebugOverlayFrame frame;
+	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
+	frame.Fps = EnvMapVulkanProfiler::GetFps();
+	frame.CpuMs = EnvMapVulkanProfiler::GetSmoothedCpuFrameMs();
+	frame.GpuValid = results.Valid;
+	frame.GpuMs = results.SmoothedGpuMs;
+	frame.History = EnvMapVulkanProfiler::GetCpuHistory().data();
+	frame.HistorySize = EnvMapVulkanProfiler::HistorySize;
+	frame.HistoryOffset = EnvMapVulkanProfiler::GetHistoryOffset();
+	frame.Draws = results.Draws;
+	frame.Triangles = results.Triangles;
+	frame.Meshes = s_CullingStats.Meshes;
+	frame.Culled = s_CullingStats.Culled;
+	for (const EnvMapVulkanProfiler::ScopeResult& scope : results.Scopes)
+	{
+		if (scope.Depth == 0)
+		{
+			frame.Passes.push_back({ scope.Name, scope.SmoothedGpuMs });
+		}
+	}
+	return frame;
+}
+
 void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 {
 	H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_ViewportCompositeFramebuffer.As<H2M::VulkanFramebufferH2M>();
@@ -3835,21 +3867,31 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 	EnvMapVulkanProfiler::CountDraw(s_Data.QuadIndexBuffer->GetCount() / 3);
 
-	// The game UI, over the tonemapped image
+	// The game UI, over the tonemapped image, then the debug overlay over it (one list: the UI's buffers are written once a frame)
 	s_UIDrawList.Clear();
-	if (s_Scene && s_ViewOptions.UI)
+	const bool gameUI = s_Scene && s_ViewOptions.UI;
+	if (gameUI || s_DebugOverlayShown)
 	{
 		EnvMapVulkanProfiler::Scope uiScope(commandBuffer, "UI", "The game UI: the canvases' images and text as quads, over the "
 			"finished image (after tonemapping, so their colors are the colors given). Text is read from signed distance field "
-			"font atlases, sharp at any size.");
-		UILayout::Build(*s_Scene, glm::vec2((float)width, (float)height), s_UIDrawList);
-		if (s_ViewOptions.UIOutlinesInGame)
+			"font atlases, sharp at any size. The debug overlay (F3) is drawn with it.");
+		const glm::vec2 viewSize((float)width, (float)height);
+		if (gameUI)
 		{
-			UILayout::AddInteractionOverlay(s_UIDrawList, s_ViewOptions.UIHovered, s_ViewOptions.UISelected);
+			UILayout::Build(*s_Scene, viewSize, s_UIDrawList);
+			if (s_ViewOptions.UIOutlinesInGame)
+			{
+				UILayout::AddInteractionOverlay(s_UIDrawList, s_ViewOptions.UIHovered, s_ViewOptions.UISelected);
+			}
+			else if (s_ViewOptions.UIOutlines && s_ViewOptions.PrimarySelection != NoEntity)
+			{
+				UILayout::AddSelectionOverlay(s_UIDrawList, s_ViewOptions.PrimarySelection);
+			}
 		}
-		else if (s_ViewOptions.UIOutlines && s_ViewOptions.PrimarySelection != NoEntity)
+		if (s_DebugOverlayShown)
 		{
-			UILayout::AddSelectionOverlay(s_UIDrawList, s_ViewOptions.PrimarySelection);
+			DebugOverlay::Build(s_UIDrawList, viewSize, s_DebugOverlayScale, GatherDebugOverlayFrame(),
+				s_DebugOverlayHasGame ? &s_DebugOverlayGame : nullptr);
 		}
 		s_UI.Record(commandBuffer, s_UIDrawList, width, height);
 	}
@@ -4600,6 +4642,17 @@ void EnvMapVulkanRenderer::SetScene(EnvMapVulkanScene* scene, const EnvMapVulkan
 void EnvMapVulkanRenderer::SetUserInterface(const std::function<void(VkCommandBuffer)>& recordUserInterface)
 {
 	s_RecordUserInterface = recordUserInterface;
+}
+
+void EnvMapVulkanRenderer::SetDebugOverlay(bool shown, const DebugOverlayGame* game, float scale)
+{
+	s_DebugOverlayShown = shown;
+	s_DebugOverlayHasGame = shown && game;
+	if (s_DebugOverlayHasGame)
+	{
+		s_DebugOverlayGame = *game;
+	}
+	s_DebugOverlayScale = scale;
 }
 
 uint64_t EnvMapVulkanRenderer::GetViewportImage()
