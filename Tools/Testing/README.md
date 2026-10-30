@@ -111,6 +111,22 @@ without linking, in a few seconds per file. Run it in WSL from the repository ro
 wsl bash Tools/Testing/gcc-check.sh MoravaEngine/src/UI/DebugOverlay.cpp MoravaEngine/src/Player/PlayerLayer.cpp
 ```
 
+Files are compiled as the Vulkan build compiles them. Code shared by every graphics API (`src/Core` and the like) is
+also built for OpenGL and DirectX 11, where the Vulkan-only sources (`EnvMapVulkan/` and every path with "Vulkan", as
+`CMakeLists.txt` sorts them) are left out. Such a file still compiles when it includes one of their headers, but the
+build fails when it links: the functions behind the header aren't there. Guard those includes and calls with
+`#if defined(GRAPHICS_API_VULKAN)`. With `--api opengl` (or `directx11`) the check compiles the files for that API and
+also lists any Vulkan-only header they still include:
+
+```bash
+wsl bash Tools/Testing/gcc-check.sh --api opengl MoravaEngine/src/Core/ResourceManager.cpp
+```
+
+```
+== src/Core/ResourceManager.cpp
+Vulkan-only header included (not linked without Vulkan): src/EnvMapVulkan/EnvMapVulkanRenderTexture.h
+```
+
 From Git Bash, put `MSYS_NO_PATHCONV=1` in front (otherwise Git Bash rewrites the paths). Each file is printed, then
 its errors, if any; the exit code is 1 when a file had errors. Warnings are left out. WSL needs `g++` (in Ubuntu:
 `sudo apt install g++`); the headers come from the repository's `vendor` folder.
