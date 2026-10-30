@@ -395,3 +395,6 @@ MoravaEngine/Resources/Shaders/cached
 # What the engine makes from fonts and other files, made again when missing (the game UI's font atlases)
 MoravaEngine/Resources/Cache/Fonts/
 Projects/*/Library/
+
+# Tools/Testing: logs and screenshots of the test scripts
+Tools/Testing/Output/

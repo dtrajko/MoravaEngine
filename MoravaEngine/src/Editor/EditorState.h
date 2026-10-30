@@ -498,7 +498,7 @@ void HandleSceneShortcutKeys();
 // At the start of a frame (EditorPreFrame): New / Open once confirmed
 void ProcessSceneOperations();
 
-// Unsaved changes: the scene's text compared with the saved one, a few times a second
+// Unsaved changes: the scene's text compared with the saved one, after the user's input has settled (not while only watching)
 void UpdateSceneUnsavedChanges();
 
 // File menu: Save (Save As for a scene never saved), Save As (asks for the file)
