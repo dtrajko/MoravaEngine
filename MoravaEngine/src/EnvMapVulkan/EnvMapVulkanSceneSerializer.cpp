@@ -4,6 +4,7 @@
 
 #include "Project/Project.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 
@@ -279,6 +280,11 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "FieldOfView" << YAML::Value << camera->FieldOfView;
 			out << YAML::Key << "NearClip" << YAML::Value << camera->NearClip;
 			out << YAML::Key << "FarClip" << YAML::Value << camera->FarClip;
+			if (!camera->Target.empty())
+			{
+				out << YAML::Key << "Target" << YAML::Value << ProjectPaths::ToStored(camera->Target);
+				out << YAML::Key << "DrawEvery" << YAML::Value << camera->DrawEvery;
+			}
 			out << YAML::EndMap;
 		}
 		if (const InputTestComponent* test = scene.TryGet<InputTestComponent>(entity))
@@ -574,6 +580,11 @@ namespace EnvMapVulkanSceneSerializer
 			Read(cameraNode, "FieldOfView", camera.FieldOfView); // scenes saved before the camera had a lens: 45
 			Read(cameraNode, "NearClip", camera.NearClip);
 			Read(cameraNode, "FarClip", camera.FarClip);
+			std::string target;
+			Read(cameraNode, "Target", target);
+			camera.Target = target.empty() ? std::string() : ProjectPaths::Resolve(target);
+			Read(cameraNode, "DrawEvery", camera.DrawEvery);
+			camera.DrawEvery = std::max(camera.DrawEvery, 1u);
 		}
 		if (YAML::Node testNode = node["InputTest"])
 		{

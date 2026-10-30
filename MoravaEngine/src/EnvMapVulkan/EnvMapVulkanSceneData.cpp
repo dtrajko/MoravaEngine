@@ -366,6 +366,10 @@ namespace EnvMapVulkanSceneData
 		EnvMapVulkanEntityID first = NoEntity, primary = NoEntity;
 		scene.Each<CameraComponent>([&](EnvMapVulkanEntityID entity, const CameraComponent& camera)
 		{
+			if (!camera.Target.empty())
+			{
+				return; // it draws into a render texture, never the screen
+			}
 			first = first == NoEntity ? entity : first;
 			primary = primary == NoEntity && camera.Primary ? entity : primary;
 		});

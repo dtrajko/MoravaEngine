@@ -84,6 +84,8 @@ namespace H2M
 		virtual bool Loaded() const = 0;
 
 		virtual std::string GetPath() const = 0;
+		// The file a texture made from pixels stands for (a render texture's .mrtex): what materials save and look it up by
+		virtual void SetPath(const std::string& /*path*/) {}
 
 		virtual TextureTypeH2M GetType() const override { return TextureTypeH2M::Texture2D; }
 

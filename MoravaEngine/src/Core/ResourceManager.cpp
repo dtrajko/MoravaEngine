@@ -1,5 +1,6 @@
 #include "Core/ResourceManager.h"
 
+#include "EnvMapVulkan/EnvMapVulkanRenderTexture.h"
 #include "Texture/TextureLoader.h"
 
 #include <algorithm>
@@ -29,6 +30,7 @@ void ResourceManager::Shutdown()
     s_Textures.clear();
     s_Materials.clear();
     s_HazelTextures2D.clear();
+    EnvMapVulkanRenderTexture::ClearCache();
     s_ShaderCacheByTitle.clear();
     s_ShadersCacheByFilepath.clear();
 }
@@ -355,6 +357,13 @@ std::string ResourceManager::NormalizeTexturePath(const std::string& filePath)
 
 H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadTexture2D_H2M(std::string filePath, bool sRGB)
 {
+    // A render texture (7.5): its own texture, the same for every color space (its format decides how it is read)
+    if (EnvMapVulkanRenderTexture::IsRenderTextureFile(filePath))
+    {
+        const std::shared_ptr<EnvMapVulkanRenderTexture> renderTexture = EnvMapVulkanRenderTexture::Get(filePath);
+        return renderTexture ? renderTexture->GetTexture() : H2M::RefH2M<H2M::Texture2D_H2M>();
+    }
+
     TextureCacheKey key = { NormalizeTexturePath(filePath), sRGB };
 
     auto entry = s_HazelTextures2D.find(key);

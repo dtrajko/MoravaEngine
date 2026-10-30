@@ -44,6 +44,7 @@ namespace H2M
 		BufferH2M GetWriteableBuffer() override;
 		bool Loaded() const override;
 		std::string GetPath() const override;
+		void SetPath(const std::string& path) override { m_Path = path; }
 		uint32_t GetMipLevelCount() const override;
 
 		void GenerateMips();

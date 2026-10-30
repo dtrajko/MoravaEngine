@@ -27,7 +27,7 @@
 
 
 static const char* s_FontExtensions = "ttf,otf";
-static const char* s_ImageExtensions = "png,jpg,jpeg,tga,bmp";
+static const char* s_ImageExtensions = "png,jpg,jpeg,tga,bmp,mrtex";
 
 // The viewport's size in pixels, as the renderer lays the UI out (the Viewport panel's image)
 static glm::vec2 s_UIViewSize = glm::vec2(1280.0f, 720.0f);
@@ -130,9 +130,7 @@ EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset)
 
 // ---- The Inspector
 
-// A file field: its path (relative to the project), chosen with a file dialog or dropped from the Content Browser; empty
-// is allowed (emptyText says what that means)
-static bool FileControls(const char* id, const char* label, std::string& path, const char* emptyText, const char* filterName,
+bool FileControls(const char* id, const char* label, std::string& path, const char* emptyText, const char* filterName,
 	const char* extensions, std::initializer_list<const char*> dottedExtensions, const char* tooltip)
 {
 	ImGui::PushID(id);
@@ -451,7 +449,7 @@ static void TextControls(UITextComponent& text)
 static void ImageControls(EnvMapVulkanEntityID entity, UIImageComponent& image)
 {
 	if (FileControls("Texture", "Texture", image.Texture, "(none: a plain rectangle)", "Image", s_ImageExtensions,
-		{ ".png", ".jpg", ".jpeg", ".tga", ".bmp" }, "A picture for the rectangle. Drop one from the Content Browser here, or choose one with ..."))
+		{ ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".mrtex" }, "A picture for the rectangle (or a render texture: what a camera draws into it). Drop one from the Content Browser here, or choose one with ..."))
 	{
 		UILayout::ClearImageCache(); // a file that couldn't be read before is tried again
 	}

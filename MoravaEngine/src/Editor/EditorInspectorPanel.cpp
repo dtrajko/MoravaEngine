@@ -1478,7 +1478,10 @@ void OnImGuiRenderInspector()
 			}
 
 			CameraComponent& camera = s_Scene.Get<CameraComponent>(entity);
-			if (ImGui::Checkbox("Primary", &camera.Primary) && camera.Primary)
+			ImGui::BeginDisabled(!camera.Target.empty());
+			const bool primaryChanged = ImGui::Checkbox("Primary", &camera.Primary);
+			ImGui::EndDisabled();
+			if (primaryChanged && camera.Primary)
 			{
 				// One camera shows the game: the others stop being primary
 				s_Scene.Each<CameraComponent>([&](EnvMapVulkanEntityID other, CameraComponent& otherCamera)
@@ -1486,12 +1489,18 @@ void OnImGuiRenderInspector()
 					otherCamera.Primary = other == entity;
 				});
 			}
-			if (ImGui::IsItemHovered())
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			{
-				ImGui::SetTooltip("The game is seen through this camera (the first primary one; none: the first camera).\n"
-					"A script switches cameras by setting Primary: GetComponent<Camera>().Primary = true");
+				ImGui::SetTooltip("%s", camera.Target.empty() ? "The game is seen through this camera (the first primary one; none: the first camera).\n"
+					"A script switches cameras by setting Primary: GetComponent<Camera>().Primary = true" :
+					"This camera draws into its render texture (Target), never the screen");
 			}
-			if (FindPrimaryCamera(s_Scene) != entity)
+			if (!camera.Target.empty())
+			{
+				ImGui::SameLine();
+				ImGui::TextDisabled("(draws into its target)");
+			}
+			else if (FindPrimaryCamera(s_Scene) != entity)
 			{
 				ImGui::SameLine();
 				ImGui::TextDisabled("(another camera shows the game)");
@@ -1514,6 +1523,8 @@ void OnImGuiRenderInspector()
 				ImGui::SetTooltip("Nothing nearer than Near or farther than Far is drawn. Near very small and Far very far make\n"
 					"distant surfaces flicker into each other (the depth buffer's precision).");
 			}
+			RenderTargetControls(camera);
+			ImGui::Spacing();
 			ImGui::TextDisabled("Play shows the primary camera; Edit and Simulate the editor's view.");
 			break;
 		}

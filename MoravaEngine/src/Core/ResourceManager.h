@@ -29,7 +29,8 @@ public:
 	static inline std::map<std::string, H2M::RefH2M<MoravaShader>>* GetShaders() { return &s_ShaderCacheByTitle; };
 
 	// Loading Texture2D_H2M through the texture cache. A file is loaded once per color space: sRGB (color data, e.g. albedo)
-	// and linear (raw data, e.g. roughness) are different GPU formats, so one file can be cached as both.
+	// and linear (raw data, e.g. roughness) are different GPU formats, so one file can be cached as both. A render texture
+	// file (.mrtex, EnvMapVulkanRenderTexture) gives its texture, whose format is its own.
 	static H2M::RefH2M<H2M::Texture2D_H2M> LoadTexture2D_H2M(std::string filePath, bool sRGB);
 	// Removes the cached textures nobody else uses any more (only the cache holds them), which frees their GPU memory.
 	// The GPU must not be using them: call it when the device is idle. Returns the number of textures released.
