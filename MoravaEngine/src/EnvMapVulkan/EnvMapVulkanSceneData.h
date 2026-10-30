@@ -87,7 +87,8 @@ namespace EnvMapVulkanSceneData
 	// Where a camera is and looks, as a transform PlaceCamera takes back (y within -180..180, no roll, scale 1)
 	TransformComponent GetCameraPlacement(const H2M::CameraH2M& camera);
 
-	// The camera the game is seen through: the first with Primary, else the first there is (NoEntity: none)
+	// The camera the game is seen through: the first with Primary, else the first there is (NoEntity: none); cameras that
+	// draw into a render texture (CameraComponent::Target) are left out
 	EnvMapVulkanEntityID FindPrimaryCamera(const EnvMapVulkanScene& scene);
 	// Where a camera entity is in the world and where it looks, as a transform PlaceCamera takes: a child (of a car, a
 	// character) is where its parent puts it, turned with the parent around the vertical axis (a parent's tilt isn't

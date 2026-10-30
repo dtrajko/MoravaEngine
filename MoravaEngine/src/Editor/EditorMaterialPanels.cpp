@@ -2,6 +2,7 @@
 
 
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
+#include "EnvMapVulkan/EnvMapVulkanRenderTexture.h"
 #include "EnvMapVulkan/EnvMapVulkanProfiler.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
@@ -57,6 +58,11 @@ static bool IsMaterialFile(const std::string& filepath)
 	return std::filesystem::path(filepath).extension() == EnvMapVulkanMaterialLibrary::FileExtension;
 }
 
+bool IsMapFile(const std::string& filepath)
+{
+	return IsImageFile(filepath) || EnvMapVulkanRenderTexture::IsRenderTextureFile(filepath);
+}
+
 bool IsImageFile(const std::string& filepath)
 {
 	static const std::set<std::string> s_Extensions = { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".psd", ".gif" };
@@ -109,9 +115,9 @@ void ApplyMaterialTexture(const PendingMaterialTexture& request)
 		return;
 	}
 
-	if (!std::filesystem::exists(request.FilePath) || !IsImageFile(request.FilePath))
+	if (!std::filesystem::exists(request.FilePath) || !IsMapFile(request.FilePath))
 	{
-		Log::GetLogger()->error("Map '{0}' was not loaded: the file does not exist or is not a supported image.", request.FilePath);
+		Log::GetLogger()->error("Map '{0}' was not loaded: the file does not exist or is not a supported image or render texture.", request.FilePath);
 		return;
 	}
 
@@ -749,13 +755,13 @@ void OnImGuiRenderMaterialEditor()
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 			{
 				std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
-				if (IsImageFile(itemPath))
+				if (IsMapFile(itemPath))
 				{
 					s_PendingMaterialTextures.push_back({ material, i, itemPath }); // applied at the start of the next frame
 				}
 				else
 				{
-					Log::GetLogger()->warn("'{0}' is not a supported image file", itemPath);
+					Log::GetLogger()->warn("'{0}' is not a supported image or render texture file", itemPath);
 				}
 			}
 			ImGui::EndDragDropTarget();
@@ -769,7 +775,7 @@ void OnImGuiRenderMaterialEditor()
 			}
 			else
 			{
-				ImGui::SetTooltip("Drop an image from the Content Browser here\nLoaded as %s", colorSpace);
+				ImGui::SetTooltip("Drop an image or a render texture (.mrtex) from the Content Browser here\nLoaded as %s", colorSpace);
 			}
 		}
 
@@ -788,7 +794,7 @@ void OnImGuiRenderMaterialEditor()
 
 			if (ImGui::Button("Load..."))
 			{
-				std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" } }, GetAssetFolderForDialog());
+				std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" }, { "Render Texture", "mrtex" } }, GetAssetFolderForDialog());
 				if (!filepath.empty())
 				{
 					s_PendingMaterialTextures.push_back({ material, i, filepath }); // applied at the start of the next frame

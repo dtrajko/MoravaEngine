@@ -9,6 +9,7 @@
 
 #include "Animation/AnimatorController.h"
 
+#include "EnvMapVulkan/EnvMapVulkanRenderTexture.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneLoader.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneSerializer.h"
 
@@ -100,6 +101,7 @@ static ImU32 GetFileColor(const ContentEntry& entry)
 	if (e == ".wav" || e == ".mp3" || e == ".ogg" || e == ".flac")       return IM_COL32(80, 220, 200, 255);
 	if (e == ".png" || e == ".jpg" || e == ".jpeg" || e == ".tga" || e == ".hdr" || e == ".bmp") return IM_COL32(240, 170, 90, 255);
 	if (e == ".mmat")                                                    return IM_COL32(255, 120, 170, 255);
+	if (e == EnvMapVulkanRenderTexture::FileExtension)                   return IM_COL32(240, 200, 110, 255);
 	if (e == AnimatorController::FileExtension)                          return IM_COL32(255, 160, 220, 255);
 	if (e == Project::FileExtension || e == ".minput")                   return IM_COL32(220, 220, 120, 255);
 	if (EnvMapVulkanSceneLoader::IsModelFile(entry.Path.u8string()))     return IM_COL32(200, 200, 215, 255);

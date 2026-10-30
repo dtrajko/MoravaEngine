@@ -171,6 +171,13 @@ struct CameraComponent
 	float NearClip = 0.01f;
 	float FarClip = 1000.0f;
 
+	// A render texture (7.5, a .mrtex file: absolute here, relative to the project in the scene file) the camera draws into
+	// instead of the screen: a mirror, a monitor, a minimap. Empty: the screen. A camera with a target never shows the
+	// game (Primary doesn't apply to it)
+	std::string Target;
+	// It draws every this many frames (1: every frame): a monitor needs fewer pictures than the game
+	uint32_t DrawEvery = 1;
+
 	static constexpr float MinFieldOfView = 10.0f;
 	static constexpr float MaxFieldOfView = 120.0f;
 	static constexpr float MinNearClip = 0.001f;

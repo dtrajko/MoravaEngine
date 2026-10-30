@@ -24,6 +24,7 @@
 #include <glm/glm.hpp>
 
 #include <algorithm>
+#include <initializer_list>
 #include <optional>
 #include <string>
 #include <vector>
@@ -590,6 +591,20 @@ EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset);
 void UIControls(EnvMapVulkanEntityID entity);
 // The view size the UI is laid out for in the editor (the viewport image's, set by the Viewport panel each frame)
 void SetUIViewSize(const glm::vec2& size);
+// A file field: its path (shown relative to the project), chosen with a file dialog or dropped from the Content Browser
+// (only files with one of dottedExtensions); empty is allowed (emptyText says what that means), X empties it. True when
+// the path changed
+bool FileControls(const char* id, const char* label, std::string& path, const char* emptyText, const char* filterName,
+	const char* extensions, std::initializer_list<const char*> dottedExtensions, const char* tooltip);
+
+// ---- Render textures (EditorRenderTextures.cpp, 7.5)
+
+// The Inspector's Target section of a camera: the screen or a render texture (chosen, dropped or made), the texture's size
+// and format (saved to its file), how often the camera draws
+void RenderTargetControls(CameraComponent& camera);
+// At the start of a frame (EditorPreFrame): render texture settings changed in the last frame written to their files; their
+// new textures go into the material maps and UI images that showed the old ones
+void ProcessRenderTextureChanges();
 // The viewport's mouse in Edit (view pixels from the image's top-left corner): a click on a UI element selects it (toggle:
 // adds or removes it) and a drag moves it. True while it has the mouse: the viewport's own picking is skipped
 bool HandleViewportUIMouse(const glm::vec2& mouseInView, bool clicked, bool toggle);
@@ -616,6 +631,10 @@ void OnImGuiRenderEnvironment();
 // ---- Materials (EditorMaterialPanels.cpp)
 
 bool IsImageFile(const std::string& filepath);
+// What a material's map can be: an image, or a render texture (.mrtex, 7.5)
+bool IsMapFile(const std::string& filepath);
+// What a material's map can be: an image, or a render texture (.mrtex, 7.5)
+bool IsMapFile(const std::string& filepath);
 
 // Loads an image and binds it as one of a material's maps, or removes the map when the request has no file path
 // (called at the start of a frame, see EditorPreFrame)

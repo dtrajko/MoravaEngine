@@ -281,8 +281,9 @@ namespace H2M {
 		m_Width = width;
 		m_Height = height;
 
-		// The size of the image in the given format (RGBA: 4 bytes per pixel, RGBA32F: 16)
-		uint32_t size = Utils::GetImageMemorySize(format, width, height);
+		// The size of the image in the given format (RGBA: 4 bytes per pixel, RGBA32F: 16). SRGB is 4 channels here
+		// (VK_FORMAT_R8G8B8A8_SRGB, as file textures load it), not the 3 of OpenGL's GL_SRGB8 the shared table counts
+		uint32_t size = format == ImageFormatH2M::SRGB ? width * height * 4 : Utils::GetImageMemorySize(format, width, height);
 
 		m_ImageData = BufferH2M::Copy(data, size);
 		memcpy(m_ImageData.Data, data, m_ImageData.Size);

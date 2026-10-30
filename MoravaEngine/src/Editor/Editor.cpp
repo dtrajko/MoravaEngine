@@ -364,6 +364,9 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 		s_PendingSunAlign = false;
 	}
 
+	// Render textures resized or given another format in the Inspector
+	ProcessRenderTextureChanges();
+
 	// Set when a change below may leave cached textures unused (a model or mesh removed, a map replaced or removed, a material deleted)
 	bool texturesMayBeUnused = false;
 
