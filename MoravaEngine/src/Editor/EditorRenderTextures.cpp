@@ -175,5 +175,10 @@ void RenderTargetControls(CameraComponent& camera)
 		ImGui::SetTooltip("How often the camera draws its picture: every frame, or every few (a security monitor doesn't\n"
 			"need 60 pictures a second, and each one costs about as much as a small view of the scene).");
 	}
-	ImGui::TextDisabled("Not drawn yet: shows a placeholder until texture cameras draw (7.5.2).");
+	ImGui::Checkbox("Enabled", &camera.Enabled);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The camera draws into its texture. Off: the texture keeps its last picture and the camera costs\n"
+			"nothing (a monitor nobody looks at; a script turns it on and off with Camera.Enabled).");
+	}
 }

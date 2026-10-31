@@ -1121,10 +1121,68 @@ struct UIButtonComponent { glm::vec4 Normal, Hover, Pressed, Disabled; std::stri
     <li><b>Checked</b> in a windowed copy of the sample: the screen as a Display surface at intensity 1 matches the room's brightness and two UI images of the same view (Color and HDR) beside it; Flip Horizontally mirrors it; glass in the texture view (the spinning cube seen through, no shadow); Draw Every 3; the editor's Material Editor (Surface: Display, Flip Horizontally) in Play; no validation messages; GCC (WSL) on the changed files (UI and the overlay also as the OpenGL build compiles them; their warnings about Vulkan headers are master's too).</li>
   </ul>
   </div>
+  <div class="box note"><b>As built: 7.5.4, scripts and the security monitor</b>
+  <ul>
+    <li><b>C#:</b> <code>Camera.Target</code> (the <code>.mrtex</code> file relative to the project, <code>""</code> for the screen; new <code>Camera_GetTarget</code> and <code>Camera_SetTarget</code> at the end of the native API, read as <code>UIImage.Texture</code> is), <code>Camera.Enabled</code> and <code>Camera.DrawEvery</code> (1 to 120), both in the camera's settings struct (<code>ScriptCameraSettings</code> / <code>NativeCameraSettings</code> grew by two fields).</li>
+    <li><b>Enabled</b> is a new <code>CameraComponent</code> field (default on; saved with Target and DrawEvery, scenes without it load enabled; an <i>Enabled</i> checkbox under Draw Every in the Inspector). A disabled texture camera keeps its view and its texture's last picture, costs nothing and leaves the debug overlay's Cameras list; enabled again, it draws at once. The screen's cameras don't use it (Primary chooses the game's view), so a game can't end up with no camera.</li>
+    <li><b>The sample's security monitor</b> (Erika's scene): a 3.2 x 1.8 m Display screen in a dark frame on the west wall (<code>Security_Monitor.mmat</code>, <code>Security_Monitor.mrtex</code>, 640 x 360 Color) and three cameras high in the corners, tagged <code>SecurityCamera</code>. <code>Scripts/SecurityMonitor.cs</code> moves the texture from one camera to the next every 4 s (Camera.Target), and draws only while the player's camera looks towards the screen (Camera.Enabled; the turns pause too). The first camera draws once at the start, so the screen never shows the placeholder. <i>Giant_Screen</i> is a Display surface now, at emissive intensity 1.</li>
+    <li><b>quad.obj mirrored</b> (found on the monitor): its front face (+X) had u growing towards +Z, so a picture looked at from the front was mirrored; Giant_Screen looked right only because it faced the wall and was seen from behind (the quad isn't culled). u is flipped now, and Giant_Screen turned to face the room (rotation 0, 90, 0); Giant_Screen_02 already faced the room and was mirrored before.</li>
+    <li><b>Checked</b> in a windowed copy of the sample: the monitor shows the cameras in turn, the right way round (the room's cylinders on the side the camera's position predicts), on Giant_Screen too; looking away disables the camera (the overlay lists only the follow screen's camera); Play and Stop in the editor give the scene back unchanged; the editor's <code>--save-scene</code> keeps <code>Enabled: false</code>; the Inspector's Enabled checkbox; no validation messages, no script problems; GCC (WSL) on the changed C++ files.</li>
+  </ul>
+  </div>
   <div class="box note"><b>Debug view: UI</b>
   Rectangle outlines with anchors and pivots of the selected element, and the element under the mouse.</div>
   <div class="box ok"><b>Check: milestone 2, the third-person collector</b>
   A character controller with an animated character, a follow camera with mouse and gamepad, coin sounds and music, a HUD with the score, a main menu (Play, Settings, Quit), a pause menu on Escape/Start, and two levels. It runs in the editor from start to finish. In the player, F3 shows the debug overlay over the HUD and the menus.</div>
+</section>
+
+<section id="phase-12">
+  <h2><span class="tag">12</span>Antialiasing</h2>
+  <p><b>Goal:</b> smooth edges in the game and the editor's viewport, and in the cameras that draw into a texture. Asked for by the user on 2026-10-31 (the 7.5.4 test pictures), placed after Milestone 2. It is numbered 12 so that Phases 8 to 11 keep their numbers.</p>
+  <h3>Today</h3>
+  <p>There is no antialiasing: no MSAA, no post-process antialiasing, no temporal one. Every triangle edge is one sample per pixel, and fine detail (thin rails, distant edges, specular highlights on normal maps) shimmers when the camera moves. The renderer already keeps the previous frame's view-projection matrix per view (camera motion), but not the motion of moving or skinned meshes.</p>
+  <div class="box note"><b>Why not MSAA</b>
+  The frame is a G-buffer prepass followed by many full-screen passes (ambient occlusion, ray-traced reflections, the composite with bloom, glass, water). With MSAA each of them would have to read multisampled images or resolve them first, which costs memory and passes. MSAA would also not help with shimmer inside surfaces. A post-process pass, and later a temporal one, fit the frame as it is.</div>
+
+  <h3>12.1 Post-process antialiasing (SMAA)</h3>
+  <ul>
+    <li><b>One pass after the composite</b> (exposure, bloom, tonemapping), on the final picture before the UI is drawn over it: SMAA 1x (edge detection, blend weights from its area and search textures, then blending). FXAA is the fallback: one pass and cheaper, but blurrier.</li>
+    <li><b>A setting</b> in the scene's render settings (Environment panel): <i>Antialiasing</i> Off, FXAA or SMAA. SMAA is the default for new scenes, and scenes saved before keep Off until it is chosen. The project's quality tiers (Phase 9) can override it later.</li>
+    <li><b>Texture cameras</b> (7.5): the same pass on a Color texture's composite, a choice per camera (off by default: their pictures are small and cheap).</li>
+    <li><b>Debug view:</b> SMAA's detected edges, and its blend weights, in the Environment panel's Debug View list.</li>
+  </ul>
+
+  <h3>12.2 Temporal antialiasing (TAA)</h3>
+  <ul>
+    <li><b>Jitter:</b> each frame the projection is moved by a sub-pixel offset (a Halton sequence), so over several frames every pixel sees several sample positions.</li>
+    <li><b>Motion vectors</b> in the prepass: for every mesh, from its previous frame's model matrix, and for skinned meshes (Erika) from the previous frame's bone matrices. Camera-only reprojection would leave ghosts behind moving things.</li>
+    <li><b>Resolve:</b> the history reprojected by the motion vectors and clamped to the current pixel's neighborhood (variance clipping), blended with the new frame. Then a light sharpening pass, because TAA softens the picture a little.</li>
+    <li><b>Also calms the noise</b> of ray-traced reflections and ambient occlusion. Their own temporal filters are checked against it, so the picture isn't filtered twice.</li>
+    <li><b>Setting:</b> TAA joins Off, FXAA and SMAA. The main view only at first; texture views have no history.</li>
+  </ul>
+
+  <div class="box ok"><b>Check</b>
+  Erika's scene with each setting, the same still frame side by side: the stair edges, the ramps and the monitor frame smooth with SMAA. With TAA, a slow camera pan without shimmer on the rails and no ghost trails behind Erika running or behind the spinning cube. The cost per setting is measured in the F3 overlay (each pass is its own profiler scope), along with the edge debug view.</div>
+</section>
+
+<section id="phase-13">
+  <h2><span class="tag">13</span>Tinted glass shadows</h2>
+  <p><b>Goal:</b> glass casts a shadow the way glass does: lighter than an opaque mesh's, colored by the glass, darker where it is frosted or thick. Asked for by the user on 2026-10-31, placed after Phase 12.</p>
+  <h3>Today</h3>
+  <p>A glass material's <i>Cast Shadows</i> is a checkbox. Off (the default), the light passes straight through. On, the glass is drawn into the shadow maps like an opaque mesh, so its shadow is fully dark. The sample's <i>Orange_Glass</i> and <i>Walls_Glass</i> have it on now. The shadow maps hold only depth, so they can't say "this much light, of this color, gets through".</p>
+
+  <h3>13.1 Light through glass</h3>
+  <ul>
+    <li><b>A transmittance map beside each shadow map</b> (each sun cascade, each spot light's map, each point light's cube faces): RGBA8, white where nothing is in the way. After the opaque depth, the glass meshes are drawn into it without writing depth, tested against the opaque depth, with multiplying blending: two panes in a row dim the light twice. The nearest glass depth goes into the alpha (or a small depth image of its own), so a surface in front of the glass isn't tinted.</li>
+    <li><b>What a pane lets through:</b> its tint (the albedo color or map), stronger with Thickness, less the light it reflects (Fresnel at its index of refraction). Roughness (frost) dims it a little and softens the shadow's edge. A cutout's holes stay holes.</li>
+    <li><b>Lighting:</b> where a surface is lit (not behind opaque depth) but behind glass, the light's color is multiplied by the transmittance. This happens in the shared shadow lookup (<code>PBRCommon.glslh</code>), so the scene, the water's reflection, the texture views (7.5) and the probes' surface shading all agree. The ray tracing's shadow rays treat glass the same way, through the material buffer.</li>
+    <li><b>Cast Shadows becomes a choice:</b> None, Tinted (the default for new glass) or Full (as today). Saved as 0, 2 and 1, so materials saved before keep what they had. It is a variant property like the other glass values.</li>
+    <li><b>Not in 13:</b> caustics (the bright, focused light behind a curved glass body) and colored light through glass for the indirect lighting beyond what the probes see.</li>
+  </ul>
+  <div class="box note"><b>Debug view: Shadow Transmittance</b>
+  The sun's transmittance map for the cascade under the cursor, and the color each lit surface gets through glass.</div>
+  <div class="box ok"><b>Check</b>
+  Erika's scene: the orange glass cube's shadow is orange and lighter than an opaque cube's next to it; the glass walkway's shadow is light, with its tint; Erika in front of a pane isn't tinted, but behind it she is; a point or spot light behind glass tints the room. The cost of the extra maps is measured in the F3 overlay (Sun Shadows and Point Light Shadows before and after).</div>
 </section>
 
 <section id="phase-8">
@@ -1283,6 +1341,8 @@ Build:
     <tr><td>5</td><td>Audio sources, listener, buses, music</td><td>1, 4</td><td>3D sound, music, mixer</td></tr>
     <tr><td>6</td><td>Prefabs, spawning, scene loading, game camera, animator, culling</td><td>3, 4</td><td>500 spawned pickups, crossfades, level change</td></tr>
     <tr><td>7</td><td>Game UI: canvas, text, images, buttons, menus; cameras that draw into a texture</td><td>2, 4, 6</td><td><b>Milestone 2: third-person collector</b></td></tr>
+    <tr><td>12</td><td>Antialiasing: SMAA (FXAA fallback), then TAA with motion vectors</td><td>7</td><td>Smooth edges, no shimmer or ghosts in Erika's scene</td></tr>
+    <tr><td>13</td><td>Tinted glass shadows: transmittance maps beside the shadow maps</td><td>12</td><td>Orange, lighter shadow of the glass cube in Erika's scene</td></tr>
     <tr><td>8</td><td>Asset registry, cooking, pack file</td><td>1</td><td>Player runs from the pack only</td></tr>
     <tr><td>9</td><td>Build Game, player templates, private .NET, quality tiers, crash dumps</td><td>4, 8</td><td><b>Milestone 3: shipped on a clean machine</b></td></tr>
     <tr><td>11</td><td>Replace a model's file, add and remove meshes</td><td>8 (shared models)</td><td>The Player's cube becomes a sphere, keeping its components</td></tr>

@@ -284,6 +284,7 @@ namespace EnvMapVulkanSceneSerializer
 			{
 				out << YAML::Key << "Target" << YAML::Value << ProjectPaths::ToStored(camera->Target);
 				out << YAML::Key << "DrawEvery" << YAML::Value << camera->DrawEvery;
+				out << YAML::Key << "Enabled" << YAML::Value << camera->Enabled;
 			}
 			out << YAML::EndMap;
 		}
@@ -585,6 +586,7 @@ namespace EnvMapVulkanSceneSerializer
 			camera.Target = target.empty() ? std::string() : ProjectPaths::Resolve(target);
 			Read(cameraNode, "DrawEvery", camera.DrawEvery);
 			camera.DrawEvery = std::max(camera.DrawEvery, 1u);
+			Read(cameraNode, "Enabled", camera.Enabled); // scenes saved before 7.5.4: enabled
 		}
 		if (YAML::Node testNode = node["InputTest"])
 		{

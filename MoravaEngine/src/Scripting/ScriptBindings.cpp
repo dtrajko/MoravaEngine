@@ -829,6 +829,8 @@ static int32_t CameraGetSettings(uint64_t entity, ScriptCameraSettings* out)
 	out->FieldOfView = camera->FieldOfView;
 	out->NearClip = camera->NearClip;
 	out->FarClip = camera->FarClip;
+	out->Enabled = camera->Enabled ? 1 : 0;
+	out->DrawEvery = camera->DrawEvery;
 	return 1;
 }
 
@@ -849,6 +851,28 @@ static int32_t CameraSetSettings(uint64_t entity, const ScriptCameraSettings* va
 	camera->FieldOfView = glm::clamp(value->FieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView);
 	camera->NearClip = std::max(value->NearClip, CameraComponent::MinNearClip);
 	camera->FarClip = std::max(value->FarClip, camera->NearClip * 2.0f);
+	camera->Enabled = value->Enabled != 0;
+	camera->DrawEvery = std::clamp(value->DrawEvery, 1u, 120u); // as the Inspector allows
+	return 1;
+}
+
+static int32_t CameraGetTarget(uint64_t entity, char16_t* buffer, int capacity)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	const CameraComponent* camera = scene ? scene->TryGet<CameraComponent>(entity) : nullptr;
+	return camera ? CopyString(camera->Target.empty() ? std::string() : ProjectPaths::ToStored(camera->Target), buffer, capacity) : -2;
+}
+
+static int32_t CameraSetTarget(uint64_t entity, const char16_t* target, int length)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	CameraComponent* camera = scene ? scene->TryGet<CameraComponent>(entity) : nullptr;
+	if (!camera)
+	{
+		return 0;
+	}
+	const std::string path = ToUtf8(target, length);
+	camera->Target = path.empty() ? std::string() : ProjectPaths::Resolve(path);
 	return 1;
 }
 
@@ -1190,6 +1214,8 @@ namespace ScriptBindings
 		api.UI_Select = UISelect;
 		api.UI_IsPointerOver = UIIsPointerOver;
 		api.Time_SetTimeScale = TimeSetTimeScale;
+		api.Camera_GetTarget = CameraGetTarget;
+		api.Camera_SetTarget = CameraSetTarget;
 	}
 
 	void SetContext(ScriptContext* context)

@@ -95,7 +95,8 @@ public:
 
 	// The number of views drawn this frame
 	uint32_t GetViewCount() const { return m_ActiveViews; }
-	// The cameras that draw into a render texture (drawn this frame or waiting for their next Draw Every frame), by entity
+	// The cameras that draw into a render texture (drawn this frame or waiting for their next Draw Every frame; not the
+	// disabled ones), by entity
 	std::vector<EnvMapVulkanEntityID> GetCameras() const;
 	// A short name of a texture camera, for the profiler and the debug overlay: "Camera #" and the last 6 digits of its
 	// entity ID as the scene file writes it (unique enough in a scene, found by searching the file)
@@ -107,6 +108,7 @@ private:
 		std::string TargetFile;                                  // the camera's Target this view was made for
 		std::shared_ptr<EnvMapVulkanRenderTexture> RenderTexture; // nullptr: it can't be loaded (not tried again for this file)
 		bool Active = false;                                     // drawn this frame
+		bool Enabled = true;                                     // its camera's (CameraComponent::Enabled): kept while off
 		uint32_t Width = 0, Height = 0;                          // of its framebuffers
 		// Draw Every: the frames it waits before it draws again, whether it has drawn yet, and its place among the views
 		// made (which frame of the N it draws in)
