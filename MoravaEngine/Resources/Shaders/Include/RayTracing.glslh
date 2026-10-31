@@ -215,7 +215,12 @@ vec4 SampleRayTexture(uint index, vec2 texCoord, float coverage)
 RayMaterial GetRayMaterial(RaySurface surface, float footprint)
 {
 	GPUMaterial entry = u_RayTracingMaterials[surface.MaterialIndex];
-	vec2 texCoord = surface.TexCoord * entry.Tiling;
+	vec2 texCoord = surface.TexCoord;
+	if ((entry.Flags & GPUMaterialFlagFlipHorizontally) != 0u)
+	{
+		texCoord.x = 1.0 - texCoord.x; // as MaterialTexCoord (Include/MeshMaterial.glslh)
+	}
+	texCoord *= entry.Tiling;
 	float coverage = footprint * surface.TexCoordDensity * entry.Tiling;
 	bool packed = (entry.Flags & GPUMaterialFlagMetalRoughPacked) != 0u;
 
@@ -231,6 +236,10 @@ RayMaterial GetRayMaterial(RaySurface surface, float footprint)
 	if (entry.NormalMapIndex != GPUMaterialNoMap)
 	{
 		vec3 mapNormal = normalize(2.0 * SampleRayTexture(entry.NormalMapIndex, texCoord, coverage).rgb - 1.0);
+		if ((entry.Flags & GPUMaterialFlagFlipHorizontally) != 0u)
+		{
+			mapNormal.x = -mapNormal.x; // as MaterialNormal
+		}
 		material.Normal = normalize(surface.WorldNormals * mapNormal);
 	}
 	material.Roughness = entry.Roughness;

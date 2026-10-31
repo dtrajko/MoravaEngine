@@ -158,6 +158,7 @@ static void CopyValuesAndMaps(H2M::RefH2M<EnvMapVulkanMaterial> material, H2M::R
 {
 	material->SetSurface(source->GetSurface());
 	material->GetCutoff() = source->GetCutoff();
+	material->GetFlipHorizontally() = source->GetFlipHorizontally();
 	for (uint32_t g = 0; g < EnvMapVulkanMaterial::GlassValueCount; g++)
 	{
 		material->GetGlassValue((EnvMapVulkanMaterial::GlassValue)g) = source->GetGlassValue((EnvMapVulkanMaterial::GlassValue)g);
@@ -483,6 +484,10 @@ const char* EnvMapVulkanMaterial::GetPropertyKey(Property property)
 	{
 		return "Cutoff";
 	}
+	if (property == FlipHorizontallyProperty)
+	{
+		return "FlipHorizontally";
+	}
 	return IsGlassProperty(property) ? s_GlassPropertyKeys[property - FirstGlassProperty] : "";
 }
 
@@ -512,6 +517,7 @@ EnvMapVulkanMaterial::State EnvMapVulkanMaterial::CaptureState()
 	state.SurfaceType = m_Surface;
 	state.Glass = m_GlassValues;
 	state.Cutoff = m_Cutoff;
+	state.FlipHorizontally = m_FlipHorizontally;
 	return state;
 }
 
@@ -532,6 +538,10 @@ bool EnvMapVulkanMaterial::PropertyEquals(const State& a, const State& b, Proper
 	if (property == CutoffProperty)
 	{
 		return a.Cutoff == b.Cutoff;
+	}
+	if (property == FlipHorizontallyProperty)
+	{
+		return a.FlipHorizontally == b.FlipHorizontally;
 	}
 	if (IsGlassProperty(property))
 	{
@@ -558,6 +568,10 @@ void EnvMapVulkanMaterial::CopyProperty(State& to, const State& from, Property p
 	else if (property == CutoffProperty)
 	{
 		to.Cutoff = from.Cutoff;
+	}
+	else if (property == FlipHorizontallyProperty)
+	{
+		to.FlipHorizontally = from.FlipHorizontally;
 	}
 	else if (IsGlassProperty(property))
 	{
@@ -588,6 +602,10 @@ void EnvMapVulkanMaterial::ApplyProperty(const State& state, Property property)
 	else if (property == CutoffProperty)
 	{
 		m_Cutoff = state.Cutoff;
+	}
+	else if (property == FlipHorizontallyProperty)
+	{
+		m_FlipHorizontally = state.FlipHorizontally;
 	}
 	else if (IsGlassProperty(property))
 	{
@@ -647,6 +665,10 @@ uint64_t EnvMapVulkanMaterial::ComputeContentHash() const
 		else if (property == CutoffProperty)
 		{
 			hash = HashBytes(hash, &state.Cutoff, sizeof(state.Cutoff));
+		}
+		else if (property == FlipHorizontallyProperty)
+		{
+			hash = HashBytes(hash, &state.FlipHorizontally, sizeof(state.FlipHorizontally));
 		}
 		else if (IsGlassProperty(property))
 		{
@@ -818,8 +840,9 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 	{
 		out << YAML::Key << value.Key << YAML::Value << material->Get<float>(value.Uniform);
 	}
-	out << YAML::Key << "Surface" << YAML::Value << (material->IsGlass() ? "Glass" : material->IsCutout() ? "Cutout" : "Opaque");
+	out << YAML::Key << "Surface" << YAML::Value << (material->IsGlass() ? "Glass" : material->IsCutout() ? "Cutout" : material->IsDisplay() ? "Display" : "Opaque");
 	out << YAML::Key << "Cutoff" << YAML::Value << material->m_Cutoff;
+	out << YAML::Key << "FlipHorizontally" << YAML::Value << material->m_FlipHorizontally;
 	out << YAML::Key << "Glass" << YAML::Value << YAML::BeginMap;
 	for (uint32_t g = 0; g < EnvMapVulkanMaterial::GlassValueCount; g++)
 	{
@@ -933,11 +956,13 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 	}
 
 	// Files written before glass existed have neither: an opaque material with the default glass values (before cutout:
-	// no Cutoff, the default)
+	// no Cutoff, the default; before 7.5.3: no FlipHorizontally, off)
 	const std::string surface = node["Surface"].as<std::string>("Opaque");
 	material->m_Surface = surface == "Glass" ? EnvMapVulkanMaterial::Surface::Glass :
-		surface == "Cutout" ? EnvMapVulkanMaterial::Surface::Cutout : EnvMapVulkanMaterial::Surface::Opaque;
+		surface == "Cutout" ? EnvMapVulkanMaterial::Surface::Cutout :
+		surface == "Display" ? EnvMapVulkanMaterial::Surface::Display : EnvMapVulkanMaterial::Surface::Opaque;
 	material->m_Cutoff = node["Cutoff"].as<float>(0.5f);
+	material->m_FlipHorizontally = node["FlipHorizontally"].as<bool>(false);
 	YAML::Node glass = node["Glass"];
 	for (uint32_t g = 0; g < EnvMapVulkanMaterial::GlassValueCount; g++)
 	{

@@ -34,8 +34,10 @@ public:
 	void Destroy();
 	bool IsValid() const { return (bool)m_Pipeline; }
 
-	// Inside the target's render pass, with its viewport: draws the list's quads for a view of width x height pixels
-	void Record(VkCommandBuffer commandBuffer, const UIDrawList& list, uint32_t width, uint32_t height);
+	// Inside the target's render pass, with its viewport: draws the list's quads for a view of width x height pixels.
+	// exposure, huePreservation: the scene's, for images of HDR textures (an HDR render texture)
+	void Record(VkCommandBuffer commandBuffer, const UIDrawList& list, uint32_t width, uint32_t height, float exposure = 1.0f,
+		float huePreservation = 0.5f);
 
 	uint32_t GetDescriptorSetCount() const { return (uint32_t)m_TextureSets.size(); }
 

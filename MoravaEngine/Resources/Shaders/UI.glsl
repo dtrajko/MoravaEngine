@@ -2,14 +2,16 @@
 // viewport composite after tonemapping, so their colors reach the screen as given. Images: the texture times the color.
 // Text: the texture is a multi-channel signed distance field font atlas (UI/UIFont); the median of its three channels is
 // the distance to the glyph's outline, 0.5 on it, and DistancePixels turns the distance into screen pixels for an edge
-// about one pixel soft at any size.
+// about one pixel soft at any size. An image of an sRGB texture (a Color render texture, 7.5) is decoded to linear
+// light when sampled: it is encoded again, so its texels reach the screen as they are; an image of a float texture (an
+// HDR render texture) is light, exposed and tonemapped as the scene is.
 #type vertex
 #version 450 core
 
 layout(location = 0) in vec2 a_Position;     // view pixels, from the top-left corner
 layout(location = 1) in vec2 a_TexCoord;
 layout(location = 2) in vec4 a_Color;
-layout(location = 3) in float a_Mode;        // 0: image, 1: text
+layout(location = 3) in float a_Mode;        // 0: image, 1: text, 2: image of an sRGB texture, 3: image of an HDR texture
 layout(location = 4) in float a_DistancePixels;
 
 layout (push_constant) uniform View
@@ -55,6 +57,22 @@ layout (location = 0) in OutputBlock Input;
 
 layout (binding = 0) uniform sampler2D u_Texture; // an image, a font atlas or a white texel
 
+// The scene's exposure and tonemapping, for HDR images (after the vertex stage's View)
+layout (push_constant) uniform Tone
+{
+	layout (offset = 16) float Exposure;
+	float HuePreservation;
+} u_Tone;
+
+#include "Include/Tonemap.glslh"
+
+// Linear light back to sRGB's encoding (the exact curve the GPU decodes with)
+vec3 EncodeSRGB(vec3 linear)
+{
+	linear = clamp(linear, 0.0, 1.0);
+	return mix(linear * 12.92, 1.055 * pow(linear, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), linear));
+}
+
 float Median(vec3 v)
 {
 	return max(min(v.r, v.g), min(max(v.r, v.g), v.b));
@@ -62,7 +80,7 @@ float Median(vec3 v)
 
 void main()
 {
-	if (Input.Mode > 0.5)
+	if (Input.Mode > 0.5 && Input.Mode < 1.5)
 	{
 		// The atlas has mips (all textures do), but a distance field must be read at full resolution
 		vec3 distances = textureLod(u_Texture, Input.TexCoord, 0.0).rgb;
@@ -76,6 +94,15 @@ void main()
 	}
 	else
 	{
-		o_Color = Input.Color * texture(u_Texture, Input.TexCoord);
+		vec4 texel = texture(u_Texture, Input.TexCoord);
+		if (Input.Mode > 2.5)
+		{
+			texel.rgb = pow(Tonemap(texel.rgb * u_Tone.Exposure, u_Tone.HuePreservation), vec3(1.0 / 2.2)); // as ViewportComposite.glsl
+		}
+		else if (Input.Mode > 1.5)
+		{
+			texel.rgb = EncodeSRGB(texel.rgb);
+		}
+		o_Color = Input.Color * texel;
 	}
 }

@@ -17,7 +17,8 @@ class UIFont;
 
 // One corner of a UI quad, in the view's pixels (top-left origin, y down). Mode 0: the texture's color times Color (no
 // texture: a white texel); 1: text, the texture a font atlas whose median distance gives the coverage, DistancePixels
-// the atlas's distance range in screen pixels at this glyph's size (Resources/Shaders/UI.glsl)
+// the atlas's distance range in screen pixels at this glyph's size; 2: as 0, the texture sRGB (encoded again: its texels
+// as they are); 3: as 0, the texture HDR light (exposed and tonemapped as the scene) (Resources/Shaders/UI.glsl)
 struct UIVertex
 {
 	glm::vec2 Position;

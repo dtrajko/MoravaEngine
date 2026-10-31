@@ -11,7 +11,8 @@ namespace Sample
     /// a character, it shows the character's front (a render texture's camera: a screen showing the player's face). The
     /// target's point is Height above its origin, the one the other camera looks at (CameraFollow's BehindHeight); the
     /// mirror point is the point of the view axis nearest it, so the axes stay one even when the other camera looks a
-    /// little past the target.
+    /// little past the target. A wall behind the target, where this camera would stand, brings it closer along the axis
+    /// (WallDistance short of the wall), so it never looks out from inside a wall.
     /// </summary>
     public class OppositeCamera : Entity
     {
@@ -23,6 +24,17 @@ namespace Sample
 
         /// <summary>Meters above the target's origin the other camera looks at (a character: its feet; as CameraFollow's BehindHeight).</summary>
         public float Height = 1.2f;
+
+        /// <summary>Meters it keeps from walls: a wall between the target and where it would stand brings it closer.</summary>
+        public float WallDistance = 0.25f;
+
+        /// <summary>The nearest it comes to the mirror point, however close a wall is.</summary>
+        public float MinDistance = 0.3f;
+
+        /// <summary>How fast it moves back out after a wall pushed it closer: higher is faster (as CameraFollow's).</summary>
+        public float ReturnSmoothing = 4.0f;
+
+        float distance = -1.0f; // from the mirror point, as last placed (-1: not yet)
 
         // After the followed camera moved: its script was made first, so it is called first in each frame
         protected override void OnUpdate(float dt)
@@ -36,11 +48,23 @@ namespace Sample
             Vector3 center = eye + forward * Vector3.Dot(pivot - eye, forward); // on the view axis, nearest the target
             Vector3 look = -forward;
 
+            // As far beyond the mirror point as the other camera is before it, unless a wall is nearer: then a sphere's
+            // radius short of it, on the same axis (as CameraFollow keeps out of walls). Closer at once, back out smoothly
+            float mirrored = Vector3.Distance(eye, center);
+            float free = mirrored;
+            if (Physics.SphereCast(center, WallDistance, forward, mirrored, out RaycastHit hit, PhysicsLayers.Solid, Target))
+                free = MathF.Min(mirrored, MathF.Max(MinDistance, hit.Distance - 0.1f));
+            if (distance < 0 || free <= distance)
+                distance = free;
+            else
+                distance += (free - distance) * (1.0f - MathF.Exp(-ReturnSmoothing * dt));
+
             // As the camera's rotation: X down, Y to the left (0 looks along -Z)
             float yaw = MathF.Atan2(-look.X, -look.Z) * 180.0f / MathF.PI;
             float pitch = MathF.Asin(Math.Clamp(-look.Y, -1.0f, 1.0f)) * 180.0f / MathF.PI;
-            Translation = 2.0f * center - eye;
-            EulerAngles = new Vector3(pitch, yaw, 0.0f);        }
+            Translation = center + forward * distance;
+            EulerAngles = new Vector3(pitch, yaw, 0.0f);
+        }
 
         // Where a camera looks, from its rotation as the renderer reads it: X down, Y to the left. Not Forward: a
         // camera's positive X looks down, while its -Z axis turns up

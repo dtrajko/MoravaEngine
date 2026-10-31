@@ -138,6 +138,16 @@ namespace
 			}
 		}
 
+		// What each camera costs, with render texture cameras (7.5): in ms and in percent of the GPU frame
+		if (frame.GpuValid && !frame.Cameras.empty() && frame.GpuMs > 0.0)
+		{
+			AddHeader(rows, "Cameras");
+			for (const DebugOverlayFrame::Camera& camera : frame.Cameras)
+			{
+				AddRow(rows, camera.Name, Format("%.2f ms  %3.0f %%", camera.GpuMs, 100.0 * camera.GpuMs / frame.GpuMs));
+			}
+		}
+
 		if (game)
 		{
 			AddHeader(rows, "Game", game->SceneName);

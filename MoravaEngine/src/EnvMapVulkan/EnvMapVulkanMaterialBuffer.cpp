@@ -152,6 +152,9 @@ EnvMapVulkanMaterialBuffer::GPUMaterial EnvMapVulkanMaterialBuffer::Pack(const H
 		entry.Flags |= FlagCutout;
 		entry.Cutoff = material->GetCutoff();
 	}
+	// Read by the mesh shaders through MaterialIndex (Include/MeshMaterial.glslh, Include/HazelPBR_Fragment.glslh) and by rays
+	entry.Flags |= material->IsDisplay() ? FlagDisplay : 0;
+	entry.Flags |= material->GetFlipHorizontally() && !material->IsGlass() ? FlagFlipHorizontally : 0;
 
 	// The maps themselves, for a ray hit (as the mesh shaders read them: Include/MeshMaterial.glslh)
 	const float tiling = material->Get<float>("u_MaterialUniforms.TilingFactor");

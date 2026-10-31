@@ -5,9 +5,7 @@
 #define MESH_MATERIAL_GLSLH
 
 #include "MaterialMaps.glslh"
-#ifdef MATERIAL_CUTOUT
-#include "FrameSet.glslh" // u_Materials: the cutoff
-#endif
+#include "FrameSet.glslh" // u_Materials: the flags (flip, display), the cutoff
 
 layout (push_constant) uniform Material
 {
@@ -31,10 +29,25 @@ layout (push_constant) uniform Material
 	float MaterialIndex;      // the material's entry in u_Materials (Include/FrameSet.glslh), set by EnvMapVulkanMaterialBuffer
 } u_MaterialUniforms;
 
-// The texture coordinate with the material's tiling
+// The material's flags (GPUMaterialFlag..., Include/GPUMaterial.glslh): from the material buffer
+uint MaterialFlags()
+{
+	return u_Materials[uint(u_MaterialUniforms.MaterialIndex + 0.5)].Flags;
+}
+
+bool MaterialFlipsHorizontally()
+{
+	return (MaterialFlags() & GPUMaterialFlagFlipHorizontally) != 0u;
+}
+
+// The texture coordinate with the material's tiling (a mirror's: flipped left-right first)
 vec2 MaterialTexCoord(vec2 texCoord)
 {
 	float tiling = u_MaterialUniforms.TilingFactor > 0.0 ? u_MaterialUniforms.TilingFactor : 1.0;
+	if (MaterialFlipsHorizontally())
+	{
+		texCoord.x = 1.0 - texCoord.x;
+	}
 	return texCoord * tiling;
 }
 
@@ -63,6 +76,10 @@ vec3 MaterialNormal(vec2 texCoord, vec3 vertexNormal, mat3 worldNormals)
 	if (u_MaterialUniforms.NormalTexToggle > 0.5)
 	{
 		normal = normalize(2.0 * texture(u_NormalTexture, texCoord).rgb - 1.0);
+		if (MaterialFlipsHorizontally())
+		{
+			normal.x = -normal.x; // the map is read mirrored: its slopes along u turn the other way
+		}
 		normal = normalize(worldNormals * normal);
 	}
 	return normal;
@@ -73,7 +90,7 @@ vec3 MaterialNormal(vec2 texCoord, vec3 vertexNormal, mat3 worldNormals)
 // surface where the albedo map's alpha is below the material's cutoff. Without the map nothing is cut away.
 void MaterialCutAway(vec2 texCoord)
 {
-	if (u_MaterialUniforms.AlbedoTexToggle > 0.5 && texture(u_AlbedoTexture, texCoord).a < u_Materials[uint(u_MaterialUniforms.MaterialIndex)].Cutoff)
+	if (u_MaterialUniforms.AlbedoTexToggle > 0.5 && texture(u_AlbedoTexture, texCoord).a < u_Materials[uint(u_MaterialUniforms.MaterialIndex + 0.5)].Cutoff)
 	{
 		discard;
 	}

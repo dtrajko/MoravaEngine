@@ -595,11 +595,11 @@ void OnImGuiRenderMaterialEditor()
 
 	ImGui::Separator();
 
-	// The surface: opaque (PBR), glass or cutout (opaque with holes), and their values. The combo's items are in the
-	// order of EnvMapVulkanMaterial::Surface
+	// The surface: opaque (PBR), glass, cutout (opaque with holes) or display (a screen), and their values. The combo's
+	// items are in the order of EnvMapVulkanMaterial::Surface
 	bool inherited = beginProperty(EnvMapVulkanMaterial::SurfaceProperty);
 	int surface = (int)material->GetSurface();
-	if (ImGui::Combo("Surface", &surface, "Opaque\0Glass\0Cutout\0"))
+	if (ImGui::Combo("Surface", &surface, "Opaque\0Glass\0Cutout\0Display\0"))
 	{
 		material->SetSurface((EnvMapVulkanMaterial::Surface)surface);
 	}
@@ -608,9 +608,36 @@ void OnImGuiRenderMaterialEditor()
 		ImGui::SetTooltip("Opaque: light is reflected or scattered back, nothing passes through.\n"
 			"Glass: light passes through it, bent by its index of refraction. The albedo color (or map) tints it,\n"
 			"the roughness frosts it, the normal map ripples it. Metalness and AO don't apply.\n"
-			"Cutout: opaque, with holes where the albedo map's alpha is below the cutoff (leaves, eyelashes, a fence).");
+			"Cutout: opaque, with holes where the albedo map's alpha is below the cutoff (leaves, eyelashes, a fence).\n"
+			"Display: a screen. Not lit: shows its emissive map's colors as they are (a render texture: as its camera\n"
+			"saw them), times the emissive intensity (1: as the picture is). No reflections; albedo, metalness and\n"
+			"roughness don't apply.");
 	}
 	endProperty(EnvMapVulkanMaterial::SurfaceProperty, inherited);
+	if (material->IsDisplay())
+	{
+		ImGui::Indent();
+		if (!material->HasMap(EnvMapVulkanMaterial::Emissive) || material->Get<float>("u_MaterialUniforms.EmissiveTexToggle") < 0.5f)
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "No emissive map: the screen is black");
+		}
+		else
+		{
+			ImGui::TextDisabled("The emissive map is the picture, Emissive Intensity its brightness");
+		}
+		ImGui::Unindent();
+	}
+	if (!material->IsGlass())
+	{
+		inherited = beginProperty(EnvMapVulkanMaterial::FlipHorizontallyProperty);
+		ImGui::Checkbox("Flip Horizontally", &material->GetFlipHorizontally());
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Every map is read mirrored left-right: a mirror showing a render texture, whose camera is\n"
+				"an ordinary camera looking back (a rear-view mirror: a camera at the back of the car).");
+		}
+		endProperty(EnvMapVulkanMaterial::FlipHorizontallyProperty, inherited);
+	}
 	if (material->IsCutout())
 	{
 		ImGui::Indent();

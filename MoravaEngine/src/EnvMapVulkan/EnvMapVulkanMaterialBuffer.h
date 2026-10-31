@@ -56,6 +56,8 @@ public:
 	static constexpr uint32_t FlagMetalRoughPacked = 1u << 1; // glTF: roughness in G, metalness in B of their map
 	static constexpr uint32_t FlagGlassSolid = 1u << 2;       // glass: a solid body; otherwise thin (a pane, a shell)
 	static constexpr uint32_t FlagCutout = 1u << 3;           // opaque with holes: see Cutoff
+	static constexpr uint32_t FlagDisplay = 1u << 4;          // a screen: its emissive map's colors as they are, not lit
+	static constexpr uint32_t FlagFlipHorizontally = 1u << 5; // every map read mirrored left-right (u -> 1 - u)
 
 	void Create();
 	void Destroy();

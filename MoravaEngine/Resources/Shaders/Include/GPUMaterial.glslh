@@ -29,5 +29,7 @@ const uint GPUMaterialFlagGlass = 1u;
 const uint GPUMaterialFlagMetalRoughPacked = 2u; // glTF: roughness in G, metalness in B of their map; otherwise both in R
 const uint GPUMaterialFlagGlassSolid = 4u;       // glass: a solid body (light bends entering and leaving); otherwise thin
 const uint GPUMaterialFlagCutout = 8u;           // opaque with holes where the albedo map's alpha is below Cutoff
+const uint GPUMaterialFlagDisplay = 16u;         // a screen: its emissive map's colors as they are, not lit (HazelPBR_Fragment.glslh)
+const uint GPUMaterialFlagFlipHorizontally = 32u; // every map read mirrored left-right (u -> 1 - u, before the tiling)
 
 #endif

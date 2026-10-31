@@ -30,8 +30,10 @@ struct EnvMapVulkanSceneDataGPU
 	glm::vec4 WaterVolumeScatter = glm::vec4(0.0f);    // rgb
 	glm::vec4 CausticsRegion = glm::vec4(0.0f);        // the caustics map's corner (x, z), 1 / its size, 1 / fade width (map units)
 	glm::vec4 CausticsParams = glm::vec4(0.0f);        // x = strength (0: no caustics this frame), y = focus depth
+	glm::vec4 DisplayTone = glm::vec4(1.0f, 0.5f, 0.0f, 0.0f); // x = the exposure the view's composite applies, y = its hue
+	                                                   // preservation: Display surfaces undo them (Include/HazelPBR_Fragment.glslh)
 };
-static_assert(sizeof(EnvMapVulkanSceneDataGPU) == 112, "EnvMapVulkanSceneDataGPU must match SceneData in Include/FrameSet.glslh");
+static_assert(sizeof(EnvMapVulkanSceneDataGPU) == 128, "EnvMapVulkanSceneDataGPU must match SceneData in Include/FrameSet.glslh");
 
 /**
  * The water plane of SceneEnvMapVulkan: one flat, axis-aligned rectangle at a height (Resources/Shaders/Water.glsl).
@@ -128,9 +130,11 @@ public:
 
 	// Moves the waves and writes the settings, the mirrored camera and the caustics for this frame. view, projection and
 	// cameraPosition: the camera's; sunDirection: toward the sun (pointing down when the sun is off); frameDescriptorSet:
-	// the main per-frame set (set 0), whose environment, light, shadow and caustics bindings the reflection's set 0 shares.
+	// the main per-frame set (set 0), whose environment, light, shadow and caustics bindings the reflection's set 0 shares;
+	// displayTone: the main view's exposure and hue preservation (EnvMapVulkanSceneDataGPU::DisplayTone)
 	void Update(const EnvMapVulkanWaterSettings& settings, float deltaTime, const glm::mat4& view, const glm::mat4& projection,
-		const glm::vec3& cameraPosition, float envMapRotation, const glm::vec3& sunDirection, VkDescriptorSet frameDescriptorSet);
+		const glm::vec3& cameraPosition, float envMapRotation, const glm::vec3& sunDirection, VkDescriptorSet frameDescriptorSet,
+		const glm::vec4& displayTone);
 
 	// This frame draws the planar reflection (it is enabled; from above the water or from under it)
 	bool IsReflectionActive() const { return m_ReflectionActive; }

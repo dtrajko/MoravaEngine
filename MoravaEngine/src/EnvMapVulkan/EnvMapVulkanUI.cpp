@@ -142,7 +142,8 @@ VkDescriptorSet EnvMapVulkanUI::GetTextureSet(const H2M::RefH2M<H2M::Texture2D_H
 	return it->second.Set;
 }
 
-void EnvMapVulkanUI::Record(VkCommandBuffer commandBuffer, const UIDrawList& list, uint32_t width, uint32_t height)
+void EnvMapVulkanUI::Record(VkCommandBuffer commandBuffer, const UIDrawList& list, uint32_t width, uint32_t height, float exposure,
+	float huePreservation)
 {
 	m_Frame++;
 	FreeRetired(false);
@@ -179,6 +180,8 @@ void EnvMapVulkanUI::Record(VkCommandBuffer commandBuffer, const UIDrawList& lis
 	vkCmdBindIndexBuffer(commandBuffer, m_Indices.Handle, 0, VK_INDEX_TYPE_UINT32);
 	const glm::vec2 viewSize((float)width, (float)height);
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::vec2), &viewSize);
+	const float tone[2] = { exposure, huePreservation }; // UI.glsl's Tone block, after the view's size
+	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 16, sizeof(tone), tone);
 
 	for (const UIDrawBatch& batch : list.Batches)
 	{

@@ -1,5 +1,7 @@
 // Tonemapping of linear HDR light to the display's 0..1 range: the viewport composite (ViewportComposite.glsl) and the
-// render textures' (RenderTextureComposite.glsl)
+// render textures' (RenderTextureComposite.glsl); and back, for surfaces that show display colors (Display surfaces)
+#ifndef TONEMAP_GLSLH
+#define TONEMAP_GLSLH
 
 // ACES filmic tonemapping (Narkowicz fit, with its 0.6 pre-exposure), per channel
 vec3 ACES(vec3 color)
@@ -20,3 +22,28 @@ vec3 Tonemap(vec3 color, float huePreservation)
 	vec3 huePreserving = peak > 0.0 ? color * (ACES(vec3(peak)).r / peak) : vec3(0.0);
 	return mix(perChannel, huePreserving, clamp(huePreservation, 0.0, 1.0));
 }
+
+// The light ACES turns into y (0..1, per channel): the positive root of y (2.43 t^2 + 0.59 t + 0.14) = 2.51 t^2 + 0.03 t,
+// t the pre-exposed light. y is kept below 0.98: ACES only reaches 1 for unbounded light
+vec3 InverseACES(vec3 y)
+{
+	y = clamp(y, vec3(0.0), vec3(0.98));
+	vec3 a = 2.43 * y - 2.51;
+	vec3 b = 0.59 * y - 0.03;
+	vec3 c = 0.14 * y;
+	vec3 t = (-b - sqrt(max(b * b - 4.0 * a * c, vec3(0.0)))) / (2.0 * a);
+	return max(t, vec3(0.0)) / 0.6;
+}
+
+// The light Tonemap turns into the color (linear, 0..1). Exact for a hue preservation of 0 or 1; in between, the mix of
+// both inverses (close: the two curves differ little)
+vec3 InverseTonemap(vec3 color, float huePreservation)
+{
+	color = max(color, vec3(0.0));
+	vec3 perChannel = InverseACES(color);
+	float peak = max(color.r, max(color.g, color.b));
+	vec3 huePreserving = peak > 0.0 ? color * (InverseACES(vec3(peak)).r / peak) : vec3(0.0);
+	return mix(perChannel, huePreserving, clamp(huePreservation, 0.0, 1.0));
+}
+
+#endif

@@ -58,7 +58,11 @@ public:
 	//   eyelashes, a fence). The passes that write depth (the G-buffer prepass, the shadow maps, the water's reflection)
 	//   draw it with pipelines that discard those pixels; the scene pass then shades only what is left (depth EQUAL). The
 	//   ray tracing and the probes see it as opaque.
-	enum class Surface : uint32_t { Opaque = 0, Glass = 1, Cutout = 2 };
+	// - Display: a screen (7.5: a monitor showing a render texture). Not lit: it shows its emissive map's colors as they
+	//   are, as the picture's camera saw them (the view's exposure and tonemapping undone for it, so they reach the screen
+	//   unchanged), times the emissive intensity (1: as the picture is). No reflections, no albedo. Opaque in every pass;
+	//   the ray tracing and the probes see its emissive map as light.
+	enum class Surface : uint32_t { Opaque = 0, Glass = 1, Cutout = 2, Display = 3 };
 	// The glass values (used only by glass)
 	enum GlassValue : uint32_t
 	{
@@ -73,9 +77,14 @@ public:
 	void SetSurface(Surface surface) { m_Surface = surface; }
 	bool IsGlass() const { return m_Surface == Surface::Glass; }
 	bool IsCutout() const { return m_Surface == Surface::Cutout; }
+	bool IsDisplay() const { return m_Surface == Surface::Display; }
 	// Cutout: the alpha below which the surface is cut away (0 to 1); edited in place by the Material Editor
 	float& GetCutoff() { return m_Cutoff; }
 	float GetCutoff() const { return m_Cutoff; }
+	// Every map read mirrored left-right (u -> 1 - u, before the tiling): a mirror showing a render texture (7.5), whose
+	// camera is an ordinary camera looking back. Opaque, cutout and display surfaces (not glass). Edited in place
+	bool& GetFlipHorizontally() { return m_FlipHorizontally; }
+	bool GetFlipHorizontally() const { return m_FlipHorizontally; }
 	// Edited in place by the Material Editor, like Get<float>
 	float& GetGlassValue(GlassValue value) { return m_GlassValues[value]; }
 	float GetGlassValue(GlassValue value) const { return m_GlassValues[value]; }
@@ -106,6 +115,7 @@ public:
 		SurfaceProperty = FirstMapProperty + MapCount,
 		FirstGlassProperty, // a glass value's property: FirstGlassProperty + GlassValue
 		CutoffProperty = FirstGlassProperty + GlassValueCount,
+		FlipHorizontallyProperty,
 		PropertyCount
 	};
 	static Property GetMapProperty(uint32_t slot) { return (Property)(FirstMapProperty + slot); }
@@ -134,6 +144,7 @@ private:
 		Surface SurfaceType = Surface::Opaque;
 		std::array<float, GlassValueCount> Glass{};
 		float Cutoff = 0.5f;
+		bool FlipHorizontally = false;
 	};
 	State CaptureState();
 	static bool PropertyEquals(const State& a, const State& b, Property property);
@@ -156,6 +167,7 @@ private:
 	Surface m_Surface = Surface::Opaque;
 	std::array<float, GlassValueCount> m_GlassValues = { 1.5f, 0.2f, 0.0f, 1.0f }; // see GlassValue
 	float m_Cutoff = 0.5f;
+	bool m_FlipHorizontally = false;
 
 	std::string m_SourceFile;
 	uint32_t m_SourceIndex = 0;
