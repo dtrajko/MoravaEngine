@@ -68,6 +68,9 @@ struct ScriptCameraSettings
 	int32_t Primary = 1;
 	float FieldOfView = 45.0f;
 	float NearClip = 0.01f, FarClip = 1000.0f;
+	// A render texture camera's (7.5.4)
+	int32_t Enabled = 1;
+	uint32_t DrawEvery = 1;
 };
 
 // A UIRectComponent as a script reads and writes it (UIRect's properties)
@@ -269,6 +272,10 @@ struct ScriptNativeApi
 	int32_t (*UI_IsPointerOver)();
 	// Time.TimeScale: game time per real time from the next frame on (0: standing still; below 0 counts as 0)
 	void (*Time_SetTimeScale)(float scale);
+	// Camera.Target (7.5.4): the render texture file (relative to the project; empty: the screen), as Entity_GetName (-2: no
+	// camera). Set: 0 when the entity has no CameraComponent; a file that can't be read is logged when the camera draws
+	int32_t (*Camera_GetTarget)(uint64_t entity, char16_t* buffer, int capacity);
+	int32_t (*Camera_SetTarget)(uint64_t entity, const char16_t* target, int length);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

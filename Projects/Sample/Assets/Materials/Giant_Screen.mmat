@@ -6,10 +6,10 @@ Material:
   Metalness: 0
   Roughness: 0.5
   TilingFactor: 1
-  EmissiveIntensity: 5
+  EmissiveIntensity: 1
   MetalRoughPacked: 0
   RadiancePrefilter: 0
-  Surface: Opaque
+  Surface: Display
   Cutoff: 0.5
   Glass:
     IOR: 1.5
