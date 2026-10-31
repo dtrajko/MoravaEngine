@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Erika
 EditorCamera:
-  Translation: [-2.5977786, 5.3296523, 4.852479]
-  Rotation: [-10.699984, -5.4997787, 0]
+  Translation: [3.0197365, 12.963264, 1.0255585]
+  Rotation: [57.800083, 85.19853, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:
@@ -507,7 +507,7 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [-1.3817022, 8.8, 3.254099]
+      Translation: [-1.4, 8.8, 3.2]
       Rotation: [0, -0, 0]
       Scale: [5.7, 0.09999998, 1]
     Model:
@@ -534,6 +534,89 @@ Entities:
         ID: 3117841017886726524
         File: Assets/Materials/Walls_Glass.mmat
         Name: Walls_Glass
+  - ID: 5890360695585042944
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-1.4, 16.4, -1.2]
+      Rotation: [0, -0, 0]
+      Scale: [5.7, 0.09999998, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 14886528138942305716
+    Name: Cube
+    Parent: 5890360695585042944
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3117841017886726524
+        File: Assets/Materials/Walls_Glass.mmat
+        Name: Walls_Glass
+  - ID: 17153236279589153839
+    Name: Elevator
+    Parent: 0
+    Transform:
+      Translation: [-1.4, 1.2, 1]
+      Rotation: [0, -0, 0]
+      Scale: [2, 0.09999998, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+    Script:
+      Class: Sample.ElevatorMovement
+    AudioSource:
+      Clip: Assets/Audio/Elevator_Motor.wav
+      Bus: Effects
+      Volume: 0.6
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: true
+      MinDistance: 2
+      MaxDistance: 30
+  - ID: 377661892002717146
+    Name: Cube
+    Parent: 17153236279589153839
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13043936508063475520
+        File: Assets/Materials/Elevator_Glass.mmat
+        Name: Elevator_Glass
   - ID: 3015530779700741111
     Name: Cube
     Parent: 0
@@ -751,6 +834,37 @@ Entities:
         ID: 2039148728491603379
         File: Assets/Materials/Walls_Blue.mmat
         Name: Walls_Blue
+  - ID: 8193210053048982956
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [5.993131, 15.217359, -1.2296476]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 5843730802638488971
+    Name: Cube
+    Parent: 8193210053048982956
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
   - ID: 12595852348508654723
     Name: Cube
     Parent: 0
@@ -848,7 +962,7 @@ Entities:
     Name: cube.obj
     Parent: 0
     Transform:
-      Translation: [0, 1.5, 0]
+      Translation: [4, 1.5, -3]
       Rotation: [0, -0, 0]
       Scale: [0.5, 0.5, 0.5]
     Model:
@@ -998,6 +1112,7 @@ Entities:
       FarClip: 1000
       Target: Assets/RenderTextures/RenderTexture_01.mrtex
       DrawEvery: 1
+      Enabled: true
     Script:
       Class: Sample.OppositeCamera
       Fields:
@@ -1008,7 +1123,7 @@ Entities:
     Parent: 0
     Transform:
       Translation: [-2.3, 5, 9.8]
-      Rotation: [-179.9999, -89.99995, -179.9999]
+      Rotation: [0, 90, 0]
       Scale: [1, 3.6, 4.8]
     Model:
       File: Models/Primitives/quad.obj
@@ -1047,3 +1162,93 @@ Entities:
         ID: 12652234342414203007
         File: Assets/Materials/Giant_Screen.mmat
         Name: Giant_Screen
+  - ID: 4422747465022449414
+    Name: Security_Monitor
+    Parent: 0
+    Transform:
+      Translation: [-9.9, 3.4, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 0.9, 1.6]
+    Model:
+      File: Models/Primitives/quad.obj
+    Script:
+      Class: Sample.SecurityMonitor
+      Fields:
+        Viewer: {Entity: 4797481855757227527}
+  - ID: 6568875968803105198
+    Name: Plane
+    Parent: 4422747465022449414
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2852902374884244196
+        File: Assets/Materials/Security_Monitor.mmat
+        Name: Security_Monitor
+  - ID: 1889488140086242240
+    Name: Monitor_Frame
+    Parent: 0
+    Transform:
+      Translation: [-9.97, 3.4, 2]
+      Rotation: [0, 0, 0]
+      Scale: [0.05, 1, 1.7]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 857215468359362121
+    Name: Cube
+    Parent: 1889488140086242240
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 442108505777736174
+        File: Assets/Materials/Monitor_Frame.mmat
+        Name: Monitor_Frame
+  - ID: 7417424183443576835
+    Name: Security_Camera_1
+    Parent: 0
+    Tags: [SecurityCamera]
+    Transform:
+      Translation: [9.5, 9, 9.5]
+      Rotation: [31, 45, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: false
+      FieldOfView: 60
+      NearClip: 0.05
+      FarClip: 100
+      Target: Assets/RenderTextures/Security_Monitor.mrtex
+      DrawEvery: 2
+      Enabled: true
+  - ID: 1180162657825191871
+    Name: Security_Camera_2
+    Parent: 0
+    Tags: [SecurityCamera]
+    Transform:
+      Translation: [-9.5, 9, -9.5]
+      Rotation: [31, -135, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: false
+      FieldOfView: 60
+      NearClip: 0.05
+      FarClip: 100
+  - ID: 5604387594348384703
+    Name: Security_Camera_3
+    Parent: 0
+    Tags: [SecurityCamera]
+    Transform:
+      Translation: [9.5, 9, -9.5]
+      Rotation: [31, 135, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: false
+      FieldOfView: 60
+      NearClip: 0.05
+      FarClip: 100

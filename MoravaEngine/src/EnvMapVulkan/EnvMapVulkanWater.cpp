@@ -300,10 +300,10 @@ void EnvMapVulkanWater::Create(H2M::RefH2M<H2M::FramebufferH2M> targetFramebuffe
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.maxLod = 0.0f;
 	samplerInfo.maxAnisotropy = 1.0f;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_ColorSampler));
+	m_ColorSampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 	samplerInfo.magFilter = VK_FILTER_NEAREST;
 	samplerInfo.minFilter = VK_FILTER_NEAREST;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_DepthSampler));
+	m_DepthSampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 
 	CreateReflection();
 	CreateCaustics();
@@ -350,7 +350,7 @@ void EnvMapVulkanWater::CreateCaustics()
 	samplerInfo.addressModeU = samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.maxLod = 0.0f;
 	samplerInfo.maxAnisotropy = 1.0f;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_CausticsSampler));
+	m_CausticsSampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 	m_CausticsDescriptor = { m_CausticsSampler, m_CausticsView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
 
 	// Cleared, drawn with additive blending, then left for the PBR shaders to sample
@@ -505,7 +505,6 @@ void EnvMapVulkanWater::DestroyCaustics()
 	if (m_CausticsLayout) vkDestroyPipelineLayout(device, m_CausticsLayout, nullptr);
 	if (m_CausticsFramebuffer) vkDestroyFramebuffer(device, m_CausticsFramebuffer, nullptr);
 	if (m_CausticsRenderPass) vkDestroyRenderPass(device, m_CausticsRenderPass, nullptr);
-	if (m_CausticsSampler) vkDestroySampler(device, m_CausticsSampler, nullptr);
 	if (m_CausticsView) vkDestroyImageView(device, m_CausticsView, nullptr);
 	if (m_CausticsImage) vkDestroyImage(device, m_CausticsImage, nullptr);
 	if (m_CausticsMemory) vkFreeMemory(device, m_CausticsMemory, nullptr);
@@ -612,12 +611,10 @@ void EnvMapVulkanWater::Destroy()
 	m_ReflectionFramebuffer = H2M::RefH2M<H2M::FramebufferH2M>();
 	if (m_ColorSampler)
 	{
-		vkDestroySampler(device, m_ColorSampler, nullptr);
 		m_ColorSampler = VK_NULL_HANDLE;
 	}
 	if (m_DepthSampler)
 	{
-		vkDestroySampler(device, m_DepthSampler, nullptr);
 		m_DepthSampler = VK_NULL_HANDLE;
 	}
 	m_Pipeline = H2M::RefH2M<H2M::PipelineH2M>();

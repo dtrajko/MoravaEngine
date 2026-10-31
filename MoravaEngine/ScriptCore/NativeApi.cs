@@ -101,6 +101,8 @@ namespace Morava
         public delegate* unmanaged<ulong, int> UI_Select;
         public delegate* unmanaged<int> UI_IsPointerOver;
         public delegate* unmanaged<float, void> Time_SetTimeScale;
+        public delegate* unmanaged<ulong, char*, int, int> Camera_GetTarget;
+        public delegate* unmanaged<ulong, char*, int, int> Camera_SetTarget;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -143,6 +145,8 @@ namespace Morava
         public int Primary;
         public float FieldOfView;
         public float NearClip, FarClip;
+        public int Enabled;
+        public uint DrawEvery;
     }
 
     [StructLayout(LayoutKind.Sequential)]

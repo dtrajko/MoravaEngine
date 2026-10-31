@@ -243,8 +243,14 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 			view.TargetFile = lens.Target;
 			view.RenderTexture = EnvMapVulkanRenderTexture::Get(lens.Target);
 		}
+		view.Enabled = lens.Enabled;
 		if (!view.RenderTexture || !view.RenderTexture->GetTexture())
 		{
+			return;
+		}
+		if (!lens.Enabled)
+		{
+			view.FramesUntilDraw = 0; // its texture keeps the last picture; enabled again, it draws at once
 			return;
 		}
 		const RenderTextureSettings& settings = view.RenderTexture->GetSettings();
@@ -342,7 +348,7 @@ std::vector<EnvMapVulkanEntityID> EnvMapVulkanTextureViews::GetCameras() const
 	std::vector<EnvMapVulkanEntityID> cameras;
 	for (const auto& [entity, view] : m_Views)
 	{
-		if (view.RenderTexture && view.Drawn)
+		if (view.RenderTexture && view.Drawn && view.Enabled)
 		{
 			cameras.push_back(entity);
 		}

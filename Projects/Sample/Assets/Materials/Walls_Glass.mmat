@@ -11,10 +11,11 @@ Material:
   RadiancePrefilter: 0
   Surface: Glass
   Cutoff: 0.5
+  FlipHorizontally: false
   Glass:
     IOR: 1.5
     Thickness: 0.2
-    CastShadows: 0
+    CastShadows: 1
     Solid: 0
   Maps:
     {}

@@ -96,10 +96,10 @@ void EnvMapVulkanProbes::Create(H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuffe
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.maxAnisotropy = 1.0f;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_LinearSampler));
+	m_LinearSampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 	samplerInfo.magFilter = VK_FILTER_NEAREST;
 	samplerInfo.minFilter = VK_FILTER_NEAREST;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_NearestSampler));
+	m_NearestSampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 
 	m_FillPipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(H2M::RendererH2M::GetShaderLibrary()->Get("ProbeEnvFill"));
 	m_FillDescriptorSet = m_FillPipeline->GetShader()->CreateDescriptorSets();
@@ -119,8 +119,6 @@ void EnvMapVulkanProbes::Destroy()
 	DestroyAtlases();
 	if (m_SpherePipeline) vkDestroyPipeline(device, m_SpherePipeline, nullptr);
 	if (m_SpherePipelineLayout) vkDestroyPipelineLayout(device, m_SpherePipelineLayout, nullptr);
-	if (m_LinearSampler) vkDestroySampler(device, m_LinearSampler, nullptr);
-	if (m_NearestSampler) vkDestroySampler(device, m_NearestSampler, nullptr);
 	m_SpherePipeline = VK_NULL_HANDLE;
 	m_SpherePipelineLayout = VK_NULL_HANDLE;
 	m_LinearSampler = VK_NULL_HANDLE;

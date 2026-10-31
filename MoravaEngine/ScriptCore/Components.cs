@@ -234,7 +234,8 @@ namespace Morava
 
     /// <summary>
     /// A game camera (Inspector: Camera): the game is seen through the primary one. It is placed and aimed by its entity
-    /// (Translation, EulerAngles: X down, Y to the left). Setting Primary switches the game's view to it.
+    /// (Translation, EulerAngles: X down, Y to the left). Setting Primary switches the game's view to it. A camera with a
+    /// Target draws into that render texture instead (a monitor, a mirror), which materials and UI images show.
     /// </summary>
     public sealed unsafe class Camera : Component
     {
@@ -263,6 +264,30 @@ namespace Morava
 
         /// <summary>Meters: nothing farther is drawn.</summary>
         public float FarClip { get => Settings.FarClip; set { var s = Settings; s.FarClip = value; Settings = s; } }
+
+        /// <summary>
+        /// The render texture it draws into (a .mrtex file, relative to the project); "" for the screen. A camera with a
+        /// target never shows the game. Several cameras may take turns on one texture: the one drawing last wins.
+        /// </summary>
+        public string Target
+        {
+            get => UIStrings.Get(Entity, "camera", (char* buffer, int capacity) => Interop.Game->Camera_GetTarget(Entity.Id, buffer, capacity));
+            set
+            {
+                string target = value ?? "";
+                fixed (char* chars = target)
+                    if (Interop.Game->Camera_SetTarget(Entity.Id, chars, target.Length) == 0) throw Missing("camera");
+            }
+        }
+
+        /// <summary>
+        /// A camera with a Target draws only while enabled: off, its texture keeps the last picture and the camera costs
+        /// nothing (a monitor nobody looks at, a closed menu). Enabled again, it draws at once. The screen's cameras don't use it.
+        /// </summary>
+        public bool Enabled { get => Settings.Enabled != 0; set { var s = Settings; s.Enabled = value ? 1 : 0; Settings = s; } }
+
+        /// <summary>A camera with a Target draws every this many frames, 1 to 120 (1: every frame).</summary>
+        public int DrawEvery { get => (int)Settings.DrawEvery; set { var s = Settings; s.DrawEvery = (uint)Math.Clamp(value, 1, 120); Settings = s; } }
     }
 
     /// <summary>

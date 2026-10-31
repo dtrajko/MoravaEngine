@@ -177,6 +177,10 @@ struct CameraComponent
 	std::string Target;
 	// It draws every this many frames (1: every frame): a monitor needs fewer pictures than the game
 	uint32_t DrawEvery = 1;
+	// A camera with a target draws only while enabled (7.5.4): off, its texture keeps the last picture and the camera costs
+	// nothing (a monitor nobody looks at, a closed menu's portrait). Enabled again, it draws at once. The screen's cameras
+	// don't use it (Primary chooses the game's view)
+	bool Enabled = true;
 
 	static constexpr float MinFieldOfView = 10.0f;
 	static constexpr float MaxFieldOfView = 120.0f;

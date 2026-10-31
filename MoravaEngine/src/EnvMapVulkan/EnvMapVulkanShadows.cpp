@@ -291,13 +291,13 @@ void EnvMapVulkanShadowMap::Create(uint32_t resolution, uint32_t layerCount, boo
 	samplerInfo.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL; // lit when the fragment's depth <= the depth in the map
 	samplerInfo.minLod = 0.0f;
 	samplerInfo.maxLod = 0.0f;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_CompareSampler));
+	m_CompareSampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 
 	// Plain sampler for showing the depth layers in the UI
 	samplerInfo.compareEnable = VK_FALSE;
 	samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 	samplerInfo.addressModeU = samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_DisplaySampler));
+	m_DisplaySampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 
 	// Start in the sampling layout, so the PBR shaders can bind the map before the first shadow pass (or with shadows off)
 	H2M::RefH2M<H2M::VulkanDeviceH2M> vulkanDevice = H2M::VulkanContextH2M::GetCurrentDevice();
@@ -324,8 +324,6 @@ void EnvMapVulkanShadowMap::Destroy()
 	}
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
-	vkDestroySampler(device, m_DisplaySampler, nullptr);
-	vkDestroySampler(device, m_CompareSampler, nullptr);
 	for (VkFramebuffer& framebuffer : m_Framebuffers)
 	{
 		vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -525,7 +523,7 @@ void EnvMapVulkanShadowMapViewer::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shade
 	samplerInfo.magFilter = VK_FILTER_LINEAR;
 	samplerInfo.minFilter = VK_FILTER_LINEAR;
 	samplerInfo.addressModeU = samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_Sampler));
+	m_Sampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 
 	// Compute pipeline, from the shader's reflection
 	std::vector<VkDescriptorSetLayout> setLayouts = shader->GetAllDescriptorSetLayouts();
@@ -649,7 +647,6 @@ void EnvMapVulkanShadowMapViewer::Destroy()
 	m_DescriptorSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
 	vkDestroyPipeline(device, m_Pipeline, nullptr);
 	vkDestroyPipelineLayout(device, m_Layout, nullptr);
-	vkDestroySampler(device, m_Sampler, nullptr);
 	vkDestroyImageView(device, m_View, nullptr);
 	H2M::VulkanAllocatorH2M allocator(std::string("ShadowMapViewer"));
 	allocator.DestroyImage(m_Image, m_Allocation);

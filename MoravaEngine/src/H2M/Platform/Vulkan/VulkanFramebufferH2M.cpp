@@ -134,7 +134,6 @@ namespace H2M
 					vkDestroyImageView(device, m_ColorAttachment.view, nullptr);
 					vkDestroyImage(device, m_ColorAttachment.image, nullptr);
 					vkFreeMemory(device, m_ColorAttachment.mem, nullptr);
-					vkDestroySampler(device, m_ColorAttachmentSampler, nullptr);
 
 					vkDestroyImageView(device, m_DepthAttachment.view, nullptr);
 					vkDestroyImage(device, m_DepthAttachment.image, nullptr);
@@ -220,7 +219,7 @@ namespace H2M
 					samplerCreateInfo.minLod = 0.0f;
 					samplerCreateInfo.maxLod = 1.0f;
 					samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-					VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_ColorAttachmentSampler));
+					m_ColorAttachmentSampler = VulkanShaderH2M::GetSampler(samplerCreateInfo); // shared: not destroyed here
 
 					attachmentDescriptions[0].flags = 0;
 					attachmentDescriptions[0].format = COLOR_BUFFER_FORMAT;
