@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Erika
 EditorCamera:
-  Translation: [-0.75292856, 1.8940197, 3.4205596]
-  Rotation: [7.299994, 174.00009, 0]
+  Translation: [-2.5977786, 5.3296523, 4.852479]
+  Rotation: [-10.699984, -5.4997787, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:
@@ -134,7 +134,7 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [11, 11, 2.08]
+      Translation: [10.8, 11, 2.08]
       Rotation: [0, -0, -90]
       Scale: [9.999993, 0.9999972, 8.099895]
     Model:
@@ -162,12 +162,12 @@ Entities:
         File: Assets/Materials/Orange.mmat
         Name: Orange
   - ID: 10946202904542493917
-    Name: Cube
+    Name: Wall
     Parent: 0
     Transform:
-      Translation: [11, 6, -8]
+      Translation: [10.8, 6, -8]
       Rotation: [0, -0, -90]
-      Scale: [10, 0.9999972, 1.9998641]
+      Scale: [10, 0.9999972, 1.9998494]
     Model:
       File: Models/Primitives/cube.obj
     Collider:
@@ -286,10 +286,10 @@ Entities:
         File: Assets/Materials/Orange.mmat
         Name: Orange
   - ID: 191337683009812853
-    Name: Cube
+    Name: Ceiling
     Parent: 0
     Transform:
-      Translation: [0, 22, 0]
+      Translation: [0, 21.8, 0]
       Rotation: [0, -0, 0]
       Scale: [10, 1, 10]
     Model:
@@ -434,21 +434,21 @@ Entities:
     MeshPart:
       SourceMeshIndex: 0
       Material:
-        ID: 15620937154082316693
-        File: Assets/Materials/Orange.mmat
-        Name: Orange
+        ID: 16216856275011426933
+        File: Assets/Materials/Orange_Glass.mmat
+        Name: Orange_Glass
   - ID: 3318840571902216447
     Name: Player Light
     Parent: 0
     Transform:
-      Translation: [0.4157582, 13.836172, 1.4041194]
+      Translation: [0, 10, 0]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     PointLight:
       Enabled: true
       Color: [1, 0.95, 0.85]
       Intensity: 30
-      Range: 18
+      Range: 18.390997
       CastShadows: true
   - ID: 12292673721498952904
     Name: Probe Volume
@@ -476,7 +476,7 @@ Entities:
     Name: cube.obj
     Parent: 0
     Transform:
-      Translation: [-2.0303705, 4.35, -9]
+      Translation: [-2.0303705, 4.4, -9]
       Rotation: [0, -0, -10.382343]
       Scale: [8.181774, 0.09999999, 1]
     Model:
@@ -531,9 +531,9 @@ Entities:
     MeshPart:
       SourceMeshIndex: 0
       Material:
-        ID: 15620937154082316693
-        File: Assets/Materials/Orange.mmat
-        Name: Orange
+        ID: 3117841017886726524
+        File: Assets/Materials/Walls_Glass.mmat
+        Name: Walls_Glass
   - ID: 3015530779700741111
     Name: Cube
     Parent: 0
@@ -786,7 +786,7 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [9.056939, 14.105605, -1.3675683]
+      Translation: [8.8, 14.105605, -1.3675683]
       Rotation: [90, 80.55908, 90]
       Scale: [8.811527, 0.10000051, 0.99999654]
     Model:
@@ -985,7 +985,7 @@ Entities:
         File: Assets/Materials/Walls_Blue.mmat
         Name: Walls_Blue
   - ID: 18392056540779632985
-    Name: Camera_Render_Texture_01
+    Name: Camera_2
     Parent: 0
     Transform:
       Translation: [-0.045146182, 1.65376, 1.66558]
@@ -1015,6 +1015,28 @@ Entities:
   - ID: 17131232694880077655
     Name: Plane
     Parent: 18084572079776579706
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 12652234342414203007
+        File: Assets/Materials/Giant_Screen.mmat
+        Name: Giant_Screen
+  - ID: 2247163320825194361
+    Name: Giant_Screen_02
+    Parent: 0
+    Transform:
+      Translation: [0.000207901, 11, -9.9]
+      Rotation: [-179.9999, -89.99995, -179.9999]
+      Scale: [1, 4.8, 6.4]
+    Model:
+      File: Models/Primitives/quad.obj
+  - ID: 8543855589416522051
+    Name: Plane
+    Parent: 2247163320825194361
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, -0, 0]
