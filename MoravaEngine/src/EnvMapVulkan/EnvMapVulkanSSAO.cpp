@@ -28,7 +28,7 @@ void EnvMapVulkanSSAO::Create()
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.maxAnisotropy = 1.0f;
 	samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), &samplerInfo, nullptr, &m_Sampler));
+	m_Sampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 
 	m_White.Create(AOFormat, 1, 1);
 
@@ -68,7 +68,6 @@ void EnvMapVulkanSSAO::Destroy()
 	}
 	if (m_Sampler)
 	{
-		vkDestroySampler(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), m_Sampler, nullptr);
 		m_Sampler = VK_NULL_HANDLE;
 	}
 	for (Pass* pass : { &m_DepthPass, &m_DepthMipPass, &m_GTAOPass, &m_DenoisePass, &m_UpsamplePass, &m_RayTracedPass })

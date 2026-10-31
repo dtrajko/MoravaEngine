@@ -17,8 +17,11 @@
 #include <spirv_glsl.hpp>
 
 #include <algorithm>
+#include <array>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <regex>
 #include <set>
 #include <sstream>
@@ -214,12 +217,40 @@ namespace H2M
 		return sampler;
 	}
 
+	// The samplers by their settings (GetSampler): every field of VkSamplerCreateInfo after pNext, as 32-bit words
+	using SamplerKey = std::array<uint32_t, 16>;
+	static std::map<SamplerKey, VkSampler> s_SamplersBySettings;
+
+	VkSampler VulkanShaderH2M::GetSampler(const VkSamplerCreateInfo& info)
+	{
+		H2M_CORE_ASSERT(info.pNext == nullptr, "VulkanShaderH2M::GetSampler: a sampler with an extension structure can't be shared");
+		const auto bits = [](float value) { uint32_t word; std::memcpy(&word, &value, sizeof(word)); return word; };
+		const SamplerKey key = { info.flags, (uint32_t)info.magFilter, (uint32_t)info.minFilter, (uint32_t)info.mipmapMode,
+			(uint32_t)info.addressModeU, (uint32_t)info.addressModeV, (uint32_t)info.addressModeW, bits(info.mipLodBias),
+			info.anisotropyEnable, bits(info.maxAnisotropy), info.compareEnable, (uint32_t)info.compareOp, bits(info.minLod),
+			bits(info.maxLod), (uint32_t)info.borderColor, info.unnormalizedCoordinates };
+		auto existing = s_SamplersBySettings.find(key);
+		if (existing != s_SamplersBySettings.end())
+		{
+			return existing->second;
+		}
+		VkSamplerCreateInfo create = info;
+		create.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		VkSampler sampler = VK_NULL_HANDLE;
+		VK_CHECK_RESULT_H2M(vkCreateSampler(VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), &create, nullptr, &sampler));
+		s_SamplersBySettings[key] = sampler;
+		return sampler;
+	}
+
 	void VulkanShaderH2M::DestroySharedSamplers()
 	{
 		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 		for (auto& [name, sampler] : s_SharedSamplers)
 			vkDestroySampler(device, sampler, nullptr);
 		s_SharedSamplers.clear();
+		for (auto& [key, sampler] : s_SamplersBySettings)
+			vkDestroySampler(device, sampler, nullptr);
+		s_SamplersBySettings.clear();
 	}
 
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderH2M::UniformBufferH2M*>> s_UniformBuffers; // set -> binding point -> buffer

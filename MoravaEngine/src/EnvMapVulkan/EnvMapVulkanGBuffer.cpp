@@ -42,7 +42,7 @@ void EnvMapVulkanGBuffer::Create(H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuff
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.maxAnisotropy = 1.0f;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_Sampler));
+	m_Sampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 
 	CreatePreviousTransformBuffer(InitialPreviousTransformCapacity);
 
@@ -69,7 +69,6 @@ void EnvMapVulkanGBuffer::Destroy()
 	}
 	if (m_Sampler)
 	{
-		vkDestroySampler(device, m_Sampler, nullptr);
 		m_Sampler = VK_NULL_HANDLE;
 	}
 }

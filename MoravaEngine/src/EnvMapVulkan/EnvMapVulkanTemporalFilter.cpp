@@ -92,7 +92,7 @@ void EnvMapVulkanTemporalFilter::Create(const std::string& shaderName, VkFormat 
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.maxAnisotropy = 1.0f;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), &samplerInfo, nullptr, &m_Sampler));
+	m_Sampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 
 	m_Pipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(H2M::RendererH2M::GetShaderLibrary()->Get(shaderName));
 	for (H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet& set : m_Sets)
@@ -111,7 +111,6 @@ void EnvMapVulkanTemporalFilter::Destroy()
 	}
 	if (m_Sampler)
 	{
-		vkDestroySampler(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), m_Sampler, nullptr);
 		m_Sampler = VK_NULL_HANDLE;
 	}
 	m_Pipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>();

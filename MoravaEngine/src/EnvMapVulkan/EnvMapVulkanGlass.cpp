@@ -90,12 +90,12 @@ void EnvMapVulkanGlass::Create(H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuffer
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 	samplerInfo.maxLod = (float)MaxCopyLevels;
 	samplerInfo.maxAnisotropy = 1.0f;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_ColorSampler));
+	m_ColorSampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 	samplerInfo.magFilter = VK_FILTER_NEAREST;
 	samplerInfo.minFilter = VK_FILTER_NEAREST;
 	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
 	samplerInfo.maxLod = 0.0f;
-	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_DepthSampler));
+	m_DepthSampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
 
 	m_DescriptorSet = shader->CreateDescriptorSets(SceneCopySet);
 	Resize(framebuffer->GetWidth(), framebuffer->GetHeight());
@@ -107,12 +107,10 @@ void EnvMapVulkanGlass::Destroy()
 	DestroyCopyImages();
 	if (m_ColorSampler)
 	{
-		vkDestroySampler(device, m_ColorSampler, nullptr);
 		m_ColorSampler = VK_NULL_HANDLE;
 	}
 	if (m_DepthSampler)
 	{
-		vkDestroySampler(device, m_DepthSampler, nullptr);
 		m_DepthSampler = VK_NULL_HANDLE;
 	}
 	m_Pipeline = H2M::RefH2M<H2M::PipelineH2M>();
