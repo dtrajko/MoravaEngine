@@ -160,6 +160,10 @@ namespace H2M
 		// so no code writes it. Textures declared without a sampler ("texture2D u_X") are read with these. Metal (MoltenVK)
 		// allows 16 samplers per shader stage: a texture with its own sampler counts as one, a shared sampler once for all.
 		static VkSampler GetSharedSampler(const std::string& name);
+		// A sampler with these settings, made once and shared by everything that asks for the same ones (textures, images,
+		// framebuffers, the renderer's passes): the device allows few (MoltenVK: 96 on CI), and samplers never change. Its
+		// users don't destroy it: DestroySharedSamplers does, at shutdown. pNext must be null
+		static VkSampler GetSampler(const VkSamplerCreateInfo& info);
 		static void DestroySharedSamplers();
 
 		// Vulkan-specific

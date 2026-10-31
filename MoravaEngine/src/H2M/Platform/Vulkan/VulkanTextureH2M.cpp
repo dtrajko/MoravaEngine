@@ -314,7 +314,6 @@ namespace H2M {
 
 			vkDestroyImageView(vulkanDevice, m_DescriptorImageInfo.imageView, nullptr);
 			vkDestroyImage(vulkanDevice, m_VkImage, nullptr);
-			vkDestroySampler(vulkanDevice, m_DescriptorImageInfo.sampler, nullptr);
 			vkFreeMemory(vulkanDevice, m_DeviceMemory, nullptr);
 		}
 	}
@@ -499,7 +498,7 @@ namespace H2M {
 		sampler.maxAnisotropy = 1.0;
 		sampler.anisotropyEnable = VK_FALSE;
 		sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		VK_CHECK_RESULT_H2M(vkCreateSampler(vulkanDevice, &sampler, nullptr, &m_DescriptorImageInfo.sampler));
+		m_DescriptorImageInfo.sampler = VulkanShaderH2M::GetSampler(sampler); // shared: not destroyed here
 
 		// Create image view
 		// Textures are not directly accessed by the shaders and
@@ -770,7 +769,7 @@ namespace H2M {
 		sampler.maxAnisotropy = 1.0;
 		sampler.anisotropyEnable = VK_FALSE;
 		sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-		VK_CHECK_RESULT_H2M(vkCreateSampler(vulkanDevice, &sampler, nullptr, &m_DescriptorImageInfo.sampler));
+		m_DescriptorImageInfo.sampler = VulkanShaderH2M::GetSampler(sampler); // shared: not destroyed here
 
 		// Create image view
 		// Textures are not directly accessed by the shaders and
