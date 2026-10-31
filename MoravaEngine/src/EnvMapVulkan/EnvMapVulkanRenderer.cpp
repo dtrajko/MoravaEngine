@@ -20,6 +20,7 @@
 #include "EnvMapVulkanPathTracer.h"
 #include "EnvMapVulkanReflections.h"
 #include "EnvMapVulkanSSAO.h"
+#include "EnvMapVulkanTextureViews.h"
 #include "EnvMapVulkanUI.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
@@ -293,6 +294,7 @@ static EnvMapComputeResources s_EnvMapCompute;
 // never while frames that use it may still be in flight
 static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_SkyboxDescriptorSet;
 static bool s_SkyboxDescriptorSetNeedsUpdate = true;
+static void RecordSkyboxDraw(VkCommandBuffer commandBuffer, VkDescriptorSet descriptorSet);
 
 // The environment map loaded (shown in the Environment panel), and whether its sun was taken out of it (see ExtractSun).
 // The scene's environment entity says which map it wants: another one is loaded at the start of the next Draw.
@@ -589,6 +591,9 @@ static EnvMapVulkanWater s_Water;
 // shows what was drawn before it, so a farther one is drawn first. Static meshes only: a skinned mesh with a glass
 // material is drawn with its material as opaque.
 static EnvMapVulkanGlass s_Glass;
+// The cameras that draw into a render texture (7.5, see EnvMapVulkanTextureViews): a view of their own each, drawn before
+// the main view, and copied into their textures
+static EnvMapVulkanTextureViews s_TextureViews;
 // The game UI (7.2): laid out from the scene's canvases every frame (UILayout), drawn over the viewport composite
 static EnvMapVulkanUI s_UI;
 static UIDrawList s_UIDrawList;
@@ -1810,6 +1815,7 @@ void EnvMapVulkanRenderer::Init()
 	s_Data.QuadVertexBuffer = H2M::VertexBufferH2M::Create(data, 4 * sizeof(QuadVertex));
 	uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 	s_Data.QuadIndexBuffer = H2M::IndexBufferH2M::Create(indices, 6 * sizeof(uint32_t));
+	s_TextureViews.Create(s_Data.QuadVertexBuffer, s_Data.QuadIndexBuffer); // their composite draws the quad
 
 	// H2M::RendererH2M::Submit([=]() {});
 	{
@@ -1948,6 +1954,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_ShadowMapViewer.Destroy();
 	s_Water.Destroy();
 	s_Glass.Destroy();
+	s_TextureViews.Destroy();
 	s_UI.Destroy();
 	s_UIDrawList.Clear();
 	UILayout::ClearImageCache();
@@ -2011,8 +2018,9 @@ void EnvMapVulkanRenderer::Shutdown()
 void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
 	MeshPass pass, uint32_t firstDraw)
 {
-	// A model whose meshes are all outside the camera's frustum binds nothing (see CullMainView)
-	if (pass != MeshPass::WaterReflection && firstDraw < s_MeshInView.size())
+	// A model whose meshes are all outside the camera's frustum binds nothing (see CullMainView): in the main view's passes
+	const bool mainView = pass == MeshPass::Scene || pass == MeshPass::GBuffer;
+	if (mainView && firstDraw < s_MeshInView.size())
 	{
 		const size_t end = std::min(s_MeshInView.size(), (size_t)firstDraw + model->GetMeshes().size());
 		if (std::find(s_MeshInView.begin() + firstDraw, s_MeshInView.begin() + end, (uint8_t)1) == s_MeshInView.begin() + end)
@@ -2066,7 +2074,7 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 	// The pipelines of all passes have the PBR pipelines' layouts: everything bound below is valid for each of them. A mesh
 	// with a cutout material is drawn with the pass's cutout pipeline, which discards the pixels the material cuts away;
 	// the scene pass needs none (depth EQUAL: only what the prepass kept)
-	VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline(); // MeshPass::WaterReflection
+	VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline(); // MeshPass::WaterReflection, MeshPass::TextureView
 	VkPipeline cutoutPipeline = (skinned ? s_MeshPipelineAnimCutout : s_MeshPipelineCutout).As<H2M::VulkanPipelineH2M>()->GetVulkanPipeline();
 	if (pass == MeshPass::GBuffer)
 	{
@@ -2103,7 +2111,7 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		{
 			continue; // drawn after the opaque meshes and the water (see RecordGlassPass)
 		}
-		if (pass != MeshPass::WaterReflection && firstDraw + s < s_MeshInView.size() && !s_MeshInView[firstDraw + s])
+		if (mainView && firstDraw + s < s_MeshInView.size() && !s_MeshInView[firstDraw + s])
 		{
 			continue; // outside the camera's frustum (see CullMainView)
 		}
@@ -2809,10 +2817,6 @@ void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
 {
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
-	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanSkyboxPipeline = s_Data.SkyboxPipeline.As<H2M::VulkanPipelineH2M>();
-
-	VkPipelineLayout skyboxPipelineLayout = vulkanSkyboxPipeline->GetVulkanPipelineLayout();
-
 	H2M::RefH2M<H2M::VulkanShaderH2M> vulkanSkyboxShader = s_Data.SkyboxShader.As<H2M::VulkanShaderH2M>();
 
 	void* ubPtr = vulkanSkyboxShader->MapUniformBuffer(0, 0);
@@ -2858,6 +2862,16 @@ void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
 		s_SkyboxDescriptorSetNeedsUpdate = false;
 	}
 
+	RecordSkyboxDraw(commandBuffer, descriptorSet.DescriptorSets[0]);
+}
+
+// The skybox's draw with the given set of the skybox shader (its camera and cube map): the main view's (RenderSkybox) or a
+// texture view's (EnvMapVulkanTextureViews)
+static void RecordSkyboxDraw(VkCommandBuffer commandBuffer, VkDescriptorSet descriptorSet)
+{
+	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanSkyboxPipeline = s_Data.SkyboxPipeline.As<H2M::VulkanPipelineH2M>();
+	VkPipelineLayout skyboxPipelineLayout = vulkanSkyboxPipeline->GetVulkanPipelineLayout();
+
 	H2M::RefH2M<H2M::VulkanVertexBufferH2M> vulkanSkyboxCubeVB = s_Data.VulkanSkyboxCube->m_VertexBuffer.As<H2M::VulkanVertexBufferH2M>();
 	VkBuffer skyboxCubeVertexVkBuffer = vulkanSkyboxCubeVB->GetVulkanBuffer();
 	VkDeviceSize offsets[1] = { 0 };
@@ -2870,7 +2884,7 @@ void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
 	VkPipeline skyboxPipeline = vulkanSkyboxPipeline->GetVulkanPipeline();
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline);
 
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipelineLayout, 0, (uint32_t)descriptorSet.DescriptorSets.size(), descriptorSet.DescriptorSets.data(), 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
 	// push constants
 	struct SkyboxUniforms
@@ -3231,6 +3245,40 @@ void EnvMapVulkanRenderer::GeometryPass()
 			}
 			s_Water.EndReflectionPass(drawCommandBuffer);
 			EnvMapVulkanProfiler::EndScope(drawCommandBuffer);
+		}
+
+		// The cameras that draw into render textures, before the main view: what shows their textures in it shows this
+		// frame's pictures (a texture view sees the other render textures as of the previous frame)
+		if (s_TextureViews.GetViewCount() > 0)
+		{
+			EnvMapVulkanProfiler::Scope texturesScope(drawCommandBuffer, "Render Textures", "The cameras that draw into a render texture (a "
+				"monitor, a mirror): each one's view of the scene at the texture's size, with the usual mesh pipelines and its own "
+				"depth test (no prepass, ambient occlusion, ray-traced reflections, bloom, water or glass), the skybox, then "
+				"tonemapped (Color textures) and copied into the texture with its smaller mip levels.");
+			s_TextureViews.Record(drawCommandBuffer, [](VkCommandBuffer commandBuffer, const EnvMapVulkanTextureViews::ViewDraw& view)
+			{
+				// The meshes first (the skybox is drawn only where they left the depth cleared), culled by model against the
+				// view's frustum: skinned models always drawn, as in the main view (their bones move them out of their boxes)
+				glm::vec4 planes[6];
+				GetFrustumPlanes(view.ViewProjection, planes);
+				VkPipelineLayout meshLayout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
+					&view.FrameSet, 0, nullptr);
+				for (size_t m = 0; m < s_SubmittedModels.size(); m++)
+				{
+					const SubmittedModel& submitted = s_SubmittedModels[m];
+					if (!submitted.Model->IsSkinned() && m < s_ShadowCasterBounds.size())
+					{
+						const auto& [boundsMin, boundsMax] = s_ShadowCasterBounds[m];
+						if (IsBoxOutsideFrustum(planes, (boundsMin + boundsMax) * 0.5f, (boundsMax - boundsMin) * 0.5f))
+						{
+							continue;
+						}
+					}
+					RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, commandBuffer, MeshPass::TextureView);
+				}
+				RecordSkyboxDraw(commandBuffer, view.SkyboxSet);
+			});
 		}
 
 		// The G-buffer prepass: the opaque meshes' normals, roughness, motion and depth, before the scene pass
@@ -4316,6 +4364,26 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	if (DebugViewNeedsRayTracing(s_ViewOptions.DebugView) && !IsRayTracingActive())
 	{
 		s_ViewOptions.DebugView = DebugViewOff;
+	}
+
+	// The cameras that draw into render textures: their views' set 0 gets what the per-frame set holds (as it is now, after
+	// everything above that may have rewritten it), their cameras this frame's places
+	{
+		EnvMapVulkanTextureViews::FrameInputs inputs;
+		inputs.MainFrameSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+		inputs.WhiteAmbientOcclusion = s_SSAO.GetWhiteInfo();
+		inputs.NoReflections = s_Reflections.GetNoneInfo();
+		if (s_Data.envUnfiltered)
+		{
+			inputs.SkyboxCube = s_Data.envUnfiltered.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo();
+		}
+		inputs.EnvironmentVersion = s_EnvironmentVersion;
+		inputs.EnvMapRotation = s_EnvMapRotation;
+		inputs.Water = &s_WaterSettings;
+		inputs.SunDirection = GetWaterSunDirection();
+		inputs.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f); // as the viewport composite
+		inputs.HuePreservation = s_TonemapHuePreservation;
+		s_TextureViews.Update(*s_Scene, inputs);
 	}
 
 	// With ray tracing the probes' update traces rays: its set 0 gets what the per-frame set holds (as it is now, after

@@ -52,6 +52,8 @@ namespace H2M
 		virtual uint64_t GetHash() const override { return (uint64_t)m_Image; }
 
 		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
+		// The image of the textures made from a file or from pixels (all its mip levels: SHADER_READ_ONLY_OPTIMAL)
+		VkImage GetVulkanImage() const { return m_VkImage; }
 
 		// virtual RendererID GetRendererID() const override { return 0; } // Removed in Hazel Live 18.03.2021 #2
 

@@ -661,14 +661,17 @@ namespace H2M
 				if (fallback)
 				{
 					// HZ_MESH_LOG("    No albedo map");
-					Log::GetLogger()->info("    No normal map");
 
-					m_MeshShader->SetInt("u_AlbedoTexture", whiteTexture->GetID());
-					mi->Set("u_AlbedoTexture", whiteTexture->GetID());
-
+					// Vulkan binds the texture to its sampler; OpenGL sets the sampler uniform to the texture unit (the Vulkan
+					// material has no such uniform: setting it logged an error per mesh)
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
 						AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", whiteTexture); // TODO: to be removed from ModelH2M
+					}
+					else
+					{
+						m_MeshShader->SetInt("u_AlbedoTexture", whiteTexture->GetID());
+						mi->Set("u_AlbedoTexture", whiteTexture->GetID());
 					}
 				}
 
@@ -729,12 +732,16 @@ namespace H2M
 					// HZ_MESH_LOG("    No normal map");
 					Log::GetLogger()->info("    No normal map");
 
-					m_MeshShader->SetInt("u_NormalTexture", whiteTexture->GetID());
-					mi->Set("u_NormalTexture", whiteTexture->GetID());
-
+					// Vulkan binds the texture to its sampler; OpenGL sets the sampler uniform to the texture unit (the Vulkan
+					// material has no such uniform: setting it logged an error per mesh)
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
 						AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", whiteTexture); // TODO: to be removed from ModelH2M
+					}
+					else
+					{
+						m_MeshShader->SetInt("u_NormalTexture", whiteTexture->GetID());
+						mi->Set("u_NormalTexture", whiteTexture->GetID());
 					}
 				}
 
@@ -988,12 +995,16 @@ namespace H2M
 				{
 					HZ_MESH_LOG("    No metalness map");
 
-					m_MeshShader->SetInt("u_MetalnessTexture", whiteTexture->GetID());
-					mi->Set("u_MetalnessTexture", whiteTexture->GetID());
-
+					// Vulkan binds the texture to its sampler; OpenGL sets the sampler uniform to the texture unit (the Vulkan
+					// material has no such uniform: setting it logged an error per mesh)
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
 						AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", whiteTexture); // TODO: to be removed from ModelH2M
+					}
+					else
+					{
+						m_MeshShader->SetInt("u_MetalnessTexture", whiteTexture->GetID());
+						mi->Set("u_MetalnessTexture", whiteTexture->GetID());
 					}
 				}
 
