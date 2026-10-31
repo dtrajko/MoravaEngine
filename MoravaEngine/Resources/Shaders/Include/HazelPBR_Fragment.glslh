@@ -2,6 +2,7 @@
 
 #include "PBRCommon.glslh"
 #include "MeshMaterial.glslh"
+#include "Tonemap.glslh"
 
 void main()
 {
@@ -13,6 +14,17 @@ void main()
 #ifdef MATERIAL_CUTOUT
 	MaterialCutAway(texCoord); // the cutout variants (HazelPBR_Cutout_Static.glsl...): passes without the prepass's depth
 #endif
+
+	// A Display surface (a screen, EnvMapVulkanMaterial::Surface::Display): not lit. Its emissive map holds display colors
+	// (a Color render texture: its camera's finished picture), times the emissive intensity; the light written here is
+	// what the view's exposure and tonemapping turn back into those colors (u_DisplayTone), so they reach the screen as
+	// they are. No map: black, a screen that is off.
+	if ((MaterialFlags() & GPUMaterialFlagDisplay) != 0u)
+	{
+		vec3 picture = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
+		color = vec4(InverseTonemap(picture, u_DisplayTone.y) / max(u_DisplayTone.x, 1e-4), 1.0);
+		return;
+	}
 
 	m_Params.Albedo = MaterialAlbedo(texCoord);
 	m_Params.Metalness = MaterialMetalness(texCoord);

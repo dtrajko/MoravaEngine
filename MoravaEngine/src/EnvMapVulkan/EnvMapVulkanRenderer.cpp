@@ -751,6 +751,17 @@ static glm::vec3 GetWaterSunDirection()
 	return s_Lights.Sun.Enabled && s_Lights.Sun.Intensity > 0.0f ? s_Lights.Sun.GetDirection() : glm::vec3(0.0f, -1.0f, 0.0f);
 }
 
+// The exposure the viewport composite applies (the environment's, with its auto exposure) and its hue preservation: what
+// Display surfaces undo (EnvMapVulkanSceneDataGPU::DisplayTone)
+static float GetViewExposure()
+{
+	return s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
+}
+static glm::vec4 GetDisplayTone()
+{
+	return glm::vec4(GetViewExposure(), s_TonemapHuePreservation, 0.0f, 0.0f);
+}
+
 // Per-frame uniform buffers of the mesh shaders (set 0): written once per frame, read by every mesh. They belong to the
 // HazelPBR_Static shader in the shader library, whose buffers the per-frame descriptor set points to (see Init).
 static void UpdateFrameUniforms()
@@ -776,6 +787,7 @@ static void UpdateFrameUniforms()
 	EnvMapVulkanSceneDataGPU ub;
 	ub.CameraPosition = camera.GetPosition();
 	ub.EnvMapRotation = s_EnvMapRotation;
+	ub.DisplayTone = GetDisplayTone();
 	FillWaterSceneData(s_WaterSettings, camera.GetPosition(), GetWaterSunDirection(), ub);
 
 	ubPtr = shader->MapUniformBuffer(1, frameSet);
@@ -3027,21 +3039,31 @@ void EnvMapVulkanRenderer::SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M> 
 	}
 }
 
-// The glass meshes of the submitted models, sorted back to front (see s_GlassDraws)
-static void CollectGlassDraws()
+// The glass meshes of the submitted models seen from cameraPosition, sorted back to front into draws (s_GlassDraws: the
+// main view's). modelCullPlanes: a texture view's frustum, which culls by model (nullptr: the main view's culling, by mesh)
+static void CollectGlassDraws(const glm::vec3& cameraPosition, const glm::vec4* modelCullPlanes, std::vector<GlassDraw>& draws)
 {
-	s_GlassDraws.clear();
-	const glm::vec3 cameraPosition = s_Data.SceneData.SceneCamera.Camera.GetPosition();
-	for (const SubmittedModel& submitted : s_SubmittedModels)
+	draws.clear();
+	for (size_t m = 0; m < s_SubmittedModels.size(); m++)
 	{
+		const SubmittedModel& submitted = s_SubmittedModels[m];
 		if (submitted.Model->IsSkinned())
 		{
 			continue; // drawn as opaque (see RenderModelVulkan)
 		}
+		if (modelCullPlanes && m < s_ShadowCasterBounds.size())
+		{
+			const auto& [boundsMin, boundsMax] = s_ShadowCasterBounds[m];
+			if (IsBoxOutsideFrustum(modelCullPlanes, (boundsMin + boundsMax) * 0.5f, (boundsMax - boundsMin) * 0.5f))
+			{
+				continue;
+			}
+		}
 		const auto& meshes = submitted.Model->GetMeshes();
 		for (uint32_t s = 0; s < (uint32_t)meshes.size() && s < (uint32_t)submitted.Materials.size(); s++)
 		{
-			if (!submitted.Materials[s]->IsGlass() || (submitted.FirstDraw + s < s_MeshInView.size() && !s_MeshInView[submitted.FirstDraw + s]))
+			if (!submitted.Materials[s]->IsGlass() ||
+				(!modelCullPlanes && submitted.FirstDraw + s < s_MeshInView.size() && !s_MeshInView[submitted.FirstDraw + s]))
 			{
 				continue;
 			}
@@ -3052,25 +3074,27 @@ static void CollectGlassDraws()
 			draw.Material = submitted.Materials[s];
 			const glm::vec3 center = glm::vec3(draw.Transform * glm::vec4((meshes[s]->BoundingBox.Min + meshes[s]->BoundingBox.Max) * 0.5f, 1.0f));
 			draw.Distance = glm::length(center - cameraPosition);
-			s_GlassDraws.push_back(draw);
+			draws.push_back(draw);
 		}
 	}
-	std::sort(s_GlassDraws.begin(), s_GlassDraws.end(), [](const GlassDraw& a, const GlassDraw& b) { return a.Distance > b.Distance; });
+	std::sort(draws.begin(), draws.end(), [](const GlassDraw& a, const GlassDraw& b) { return a.Distance > b.Distance; });
 }
 
-// The glass meshes, inside the scene pass after the water: the pass ends, the scene is copied (EnvMapVulkanGlass::CopyScene),
-// and the framebuffer's continue render pass takes over for the glass and what comes after it
-static void RecordGlassPass(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo& sceneBeginInfo, const VkViewport& viewport, const VkRect2D& scissor)
+// The glass meshes (draws), inside a scene pass after the water: the pass ends, the scene is copied (EnvMapVulkanGlass::CopyScene),
+// and the framebuffer's continue render pass takes over for the glass and what comes after it. The main view's (s_Framebuffer,
+// s_Glass, its set 0) or a texture view's (its own framebuffer, glass copy and set 0)
+static void RecordGlassPass(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo& sceneBeginInfo, const VkViewport& viewport, const VkRect2D& scissor,
+	const H2M::RefH2M<H2M::FramebufferH2M>& sceneFramebuffer, EnvMapVulkanGlass& glass, VkDescriptorSet frameSet, std::vector<GlassDraw>& draws)
 {
 	vkCmdEndRenderPass(commandBuffer);
 	{
 		EnvMapVulkanProfiler::Scope copyScope(commandBuffer, "Glass Copy", "The render pass ends and the scene so far (the water too) is "
 			"copied for the glass to look through, then shrunk step by step into smaller copies (a mip chain): rough glass "
 			"reads a smaller, blurrier one. Blits, no draw calls.");
-		s_Glass.CopyScene(commandBuffer, s_Framebuffer);
+		glass.CopyScene(commandBuffer, sceneFramebuffer);
 	}
 
-	H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
+	H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = sceneFramebuffer.As<H2M::VulkanFramebufferH2M>();
 	VkRenderPassBeginInfo continueBeginInfo = sceneBeginInfo;
 	continueBeginInfo.renderPass = framebuffer->GetContinueRenderPass();
 	continueBeginInfo.framebuffer = framebuffer->GetContinueVulkanFramebuffer();
@@ -3084,18 +3108,18 @@ static void RecordGlassPass(VkCommandBuffer commandBuffer, const VkRenderPassBeg
 	EnvMapVulkanProfiler::Scope glassScope(commandBuffer, "Glass", "The glass meshes, farthest first: each reads the scene copy where its "
 		"refraction bends the view, tints it, blurs it by its roughness, and adds the environment's reflection and the "
 		"lights' highlights (more at grazing angles). Glass behind glass isn't in the copy, so it isn't seen through.");
-	H2M::RefH2M<H2M::VulkanPipelineH2M> pipeline = s_Glass.GetPipeline().As<H2M::VulkanPipelineH2M>();
+	H2M::RefH2M<H2M::VulkanPipelineH2M> pipeline = glass.GetPipeline().As<H2M::VulkanPipelineH2M>();
 	VkPipelineLayout layout = pipeline->GetVulkanPipelineLayout();
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetVulkanPipeline());
 	// Set 0 again: the glass layout's push constants differ from the mesh pipelines', so their sets aren't "compatible"
 	// (the set itself is: Glass_Static.glsl declares set 0 as the PBR shaders do)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
-		s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
-	VkDescriptorSet copySet = s_Glass.GetSceneCopySet();
+		&frameSet, 0, nullptr);
+	VkDescriptorSet copySet = glass.GetSceneCopySet();
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, EnvMapVulkanGlass::SceneCopySet, 1, &copySet, 0, nullptr);
 
 	H2M::ModelH2M* boundModel = nullptr;
-	for (GlassDraw& draw : s_GlassDraws)
+	for (GlassDraw& draw : draws)
 	{
 		VkDescriptorSet materialSet = draw.Material->GetDescriptorSet();
 		if (materialSet == VK_NULL_HANDLE)
@@ -3126,7 +3150,7 @@ static void RecordGlassPass(VkCommandBuffer commandBuffer, const VkRenderPassBeg
 		values.EmissiveTexToggle = material.Get<float>("u_MaterialUniforms.EmissiveTexToggle");
 		values.EmissiveIntensity = material.Get<float>("u_MaterialUniforms.EmissiveIntensity");
 		values.MetalRoughPacked = material.Get<float>("u_MaterialUniforms.MetalRoughPacked");
-		values.SceneCopyLevels = (float)s_Glass.GetCopyLevels();
+		values.SceneCopyLevels = (float)glass.GetCopyLevels();
 		values.Solid = material.GetGlassValue(EnvMapVulkanMaterial::GlassSolid);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &draw.Transform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(values), &values);
@@ -3135,12 +3159,12 @@ static void RecordGlassPass(VkCommandBuffer commandBuffer, const VkRenderPassBeg
 		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
 		EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
 	}
-	s_GlassDraws.clear();
+	draws.clear();
 
 	// The mesh pipelines' set 0 again, for what comes after (the grid binds its own sets)
 	VkPipelineLayout meshLayout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
-		s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
+		&frameSet, 0, nullptr);
 }
 
 void EnvMapVulkanRenderer::GeometryPass()
@@ -3253,8 +3277,9 @@ void EnvMapVulkanRenderer::GeometryPass()
 		{
 			EnvMapVulkanProfiler::Scope texturesScope(drawCommandBuffer, "Render Textures", "The cameras that draw into a render texture (a "
 				"monitor, a mirror): each one's view of the scene at the texture's size, with the usual mesh pipelines and its own "
-				"depth test (no prepass, ambient occlusion, ray-traced reflections, bloom, water or glass), the skybox, then "
-				"tonemapped (Color textures) and copied into the texture with its smaller mip levels.");
+				"depth test (no prepass, ambient occlusion, ray-traced reflections, bloom or water), the skybox, the glass (a copy "
+				"of the view for it), then tonemapped (Color textures) and copied into the texture with its smaller mip levels. "
+				"Cameras with Draw Every above 1 skip frames.");
 			s_TextureViews.Record(drawCommandBuffer, [](VkCommandBuffer commandBuffer, const EnvMapVulkanTextureViews::ViewDraw& view)
 			{
 				// The meshes first (the skybox is drawn only where they left the depth cleared), culled by model against the
@@ -3278,6 +3303,16 @@ void EnvMapVulkanRenderer::GeometryPass()
 					RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, commandBuffer, MeshPass::TextureView);
 				}
 				RecordSkyboxDraw(commandBuffer, view.SkyboxSet);
+
+				// The glass, as in the main view: it looks into a copy of the view drawn so far
+				static std::vector<GlassDraw> s_ViewGlassDraws;
+				CollectGlassDraws(view.Position, planes, s_ViewGlassDraws);
+				if (!s_ViewGlassDraws.empty() && view.Glass && view.BeginInfo)
+				{
+					RecordGlassPass(commandBuffer, *view.BeginInfo, view.Viewport, view.Scissor, view.SceneFramebuffer, *view.Glass, view.FrameSet,
+						s_ViewGlassDraws);
+				}
+				s_ViewGlassDraws.clear(); // no models kept alive past the frame (a static outlives the device)
 			});
 		}
 
@@ -3402,7 +3437,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 				"one camera-facing square per probe, cut to a ball and lit by its probe in the fragment shader.");
 			s_Probes.RecordSpheres(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], s_Data.SceneData.SceneCamera.Camera.GetViewMatrix());
 		}
-		CollectGlassDraws();
+		CollectGlassDraws(s_Data.SceneData.SceneCamera.Camera.GetPosition(), nullptr, s_GlassDraws);
 
 		s_SubmittedModels.clear();
 		s_PreviousDrawTransforms.clear();
@@ -3450,7 +3485,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// Glass: it looks into everything drawn so far, the water too
 		if (!s_GlassDraws.empty())
 		{
-			RecordGlassPass(drawCommandBuffer, renderPassBeginInfo, viewport, scissor);
+			RecordGlassPass(drawCommandBuffer, renderPassBeginInfo, viewport, scissor, s_Framebuffer, s_Glass,
+				s_Data.FrameDescriptorSet.DescriptorSets[0], s_GlassDraws);
 		}
 
 		// Transparent, so after the opaque meshes and the water
@@ -3748,7 +3784,7 @@ static void RecordBloomPasses(VkCommandBuffer commandBuffer)
 	float threshold = s_RenderSettings.Bloom.Threshold;
 	uniforms.Params = { threshold, threshold - knee, knee * 2.0f, 0.25f / knee };
 	uniforms.UpsampleScale = s_RenderSettings.Bloom.UpsampleScale;
-	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
+	uniforms.Exposure = GetViewExposure();
 
 	enum { ModePrefilter = 0, ModeDownsample = 1, ModeUpsample = 2 };
 
@@ -3831,6 +3867,36 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 		{
 			frame.Passes.push_back({ scope.Name, scope.SmoothedGpuMs });
 		}
+	}
+
+	// The cameras' shares (7.5): each render texture camera's scope (inside Render Textures), averaged over every frame
+	// (0 in the frames it doesn't draw: the profiler averages a scope only over the frames that have it), and the main
+	// camera's: the rest of the frame
+	static std::unordered_map<EnvMapVulkanEntityID, double> s_CameraGpuMs;
+	std::unordered_map<EnvMapVulkanEntityID, double> cameraGpuMs;
+	double textureCamerasMs = 0.0;
+	for (EnvMapVulkanEntityID camera : s_TextureViews.GetCameras())
+	{
+		const std::string label = EnvMapVulkanTextureViews::GetCameraLabel(camera);
+		double ms = 0.0;
+		for (const EnvMapVulkanProfiler::ScopeResult& scope : results.Scopes)
+		{
+			if (scope.Depth == 1 && scope.Name == label)
+			{
+				ms = scope.GpuMs;
+				break;
+			}
+		}
+		auto previous = s_CameraGpuMs.find(camera);
+		const double smoothed = previous == s_CameraGpuMs.end() ? ms : previous->second + (ms - previous->second) * 0.05; // as the profiler
+		cameraGpuMs[camera] = smoothed;
+		frame.Cameras.push_back({ label, smoothed });
+		textureCamerasMs += smoothed;
+	}
+	s_CameraGpuMs = std::move(cameraGpuMs);
+	if (!frame.Cameras.empty())
+	{
+		frame.Cameras.insert(frame.Cameras.begin(), { "Main camera", std::max(frame.GpuMs - textureCamerasMs, 0.0) });
 	}
 	return frame;
 }
@@ -3941,7 +4007,7 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 			DebugOverlay::Build(s_UIDrawList, viewSize, s_DebugOverlayScale, GatherDebugOverlayFrame(),
 				s_DebugOverlayHasGame ? &s_DebugOverlayGame : nullptr);
 		}
-		s_UI.Record(commandBuffer, s_UIDrawList, width, height);
+		s_UI.Record(commandBuffer, s_UIDrawList, width, height, uniforms.Exposure, s_TonemapHuePreservation);
 	}
 
 	vkCmdEndRenderPass(commandBuffer);
@@ -4327,7 +4393,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		H2M::CameraH2M& sceneCamera = s_Data.SceneData.SceneCamera.Camera;
 		s_Water.Update(s_WaterSettings, deltaTime, sceneCamera.GetViewMatrix(), sceneCamera.GetProjectionMatrix(), sceneCamera.GetPosition(),
-			s_EnvMapRotation, GetWaterSunDirection(), s_Data.FrameDescriptorSet.DescriptorSets[0]);
+			s_EnvMapRotation, GetWaterSunDirection(), s_Data.FrameDescriptorSet.DescriptorSets[0], GetDisplayTone());
 	}
 
 	if (s_ViewportFBNeedsResize)
@@ -4381,7 +4447,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		inputs.EnvMapRotation = s_EnvMapRotation;
 		inputs.Water = &s_WaterSettings;
 		inputs.SunDirection = GetWaterSunDirection();
-		inputs.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f); // as the viewport composite
+		inputs.Exposure = GetViewExposure(); // as the viewport composite
 		inputs.HuePreservation = s_TonemapHuePreservation;
 		s_TextureViews.Update(*s_Scene, inputs);
 	}

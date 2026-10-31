@@ -298,8 +298,13 @@ namespace
 			const glm::vec4 color = button ? image->Color * button->GetTint() : image->Color;
 			if (color.a > 0.0f && (texture || image->Texture.empty()))
 			{
-				// Image files are loaded with their bottom row first (H2M's textures): the top-left corner reads v = 1
-				context.Out.AddQuad(min, max, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), color, texture);
+				// Image files are loaded with their bottom row first (H2M's textures): the top-left corner reads v = 1. A
+				// render texture (7.5) as an image: a Color one is sRGB (encoded again in the shader), an HDR one is light
+				// (exposed and tonemapped as the scene)
+				const H2M::ImageFormatH2M format = texture ? texture->GetFormat() : H2M::ImageFormatH2M::RGBA;
+				const float mode = format == H2M::ImageFormatH2M::SRGB ? 2.0f :
+					(format == H2M::ImageFormatH2M::RGBA16F || format == H2M::ImageFormatH2M::RGBA32F ? 3.0f : 0.0f);
+				context.Out.AddQuad(min, max, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), color, texture, mode);
 				context.Out.ImageQuads++;
 			}
 		}

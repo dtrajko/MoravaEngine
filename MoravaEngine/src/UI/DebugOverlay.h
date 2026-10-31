@@ -43,6 +43,14 @@ struct DebugOverlayFrame
 		std::string Name;
 		double GpuMs = 0.0;
 	};
+	// A camera's share of the GPU frame (7.5): the main camera (with the passes all views share: shadows, probes, the UI),
+	// then each camera that draws into a render texture, averaged over every frame (one that draws every Nth frame costs
+	// a share of that)
+	struct Camera
+	{
+		std::string Name;
+		double GpuMs = 0.0;
+	};
 
 	double Fps = 0.0;
 	double CpuMs = 0.0;              // the time between frames, smoothed
@@ -56,6 +64,7 @@ struct DebugOverlayFrame
 	uint32_t Meshes = 0;             // of the main view
 	uint32_t Culled = 0;
 	std::vector<Pass> Passes;        // the frame's top-level passes, smoothed
+	std::vector<Camera> Cameras;     // empty without render texture cameras
 };
 
 /**

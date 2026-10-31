@@ -177,9 +177,14 @@ void EnvMapVulkanTextureViews::ResizeView(View& view, uint32_t width, uint32_t h
 	{
 		view.SceneFramebuffer = CreateFramebuffer(H2M::ImageFormatH2M::RGBA16F, width, height, "TextureView");
 		view.CompositeFramebuffer = CreateFramebuffer(H2M::ImageFormatH2M::RGBA, width, height, "TextureViewComposite");
+		view.Glass = std::make_unique<EnvMapVulkanGlass>();
+		view.Glass->Create(view.SceneFramebuffer);
 	}
+	view.Glass->Resize(width, height);
 	view.Width = width;
 	view.Height = height;
+	view.Draw.SceneFramebuffer = view.SceneFramebuffer;
+	view.Draw.Glass = view.Glass.get();
 
 	// The composite reads the scene framebuffer's new image
 	H2M::RefH2M<H2M::VulkanShaderH2M> compositeShader = m_CompositePipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
@@ -198,6 +203,12 @@ void EnvMapVulkanTextureViews::DestroyView(View& view)
 	view.FrameSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
 	view.SkyboxSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
 	view.CompositeSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
+	if (view.Glass)
+	{
+		view.Glass->Destroy();
+		view.Glass.reset();
+	}
+	view.Draw = ViewDraw();
 	view.SceneFramebuffer = {};
 	view.CompositeFramebuffer = {};
 	view.RenderTexture = nullptr;
@@ -224,6 +235,7 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 		if (created)
 		{
 			CreateView(view, inputs);
+			view.Stagger = m_ViewsCreated++;
 		}
 		if (created || view.TargetFile != lens.Target)
 		{
@@ -239,7 +251,20 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 		if (settings.Width != view.Width || settings.Height != view.Height)
 		{
 			ResizeView(view, settings.Width, settings.Height);
+			view.FramesUntilDraw = 0; // a new texture: its picture at once
 		}
+
+		// Every DrawEvery frames (the texture keeps its picture in between). A new view draws at once; after that the views
+		// made together are spread over the frames, so they don't all draw in the same one
+		const uint32_t drawEvery = std::max(lens.DrawEvery, 1u);
+		view.FramesUntilDraw = std::min(view.FramesUntilDraw, 2 * (drawEvery - 1)); // Draw Every made smaller: no long wait
+		if (view.FramesUntilDraw > 0)
+		{
+			view.FramesUntilDraw--;
+			return;
+		}
+		view.FramesUntilDraw = (drawEvery - 1) + (view.Drawn ? 0 : view.Stagger % drawEvery);
+		view.Drawn = true;
 
 		// The camera as the game camera is placed (PlaceGameCamera), with the texture's aspect ratio
 		Camera camera;
@@ -256,6 +281,7 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 		EnvMapVulkanSceneDataGPU sceneData;
 		sceneData.CameraPosition = view.Draw.Position;
 		sceneData.EnvMapRotation = inputs.EnvMapRotation;
+		sceneData.DisplayTone = glm::vec4(inputs.Exposure, inputs.HuePreservation, 0.0f, 0.0f); // its composite's (a Color texture)
 		if (inputs.Water)
 		{
 			FillWaterSceneData(*inputs.Water, view.Draw.Position, inputs.SunDirection, sceneData);
@@ -311,6 +337,25 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 	}
 }
 
+std::vector<EnvMapVulkanEntityID> EnvMapVulkanTextureViews::GetCameras() const
+{
+	std::vector<EnvMapVulkanEntityID> cameras;
+	for (const auto& [entity, view] : m_Views)
+	{
+		if (view.RenderTexture && view.Drawn)
+		{
+			cameras.push_back(entity);
+		}
+	}
+	return cameras;
+}
+
+std::string EnvMapVulkanTextureViews::GetCameraLabel(EnvMapVulkanEntityID camera)
+{
+	const std::string id = std::to_string(camera);
+	return "Camera #" + (id.size() > 6 ? id.substr(id.size() - 6) : id);
+}
+
 void EnvMapVulkanTextureViews::Record(VkCommandBuffer commandBuffer, const std::function<void(VkCommandBuffer, const ViewDraw&)>& drawScene)
 {
 	for (auto& [entity, view] : m_Views)
@@ -319,6 +364,10 @@ void EnvMapVulkanTextureViews::Record(VkCommandBuffer commandBuffer, const std::
 		{
 			continue;
 		}
+
+		// Each camera's own scope in the profiler (inside the renderer's Render Textures): its time in the debug overlay
+		EnvMapVulkanProfiler::Scope cameraScope(commandBuffer, GetCameraLabel(entity), "One camera that draws into a render texture "
+			"(the last digits of its entity ID): its view, composite and copy into the texture.");
 
 		// The scene: cleared to black (the skybox covers what no mesh does)
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = view.SceneFramebuffer.As<H2M::VulkanFramebufferH2M>();
@@ -338,8 +387,12 @@ void EnvMapVulkanTextureViews::Record(VkCommandBuffer commandBuffer, const std::
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 		const VkRect2D scissor = { { 0, 0 }, { view.Width, view.Height } };
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+		view.Draw.BeginInfo = &beginInfo;
+		view.Draw.Viewport = viewport;
+		view.Draw.Scissor = scissor;
 		drawScene(commandBuffer, view.Draw);
-		vkCmdEndRenderPass(commandBuffer); // leaves the color image in SHADER_READ_ONLY
+		view.Draw.BeginInfo = nullptr;
+		vkCmdEndRenderPass(commandBuffer); // leaves the color image in SHADER_READ_ONLY (the continue render pass too)
 
 		// A Color texture: exposed and tonemapped into the composite framebuffer
 		if (view.RenderTexture->GetSettings().Format == RenderTextureFormat::Color)

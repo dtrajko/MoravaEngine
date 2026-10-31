@@ -1,5 +1,5 @@
 RenderTexture:
   Version: 1
-  Width: 512
-  Height: 512
+  Width: 480
+  Height: 640
   Format: Color

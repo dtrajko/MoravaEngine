@@ -62,6 +62,7 @@ layout (std140, set = 0, binding = 1) uniform SceneData
 	vec4 u_WaterVolumeScatter;    // offset 64: rgb, the water's scatter color
 	vec4 u_CausticsRegion;        // offset 80: the caustics map (u_CausticsMap): xy = its corner (min x, min z), z = 1 / its size, w = 1 / fade width (map units)
 	vec4 u_CausticsParams;        // offset 96: x = strength (0 = no caustics this frame), y = the focus depth (meters)
+	vec4 u_DisplayTone;           // offset 112: x = the exposure the view's composite applies, y = its hue preservation (Display surfaces)
 };
 layout (set = 0, binding = 2) uniform textureCube u_EnvRadianceTex;
 #define u_EnvRadianceTex samplerCube(u_EnvRadianceTex, s_LinearRepeat)

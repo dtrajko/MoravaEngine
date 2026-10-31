@@ -4,9 +4,9 @@ Material:
   Name: Giant_Screen
   AlbedoColor: [0, 0, 0]
   Metalness: 0
-  Roughness: 0.8
+  Roughness: 0.5
   TilingFactor: 1
-  EmissiveIntensity: 1
+  EmissiveIntensity: 5
   MetalRoughPacked: 0
   RadiancePrefilter: 0
   Surface: Opaque
