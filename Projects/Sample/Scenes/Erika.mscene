@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Erika
 EditorCamera:
-  Translation: [-0.045146182, 2.8, 4.8147993]
-  Rotation: [19.999992, 0, 0]
+  Translation: [-1.0380467, 4.9453845, -1.6231638]
+  Rotation: [-1.099999, 171.90012, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:
@@ -454,9 +454,9 @@ Entities:
     Name: Probe Volume
     Parent: 0
     Transform:
-      Translation: [0, 11, -4.7683716e-06]
+      Translation: [0, 9.5, -4.7683716e-06]
       Rotation: [0, -0, 0]
-      Scale: [25.399996, 25.4, 25.399862]
+      Scale: [25.399996, 28.55, 25.399862]
     ProbeVolume:
       Enabled: true
       Counts: [8, 8, 8]
@@ -984,3 +984,44 @@ Entities:
         ID: 2039148728491603379
         File: Assets/Materials/Walls_Blue.mmat
         Name: Walls_Blue
+  - ID: 18392056540779632985
+    Name: Camera_Render_Texture_01
+    Parent: 0
+    Transform:
+      Translation: [-0.045146182, 1.65376, 1.66558]
+      Rotation: [-19.999992, 180, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 45
+      NearClip: 0.01
+      FarClip: 1000
+      Target: Assets/RenderTextures/RenderTexture_01.mrtex
+      DrawEvery: 1
+    Script:
+      Class: Sample.OppositeCamera
+      Fields:
+        Target: {Entity: 7310463185520941001}
+        Camera: {Entity: 4797481855757227527}
+  - ID: 18084572079776579706
+    Name: Giant_Screen
+    Parent: 0
+    Transform:
+      Translation: [-2.3959494, 5.177001, 9.9]
+      Rotation: [-179.9999, -89.99995, -179.9999]
+      Scale: [0.77769995, 3.4996495, 6.2215996]
+    Model:
+      File: Models/Primitives/quad.obj
+  - ID: 17131232694880077655
+    Name: Plane
+    Parent: 18084572079776579706
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 12652234342414203007
+        File: Assets/Materials/Giant_Screen.mmat
+        Name: Giant_Screen

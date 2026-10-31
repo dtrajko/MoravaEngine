@@ -67,9 +67,10 @@ public:
 	static uint32_t GetViewportHeight();                                                                   // to be removed from VulkanRendererH2M
 
 	// Which pipelines draw a model's opaque meshes (all with the same layouts, so the same descriptor sets and push constants):
-	// Scene: the PBR shaders, depth EQUAL against the G-buffer prepass; WaterReflection: the PBR shaders with their own depth
-	// test (no prepass there); GBuffer: the prepass shaders
-	enum class MeshPass { Scene, WaterReflection, GBuffer };
+	// Scene: the PBR shaders, depth EQUAL against the G-buffer prepass; WaterReflection and TextureView (a camera that draws
+	// into a render texture, 7.5): the PBR shaders with their own depth test (no prepass there, nor the main view's culling);
+	// GBuffer: the prepass shaders
+	enum class MeshPass { Scene, WaterReflection, TextureView, GBuffer };
 	static void RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
 		MeshPass pass, uint32_t firstDraw = 0); // firstDraw: the model's first mesh among the frame's meshes (previous transforms, culling)
 

@@ -1,0 +1,22 @@
+Material:
+  Version: 1
+  ID: 12652234342414203007
+  Name: Giant_Screen
+  AlbedoColor: [0, 0, 0]
+  Metalness: 0
+  Roughness: 0.8
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Cutoff: 0.5
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 0
+    Solid: 1
+  Maps:
+    Emissive:
+      File: Assets/RenderTextures/RenderTexture_01.mrtex
+      Enabled: true
