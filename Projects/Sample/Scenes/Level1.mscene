@@ -1,0 +1,2029 @@
+Scene:
+  Version: 1
+  Name: Level1
+EditorCamera:
+  Translation: [3.0197365, 12.963264, 1.0255585]
+  Rotation: [57.800083, 85.19853, 0]
+  FieldOfView: 45
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 4797481855757227527
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [-0.045146182, 2.8, 4.8147993]
+      Rotation: [19.999992, -0, 0]
+      Scale: [1, 0.99999994, 0.99999994]
+    Camera:
+      Primary: true
+      FieldOfView: 45
+      NearClip: 0.01
+      FarClip: 1000
+    Script:
+      Class: Sample.CameraFollow
+      Fields:
+        Target: {Entity: 7310463185520941001}
+        View: {Enum: Behind}
+        BehindDistance: {Float: 3.5}
+        BehindHeight: {Float: 1.2}
+        BehindPitch: {Float: 16}
+  - ID: 16040318626583559303
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 17664899364368859239
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0.0067483177, 0.0065134675, -87.970924]
+      Scale: [0.99996686, 0.99999785, 0.9999558]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 8601021745167664655
+    Name: Floor
+    Parent: 0
+    Transform:
+      Translation: [0, 0.05, 0]
+      Rotation: [0, -0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 4645328179557402687
+    Name: Floor
+    Parent: 8601021745167664655
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 11173523489358520666
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [10.8, 11, 2.08]
+      Rotation: [0, -0, -90]
+      Scale: [9.999993, 0.9999972, 8.099895]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 11005680830479748476
+    Name: Cube
+    Parent: 11173523489358520666
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 10946202904542493917
+    Name: Wall
+    Parent: 0
+    Transform:
+      Translation: [10.8, 6, -8]
+      Rotation: [0, -0, -90]
+      Scale: [10, 0.9999972, 1.9998494]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 12347905251721334247
+    Name: Cube
+    Parent: 10946202904542493917
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4411623245843787822
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -11]
+      Rotation: [90, 4.3089303e-06, -90]
+      Scale: [9.999842, 0.99993837, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3390355051436957147
+    Name: Cube
+    Parent: 4411623245843787822
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4760625982631271431
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, 11]
+      Rotation: [90, 4.308828e-06, -90]
+      Scale: [9.999682, 0.9999284, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 4372998666035804560
+    Name: Cube
+    Parent: 4760625982631271431
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 16332770661743169074
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-11, 11, 0]
+      Rotation: [0, -0, -90]
+      Scale: [9.999993, 0.9999972, 10.2]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 8715774543680231152
+    Name: Cube
+    Parent: 16332770661743169074
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 191337683009812853
+    Name: Ceiling
+    Parent: 0
+    Transform:
+      Translation: [0, 21.8, 0]
+      Rotation: [0, -0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 1610167032220544294
+    Name: Cube
+    Parent: 191337683009812853
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 7310463185520941001
+    Name: Erika
+    Parent: 0
+    Tags: [Player]
+    Transform:
+      Translation: [-0.19276077, 1, 3.25]
+      Rotation: [179.9999, -0, -179.9999]
+      Scale: [0.9999992, 0.99999994, 0.9999992]
+    Model:
+      File: Models/Erika_Archer/Erika_Archer.dae
+    CharacterController:
+      Height: 1.7
+      Radius: 0.3
+      Offset: [0, 0.85, 0]
+      MaxSlopeDegrees: 45
+      StepHeight: 0.35
+      Mass: 60
+      PushStrength: 100
+    Script:
+      Class: Sample.AnimatedCharacter
+      Fields:
+        Camera: {Entity: 4797481855757227527}
+        Speed: {Float: 1.6}
+        RunSpeed: {Float: 3.8}
+        Gravity: {Float: 19.6}
+        JumpSpeed: {Float: 6}
+        RunJumpSpeed: {Float: 2.4}
+        RunJumpDelay: {Float: 0.1}
+        StandingJump: {Bool: false}
+        FootstepSound: {String: "Assets/Audio/Footstep_{0}.wav"}
+        FootstepVariants: {Int: 4}
+        JumpSound: {String: Assets/Audio/JumpTakeoff.wav}
+        LandSound: {String: Assets/Audio/Land.wav}
+        SoundDistance: {Float: 4}
+    Animator: {Controller: Assets/Animators/Erika.manim}
+  - ID: 7310463185520941002
+    Name: Eyes
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2594931541428410605
+        File: Assets/Materials/Erika_Eyes.mmat
+        Name: Erika_Eyes
+  - ID: 7310463185520941003
+    Name: Clothes
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 4125353244449587187
+        File: Assets/Materials/Erika_Clothes.mmat
+        Name: Erika_Clothes
+  - ID: 7310463185520941005
+    Name: Eyelashes
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 1049005126665139121
+        File: Assets/Materials/Erika_Eyelashes.mmat
+        Name: Erika_Eyelashes
+  - ID: 7310463185520941004
+    Name: Body
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 630468455590023961
+        File: Assets/Materials/Erika_Body.mmat
+        Name: Erika_Body
+  - ID: 6151200438114250001
+    Name: Spinning Cube
+    Parent: 0
+    Transform:
+      Translation: [-3, 2.5, -2]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    Script:
+      Class: Sample.Spinner
+      Fields:
+        DegreesPerSecond: {Float: 90}
+  - ID: 6151200438114250002
+    Name: Cube
+    Parent: 6151200438114250001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 16216856275011426933
+        File: Assets/Materials/Orange_Glass.mmat
+        Name: Orange_Glass
+  - ID: 3318840571902216447
+    Name: Player Light
+    Parent: 0
+    Transform:
+      Translation: [0, 10, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 30
+      Range: 18.390997
+      CastShadows: true
+  - ID: 12292673721498952904
+    Name: Probe Volume
+    Parent: 0
+    Transform:
+      Translation: [0, 9.5, -4.7683716e-06]
+      Rotation: [0, -0, 0]
+      Scale: [25.399996, 28.55, 25.399862]
+    ProbeVolume:
+      Enabled: true
+      Counts: [8, 8, 8]
+      NormalBias: 0.25
+      ViewBias: 0.25
+      AutoUpdate: true
+      ProbesPerFrame: 8
+      TracedProbesPerFrame: 1024
+      RaysPerProbe: 192
+      Hysteresis: 0.9
+      RelocateProbes: true
+      OccludeReflections: true
+      ShowProbes: false
+      ProbeRadius: 0.12
+      Show: 0
+  - ID: 9744832532305759245
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [-2.0303705, 4.4, -9]
+      Rotation: [0, -0, -10.382343]
+      Scale: [8.181774, 0.09999999, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3832071018062476339
+    Name: Cube
+    Parent: 9744832532305759245
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 16754266349564994111
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-1.4, 8.8, 3.2]
+      Rotation: [0, -0, 0]
+      Scale: [5.7, 0.09999998, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 1536568396140416009
+    Name: Cube
+    Parent: 16754266349564994111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3117841017886726524
+        File: Assets/Materials/Walls_Glass.mmat
+        Name: Walls_Glass
+  - ID: 5890360695585042944
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-1.4, 16.4, -1.2]
+      Rotation: [0, -0, 0]
+      Scale: [5.7, 0.09999998, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 14886528138942305716
+    Name: Cube
+    Parent: 5890360695585042944
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3117841017886726524
+        File: Assets/Materials/Walls_Glass.mmat
+        Name: Walls_Glass
+  - ID: 17153236279589153839
+    Name: Elevator
+    Parent: 0
+    Transform:
+      Translation: [-1.4, 1.2, 1]
+      Rotation: [0, -0, 0]
+      Scale: [2, 0.09999998, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+    Script:
+      Class: Sample.ElevatorMovement
+    AudioSource:
+      Clip: Assets/Audio/Elevator_Motor.wav
+      Bus: Effects
+      Volume: 0.6
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: true
+      MinDistance: 2
+      MaxDistance: 30
+  - ID: 377661892002717146
+    Name: Cube
+    Parent: 17153236279589153839
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13043936508063475520
+        File: Assets/Materials/Elevator_Glass.mmat
+        Name: Elevator_Glass
+  - ID: 3015530779700741111
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [1.4431548, 11.0720215, 8.991972]
+      Rotation: [0, -0, 6.9389267]
+      Scale: [8.639366, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 8192145425077427165
+    Name: Cube
+    Parent: 3015530779700741111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 2657276933636257178
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [9, 1.9, 9]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2130137511374636833
+    Name: Cube
+    Parent: 2657276933636257178
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 13437185202548278813
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [6.3, 2.9, 9]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 15388956057732450523
+    Name: Cube
+    Parent: 13437185202548278813
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 4483521497984482327
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [9.01, 3.8, 6.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3525495174675653304
+    Name: Cube
+    Parent: 4483521497984482327
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 3699939575447726428
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [9.01, 4.8, 3.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 7259106303276860897
+    Name: Cube
+    Parent: 3699939575447726428
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 18296130322567512679
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [9.01, 5.8, 0.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 13827153790416690540
+    Name: Cube
+    Parent: 18296130322567512679
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 1102313167722508566
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [5.993131, 6.8, 0.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 5973582546733750583
+    Name: Cube
+    Parent: 1102313167722508566
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 8193210053048982956
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [5.993131, 15.217359, -1.2296476]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 5843730802638488971
+    Name: Cube
+    Parent: 8193210053048982956
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 12595852348508654723
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [5.993131, 7.8, 3.2]
+      Rotation: [0, -0, 0]
+      Scale: [1, 0.100000046, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 14070998640209950311
+    Name: Cube
+    Parent: 12595852348508654723
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 13426688160774921605
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [8.8, 14.105605, -1.3675683]
+      Rotation: [90, 80.55908, 90]
+      Scale: [8.811527, 0.10000051, 0.99999654]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 13311159596631294887
+    Name: Cube
+    Parent: 13426688160774921605
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 750205669599544581
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-9.002532, 7.910711, 1.3070717]
+      Rotation: [-90, 79.99997, -90]
+      Scale: [8.872857, 0.100000344, 0.9999902]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 18416996212806506428
+    Name: Cube
+    Parent: 750205669599544581
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 8591496094468388220
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [4, 1.5, -3]
+      Rotation: [0, -0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 6326714990062403964
+    Name: Cube
+    Parent: 8591496094468388220
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 1984439874942264348
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-8, 1.5, -8]
+      Rotation: [0, -0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14780282414355964718
+    Name: Cube
+    Parent: 1984439874942264348
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 15671194134533540959
+    Name: cylinder.obj
+    Parent: 0
+    Transform:
+      Translation: [6.0020866, 3.867928, 0.18816209]
+      Rotation: [0, -0, 0]
+      Scale: [0.40000004, 2.85, 0.40000004]
+    Model:
+      File: Models/Primitives/cylinder.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 15944616858556305450
+    Name: Cylinder
+    Parent: 15671194134533540959
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 306931338365361037
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [6.0020866, 4.34524, 3.2026339]
+      Rotation: [0, -0, 0]
+      Scale: [0.40000004, 3.35, 0.40000004]
+    Model:
+      File: Models/Primitives/cylinder.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2761252527749029922
+    Name: Cylinder
+    Parent: 306931338365361037
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 18392056540779632985
+    Name: Camera_2
+    Parent: 0
+    Transform:
+      Translation: [-0.045146182, 1.65376, 1.66558]
+      Rotation: [-19.999992, 180, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 45
+      NearClip: 0.01
+      FarClip: 1000
+      Target: Assets/RenderTextures/RenderTexture_01.mrtex
+      DrawEvery: 1
+      Enabled: true
+    Script:
+      Class: Sample.OppositeCamera
+      Fields:
+        Target: {Entity: 7310463185520941001}
+        Camera: {Entity: 4797481855757227527}
+  - ID: 18084572079776579706
+    Name: Giant_Screen
+    Parent: 0
+    Transform:
+      Translation: [-2.3, 5, 9.8]
+      Rotation: [0, 90, 0]
+      Scale: [1, 3.6, 4.8]
+    Model:
+      File: Models/Primitives/quad.obj
+  - ID: 17131232694880077655
+    Name: Plane
+    Parent: 18084572079776579706
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 12652234342414203007
+        File: Assets/Materials/Giant_Screen.mmat
+        Name: Giant_Screen
+  - ID: 2247163320825194361
+    Name: Giant_Screen_02
+    Parent: 0
+    Transform:
+      Translation: [0.000207901, 11, -9.9]
+      Rotation: [-179.9999, -89.99995, -179.9999]
+      Scale: [1, 4.8, 6.4]
+    Model:
+      File: Models/Primitives/quad.obj
+  - ID: 8543855589416522051
+    Name: Plane
+    Parent: 2247163320825194361
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 12652234342414203007
+        File: Assets/Materials/Giant_Screen.mmat
+        Name: Giant_Screen
+  - ID: 4422747465022449414
+    Name: Security_Monitor
+    Parent: 0
+    Transform:
+      Translation: [-9.9, 3.4, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 0.9, 1.6]
+    Model:
+      File: Models/Primitives/quad.obj
+    Script:
+      Class: Sample.SecurityMonitor
+      Fields:
+        Viewer: {Entity: 4797481855757227527}
+  - ID: 6568875968803105198
+    Name: Plane
+    Parent: 4422747465022449414
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2852902374884244196
+        File: Assets/Materials/Security_Monitor.mmat
+        Name: Security_Monitor
+  - ID: 1889488140086242240
+    Name: Monitor_Frame
+    Parent: 0
+    Transform:
+      Translation: [-9.97, 3.4, 2]
+      Rotation: [0, 0, 0]
+      Scale: [0.05, 1, 1.7]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 857215468359362121
+    Name: Cube
+    Parent: 1889488140086242240
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 442108505777736174
+        File: Assets/Materials/Monitor_Frame.mmat
+        Name: Monitor_Frame
+  - ID: 7417424183443576835
+    Name: Security_Camera_1
+    Parent: 0
+    Tags: [SecurityCamera]
+    Transform:
+      Translation: [9.5, 9, 9.5]
+      Rotation: [31, 45, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: false
+      FieldOfView: 60
+      NearClip: 0.05
+      FarClip: 100
+      Target: Assets/RenderTextures/Security_Monitor.mrtex
+      DrawEvery: 2
+      Enabled: true
+  - ID: 1180162657825191871
+    Name: Security_Camera_2
+    Parent: 0
+    Tags: [SecurityCamera]
+    Transform:
+      Translation: [-9.5, 9, -9.5]
+      Rotation: [31, -135, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: false
+      FieldOfView: 60
+      NearClip: 0.05
+      FarClip: 100
+  - ID: 5604387594348384703
+    Name: Security_Camera_3
+    Parent: 0
+    Tags: [SecurityCamera]
+    Transform:
+      Translation: [9.5, 9, -9.5]
+      Rotation: [31, 135, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: false
+      FieldOfView: 60
+      NearClip: 0.05
+      FarClip: 100
+  - ID: 7310000000000002001
+    Name: Coin 1
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [3, 1.7, 6]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002101
+    Name: Coin Model
+    Parent: 7310000000000002001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002201
+    Name: Cylinder
+    Parent: 7310000000000002101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002002
+    Name: Coin 2
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [-6, 1.7, 6]
+      Rotation: [0, 37, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002102
+    Name: Coin Model
+    Parent: 7310000000000002002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002202
+    Name: Cylinder
+    Parent: 7310000000000002102
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002003
+    Name: Coin 3
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [-7, 1.7, -5]
+      Rotation: [0, 74, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002103
+    Name: Coin Model
+    Parent: 7310000000000002003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002203
+    Name: Cylinder
+    Parent: 7310000000000002103
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002004
+    Name: Coin 4
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [6, 1.7, -7]
+      Rotation: [0, 111, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002104
+    Name: Coin Model
+    Parent: 7310000000000002004
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002204
+    Name: Cylinder
+    Parent: 7310000000000002104
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002005
+    Name: Coin 5
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [9, 2.65, 9]
+      Rotation: [0, 148, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002105
+    Name: Coin Model
+    Parent: 7310000000000002005
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002205
+    Name: Cylinder
+    Parent: 7310000000000002105
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002006
+    Name: Coin 6
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [9.01, 4.55, 6.2]
+      Rotation: [0, 5, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002106
+    Name: Coin Model
+    Parent: 7310000000000002006
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002206
+    Name: Cylinder
+    Parent: 7310000000000002106
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002007
+    Name: Coin 7
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [9.01, 6.55, 0.2]
+      Rotation: [0, 42, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002107
+    Name: Coin Model
+    Parent: 7310000000000002007
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002207
+    Name: Cylinder
+    Parent: 7310000000000002107
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002008
+    Name: Coin 8
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [5.99, 8.55, 3.2]
+      Rotation: [0, 79, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002108
+    Name: Coin Model
+    Parent: 7310000000000002008
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002208
+    Name: Cylinder
+    Parent: 7310000000000002108
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002009
+    Name: Coin 9
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [-1.4, 9.55, 3.2]
+      Rotation: [0, 116, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002109
+    Name: Coin Model
+    Parent: 7310000000000002009
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002209
+    Name: Cylinder
+    Parent: 7310000000000002109
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002010
+    Name: Coin 10
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [-2, 5.15, -9]
+      Rotation: [0, 153, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002110
+    Name: Coin Model
+    Parent: 7310000000000002010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002210
+    Name: Cylinder
+    Parent: 7310000000000002110
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002011
+    Name: Coin 11
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [5.99, 15.95, -1.23]
+      Rotation: [0, 10, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002111
+    Name: Coin Model
+    Parent: 7310000000000002011
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002211
+    Name: Cylinder
+    Parent: 7310000000000002111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000002012
+    Name: Coin 12
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [-1.4, 17.15, -1.2]
+      Rotation: [0, 47, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+  - ID: 7310000000000002112
+    Name: Coin Model
+    Parent: 7310000000000002012
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000002212
+    Name: Cylinder
+    Parent: 7310000000000002112
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
+  - ID: 7310000000000003000
+    Name: Level
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Sample.CollectorLevel
+      Fields:
+        LevelName: {String: Level 1}
+        SparklePrefab: {Prefab: Assets/Prefabs/Sparkle.mprefab}
+        CoinText: {Entity: 7310000000000003002}
+        LevelText: {Entity: 7310000000000003003}
+        TimeText: {Entity: 7310000000000003004}
+        MessageText: {Entity: 7310000000000003005}
+  - ID: 7310000000000003100
+    Name: Music
+    Parent: 0
+    Transform:
+      Translation: [0, 2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: Assets/Audio/Music.wav
+      Bus: Music
+      Volume: 0.6
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: true
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 7310000000000003001
+    Name: HUD
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
+  - ID: 7310000000000003002
+    Name: Coins
+    Parent: 7310000000000003001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [48, 32], Size: [700, 80], Visible: true}
+    UIText:
+      Text: Coins 0 / 0
+      Font: ""
+      Size: 60
+      Color: [1, 0.82, 0.3, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1.1
+  - ID: 7310000000000003003
+    Name: Level Name
+    Parent: 7310000000000003001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0], AnchorMax: [0.5, 0], Pivot: [0.5, 0], Position: [0, 28], Size: [800, 60], Visible: true}
+    UIText:
+      Text: Level 1
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 0.9]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1.1
+  - ID: 7310000000000003004
+    Name: Time
+    Parent: 7310000000000003001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0], AnchorMax: [0.5, 0], Pivot: [0.5, 0], Position: [0, 84], Size: [400, 56], Visible: true}
+    UIText:
+      Text: 0:00
+      Font: ""
+      Size: 40
+      Color: [1, 1, 1, 0.75]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1.1
+  - ID: 7310000000000003005
+    Name: Message
+    Parent: 7310000000000003001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -60], Size: [1400, 260], Visible: false}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 84
+      Color: [1, 0.86, 0.3, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1.1
+  - ID: 7310000000000000310
+    Name: Pause Menu
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Sample.PauseMenu
+      Fields:
+        Menu: {Entity: 7310000000000000311}
+        ResumeButton: {Entity: 7310000000000000313}
+        RestartButton: {Entity: 7310000000000000315}
+        Title: {Entity: 7310000000000000312}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 10}
+  - ID: 7310000000000000311
+    Name: Pause Panel
+    Parent: 7310000000000000310
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.01, 0.015, 0.03, 0.6]}
+  - ID: 7310000000000000312
+    Name: Title
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -210], Size: [900, 140], Visible: true}
+    UIText:
+      Text: Paused
+      Font: ""
+      Size: 110
+      Color: [1, 0.86, 0.3, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000313
+    Name: Resume Button
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -30], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Resume}
+  - ID: 7310000000000000314
+    Name: Label
+    Parent: 7310000000000000313
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Resume
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000315
+    Name: Restart Button
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 90], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+  - ID: 7310000000000000316
+    Name: Label
+    Parent: 7310000000000000315
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Restart
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000318
+    Name: Exit Button
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 210], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Exit}
+  - ID: 7310000000000000319
+    Name: Label
+    Parent: 7310000000000000318
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Exit
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000317
+    Name: Hint
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -60], Size: [1400, 60], Visible: true}
+    UIText:
+      Text: "Arrow keys or D-pad, Enter or A. Escape or Start: back to the game"
+      Font: ""
+      Size: 34
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
