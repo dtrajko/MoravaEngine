@@ -819,6 +819,11 @@ bool ScenePhysics::GetCharacterState(EnvMapVulkanEntityID entity, CharacterState
 			state.Ground = ToCharacterGround(character.Controller->GetGroundState());
 			state.Velocity = character.Moved;
 			state.GroundNormal = ToGlm(character.Controller->GetGroundNormal());
+			state.GroundVelocity = ToGlm(character.Controller->GetGroundVelocity());
+			// The ground body's turn (a character's heading isn't the physics': its game turns it, AnimatedCharacter)
+			const JPH::BodyID ground = character.Controller->GetGroundBodyID();
+			state.GroundAngularVelocity = !ground.IsInvalid() && state.Ground == CharacterGround::OnGround ?
+				ToGlm(m_World->GetSystem().GetBodyInterface().GetAngularVelocity(ground)) : glm::vec3(0.0f);
 			return true;
 		}
 	}

@@ -132,11 +132,17 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	pointer.Buttons = InputSystem::ReadMouseButtons(window);
 	m_Input.SetBlockedMouseButtons(m_Systems.UpdateUIPointer(pointer, viewSize));
 	m_Input.Update(window, focused, ts.GetSeconds());
+	m_Systems.SetFullscreenState(glfwGetWindowMonitor(window) != nullptr);
 	m_GameLoop.Frame(ts.GetSeconds(), &m_Systems);
 	std::string load;
 	if (m_Systems.TakeSceneLoad(load))
 	{
 		LoadScene(load.empty() ? m_ScenePath : load);
+	}
+	bool fullscreen = false;
+	if (m_Systems.TakeFullscreenRequest(fullscreen) && fullscreen != (glfwGetWindowMonitor(window) != nullptr))
+	{
+		SetFullscreen(window, fullscreen); // Application.Fullscreen (a Settings menu)
 	}
 	if (m_Systems.TakeQuit())
 	{

@@ -10,6 +10,9 @@ namespace Sample
         /// <summary>The scene the run starts with (Play Again).</summary>
         public const string FirstLevel = "Scenes/Level1.mscene";
 
+        /// <summary>The main menu (the project's start scene).</summary>
+        public const string MainMenuScene = "Scenes/MainMenu.mscene";
+
         /// <summary>The coins of the finished levels.</summary>
         public static int Coins;
 

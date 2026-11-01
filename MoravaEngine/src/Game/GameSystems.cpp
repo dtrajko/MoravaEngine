@@ -55,6 +55,17 @@ bool GameSystems::TakeQuit()
 	return quit;
 }
 
+bool GameSystems::TakeFullscreenRequest(bool& fullscreen)
+{
+	if (m_ScriptContext.FullscreenRequest < 0)
+	{
+		return false;
+	}
+	fullscreen = m_ScriptContext.FullscreenRequest == 1;
+	m_ScriptContext.FullscreenRequest = -1;
+	return true;
+}
+
 bool GameSystems::TakeSceneLoad(std::string& path)
 {
 	if (!m_ScriptContext.SceneLoadRequested)

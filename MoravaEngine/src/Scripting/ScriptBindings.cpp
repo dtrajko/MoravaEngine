@@ -576,6 +576,8 @@ static int32_t CharacterGetState(uint64_t entity, ScriptCharacterState* out)
 	out->Ground = (int32_t)state.Ground;
 	out->Velocity = state.Velocity;
 	out->GroundNormal = state.GroundNormal;
+	out->GroundVelocity = state.GroundVelocity;
+	out->GroundAngularVelocity = state.GroundAngularVelocity;
 	return 1;
 }
 
@@ -1184,6 +1186,19 @@ static void ApplicationQuit()
 	}
 }
 
+static int32_t ApplicationGetFullscreen()
+{
+	return s_Context && s_Context->Fullscreen ? 1 : 0;
+}
+
+static void ApplicationSetFullscreen(int32_t fullscreen)
+{
+	if (s_Context)
+	{
+		s_Context->FullscreenRequest = fullscreen != 0 ? 1 : 0;
+	}
+}
+
 static GameSettings* GetSettings()
 {
 	return s_Context ? s_Context->Settings : nullptr;
@@ -1318,6 +1333,8 @@ namespace ScriptBindings
 		api.Settings_GetFile = SettingsGetFile;
 		api.UISlider_Get = UISliderGet;
 		api.UISlider_Set = UISliderSet;
+		api.Application_GetFullscreen = ApplicationGetFullscreen;
+		api.Application_SetFullscreen = ApplicationSetFullscreen;
 	}
 
 	void SetContext(ScriptContext* context)

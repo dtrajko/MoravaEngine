@@ -4,7 +4,8 @@ namespace Sample
 {
     /// <summary>
     /// The coin collector's end screen (on its canvas): the run's coins, time and falls (CollectorGame), and its buttons:
-    /// Play Again (a new run from the first level; On Click: PlayAgain) and Exit (the player closes; On Click: Exit). The
+    /// Play Again (a new run from the first level; On Click: PlayAgain), Main Menu (On Click: MainMenu) and Quit (the
+    /// player closes; On Click: Quit). The
     /// mouse is free here and the first button is selected, so the gamepad works at once.
     /// </summary>
     public class EndScreen : Entity
@@ -35,10 +36,17 @@ namespace Sample
             Scene.Load(CollectorGame.FirstLevel);
         }
 
-        // The Exit button's On Click
-        void Exit()
+        // The Main Menu button's On Click
+        void MainMenu()
         {
-            Log.Info("Exit from the end screen");
+            Log.Info("Main menu from the end screen");
+            Scene.Load(CollectorGame.MainMenuScene);
+        }
+
+        // The Quit button's On Click
+        void Quit()
+        {
+            Log.Info("Quit from the end screen");
             Application.Quit();
         }
     }

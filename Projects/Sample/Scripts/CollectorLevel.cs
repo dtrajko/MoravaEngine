@@ -63,6 +63,7 @@ namespace Sample
 
         protected override void OnCreate()
         {
+            GameOptions.ApplyAtStart(); // a level played directly (the editor): the saved settings too
             Current = this;
             total = Scene.FindEntitiesWithTag("Coin").Length;
             startTime = Time.GameTime; // the clock goes on from level to level

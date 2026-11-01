@@ -111,6 +111,8 @@ namespace Morava
         public delegate* unmanaged<char*, int, int> Settings_GetFile;
         public delegate* unmanaged<ulong, NativeUISlider*, int> UISlider_Get;
         public delegate* unmanaged<ulong, NativeUISlider*, int> UISlider_Set;
+        public delegate* unmanaged<int> Application_GetFullscreen;
+        public delegate* unmanaged<int, void> Application_SetFullscreen;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -126,6 +128,8 @@ namespace Morava
         public int Ground;
         public Vector3 Velocity;
         public Vector3 GroundNormal;
+        public Vector3 GroundVelocity;
+        public Vector3 GroundAngularVelocity;
     }
 
     [StructLayout(LayoutKind.Sequential)]
