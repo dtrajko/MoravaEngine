@@ -70,6 +70,18 @@ float UILayout::GetCanvasScale(const UICanvasComponent& canvas, const glm::vec2&
 	return std::exp2(logWidth + (logHeight - logWidth) * match);
 }
 
+UISliderGeometry UILayout::GetSliderGeometry(const UISliderComponent& slider, const glm::vec2& min, const glm::vec2& max, float scale)
+{
+	UISliderGeometry geometry;
+	geometry.HalfHandle = glm::max(slider.HandleSize, glm::vec2(0.0f)) * scale * 0.5f;
+	// The handle's center stays half a handle from each edge; a handle wider than the element: it doesn't move
+	const float inset = std::min(geometry.HalfHandle.x, (max.x - min.x) * 0.5f);
+	geometry.TravelMin = min.x + inset;
+	geometry.TravelMax = max.x - inset;
+	geometry.CenterY = (min.y + max.y) * 0.5f;
+	return geometry;
+}
+
 EnvMapVulkanEntityID UILayout::FindCanvas(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity)
 {
 	for (EnvMapVulkanEntityID id = entity; id != NoEntity; id = scene.GetParent(id))
@@ -293,9 +305,12 @@ namespace
 		if (image)
 		{
 			H2M::RefH2M<H2M::Texture2D_H2M> texture = image->Texture.empty() ? H2M::RefH2M<H2M::Texture2D_H2M>() : GetImage(image->Texture);
-			// A button's image: times the color of its state (UIButtonComponent)
+			// A button's image: times the color of its state (UIButtonComponent). A slider's (its track): dimmed when it
+			// can't be used, as its fill is
 			const UIButtonComponent* button = scene.TryGet<UIButtonComponent>(entity);
-			const glm::vec4 color = button ? image->Color * button->GetTint() : image->Color;
+			const UISliderComponent* slider = scene.TryGet<UISliderComponent>(entity);
+			const glm::vec4 color = button ? image->Color * button->GetTint() :
+				(slider && !slider->Interactable ? image->Color * slider->Disabled : image->Color);
 			if (color.a > 0.0f && (texture || image->Texture.empty()))
 			{
 				// Image files are loaded with their bottom row first (H2M's textures): the top-left corner reads v = 1. A
@@ -305,6 +320,27 @@ namespace
 				const float mode = format == H2M::ImageFormatH2M::SRGB ? 2.0f :
 					(format == H2M::ImageFormatH2M::RGBA16F || format == H2M::ImageFormatH2M::RGBA32F ? 3.0f : 0.0f);
 				context.Out.AddQuad(min, max, glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f), color, texture, mode);
+				context.Out.ImageQuads++;
+			}
+		}
+		const UISliderComponent* slider = context.ElementsOnly ? nullptr : scene.TryGet<UISliderComponent>(entity);
+		if (slider)
+		{
+			// The fill from the left edge to the handle's center, then the handle in the color of its state
+			const UISliderGeometry geometry = UILayout::GetSliderGeometry(*slider, min, max, context.Scale);
+			const float x = geometry.TravelMin + (geometry.TravelMax - geometry.TravelMin) * slider->GetNormalized();
+			const glm::vec4 fill = slider->Interactable ? slider->FillColor : slider->FillColor * slider->Disabled;
+			const H2M::RefH2M<H2M::Texture2D_H2M> none; // plain rectangles: the white texel
+			if (fill.a > 0.0f && x > min.x)
+			{
+				context.Out.AddQuad(min, glm::vec2(x, max.y), glm::vec2(0.0f), glm::vec2(0.0f), fill, none);
+				context.Out.ImageQuads++;
+			}
+			const glm::vec4 handle = slider->HandleColor * slider->GetTint();
+			if (handle.a > 0.0f && geometry.HalfHandle.x > 0.0f && geometry.HalfHandle.y > 0.0f)
+			{
+				const glm::vec2 center(x, geometry.CenterY);
+				context.Out.AddQuad(center - geometry.HalfHandle, center + geometry.HalfHandle, glm::vec2(0.0f), glm::vec2(0.0f), handle, none);
 				context.Out.ImageQuads++;
 			}
 		}

@@ -418,6 +418,45 @@ struct UIButtonComponent
 	glm::vec4 GetTint() const { return TintSet ? Tint : (Interactable ? Normal : Disabled); }
 };
 
+// A slider (docs/engine/Game_Engine_Runtime_Guide.html, Milestone 2): a value between Min and Max, chosen along the
+// element's width. Its own image is the track; the slider draws the fill (FillColor, from the left to the value) and the
+// handle (HandleSize reference pixels, HandleColor times the color of its state, as a button's image) over it, the handle
+// kept inside the rectangle. The mouse: a press on it moves the value there and drags it while held. Selected (as buttons
+// are, by the mouse, the keyboard or the gamepad), UI_Navigate's left and right change the value by Step (held: it
+// repeats), up and down move the selection. A change by the player calls OnValueChangedMethod, a method with one float
+// parameter, of the script of OnValueChangedTarget (none: the first script that has it, from the slider up to its
+// canvas), and C#'s slider.ValueChanged listeners; a value set by a script or the Inspector calls neither.
+struct UISliderComponent
+{
+	float Value = 0.5f;
+	float Min = 0.0f;
+	float Max = 1.0f;
+	bool WholeNumbers = false; // the value is rounded to whole numbers
+	float Step = 0.0f;         // UI_Navigate's change per push; 0: a tenth of the range (at least 1 with WholeNumbers)
+	bool Interactable = true;
+	glm::vec4 FillColor = glm::vec4(0.16f, 0.42f, 0.78f, 1.0f);
+	glm::vec4 HandleColor = glm::vec4(1.0f);
+	glm::vec2 HandleSize = glm::vec2(28.0f, 44.0f); // reference pixels; centered on the track's height
+	glm::vec4 Normal = glm::vec4(0.85f, 0.85f, 0.85f, 1.0f);
+	glm::vec4 Highlighted = glm::vec4(1.0f);
+	glm::vec4 Pressed = glm::vec4(0.65f, 0.65f, 0.65f, 1.0f);
+	glm::vec4 Disabled = glm::vec4(0.55f, 0.55f, 0.55f, 0.5f);
+	float FadeDuration = 0.1f;
+	EnvMapVulkanEntityID OnValueChangedTarget = NoEntity;
+	std::string OnValueChangedMethod;
+
+	// Runtime: not saved. The color the handle is multiplied by now (SceneUI fades it; not set: the state's own)
+	glm::vec4 Tint = glm::vec4(1.0f);
+	bool TintSet = false;
+
+	glm::vec4 GetTint() const { return TintSet ? Tint : (Interactable ? Normal : Disabled); }
+	// The value as the slider keeps it: within Min and Max (either way round), rounded with WholeNumbers
+	float Constrain(float value) const;
+	// 0 at Min, 1 at Max
+	float GetNormalized() const;
+	float GetStep() const;
+};
+
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
 // ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
 template<typename T>
@@ -441,4 +480,4 @@ struct ComponentList
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, PrefabComponent,
-	UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent>;
+	UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent>;

@@ -70,6 +70,10 @@ public:
 	// method; 1 also without C#), and the button's Clicked listeners (false: one threw)
 	static int InvokeMethod(void* instance, const std::string& name);
 	static bool InvokeButtonClicked(uint64_t button);
+	// A UI slider's change (Milestone 2): the instance's method of that name with one float parameter (as InvokeMethod),
+	// and the slider's ValueChanged listeners (false: one threw)
+	static int InvokeMethodFloat(void* instance, const std::string& name, float value);
+	static bool InvokeSliderChanged(uint64_t slider, float value);
 
 	// The managed heap in bytes and the garbage collections since startup (false without C#)
 	static bool GetMemory(int64_t& bytes, int32_t& collections);

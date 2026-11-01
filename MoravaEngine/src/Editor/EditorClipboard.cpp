@@ -109,6 +109,7 @@ struct ClipboardEntity
 	std::optional<UITextComponent> UIText;
 	std::optional<UIImageComponent> UIImage;
 	std::optional<UIButtonComponent> UIButton;
+	std::optional<UISliderComponent> UISlider;
 	ClipboardGame Game;
 	bool RefitShapes = false;              // a part copied alone: its model's collider and character fitted to it (PasteClipboard)
 	std::vector<ClipboardEntity> Children;  // the models, lights and UI under it
@@ -223,6 +224,7 @@ static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity)
 			if (const UITextComponent* text = s_Scene.TryGet<UITextComponent>(entity)) copy.UIText = *text;
 			if (const UIImageComponent* image = s_Scene.TryGet<UIImageComponent>(entity)) copy.UIImage = *image;
 			if (const UIButtonComponent* button = s_Scene.TryGet<UIButtonComponent>(entity)) copy.UIButton = *button;
+			if (const UISliderComponent* slider = s_Scene.TryGet<UISliderComponent>(entity)) copy.UISlider = *slider;
 			break;
 		default:
 			return std::nullopt;
@@ -395,6 +397,7 @@ static EnvMapVulkanEntityID PasteEntity(const ClipboardEntity& copy, EnvMapVulka
 			if (copy.UIText) s_Scene.Add<UITextComponent>(entity) = *copy.UIText;
 			if (copy.UIImage) s_Scene.Add<UIImageComponent>(entity) = *copy.UIImage;
 			if (copy.UIButton) s_Scene.Add<UIButtonComponent>(entity) = *copy.UIButton;
+			if (copy.UISlider) s_Scene.Add<UISliderComponent>(entity) = *copy.UISlider;
 			break;
 		default:
 			return NoEntity;

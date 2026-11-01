@@ -30,6 +30,8 @@ namespace Morava
         public delegate* unmanaged<IntPtr, char*, int, int> InvokeMethod;
         public delegate* unmanaged<ulong, int> InvokeButtonClicked;
         public delegate* unmanaged<long*, int*, void> GetMemory;
+        public delegate* unmanaged<IntPtr, char*, int, float, int> InvokeMethodFloat;
+        public delegate* unmanaged<ulong, float, int> InvokeSliderChanged;
     }
 
     // The game's assembly in a context of its own that can be unloaded (hot reload). ScriptCore is the one already
@@ -102,6 +104,8 @@ namespace Morava
                 managed->InvokeMethod = &InvokeMethod;
                 managed->InvokeButtonClicked = &InvokeButtonClicked;
                 managed->GetMemory = &GetMemory;
+                managed->InvokeMethodFloat = &InvokeMethodFloat;
+                managed->InvokeSliderChanged = &InvokeSliderChanged;
                 return 0;
             }
             catch (Exception) { return 1; }
@@ -158,6 +162,7 @@ namespace Morava
                 if (s_Context == null) return 0;
                 if (s_Instances.Count > 0) { Log.Error($"UnloadGameAssembly: {s_Instances.Count} script instances still exist"); return -1; }
                 UIButton.ClearListeners(); // they may be the game's code
+                UISlider.ClearListeners();
                 WeakReference context = StartUnload();
                 for (int i = 0; i < 10 && context.IsAlive; i++)
                 {
@@ -215,7 +220,11 @@ namespace Morava
                 s_ByEntity.Remove(entity.Id);
             handle.Free();
             // The game is over (or restarts: Scene.Load): its buttons' listeners go with its scripts
-            if (s_Instances.Count == 0) UIButton.ClearListeners();
+            if (s_Instances.Count == 0)
+            {
+                UIButton.ClearListeners();
+                UISlider.ClearListeners();
+            }
         }
 
         // The script's methods; the collision kinds are ScriptCollisionKind's values (2 + kind)
@@ -316,6 +325,48 @@ namespace Morava
                 Log.Error($"{entity?.GetType().Name}.{method}: {e}");
                 return 1;
             }
+        }
+
+        // A slider's On Value Changed method (Inspector): an instance method with one float parameter, public or not, of the
+        // script's class or a base class. 0 called, 1 threw, 2 no such method
+        [UnmanagedCallersOnly]
+        static int InvokeMethodFloat(IntPtr instance, char* name, int length, float value)
+        {
+            string method = new string(name, 0, length);
+            Entity? entity = null;
+            try
+            {
+                if (!s_Instances.Contains(instance)) { Log.Error($"{method}: not a script instance"); return 1; }
+                entity = (Entity)GCHandle.FromIntPtr(instance).Target!;
+                for (Type? type = entity.GetType(); type != null && type != typeof(Entity); type = type.BaseType)
+                {
+                    MethodInfo? info = type.GetMethod(method, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                        BindingFlags.DeclaredOnly, null, new[] { typeof(float) }, null);
+                    if (info != null)
+                    {
+                        info.Invoke(entity, new object[] { value });
+                        return 0;
+                    }
+                }
+                return 2;
+            }
+            catch (TargetInvocationException e)
+            {
+                Log.Error($"{entity?.GetType().Name}.{method}: {e.InnerException ?? e}");
+                return 1;
+            }
+            catch (Exception e)
+            {
+                Log.Error($"{entity?.GetType().Name}.{method}: {e}");
+                return 1;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        static int InvokeSliderChanged(ulong slider, float value)
+        {
+            try { return UISlider.RaiseValueChanged(slider, value) ? 0 : 1; }
+            catch (Exception e) { Log.Error($"UISlider.ValueChanged: {e}"); return 1; }
         }
 
         [UnmanagedCallersOnly]

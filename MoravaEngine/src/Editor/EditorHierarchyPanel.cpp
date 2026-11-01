@@ -434,6 +434,15 @@ void OnImGuiRenderSceneHierarchy()
 				ImGui::SetTooltip("An image that takes clicks, and the keyboard's and gamepad's selection, with a text label\n"
 					"under it. Its On Click calls a method of a script (Inspector: Button)");
 			}
+			if (ImGui::MenuItem("Slider"))
+			{
+				AddUIEntity(UIEntityPreset::Slider);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("A value between a minimum and a maximum (a volume) set with the mouse, or, selected, with\n"
+					"the keyboard's and gamepad's left and right. Its On Value Changed calls a script (Inspector: Slider)");
+			}
 			ImGui::TextDisabled("Elements go under the selected UI entity,\nelse under the first canvas (made if none)");
 			ImGui::EndMenu();
 		}

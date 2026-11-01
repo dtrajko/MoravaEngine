@@ -515,6 +515,21 @@ bool ScriptHost::InvokeButtonClicked(uint64_t button)
 	return !s_Available || s_Managed.InvokeButtonClicked(button) == 0;
 }
 
+int ScriptHost::InvokeMethodFloat(void* instance, const std::string& name, float value)
+{
+	if (!s_Available || !instance)
+	{
+		return 1;
+	}
+	const std::u16string name16 = ScriptUtf8ToUtf16(name);
+	return s_Managed.InvokeMethodFloat(instance, name16.c_str(), int(name16.size()), value);
+}
+
+bool ScriptHost::InvokeSliderChanged(uint64_t slider, float value)
+{
+	return !s_Available || s_Managed.InvokeSliderChanged(slider, value) == 0;
+}
+
 bool ScriptHost::GetMemory(int64_t& bytes, int32_t& collections)
 {
 	bytes = 0;

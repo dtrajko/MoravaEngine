@@ -97,6 +97,16 @@ struct ScriptUITextStyle
 	int32_t Reserved = 0;
 };
 
+// A UISliderComponent as a script reads and writes it (UISlider's properties)
+struct ScriptUISlider
+{
+	float Value = 0.5f;
+	float Min = 0.0f, Max = 1.0f;
+	float Step = 0.0f;
+	int32_t WholeNumbers = 0;
+	int32_t Interactable = 1;
+};
+
 // What an animator does now (Animator's properties; its state's name comes apart, Animator_GetState)
 struct ScriptAnimatorInfo
 {
@@ -138,7 +148,7 @@ struct ScriptFieldReport
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
-	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10 };
+	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -286,6 +296,10 @@ struct ScriptNativeApi
 	int32_t (*Settings_Remove)(const char16_t* key, int keyLength);
 	int32_t (*Settings_Save)();
 	int32_t (*Settings_GetFile)(char16_t* buffer, int capacity);
+	// UISlider (Milestone 2): 0 when the entity has no slider. Set: the value kept within Min and Max (rounded with
+	// WholeNumbers); a value set here calls no On Value Changed and no ValueChanged listener
+	int32_t (*UISlider_Get)(uint64_t entity, ScriptUISlider* out);
+	int32_t (*UISlider_Set)(uint64_t entity, const ScriptUISlider* value);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke
@@ -318,6 +332,11 @@ struct ScriptManagedApi
 	int (*InvokeButtonClicked)(uint64_t button);
 	// The managed heap in bytes (without collecting) and the garbage collections since startup (7.4's debug overlay)
 	void (*GetMemory)(int64_t* bytes, int32_t* collections);
+	// A slider's On Value Changed (Milestone 2): a method of the instance with one float parameter, by name (public or
+	// not): 0 called, 1 threw, 2 its class has no such method
+	int (*InvokeMethodFloat)(void* instance, const char16_t* name, int length, float value);
+	// The slider's ValueChanged event, to its C# listeners: 0, or 1 when one threw
+	int (*InvokeSliderChanged)(uint64_t slider, float value);
 };
 
 enum class ScriptCollisionKind : int32_t { CollisionEnter = 0, CollisionExit = 1, TriggerEnter = 2, TriggerExit = 3 };

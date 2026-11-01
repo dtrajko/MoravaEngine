@@ -429,6 +429,29 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
+		if (const UISliderComponent* slider = scene.TryGet<UISliderComponent>(entity))
+		{
+			out << YAML::Key << "UISlider" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Value" << YAML::Value << slider->Value;
+			out << YAML::Key << "Min" << YAML::Value << slider->Min;
+			out << YAML::Key << "Max" << YAML::Value << slider->Max;
+			out << YAML::Key << "WholeNumbers" << YAML::Value << slider->WholeNumbers;
+			out << YAML::Key << "Step" << YAML::Value << slider->Step;
+			out << YAML::Key << "Interactable" << YAML::Value << slider->Interactable;
+			WriteVec4(out, "FillColor", slider->FillColor);
+			WriteVec4(out, "HandleColor", slider->HandleColor);
+			WriteVec2(out, "HandleSize", slider->HandleSize);
+			WriteVec4(out, "Normal", slider->Normal);
+			WriteVec4(out, "Highlighted", slider->Highlighted);
+			WriteVec4(out, "Pressed", slider->Pressed);
+			WriteVec4(out, "Disabled", slider->Disabled);
+			out << YAML::Key << "FadeDuration" << YAML::Value << slider->FadeDuration;
+			out << YAML::Key << "OnValueChanged" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "Target" << YAML::Value << slider->OnValueChangedTarget;
+			out << YAML::Key << "Method" << YAML::Value << slider->OnValueChangedMethod;
+			out << YAML::EndMap;
+			out << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -747,6 +770,30 @@ namespace EnvMapVulkanSceneSerializer
 			{
 				button.OnClickTarget = onClick["Target"].as<uint64_t>(NoEntity);
 				button.OnClickMethod = onClick["Method"].as<std::string>("");
+			}
+		}
+		if (YAML::Node sliderNode = node["UISlider"]; sliderNode && sliderNode.IsMap())
+		{
+			UISliderComponent& slider = scene.Add<UISliderComponent>(entity);
+			Read(sliderNode, "Min", slider.Min);
+			Read(sliderNode, "Max", slider.Max);
+			Read(sliderNode, "WholeNumbers", slider.WholeNumbers);
+			Read(sliderNode, "Step", slider.Step);
+			Read(sliderNode, "Value", slider.Value);
+			slider.Value = slider.Constrain(slider.Value);
+			Read(sliderNode, "Interactable", slider.Interactable);
+			ReadVec4(sliderNode["FillColor"], slider.FillColor);
+			ReadVec4(sliderNode["HandleColor"], slider.HandleColor);
+			ReadVec2(sliderNode["HandleSize"], slider.HandleSize);
+			ReadVec4(sliderNode["Normal"], slider.Normal);
+			ReadVec4(sliderNode["Highlighted"], slider.Highlighted);
+			ReadVec4(sliderNode["Pressed"], slider.Pressed);
+			ReadVec4(sliderNode["Disabled"], slider.Disabled);
+			Read(sliderNode, "FadeDuration", slider.FadeDuration);
+			if (YAML::Node onChange = sliderNode["OnValueChanged"]; onChange && onChange.IsMap())
+			{
+				slider.OnValueChangedTarget = onChange["Target"].as<uint64_t>(NoEntity);
+				slider.OnValueChangedMethod = onChange["Method"].as<std::string>("");
 			}
 		}
 		if (YAML::Node probesNode = node["ProbeVolume"])

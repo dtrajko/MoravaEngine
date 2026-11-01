@@ -28,6 +28,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <chrono>
 #include <cstring>
 #include <filesystem>
@@ -288,6 +289,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::UIText:            return scene->Has<UITextComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::UIImage:           return scene->Has<UIImageComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::UIButton:          return scene->Has<UIButtonComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::UISlider:          return scene->Has<UISliderComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Animator:          return scene->Has<AnimatorComponent>(entity) ? 1 : 0;
 	}
 	return 0;
@@ -1134,6 +1136,40 @@ static int32_t UIIsPointerOver()
 	return s_Context && s_Context->UI && s_Context->UI->IsPointerOverUI() ? 1 : 0;
 }
 
+// ---- UISlider (Milestone 2)
+
+static int32_t UISliderGet(uint64_t entity, ScriptUISlider* out)
+{
+	const UISliderComponent* slider = GetUIComponent<UISliderComponent>(entity);
+	if (!slider)
+	{
+		return 0;
+	}
+	out->Value = slider->Value;
+	out->Min = slider->Min;
+	out->Max = slider->Max;
+	out->Step = slider->Step;
+	out->WholeNumbers = slider->WholeNumbers ? 1 : 0;
+	out->Interactable = slider->Interactable ? 1 : 0;
+	return 1;
+}
+
+static int32_t UISliderSet(uint64_t entity, const ScriptUISlider* value)
+{
+	UISliderComponent* slider = GetUIComponent<UISliderComponent>(entity);
+	if (!slider)
+	{
+		return 0;
+	}
+	slider->Min = std::isfinite(value->Min) ? value->Min : slider->Min;
+	slider->Max = std::isfinite(value->Max) ? value->Max : slider->Max;
+	slider->Step = std::isfinite(value->Step) ? std::max(value->Step, 0.0f) : slider->Step;
+	slider->WholeNumbers = value->WholeNumbers != 0;
+	slider->Interactable = value->Interactable != 0;
+	slider->Value = slider->Constrain(value->Value);
+	return 1;
+}
+
 // ---- Application, Settings (Milestone 2)
 
 static void ApplicationQuit()
@@ -1280,6 +1316,8 @@ namespace ScriptBindings
 		api.Settings_Remove = SettingsRemove;
 		api.Settings_Save = SettingsSave;
 		api.Settings_GetFile = SettingsGetFile;
+		api.UISlider_Get = UISliderGet;
+		api.UISlider_Set = UISliderSet;
 	}
 
 	void SetContext(ScriptContext* context)

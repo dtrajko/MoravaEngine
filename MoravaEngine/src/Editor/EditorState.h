@@ -583,7 +583,7 @@ void AnimatorControls(EnvMapVulkanEntityID entity);
 
 // ---- The game UI (EditorUI.cpp, 7.1)
 
-enum class UIEntityPreset { Canvas, Panel, Text, Image, Button };
+enum class UIEntityPreset { Canvas, Panel, Text, Image, Button, Slider };
 // A new canvas (at the top level), or a new element under the selected UI entity (else the first canvas, made when there
 // is none), selected
 EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset);

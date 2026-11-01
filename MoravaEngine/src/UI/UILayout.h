@@ -70,13 +70,23 @@ struct UIDrawList
 	void AddOutline(const glm::vec2& min, const glm::vec2& max, float width, const glm::vec4& color);
 };
 
+// Where a slider's parts are in view pixels (UISliderComponent): its handle's center goes from TravelMin to TravelMax (x)
+// at CenterY, so the handle stays inside the element; HalfHandle is half the handle's size
+struct UISliderGeometry
+{
+	float TravelMin = 0.0f, TravelMax = 0.0f;
+	float CenterY = 0.0f;
+	glm::vec2 HalfHandle = glm::vec2(0.0f);
+};
+
 /**
  * Lays out the game UI (docs/engine/Game_Engine_Runtime_Guide.html, 7.1 and 7.2): every canvas of the scene for a view of
  * viewSize pixels, its elements' rectangles from their anchors (UIRectComponent), then their images and text as quads.
  * No graphics API here: the renderer draws the list (EnvMapVulkanUI).
  *
  * Canvases are drawn by SortOrder, then in the scene's order; in a canvas, an element before its children and its
- * children in order (later ones on top), an element's image before its text. An entity under a canvas without a
+ * children in order (later ones on top), an element's image before its text. A slider: its image (the track), its fill
+ * and its handle, then its text. An entity under a canvas without a
  * UIRectComponent is a group: its children are laid out in its parent's rectangle. A canvas under another canvas is a
  * canvas of its own (the whole view).
  */
@@ -96,6 +106,9 @@ namespace UILayout
 	void AddText(UIDrawList& list, const UITextComponent& text, const glm::vec2& min, const glm::vec2& max, float scale = 1.0f);
 	// The width of a line of text in ems, kerning included
 	float MeasureText(const UIFont& font, const std::string& line);
+
+	// A slider's parts in its element's rectangle (view pixels; scale: its canvas's view pixels per reference pixel)
+	UISliderGeometry GetSliderGeometry(const UISliderComponent& slider, const glm::vec2& min, const glm::vec2& max, float scale);
 
 	// View pixels per reference pixel for this canvas in a view of that size
 	float GetCanvasScale(const UICanvasComponent& canvas, const glm::vec2& viewSize);

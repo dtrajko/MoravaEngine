@@ -215,16 +215,141 @@ namespace Morava
         internal static void ClearListeners() => s_Clicked.Clear();
     }
 
+    /// <summary>
+    /// A slider (Inspector: Slider): a value between Min and Max the player sets with the mouse (a press on it, then a drag)
+    /// or, selected, with UI_Navigate's left and right. A settings menu's volume.
+    /// </summary>
+    public sealed unsafe class UISlider : Component
+    {
+        // The listeners of each slider, by entity (as UIButton's)
+        static readonly Dictionary<ulong, Action<float>?> s_ValueChanged = new();
+
+        NativeUISlider Get()
+        {
+            NativeUISlider value;
+            if (Interop.Game->UISlider_Get(Entity.Id, &value) == 0) throw Missing("UI slider");
+            return value;
+        }
+
+        void Set(NativeUISlider value)
+        {
+            if (Interop.Game->UISlider_Set(Entity.Id, &value) == 0) throw Missing("UI slider");
+        }
+
+        /// <summary>
+        /// The value, within Min and Max (rounded with WholeNumbers). Set here, it calls neither the On Value Changed method
+        /// nor ValueChanged: a menu showing the saved settings doesn't save them again.
+        /// </summary>
+        public float Value
+        {
+            get => Get().Value;
+            set { NativeUISlider s = Get(); s.Value = value; Set(s); }
+        }
+
+        /// <summary>The value at the left end.</summary>
+        public float Min
+        {
+            get => Get().Min;
+            set { NativeUISlider s = Get(); s.Min = value; Set(s); }
+        }
+
+        /// <summary>The value at the right end.</summary>
+        public float Max
+        {
+            get => Get().Max;
+            set { NativeUISlider s = Get(); s.Max = value; Set(s); }
+        }
+
+        /// <summary>The value is rounded to whole numbers (a count, a level).</summary>
+        public bool WholeNumbers
+        {
+            get => Get().WholeNumbers != 0;
+            set { NativeUISlider s = Get(); s.WholeNumbers = value ? 1 : 0; Set(s); }
+        }
+
+        /// <summary>UI_Navigate's change per push (keyboard, gamepad); 0: a tenth of the range.</summary>
+        public float Step
+        {
+            get => Get().Step;
+            set { NativeUISlider s = Get(); s.Step = value; Set(s); }
+        }
+
+        /// <summary>False: the slider shows its Disabled color, can't be moved or selected.</summary>
+        public bool Interactable
+        {
+            get => Get().Interactable != 0;
+            set { NativeUISlider s = Get(); s.Interactable = value ? 1 : 0; Set(s); }
+        }
+
+        /// <summary>The value from 0 (Min) to 1 (Max).</summary>
+        public float NormalizedValue
+        {
+            get { NativeUISlider s = Get(); return s.Max != s.Min ? Math.Clamp((s.Value - s.Min) / (s.Max - s.Min), 0.0f, 1.0f) : 0.0f; }
+            set { NativeUISlider s = Get(); s.Value = s.Min + (s.Max - s.Min) * Math.Clamp(value, 0.0f, 1.0f); Set(s); }
+        }
+
+        /// <summary>The slider is the selected element (UI_Navigate's left and right change it).</summary>
+        public bool IsSelected => Interop.Game->UI_GetSelected() == Entity.Id;
+
+        /// <summary>Makes it the selected element. False when it can't be selected now: hidden, or not Interactable.</summary>
+        public bool Select() => Interop.Game->UI_Select(Entity.Id) != 0;
+
+        /// <summary>
+        /// The player changed the value (at most once a frame, with the new value): after the slider's On Value Changed
+        /// method, in the frame's update (before OnUpdate), also while TimeScale is 0.
+        /// </summary>
+        public event Action<float> ValueChanged
+        {
+            add { s_ValueChanged.TryGetValue(Entity.Id, out Action<float>? listeners); s_ValueChanged[Entity.Id] = listeners + value; }
+            remove
+            {
+                if (s_ValueChanged.TryGetValue(Entity.Id, out Action<float>? listeners))
+                {
+                    listeners -= value;
+                    if (listeners == null) s_ValueChanged.Remove(Entity.Id); else s_ValueChanged[Entity.Id] = listeners;
+                }
+            }
+        }
+
+        // Each listener, also when one before it threw (logged): true when none threw
+        internal static bool RaiseValueChanged(ulong slider, float value)
+        {
+            if (!s_ValueChanged.TryGetValue(slider, out Action<float>? listeners) || listeners == null) return true;
+            bool ok = true;
+            foreach (Action<float> listener in listeners.GetInvocationList())
+            {
+                try { listener(value); }
+                catch (Exception e)
+                {
+                    Log.Error($"{listener.Method.DeclaringType?.Name}.{listener.Method.Name} (UISlider.ValueChanged): {e}");
+                    ok = false;
+                }
+            }
+            return ok;
+        }
+
+        internal static void ClearListeners() => s_ValueChanged.Clear();
+    }
+
     /// <summary>The game UI as a whole.</summary>
     public static unsafe class UI
     {
-        /// <summary>The selected button (UI_Submit presses it), null for none; set null to drop the selection.</summary>
+        /// <summary>
+        /// The selected element, a button or a slider (UI_Navigate moves it), null for none; set null to drop the selection.
+        /// </summary>
+        public static Entity? Selected
+        {
+            get => Interop.EntityFor(Interop.Game->UI_GetSelected());
+            set { if (value == null) Interop.Game->UI_Select(0); else Interop.Game->UI_Select(value.Id); }
+        }
+
+        /// <summary>The selected button (UI_Submit presses it), null for none or a slider; set null to drop the selection.</summary>
         public static UIButton? SelectedButton
         {
             get
             {
-                ulong id = Interop.Game->UI_GetSelected();
-                return id == 0 ? null : new UIButton { Entity = Interop.EntityFor(id)! };
+                Entity? selected = Selected;
+                return selected != null && selected.HasComponent<UIButton>() ? new UIButton { Entity = selected } : null;
             }
             set
             {
