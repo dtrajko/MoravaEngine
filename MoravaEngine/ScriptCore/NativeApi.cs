@@ -103,6 +103,12 @@ namespace Morava
         public delegate* unmanaged<float, void> Time_SetTimeScale;
         public delegate* unmanaged<ulong, char*, int, int> Camera_GetTarget;
         public delegate* unmanaged<ulong, char*, int, int> Camera_SetTarget;
+        public delegate* unmanaged<void> Application_Quit;
+        public delegate* unmanaged<char*, int, char*, int, int> Settings_Get;
+        public delegate* unmanaged<char*, int, char*, int, void> Settings_Set;
+        public delegate* unmanaged<char*, int, int> Settings_Remove;
+        public delegate* unmanaged<int> Settings_Save;
+        public delegate* unmanaged<char*, int, int> Settings_GetFile;
     }
 
     [StructLayout(LayoutKind.Sequential)]

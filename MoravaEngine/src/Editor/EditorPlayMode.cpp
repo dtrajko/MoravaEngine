@@ -35,6 +35,8 @@
 
 #include "Project/Project.h"
 
+#include "Scripting/ScriptHost.h"
+
 #include "UI/DebugOverlay.h"
 
 #include "H2M/Renderer/ModelH2M.h"
@@ -177,6 +179,8 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 	{
 		// The project's input file is read at each Play: an edit of it counts at the next Play
 		s_GameInput.SetMap(GameSystems::LoadInputMap());
+		// The game's settings (the C# Settings class) in the project's Library folder: an installed game keeps its own
+		s_GameSystems.OpenSettings(Project::GetOpen() ? GameSettings::GetEditorFile(*Project::GetOpen()) : std::string());
 		s_GameSystems.Begin(&s_Scene, &s_GameInput);
 		s_FocusViewport = true;
 		PlaceGameCamera(camera);
@@ -249,13 +253,19 @@ static void LoadSceneInPlay(const std::string& requested)
 		std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count());
 }
 
-// After a frame of the game: the scene a script asked for
+// After a frame of the game: the scene a script asked for; Application.Quit stops Play (at the start of the next frame,
+// as the Stop button does)
 static void ProcessSceneLoad()
 {
 	std::string path;
 	if (s_GameSystems.TakeSceneLoad(path))
 	{
 		LoadSceneInPlay(path);
+	}
+	if (s_GameSystems.TakeQuit())
+	{
+		s_PlayRequest = PlayRequest::Stop;
+		ShowNotification("Application.Quit: Play stopped (in the player, the game closes)", false);
 	}
 }
 
@@ -303,6 +313,16 @@ static void StopPlay()
 	if (s_PlayState == PlayState::Play)
 	{
 		SetEditorView(s_ViewBeforePlay);
+	}
+
+	// Play ran the scripts: their assembly is loaded again, so the next Play starts with fresh static fields (a score kept
+	// from level to level starts at 0 again), as each run of the player does. At Stop, not at Play: Play stays quick
+	if (s_PlayState == PlayState::Play && ScriptHost::IsGameAssemblyLoaded())
+	{
+		const auto reloadStart = std::chrono::steady_clock::now();
+		GameSystems::LoadScripts();
+		Log::GetLogger()->info("Stop: scripts loaded again for the next Play (fresh static fields), {0:.0f} ms",
+			std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - reloadStart).count());
 	}
 
 	s_PlayState = PlayState::Edit;

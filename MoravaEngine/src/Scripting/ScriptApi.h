@@ -276,6 +276,16 @@ struct ScriptNativeApi
 	// camera). Set: 0 when the entity has no CameraComponent; a file that can't be read is logged when the camera draws
 	int32_t (*Camera_GetTarget)(uint64_t entity, char16_t* buffer, int capacity);
 	int32_t (*Camera_SetTarget)(uint64_t entity, const char16_t* target, int length);
+	// Application.Quit (Milestone 2): the game ends after this frame (the player closes, the editor stops Play)
+	void (*Application_Quit)();
+	// Settings (Milestone 2): text values by key, kept between the game's runs (GameSettings). Get: as Entity_GetName,
+	// -2 when there is no such key. Remove: 1 removed, 0 there was none. Save: 1 written (or nothing to write), 0 failed
+	// (logged). GetFile: the file, as Entity_GetName (empty: for this run only)
+	int32_t (*Settings_Get)(const char16_t* key, int keyLength, char16_t* buffer, int capacity);
+	void (*Settings_Set)(const char16_t* key, int keyLength, const char16_t* value, int valueLength);
+	int32_t (*Settings_Remove)(const char16_t* key, int keyLength);
+	int32_t (*Settings_Save)();
+	int32_t (*Settings_GetFile)(char16_t* buffer, int capacity);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

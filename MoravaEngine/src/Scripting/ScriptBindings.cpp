@@ -13,6 +13,8 @@
 
 #include "Audio/SceneAudio.h"
 
+#include "Game/GameSettings.h"
+
 #include "Input/InputSystem.h"
 
 #include "Physics/ScenePhysics.h"
@@ -1132,6 +1134,62 @@ static int32_t UIIsPointerOver()
 	return s_Context && s_Context->UI && s_Context->UI->IsPointerOverUI() ? 1 : 0;
 }
 
+// ---- Application, Settings (Milestone 2)
+
+static void ApplicationQuit()
+{
+	if (s_Context)
+	{
+		if (!s_Context->QuitRequested)
+		{
+			Log::GetLogger()->info("Application.Quit: the game ends after this frame");
+		}
+		s_Context->QuitRequested = true;
+	}
+}
+
+static GameSettings* GetSettings()
+{
+	return s_Context ? s_Context->Settings : nullptr;
+}
+
+static int32_t SettingsGet(const char16_t* key, int keyLength, char16_t* buffer, int capacity)
+{
+	const GameSettings* settings = GetSettings();
+	std::string value;
+	if (!settings || !settings->Get(ToUtf8(key, keyLength), value))
+	{
+		return -2;
+	}
+	return CopyString(value, buffer, capacity);
+}
+
+static void SettingsSet(const char16_t* key, int keyLength, const char16_t* value, int valueLength)
+{
+	if (GameSettings* settings = GetSettings())
+	{
+		settings->Set(ToUtf8(key, keyLength), ToUtf8(value, valueLength));
+	}
+}
+
+static int32_t SettingsRemove(const char16_t* key, int keyLength)
+{
+	GameSettings* settings = GetSettings();
+	return settings && settings->Remove(ToUtf8(key, keyLength)) ? 1 : 0;
+}
+
+static int32_t SettingsSave()
+{
+	GameSettings* settings = GetSettings();
+	return !settings || settings->Save() ? 1 : 0;
+}
+
+static int32_t SettingsGetFile(char16_t* buffer, int capacity)
+{
+	const GameSettings* settings = GetSettings();
+	return CopyString(settings ? settings->GetFile() : std::string(), buffer, capacity);
+}
+
 namespace ScriptBindings
 {
 	void Bind()
@@ -1216,6 +1274,12 @@ namespace ScriptBindings
 		api.Time_SetTimeScale = TimeSetTimeScale;
 		api.Camera_GetTarget = CameraGetTarget;
 		api.Camera_SetTarget = CameraSetTarget;
+		api.Application_Quit = ApplicationQuit;
+		api.Settings_Get = SettingsGet;
+		api.Settings_Set = SettingsSet;
+		api.Settings_Remove = SettingsRemove;
+		api.Settings_Save = SettingsSave;
+		api.Settings_GetFile = SettingsGetFile;
 	}
 
 	void SetContext(ScriptContext* context)
