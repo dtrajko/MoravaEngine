@@ -1,0 +1,230 @@
+Scene:
+  Version: 1
+  Name: End
+EditorCamera:
+  Translation: [24, 22, 14]
+  Rotation: [35, 35, 0]
+  FieldOfView: 45
+RenderSettings:
+  Shadows:
+    Distance: 70
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 4797481855757227527
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 0.99999994, 0.99999994]
+    Camera:
+      Primary: true
+      FieldOfView: 45
+      NearClip: 0.01
+      FarClip: 1000
+    Script:
+      Class: Sample.Spinner
+      Fields:
+        DegreesPerSecond: {Float: 4}
+  - ID: 16040318626583559303
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/Tropical_Beach_3k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 17664899364368859239
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0.0067483177, 0.0065134675, -87.970924]
+      Scale: [0.99996686, 0.99999785, 0.9999558]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 7310000000000003100
+    Name: Music
+    Parent: 0
+    Transform:
+      Translation: [0, 2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: Assets/Audio/Music.wav
+      Bus: Music
+      Volume: 0.6
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: true
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 7310000000000006001
+    Name: End Screen
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Sample.EndScreen
+      Fields:
+        SummaryText: {Entity: 7310000000000006003}
+        FirstButton: {Entity: 7310000000000006004}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
+  - ID: 7310000000000006002
+    Name: Title
+    Parent: 7310000000000006001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -260], Size: [1400, 160], Visible: true}
+    UIText:
+      Text: You did it!
+      Font: ""
+      Size: 120
+      Color: [1, 0.82, 0.3, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1.1
+  - ID: 7310000000000006003
+    Name: Summary
+    Parent: 7310000000000006001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -90], Size: [1400, 160], Visible: true}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 52
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1.1
+  - ID: 7310000000000006004
+    Name: Play Again Button
+    Parent: 7310000000000006001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 80], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: PlayAgain}
+  - ID: 7310000000000006005
+    Name: Label
+    Parent: 7310000000000006004
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Play Again
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1.1
+  - ID: 7310000000000006006
+    Name: Exit Button
+    Parent: 7310000000000006001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 200], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Exit}
+  - ID: 7310000000000006007
+    Name: Label
+    Parent: 7310000000000006006
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Exit
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1.1

@@ -13,7 +13,7 @@
  * the file, and two hashes of what the prefab and the instance were when they last matched. The root's name, translation
  * and rotation are the instance's own (a new instance is named after the prefab); everything else is the prefab's.
  *
- * Without per-field overrides (Phase 10) the hashes tell an instance's state: the prefab file changed since (PrefabHash),
+ * Without per-field overrides (Phase 12) the hashes tell an instance's state: the prefab file changed since (PrefabHash),
  * the instance changed since (InstanceHash), both, or neither. An instance that didn't change takes a changed prefab as it
  * is (Revert); one that did is left alone, so a change made to it is never lost by surprise.
  *

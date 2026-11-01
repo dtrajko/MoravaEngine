@@ -20,7 +20,7 @@
  *
  * The atlas is made on first use and kept in a cache file (Library/FontCache of the open project, else
  * Resources/Cache/Fonts), keyed by the font file's contents and the atlas settings: making it takes a moment, reading it
- * back a few milliseconds. Phase 8 cooks it with the other assets.
+ * back a few milliseconds. Phase 10 cooks it with the other assets.
  *
  * Glyph geometry is in ems with y down from the baseline (as UI layout is): a glyph's top is at a negative y.
  * Characters: printable ASCII, Latin-1 and Latin Extended-A (French, German, Spanish, Serbian and Croatian Latin, Czech,

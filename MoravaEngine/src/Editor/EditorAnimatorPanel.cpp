@@ -557,7 +557,7 @@ static bool StateControls(AnimatorController& controller, const H2M::RefH2M<H2M:
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("The clip's root (the hips) keeps its place across the ground: for a walk or run made with root\n"
-					"motion, which the character controller moves instead (moving the entity by the clip comes in Phase 10)");
+					"motion, which the character controller moves instead (moving the entity by the clip comes in Phase 12)");
 			}
 			if (playing)
 			{
