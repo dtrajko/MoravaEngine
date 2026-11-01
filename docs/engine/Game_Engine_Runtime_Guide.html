@@ -94,7 +94,7 @@ header.hero { padding-block: 18px 26px; display: grid; gap: 14px; }
 .kicker { font: 600 0.78rem var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
 .lede { font-size: 1.12rem; color: var(--muted); max-width: 48rem; }
 .meta { font-size: 0.86rem; color: var(--muted); max-width: 48rem; }
-nav.toc ol { columns: 2 18rem; column-gap: 32px; padding-left: 1.3rem; }
+nav.toc ol { columns: 2 18rem; column-gap: 32px; padding-left: 0; list-style: none; } /* no automatic numbers: each entry names its phase */
 nav.toc li { break-inside: avoid; }
 
 /* diagrams */
@@ -145,6 +145,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><a href="#phase-5">Phase 5: audio</a></li>
       <li><a href="#phase-6">Phase 6: prefabs, cameras, animation</a></li>
       <li><a href="#phase-7">Phase 7: game UI</a></li>
+      <li><a href="#phase-12">Phase 12: antialiasing</a></li>
+      <li><a href="#phase-13">Phase 13: tinted glass shadows</a></li>
       <li><a href="#phase-8">Phase 8: assets and cooking</a></li>
       <li><a href="#phase-9">Phase 9: Build Game and shipping</a></li>
       <li><a href="#phase-10">Phase 10: later</a></li>
@@ -158,7 +160,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 <section>
   <h2>The short version</h2>
   <p>Today MoravaEngine is a renderer with a scene editor around it: one executable that loads <code>.mscene</code> files and draws them very well. A game engine adds three things on top of that. <b>Behavior</b>: the scene must change by itself over time, driven by physics, scripts, input and sound. <b>A play/edit separation</b>: the editor runs the game on a copy of the scene and throws the copy away when you press Stop. <b>Shipping</b>: a second, small executable (the player) that runs one game from cooked files, without the editor, the importers or the shader compiler.</p>
-  <p>The phases are ordered so that each one ends with something that runs. Phases 1 to 4 make the first playable game (a ball rolled with the keyboard that collects pickups). Phases 5 to 7 add what a real small game needs (sound, characters, menus). Phases 8 and 9 make it shippable: cooked assets in one pack file, and a Build Game window that writes a folder you can zip and send.</p>
+  <p>The phases are ordered so that each one ends with something that runs. Phases 1 to 4 make the first playable game (a ball rolled with the keyboard that collects pickups). Phases 5 to 7 add what a real small game needs (sound, characters, menus). Phases 8 and 9 make it shippable: cooked assets in one pack file, and a Build Game window that writes a folder you can zip and send. Phases 12 and 13 (antialiasing, tinted glass shadows) were added later; they come after Milestone 2 and before Phase 8, and keep their numbers so that 8 to 11 keep theirs. The guide puts each phase where it is done.</p>
 </section>
 
 <section id="read">
@@ -1158,6 +1160,16 @@ struct UIButtonComponent { glm::vec4 Normal, Hover, Pressed, Disabled; std::stri
     <li><b>Checked</b> in a windowed test copy (<code>D:/Workspace/Temp/SettingsTest</code>, <code>SliderTest.mscene</code>, a driver script): from code, 2 on a 0 to 1 slider gives 1, 3.6 with whole numbers gives 4, no events; real input sent to the player's window: Right three times (0.25 to 0.55 by 0.1, the Inspector's method each time), Down (the next slider selected), Right twice (4 to 6, the C# event each time), Up, and a mouse drag from the left to three quarters (0.75, one call per frame); the editor's Inspector and the sliders drawn in Edit; no validation messages; GCC (WSL) on the changed C++ files. Found by the way: keys sent with <code>keybd_event</code> need their scan code (GLFW otherwise reads the arrows as the numpad's), and two of seven runs lost one 60 ms synthetic tap: the engine reads keys as states once per frame, so a tap pressed and released within one long frame isn't seen.</li>
   </ul>
   </div>
+  <div class="box note"><b>As built: M2.3, coins and Level 1</b>
+  <ul>
+    <li><b>The coin</b> (<code>Assets/Prefabs/Coin.mprefab</code>): a root with a trigger sphere (radius 0.4), the tag <i>Coin</i> and <code>Scripts/Coin.cs</code>, a child <i>Coin Model</i> (the cylinder at 0.3 x 0.04 x 0.3, stood up by 90 degrees about X) with <code>Assets/Materials/Coin_Gold.mmat</code> (gold metal, roughness 0.22). The model is a child because a prefab's root rotation is the instance's own; the root turns about the world's up axis, and bobs 8 cm (each coin a little out of step).</li>
+    <li><b>Who collects:</b> an entity holds one script, and Erika's is <code>AnimatedCharacter</code>, so a coin asks for the tag <i>Player</i> on what entered it (the character's inner body reports its entity) and reports to the level, <code>CollectorLevel.Current</code>. The coin marks itself collected at once: the inner body may touch it twice before it is gone.</li>
+    <li><b><code>Scripts/CollectorLevel.cs</code></b> on an entity of its own (<i>Level</i>): counts the scene's coins by tag, shows <i>Coins n / total</i>, the level's name and its time (minutes:seconds) on the HUD, plays <code>Pickup.wav</code> for each coin (3 % higher each time), scatters five sparkles (<code>Sparkle.mprefab</code>), and with the last coin shows <i>Level 1 complete! All 12 coins in m:ss</i> and plays <code>Win.wav</code>. What follows the end is M2.4's.</li>
+    <li><b><code>Scenes/Level1.mscene</code></b>: Erika's room (all of it: the elevator, the monitor, the glass) with 12 coins: four on the floor, four up the steps, one on the shelf over the elevator, one on the back ramp and two high up (15.95 and 17.15 m), 0.65 m over their surfaces; Erika tagged <i>Player</i>; a <i>Music</i> entity (<code>Music.wav</code>, streamed); a <i>HUD</i> canvas; Roll a Ball's pause menu (Resume, Restart, Exit). <code>Erika.mscene</code> is unchanged.</li>
+    <li><b>Prefab instances written by hand</b> (the scene was made by a script from <code>Erika.mscene</code>): an instance keeps two hashes, of the prefab file and of its own subtree as prefab text (the root's name empty, written <code>""</code>, its position and rotation zero). Both are 64-bit FNV-1a without carriage returns, so they can be computed outside the engine; checked on Roll a Ball's pickups, and the editor saved the coins back unchanged (<code>--save-scene</code>), so they show as <i>as the prefab</i>.</li>
+    <li><b>Checked</b> in the windowed test copy with a driver script that moves one coin after another to Erika (its private home position, by reflection): each one entered by Erika's inner body, counted (1 to 12), its sparkles, the end message after 13 s; a screenshot of the HUD during and after; the editor's view of the coins in Edit and the Material Library's 12 uses of Coin_Gold; no validation messages, no script problems. Not checked: that each coin can be reached on foot (the two high ones by the ramps): for the user, in Play.</li>
+  </ul>
+  </div>
 </section>
 
 <section id="phase-12">
@@ -1369,6 +1381,7 @@ Build:
     <tr><td>13</td><td>Tinted glass shadows: transmittance maps beside the shadow maps</td><td>12</td><td>Orange, lighter shadow of the glass cube in Erika's scene</td></tr>
     <tr><td>8</td><td>Asset registry, cooking, pack file</td><td>1</td><td>Player runs from the pack only</td></tr>
     <tr><td>9</td><td>Build Game, player templates, private .NET, quality tiers, crash dumps</td><td>4, 8</td><td><b>Milestone 3: shipped on a clean machine</b></td></tr>
+    <tr><td>10</td><td>Later, when games ask for it: particles, navmesh, undo/redo, save games, Steam</td><td>9</td><td>Each by the game that needs it</td></tr>
     <tr><td>11</td><td>Replace a model's file, add and remove meshes</td><td>8 (shared models)</td><td>The Player's cube becomes a sphere, keeping its components</td></tr>
   </table></div>
   <p>Phase 8 depends only on Phase 1 and could run in parallel with 5 to 7, but doing it after the collector exists means the cooker is tested on a real game's assets.</p>

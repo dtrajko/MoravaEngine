@@ -1,0 +1,45 @@
+Prefab:
+  Version: 1
+  Name: Coin
+Entities:
+  - ID: 1
+    Name: Coin
+    Parent: 0
+    Tags: [Coin]
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.4
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Coin
+  - ID: 2
+    Name: Coin Model
+    Parent: 1
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.3, 0.04, 0.3]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 3
+    Name: Cylinder
+    Parent: 2
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7310000000000009001
+        File: Assets/Materials/Coin_Gold.mmat
+        Name: Coin_Gold
