@@ -403,6 +403,19 @@ Entities:
         ID: 630468455590023961
         File: Assets/Materials/Erika_Body.mmat
         Name: Erika_Body
+  - ID: 7310000000000007001
+    Name: Player Light
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 2.4, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [1, 0.88, 0.7]
+      Intensity: 3
+      Range: 6
+      CastShadows: false
   - ID: 6151200438114250001
     Name: Spinning Cube
     Parent: 0
@@ -439,28 +452,28 @@ Entities:
         File: Assets/Materials/Orange_Glass.mmat
         Name: Orange_Glass
   - ID: 3318840571902216447
-    Name: Player Light
+    Name: Room Light
     Parent: 0
     Transform:
-      Translation: [0, 10, 0]
+      Translation: [0, 7.5, 0]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     PointLight:
       Enabled: true
       Color: [1, 0.95, 0.85]
-      Intensity: 30
-      Range: 18.390997
+      Intensity: 22
+      Range: 22
       CastShadows: true
   - ID: 12292673721498952904
     Name: Probe Volume
     Parent: 0
     Transform:
-      Translation: [0, 9.5, -4.7683716e-06]
-      Rotation: [0, -0, 0]
-      Scale: [25.399996, 28.55, 25.399862]
+      Translation: [0, 10.9, 0]
+      Rotation: [0, 0, 0]
+      Scale: [19, 18.6, 19]
     ProbeVolume:
       Enabled: true
-      Counts: [8, 8, 8]
+      Counts: [8, 10, 8]
       NormalBias: 0.25
       ViewBias: 0.25
       AutoUpdate: true
@@ -594,6 +607,8 @@ Entities:
       ContinuousCollision: false
     Script:
       Class: Sample.ElevatorMovement
+      Fields:
+        WaitSeconds: {Float: 6}
     AudioSource:
       Clip: Assets/Audio/Elevator_Motor.wav
       Bus: Effects
@@ -2028,3 +2043,29 @@ Entities:
       VerticalAlign: Middle
       Wrap: false
       LineSpacing: 1
+  - ID: 7310000000000007002
+    Name: Fill Light Front Left
+    Parent: 0
+    Transform:
+      Translation: [-7, 3, 6]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [1, 0.85, 0.7]
+      Intensity: 1.2
+      Range: 8
+      CastShadows: false
+  - ID: 7310000000000007003
+    Name: Fill Light Back Right
+    Parent: 0
+    Transform:
+      Translation: [6, 3, -6.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [1, 0.85, 0.7]
+      Intensity: 1.2
+      Range: 8
+      CastShadows: false
