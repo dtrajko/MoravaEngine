@@ -327,7 +327,7 @@ struct AnimatorComponent
 // are the instance's own (where it is placed); the rest of the instance is the prefab's
 struct PrefabComponent
 {
-	std::string File;            // absolute here, relative to the project in the scene file (an asset handle from Phase 8)
+	std::string File;            // absolute here, relative to the project in the scene file (an asset handle from Phase 10)
 	uint64_t PrefabHash = 0;     // the prefab file's content when the instance last matched it
 	uint64_t InstanceHash = 0;   // the instance's own content then (EnvMapVulkanPrefab::GetInstanceHash)
 };

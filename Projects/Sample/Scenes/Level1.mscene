@@ -1768,6 +1768,7 @@ Entities:
       Class: Sample.CollectorLevel
       Fields:
         LevelName: {String: Level 1}
+        NextScene: {String: Scenes/Level2.mscene}
         SparklePrefab: {Prefab: Assets/Prefabs/Sparkle.mprefab}
         CoinText: {Entity: 7310000000000003002}
         LevelText: {Entity: 7310000000000003003}

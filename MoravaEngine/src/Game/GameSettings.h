@@ -9,7 +9,7 @@ struct Project;
 /**
  * What a game remembers between its runs (docs/engine/Game_Engine_Runtime_Guide.html, Milestone 2): the player's choices
  * in its Settings menu (volumes, the mouse's sensitivity), as text values by key, in one YAML file per game and user. The
- * C# Settings class reads and writes them; save games are Phase 10's.
+ * C# Settings class reads and writes them; save games are Phase 12's.
  *
  * The game's owner says which file (Open, before the game starts): the player the user's folder (GetUserFile), the
  * editor's Play the project's Library folder (GetEditorFile), so playing in the editor leaves an installed game's

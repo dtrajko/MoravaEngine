@@ -30,9 +30,11 @@ namespace Sample
         public string JumpSound = "Assets/Audio/Jump.wav";
         public string WinSound = "Assets/Audio/Win.wav";
 
-        /// <summary>Placed where a pickup was (none: nothing), SparkleCount of them, each flying off its own way.</summary>
+        /// <summary>Launched where a pickup was (none: nothing), SparkleCount of them, each flying off its own way, from a
+        /// pool of SparklePoolSize placed at the start (placing them during the game would pause it: SparklePool).</summary>
         public Prefab? SparklePrefab;
         public int SparkleCount = 4;
+        public int SparklePoolSize = 12;
 
         /// <summary>Seconds after the win until the game starts again (0: it doesn't).</summary>
         public float RestartDelay = 5.0f;
@@ -48,7 +50,7 @@ namespace Sample
         float radius;
         int total;
         double startTime, restartTime = -1, winTime;
-        readonly Random random = new();
+        SparklePool? sparkles;
 
         protected override void OnCreate()
         {
@@ -56,6 +58,7 @@ namespace Sample
                 throw new InvalidOperationException($"{Name} needs a Rigid Body (Dynamic) for BallController");
             radius = Scale.Y; // the sphere model's radius is 1
             total = Scene.FindEntitiesWithTag("Pickup").Length;
+            sparkles = new SparklePool(SparklePrefab, SparklePoolSize);
             startTime = Time.GameTime; // the game time goes on when the scene starts again
             Log.Info($"Roll a Ball: collect the {total} pickups");
             ShowScore();
@@ -123,16 +126,8 @@ namespace Sample
             // From where the pickup was, a little higher each time
             if (PickupSound.Length > 0)
                 Audio.PlayOneShot(PickupSound, pickup.WorldPosition, 0.8f, AudioBus.Effects, 1.0f + 0.04f * (Score - 1));
-            if (SparklePrefab != null)
-            {
-                for (int i = 0; i < SparkleCount; i++)
-                {
-                    // Out around the pickup, and up
-                    float angle = (i + (float)random.NextDouble() * 0.5f) * 2.0f * MathF.PI / SparkleCount;
-                    var sparkle = (Sparkle)Scene.Instantiate(SparklePrefab, pickup.WorldPosition);
-                    sparkle.Velocity = new Vector3(MathF.Cos(angle) * 1.5f, 2.5f + (float)random.NextDouble(), MathF.Sin(angle) * 1.5f);
-                }
-            }
+            // Out around the pickup, and up
+            sparkles?.Burst(pickup.WorldPosition, SparkleCount, 1.5f, 2.5f);
             if (Score == total)
             {
                 winTime = Time.GameTime - startTime;
