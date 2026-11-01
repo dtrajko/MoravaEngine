@@ -62,6 +62,9 @@
 #include <glm/gtx/component_wise.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h> // the monitor's refresh rate (the debug overlay)
+
 #include <algorithm>
 #include <filesystem>
 #include <optional>
@@ -3846,9 +3849,65 @@ static void RecordBloomPasses(VkCommandBuffer commandBuffer)
 // Draws s_Framebuffer (linear HDR) into s_ViewportCompositeFramebuffer with exposure, ACES tonemapping and gamma
 // (Resources/Shaders/SceneComposite.glsl). The Viewport panel shows the result.
 // The debug overlay's frame numbers: the profiler's last finished frame and this frame's culling
+// The refresh rate of the monitor the window is on, in Hz (0: not known): its own monitor in fullscreen, else the one
+// most of the window covers. A variable refresh monitor (G-Sync, FreeSync) reports its highest rate
+static int GetWindowRefreshRate(GLFWwindow* window)
+{
+	GLFWmonitor* monitor = window ? glfwGetWindowMonitor(window) : nullptr;
+	if (window && !monitor)
+	{
+		int x = 0, y = 0, width = 0, height = 0;
+		glfwGetWindowPos(window, &x, &y);
+		glfwGetWindowSize(window, &width, &height);
+		int count = 0;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+		long long best = 0;
+		for (int i = 0; i < count; i++)
+		{
+			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+			int mx = 0, my = 0;
+			glfwGetMonitorPos(monitors[i], &mx, &my);
+			if (!mode)
+			{
+				continue;
+			}
+			const long long overlapX = std::max(0, std::min(x + width, mx + mode->width) - std::max(x, mx));
+			const long long overlapY = std::max(0, std::min(y + height, my + mode->height) - std::max(y, my));
+			if (overlapX * overlapY > best)
+			{
+				best = overlapX * overlapY;
+				monitor = monitors[i];
+			}
+		}
+		if (!monitor)
+		{
+			monitor = glfwGetPrimaryMonitor();
+		}
+	}
+	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
+	return mode ? mode->refreshRate : 0;
+}
+
+// The window's present mode as the debug overlay says it: with VSync the frame rate stops at the display's refresh rate
+// (shown with it: FPS at that number means VSync holds the game back)
+static std::string DescribeVSync(const H2M::VulkanSwapChainH2M& swapChain, int refreshRate)
+{
+	const std::string hz = refreshRate > 0 ? ", " + std::to_string(refreshRate) + " Hz" : std::string();
+	switch (swapChain.GetPresentMode())
+	{
+		case VK_PRESENT_MODE_FIFO_KHR:         return (swapChain.IsVSyncRequested() ? "on" : "on (no other mode)") + hz;
+		case VK_PRESENT_MODE_FIFO_RELAXED_KHR: return "on (relaxed)" + hz;
+		case VK_PRESENT_MODE_MAILBOX_KHR:      return "off (mailbox)" + hz;
+		case VK_PRESENT_MODE_IMMEDIATE_KHR:    return "off (immediate, may tear)" + hz;
+		default:                               return "?" + hz;
+	}
+}
+
 static DebugOverlayFrame GatherDebugOverlayFrame()
 {
 	DebugOverlayFrame frame;
+	Window* window = Application::Get()->GetWindow();
+	frame.VSync = DescribeVSync(window->GetSwapChain(), GetWindowRefreshRate(window->GetHandle()));
 	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
 	frame.Fps = EnvMapVulkanProfiler::GetFps();
 	frame.CpuMs = EnvMapVulkanProfiler::GetSmoothedCpuFrameMs();

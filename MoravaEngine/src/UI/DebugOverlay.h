@@ -54,6 +54,7 @@ struct DebugOverlayFrame
 
 	double Fps = 0.0;
 	double CpuMs = 0.0;              // the time between frames, smoothed
+	std::string VSync;               // the window's present mode in words: "on", "off (mailbox)"... (empty: not shown)
 	bool GpuValid = false;           // the GPU's timestamps are measured
 	double GpuMs = 0.0;              // smoothed
 	const float* History = nullptr;  // frame times (ms), HistorySize of them, the oldest at HistoryOffset
