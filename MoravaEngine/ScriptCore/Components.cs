@@ -123,6 +123,19 @@ namespace Morava
 
         /// <summary>The ground's direction up where it stands, of length 1.</summary>
         public Vector3 GroundNormal => State.GroundNormal;
+
+        /// <summary>
+        /// How fast what it stands on moves (a moving platform: its velocity; still ground: zero), in meters per second in
+        /// the world. Velocity minus this is how it moves on the ground: an animation's speed (it stands still on a ferry).
+        /// </summary>
+        public Vector3 GroundVelocity => State.GroundVelocity;
+
+        /// <summary>
+        /// How fast what it stands on turns, in radians per second around the world's axes (a turning platform; zero
+        /// otherwise). The physics carries the character around with it but doesn't turn it: a script turns its heading by
+        /// the Y part (AnimatedCharacter does).
+        /// </summary>
+        public Vector3 GroundAngularVelocity => State.GroundAngularVelocity;
     }
 
     /// <summary>A physics shape (Inspector: Collider): alone it is a static body, like a floor or a wall.</summary>

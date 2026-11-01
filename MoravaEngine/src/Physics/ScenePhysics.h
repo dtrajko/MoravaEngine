@@ -71,6 +71,8 @@ public:
 		CharacterGround Ground = CharacterGround::InAir; // OnSteepGround: too steep to stand on, it slides down
 		glm::vec3 Velocity = glm::vec3(0.0f);
 		glm::vec3 GroundNormal = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 GroundVelocity = glm::vec3(0.0f); // of what it stands on (a moving platform), in the world
+		glm::vec3 GroundAngularVelocity = glm::vec3(0.0f); // radians per second, of what it stands on (a turning platform)
 	};
 	void SetCharacterVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity);
 	// False: the entity isn't a running character

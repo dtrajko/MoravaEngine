@@ -223,6 +223,32 @@ jobs:
             test -f "../Projects/Sample/Assets/Audio/$sound.wav" || { echo "::error::Erika's sound $sound.wav is missing"; exit 1; }
           done
 
+      # The coin collector (Milestone 2): the project's start scene (the main menu, its saved settings applied), then Level 2
+      # (the sea, the moving platforms, the coins, the gate) with the debug overlay
+      - name: Collector smoke test
+        if: matrix.player-smoke-test
+        working-directory: MoravaEngine
+        run: |
+          set -o pipefail
+          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 ../build/MoravaPlayer --project ../Projects/Sample/Sample.mproject --exit-after 8 2>&1 | tee collector-smoke-test.log
+          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 ../build/MoravaPlayer --project ../Projects/Sample/Sample.mproject --scene ../Projects/Sample/Scenes/Level2.mscene --exit-after 10 --debug-overlay 2>&1 | tee -a collector-smoke-test.log
+          if grep -q VulkanDebugCallback collector-smoke-test.log; then
+            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
+            exit 1
+          fi
+          if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read|could not be opened|binding of .* is left out" collector-smoke-test.log; then
+            echo "::error::A model, texture, material or scene of the collector could not be found or loaded"
+            exit 1
+          fi
+          if ! grep -q "Playing scene 'MainMenu'" collector-smoke-test.log || ! grep -q "C#: Options: " collector-smoke-test.log; then
+            echo "::error::The project didn't start with its main menu, or the menu's script didn't run (see the log)"
+            exit 1
+          fi
+          if ! grep -q "Level 2: collect the 15 coins, then reach the goal" collector-smoke-test.log || grep -q "Script error:" collector-smoke-test.log; then
+            echo "::error::Level 2's scripts didn't start as expected, or one of them threw an exception (see the log)"
+            exit 1
+          fi
+
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)
         uses: actions/upload-artifact@v7.0.2
@@ -233,6 +259,7 @@ jobs:
             MoravaEngine/player-smoke-test.log
             MoravaEngine/animator-smoke-test.log
             MoravaEngine/erika-smoke-test.log
+            MoravaEngine/collector-smoke-test.log
           if-no-files-found: ignore
 
   # One job per graphics API: each compiles only its own API's code, so a missing #if or include shows up here

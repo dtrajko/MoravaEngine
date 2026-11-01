@@ -193,6 +193,17 @@ namespace Sample
 
         protected override void OnUpdate(float dt)
         {
+            // On a turning platform, turned with it (the physics carries it around, but its heading is the game's)
+            if (character.IsGrounded)
+            {
+                float spin = character.GroundAngularVelocity.Y * 180.0f / MathF.PI; // degrees per second
+                if (MathF.Abs(spin) > 0.01f)
+                {
+                    float heading = (EulerAngles.Y + spin * dt) % 360.0f; // within -180 to 180 degrees
+                    EulerAngles = new Vector3(0, heading > 180.0f ? heading - 360.0f : heading < -180.0f ? heading + 360.0f : heading, 0);
+                }
+            }
+
             // Face where it walks: a turn around Y, the shorter way, at most TurnSpeed degrees per second. The model looks
             // along +Z, so a heading of 0 walks along +Z
             if (walk.LengthSquared() > 0.01f)
@@ -205,7 +216,8 @@ namespace Sample
                 EulerAngles = new Vector3(0, angles.Y, 0);
             }
 
-            Vector3 velocity = character.Velocity;
+            // How fast it moves on what it stands on: still on a moving platform, it doesn't walk
+            Vector3 velocity = character.Velocity - (character.IsGrounded ? character.GroundVelocity : Vector3.Zero);
             float horizontal = new Vector2(velocity.X, velocity.Z).Length();
             speed += (horizontal - speed) * Math.Min(1.0f, 10.0f * dt);
             animator.SetFloat("Speed", speed);

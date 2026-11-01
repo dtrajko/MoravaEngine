@@ -60,6 +60,10 @@ public:
 	void Restart();
 	// Application.Quit asked for the game to end in this frame: true once
 	bool TakeQuit();
+	// The window as the scripts see it (Application.Fullscreen), each frame before the game loop; and what a script asked
+	// for in the frame: true once, with the wanted state
+	void SetFullscreenState(bool fullscreen) { m_ScriptContext.Fullscreen = fullscreen; }
+	bool TakeFullscreenRequest(bool& fullscreen);
 
 	// The file of the game's settings (GameSettings::GetUserFile, GetEditorFile; empty: for this run only), before Begin
 	void OpenSettings(const std::string& file) { m_Settings.Open(file); }

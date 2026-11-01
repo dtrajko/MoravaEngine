@@ -48,6 +48,14 @@ namespace Sample
         /// <summary>Degrees the view looks down, behind the target, when it switches there.</summary>
         public float BehindPitch = 20.0f;
 
+        /// <summary>
+        /// The first-person view's height over the target's origin (a character's: its eyes over its feet), in meters, and
+        /// how far ahead of it the camera is, along the view (so its own head is out of sight). Below 0: a ball's view,
+        /// just in front of its surface and a little above its center (its radius: its scale).
+        /// </summary>
+        public float EyeHeight = -1.0f;
+        public float EyeForward = 0.2f;
+
         /// <summary>The mouse turns the view (the game captures the cursor while it has the input).</summary>
         public bool MouseLook = true;
 
@@ -148,7 +156,7 @@ namespace Sample
                 // cursor moves to the editor's panels or the window's edge
                 Vector2 orbit = Input.GetAxis2D("Orbit");
                 if (MouseLook && Input.MouseCaptured)
-                    orbit += Input.GetAxis2D("Look") * MouseSensitivity;
+                    orbit += Input.GetAxis2D("Look") * MouseSensitivity * GameOptions.MouseSensitivity; // times the player's choice (Settings)
                 yaw -= orbit.X * dt;
                 controlYaw -= orbit.X * dt;
                 pitch = View == CameraView.Behind ? Math.Clamp(pitch - orbit.Y * dt, -20.0f, 70.0f) // up: lower, the ground brings it closer
@@ -215,9 +223,17 @@ namespace Sample
                 }
                 case CameraView.FirstPerson:
                 {
-                    // Just in front of the ball's surface, a little above its center: the ball is out of view
-                    float radius = Target.Scale.Y;
-                    wanted = target + forward * (radius + 0.05f) + Vector3.UnitY * (radius * 0.3f);
+                    if (EyeHeight >= 0.0f)
+                    {
+                        // A character's eyes: over its feet, a little ahead along the view
+                        wanted = target + forward * EyeForward + Vector3.UnitY * EyeHeight;
+                    }
+                    else
+                    {
+                        // Just in front of the ball's surface, a little above its center: the ball is out of view
+                        float radius = Target.Scale.Y;
+                        wanted = target + forward * (radius + 0.05f) + Vector3.UnitY * (radius * 0.3f);
+                    }
                     rotation = new Vector3(pitch, yaw, 0.0f);
                     break;
                 }

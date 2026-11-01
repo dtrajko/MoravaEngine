@@ -30,6 +30,8 @@ struct ScriptCharacterState
 	int32_t Ground = 0; // ScenePhysics::CharacterGround
 	glm::vec3 Velocity = glm::vec3(0.0f);
 	glm::vec3 GroundNormal = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 GroundVelocity = glm::vec3(0.0f); // Milestone 2: what it stands on moves (a platform)
+	glm::vec3 GroundAngularVelocity = glm::vec3(0.0f); // radians per second: what it stands on turns
 };
 
 struct ScriptRaycastHit
@@ -300,6 +302,10 @@ struct ScriptNativeApi
 	// WholeNumbers); a value set here calls no On Value Changed and no ValueChanged listener
 	int32_t (*UISlider_Get)(uint64_t entity, ScriptUISlider* out);
 	int32_t (*UISlider_Set)(uint64_t entity, const ScriptUISlider* value);
+	// Application.Fullscreen (Milestone 2): the game's window fills its monitor now (1) or not (0); Set asks for it after
+	// this frame (the player switches; the editor's Play is in a panel: logged, nothing changes)
+	int32_t (*Application_GetFullscreen)();
+	void (*Application_SetFullscreen)(int32_t fullscreen);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

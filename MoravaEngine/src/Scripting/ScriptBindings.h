@@ -39,6 +39,8 @@ struct ScriptContext
 	bool SceneLoadRequested = false;
 	std::string SceneLoadPath;
 	bool QuitRequested = false;     // Application.Quit: the owner ends the game after this frame (GameSystems::TakeQuit)
+	bool Fullscreen = false;        // the window fills its monitor now (the owner says so each frame)
+	int FullscreenRequest = -1;     // Application.Fullscreen set: 0 or 1, taken by the owner after the frame (-1: none)
 
 	bool InFixedStep = false;       // in OnFixedUpdate: Input's edges and Time.DeltaTime are the fixed step's
 	float DeltaTime = 0.0f;         // the current update's

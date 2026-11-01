@@ -262,6 +262,12 @@ static void ProcessSceneLoad()
 	{
 		LoadSceneInPlay(path);
 	}
+	bool fullscreen = false;
+	if (s_GameSystems.TakeFullscreenRequest(fullscreen))
+	{
+		Log::GetLogger()->info("Application.Fullscreen = {0}: the editor's Play is in the Viewport panel (in the player, the window {1})",
+			fullscreen ? "true" : "false", fullscreen ? "fills its monitor" : "leaves fullscreen");
+	}
 	if (s_GameSystems.TakeQuit())
 	{
 		s_PlayRequest = PlayRequest::Stop;
