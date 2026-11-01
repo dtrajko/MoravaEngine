@@ -245,6 +245,54 @@ void ScriptRuntime::DispatchAnimationEvents(const std::vector<SceneAnimation::Ev
 	}
 }
 
+void ScriptRuntime::CallUIMethod(EnvMapVulkanEntityID element, EnvMapVulkanEntityID target, const std::string& method, const float* value)
+{
+	// The target's script, or the first script from the element up to its canvas that has the method
+	std::vector<EnvMapVulkanEntityID> candidates;
+	if (target != NoEntity)
+	{
+		candidates.push_back(target);
+	}
+	else
+	{
+		for (EnvMapVulkanEntityID id = element; id != NoEntity; id = m_Scene->GetParent(id))
+		{
+			candidates.push_back(id);
+			if (m_Scene->Has<UICanvasComponent>(id))
+			{
+				break;
+			}
+		}
+	}
+	for (EnvMapVulkanEntityID candidate : candidates)
+	{
+		const Instance* instance = Find(candidate);
+		if (!instance)
+		{
+			continue;
+		}
+		const size_t index = size_t(instance - m_Instances.data());
+		const int result = value ? ScriptHost::InvokeMethodFloat(instance->Handle, method, *value) : ScriptHost::InvokeMethod(instance->Handle, method);
+		if (result == 2)
+		{
+			continue; // not this script's
+		}
+		if (result != 0)
+		{
+			Threw(m_Instances[index], method.c_str());
+		}
+		return;
+	}
+	if (m_MissingMethods.insert({ element, method }).second)
+	{
+		const char* what = value ? "slider" : "button";
+		const std::string where = target != NoEntity ? "its target '" + EntityName(*m_Scene, target) + "'" :
+			std::string("the ") + what + " and its parents up to the canvas";
+		Log::GetLogger()->error("UI: the {0} '{1}' calls {2}(), but no script of {3} has a method {2} {4}", what,
+			EntityName(*m_Scene, element), method, where, value ? "with one float parameter" : "without parameters");
+	}
+}
+
 void ScriptRuntime::DispatchButtonClicks(const std::vector<SceneUI::Click>& clicks)
 {
 	for (const SceneUI::Click& click : clicks)
@@ -255,58 +303,34 @@ void ScriptRuntime::DispatchButtonClicks(const std::vector<SceneUI::Click>& clic
 			continue;
 		}
 		const std::string method = button->OnClickMethod; // a copy: the method may change the button
-		const EnvMapVulkanEntityID target = button->OnClickTarget;
 		if (!method.empty())
 		{
-			// The target's script, or the first script from the button up to its canvas that has the method
-			std::vector<EnvMapVulkanEntityID> candidates;
-			if (target != NoEntity)
-			{
-				candidates.push_back(target);
-			}
-			else
-			{
-				for (EnvMapVulkanEntityID id = click.Button; id != NoEntity; id = m_Scene->GetParent(id))
-				{
-					candidates.push_back(id);
-					if (m_Scene->Has<UICanvasComponent>(id))
-					{
-						break;
-					}
-				}
-			}
-			bool found = false;
-			for (EnvMapVulkanEntityID candidate : candidates)
-			{
-				const Instance* instance = Find(candidate);
-				if (!instance)
-				{
-					continue;
-				}
-				const size_t index = size_t(instance - m_Instances.data());
-				const int result = ScriptHost::InvokeMethod(instance->Handle, method);
-				if (result == 2)
-				{
-					continue; // not this script's
-				}
-				found = true;
-				if (result != 0)
-				{
-					Threw(m_Instances[index], method.c_str());
-				}
-				break;
-			}
-			if (!found && m_MissingMethods.insert({ click.Button, method }).second)
-			{
-				const std::string where = target != NoEntity ? "its target '" + EntityName(*m_Scene, target) + "'" :
-					std::string("the button and its parents up to the canvas");
-				Log::GetLogger()->error("UI: the button '{0}' calls {1}(), but no script of {2} has a method {1} without parameters",
-					EntityName(*m_Scene, click.Button), method, where);
-			}
+			CallUIMethod(click.Button, button->OnClickTarget, method, nullptr);
 		}
 		if (m_Scene->Exists(click.Button) && !ScriptHost::InvokeButtonClicked(click.Button))
 		{
 			Threw("UIButton.Clicked", click.Button);
+		}
+	}
+}
+
+void ScriptRuntime::DispatchSliderChanges(const std::vector<SceneUI::ValueChange>& changes)
+{
+	for (const SceneUI::ValueChange& change : changes)
+	{
+		const UISliderComponent* slider = m_Scene ? m_Scene->TryGet<UISliderComponent>(change.Slider) : nullptr;
+		if (!slider)
+		{
+			continue;
+		}
+		const std::string method = slider->OnValueChangedMethod; // a copy: the method may change the slider
+		if (!method.empty())
+		{
+			CallUIMethod(change.Slider, slider->OnValueChangedTarget, method, &change.Value);
+		}
+		if (m_Scene->Exists(change.Slider) && !ScriptHost::InvokeSliderChanged(change.Slider, change.Value))
+		{
+			Threw("UISlider.ValueChanged", change.Slider);
 		}
 	}
 }

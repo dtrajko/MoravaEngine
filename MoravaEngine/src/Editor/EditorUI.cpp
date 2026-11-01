@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cfloat>
 #include <cstdio>
 #include <filesystem>
 #include <string>
@@ -88,7 +89,7 @@ EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset)
 		return canvas;
 	}
 	const EnvMapVulkanEntityID parent = GetUIParentForNewElement();
-	const char* names[] = { "Canvas", "Panel", "Text", "Image", "Button" };
+	const char* names[] = { "Canvas", "Panel", "Text", "Image", "Button", "Slider" };
 	const EnvMapVulkanEntityID entity = s_Scene.CreateEntity(names[(int)preset], parent);
 	UIRectComponent& rect = s_Scene.Add<UIRectComponent>(entity);
 	switch (preset)
@@ -121,6 +122,12 @@ EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset)
 			text.Size = 34.0f;
 			break;
 		}
+		case UIEntityPreset::Slider:
+			// Its image is its track; the slider draws the fill and the handle over it
+			rect.Size = glm::vec2(400.0f, 16.0f);
+			s_Scene.Add<UIImageComponent>(entity).Color = glm::vec4(0.12f, 0.13f, 0.17f, 0.9f);
+			s_Scene.Add<UISliderComponent>(entity);
+			break;
 		default:
 			break;
 	}
@@ -476,11 +483,11 @@ static void ImageControls(EnvMapVulkanEntityID entity, UIImageComponent& image)
 	}
 }
 
-static std::string ButtonTargetLabel(EnvMapVulkanEntityID target)
+static std::string ButtonTargetLabel(EnvMapVulkanEntityID target, const char* what = "button")
 {
 	if (target == NoEntity)
 	{
-		return "(the button, else a parent up to the canvas)";
+		return std::string("(the ") + what + ", else a parent up to the canvas)";
 	}
 	const NameComponent* name = s_Scene.TryGet<NameComponent>(target);
 	return name ? name->Name : "(missing)";
@@ -504,6 +511,8 @@ static void ButtonTargetChoices(const std::vector<EnvMapVulkanEntityID>& entitie
 		ButtonTargetChoices(s_Scene.GetChildren(entity), depth + 1, target);
 	}
 }
+
+static void UIMethodControls(const char* what, EnvMapVulkanEntityID& target, std::string& methodName, const char* methodTooltip);
 
 static void ButtonControls(EnvMapVulkanEntityID entity, UIButtonComponent& button, const SceneUI* gameUI)
 {
@@ -543,48 +552,134 @@ static void ButtonControls(EnvMapVulkanEntityID entity, UIButtonComponent& butto
 	}
 
 	ImGui::SeparatorText("On Click");
-	if (ImGui::BeginCombo("Target", ButtonTargetLabel(button.OnClickTarget).c_str()))
+	UIMethodControls("button", button.OnClickTarget, button.OnClickMethod,
+		"A method of the script without parameters, public or not: OnPlay for void OnPlay().\n"
+		"Scripts can also listen: GetComponent<UIButton>().Clicked += OnPlay");
+}
+
+// The script method a UI element calls (a button's On Click, a slider's On Value Changed): its target and its name
+static void UIMethodControls(const char* what, EnvMapVulkanEntityID& target, std::string& methodName, const char* methodTooltip)
+{
+	const std::string none = ButtonTargetLabel(NoEntity, what);
+	if (ImGui::BeginCombo("Target", ButtonTargetLabel(target, what).c_str()))
 	{
-		if (ImGui::Selectable("(the button, else a parent up to the canvas)", button.OnClickTarget == NoEntity))
+		if (ImGui::Selectable(none.c_str(), target == NoEntity))
 		{
-			button.OnClickTarget = NoEntity;
+			target = NoEntity;
 		}
-		ButtonTargetChoices(s_Scene.GetRoots(), 0, button.OnClickTarget);
+		ButtonTargetChoices(s_Scene.GetRoots(), 0, target);
 		ImGui::EndCombo();
 	}
 	if (ImGui::BeginDragDropTarget())
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("VULKAN_SCENE_ENTITY"))
 		{
-			button.OnClickTarget = *static_cast<const EnvMapVulkanEntityID*>(payload->Data);
+			target = *static_cast<const EnvMapVulkanEntityID*>(payload->Data);
 		}
 		ImGui::EndDragDropTarget();
 	}
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("Whose script's method a click calls (an entity can be dropped here from the Scene Hierarchy).\n"
-			"None: the first script that has the method, from the button up to its canvas (a menu's script on the canvas)");
+		ImGui::SetTooltip("Whose script's method it calls (an entity can be dropped here from the Scene Hierarchy).\n"
+			"None: the first script that has the method, from the %s up to its canvas (a menu's script on the canvas)", what);
 	}
-	// The method: typed, or one of the target script's (the game's assembly lists only fields, so methods are typed)
 	char method[256] = {};
-	snprintf(method, sizeof(method), "%s", button.OnClickMethod.c_str());
+	snprintf(method, sizeof(method), "%s", methodName.c_str());
 	if (ImGui::InputText("Method", method, sizeof(method)))
 	{
-		button.OnClickMethod = method;
+		methodName = method;
 	}
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("A method of the script without parameters, public or not: OnPlay for void OnPlay().\n"
-			"Scripts can also listen: GetComponent<UIButton>().Clicked += OnPlay");
+		ImGui::SetTooltip("%s", methodTooltip);
 	}
-	if (button.OnClickTarget != NoEntity && !s_Scene.Exists(button.OnClickTarget))
+	if (target != NoEntity && !s_Scene.Exists(target))
 	{
 		ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.3f, 1.0f), "The target entity is gone: choose another");
 	}
-	else if (button.OnClickTarget != NoEntity && !s_Scene.Has<ScriptComponent>(button.OnClickTarget))
+	else if (target != NoEntity && !s_Scene.Has<ScriptComponent>(target))
 	{
 		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "The target has no script");
 	}
+}
+
+static void SliderControls(EnvMapVulkanEntityID entity, UISliderComponent& slider, const SceneUI* gameUI)
+{
+	if (gameUI)
+	{
+		const char* state = !slider.Interactable ? "Disabled" : gameUI->GetPressed() == entity ? "Pressed (dragged)" :
+			gameUI->GetSelected() == entity ? "Highlighted (selected)" : "Normal";
+		ImGui::TextDisabled("Now: %s", state);
+	}
+	const float low = std::min(slider.Min, slider.Max), high = std::max(slider.Min, slider.Max);
+	if (ImGui::SliderFloat("Value", &slider.Value, low, high, slider.WholeNumbers ? "%.0f" : "%.3f"))
+	{
+		slider.Value = slider.Constrain(slider.Value);
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The value the game starts with (C#: slider.Value; set there, it calls no On Value Changed)");
+	}
+	bool rangeChanged = ImGui::DragFloat("Min", &slider.Min, 0.01f);
+	rangeChanged |= ImGui::DragFloat("Max", &slider.Max, 0.01f);
+	rangeChanged |= ImGui::Checkbox("Whole Numbers", &slider.WholeNumbers);
+	if (rangeChanged)
+	{
+		slider.Value = slider.Constrain(slider.Value);
+	}
+	ImGui::DragFloat("Step", &slider.Step, 0.01f, 0.0f, FLT_MAX, slider.Step > 0.0f ? "%.3f" : "0 (a tenth)");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The change per push of the keyboard's or gamepad's left and right while it is selected\n"
+			"(UI_Navigate; held, it repeats). 0: a tenth of the range, now %.3f", slider.GetStep());
+	}
+	slider.Step = std::max(slider.Step, 0.0f);
+	ImGui::Checkbox("Interactable", &slider.Interactable);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Off: the slider is dimmed (its Disabled color) and can't be moved or selected (C#: slider.Interactable)");
+	}
+
+	ImGui::SeparatorText("Look");
+	if (!s_Scene.Has<UIImageComponent>(entity))
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "No image: no track behind the fill (check Image)");
+	}
+	ImGui::ColorEdit4("Fill", &slider.FillColor.x);
+	ImGui::ColorEdit4("Handle", &slider.HandleColor.x);
+	ImGui::DragFloat2("Handle Size", &slider.HandleSize.x, 0.5f, 0.0f, 4096.0f, "%.0f");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Reference pixels, centered on the track's height; the handle stays inside the rectangle");
+	}
+	ImGui::ColorEdit4("Normal", &slider.Normal.x);
+	ImGui::ColorEdit4("Highlighted", &slider.Highlighted.x);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Under the mouse, or selected with the keyboard or the gamepad (UI_Navigate)");
+	}
+	ImGui::ColorEdit4("Pressed", &slider.Pressed.x);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("While the mouse drags it");
+	}
+	ImGui::ColorEdit4("Disabled", &slider.Disabled.x);
+	ImGui::DragFloat("Fade Duration", &slider.FadeDuration, 0.005f, 0.0f, 2.0f, "%.2f s");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The state colors multiply the handle's color; Disabled also dims the track and the fill.\n"
+			"The change from one to the next takes this long, in real time");
+	}
+	if (!gameUI)
+	{
+		slider.TintSet = false;
+	}
+
+	ImGui::SeparatorText("On Value Changed");
+	UIMethodControls("slider", slider.OnValueChangedTarget, slider.OnValueChangedMethod,
+		"A method of the script with one float parameter, public or not: OnVolume for void OnVolume(float value).\n"
+		"Called when the player changes the value (at most once a frame).\n"
+		"Scripts can also listen: GetComponent<UISlider>().ValueChanged += OnVolume");
 }
 
 void UIControls(EnvMapVulkanEntityID entity)
@@ -632,6 +727,16 @@ void UIControls(EnvMapVulkanEntityID entity)
 		{
 			ImGui::SetTooltip("The element takes clicks and the keyboard's and gamepad's selection; its image shows its state");
 		}
+		ImGui::SameLine();
+		bool hasSlider = s_Scene.Has<UISliderComponent>(entity);
+		if (ImGui::Checkbox("Slider", &hasSlider))
+		{
+			hasSlider ? (void)s_Scene.Add<UISliderComponent>(entity) : s_Scene.Remove<UISliderComponent>(entity);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("A value the player sets along the element's width; its image is the track");
+		}
 		if (!s_Scene.Has<UIRectComponent>(entity))
 		{
 			ImGui::SameLine();
@@ -660,6 +765,13 @@ void UIControls(EnvMapVulkanEntityID entity)
 		if (ImGui::CollapsingHeader("Button##Section", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ButtonControls(entity, *button, gameUI);
+		}
+	}
+	if (UISliderComponent* slider = s_Scene.TryGet<UISliderComponent>(entity))
+	{
+		if (ImGui::CollapsingHeader("Slider##Section", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			SliderControls(entity, *slider, gameUI);
 		}
 	}
 	ImGui::PopID();

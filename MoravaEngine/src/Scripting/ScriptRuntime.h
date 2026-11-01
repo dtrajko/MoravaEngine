@@ -48,6 +48,9 @@ public:
 	// The frame's button clicks (SceneUI::GetClicks): each button's On Click method (UIButtonComponent), then its C#
 	// listeners (button.Clicked)
 	void DispatchButtonClicks(const std::vector<SceneUI::Click>& clicks);
+	// The frame's slider changes (SceneUI::GetValueChanges): each slider's On Value Changed method (UISliderComponent),
+	// then its C# listeners (slider.ValueChanged)
+	void DispatchSliderChanges(const std::vector<SceneUI::ValueChange>& changes);
 	// Drops the instances of entities that are gone
 	void RemoveDestroyed();
 
@@ -79,6 +82,10 @@ private:
 	// Counted as an exception without an instance (what: "UIButton.Clicked")
 	void Threw(const std::string& what, EnvMapVulkanEntityID entity);
 	const Instance* Find(EnvMapVulkanEntityID entity) const;
+	// A UI element's method (a button's On Click, a slider's On Value Changed): of target's script, or (no target) of the
+	// first script from the element up to its canvas that has it; value: the slider's (nullptr: a method without
+	// parameters). Logged once per element and method when no script has it
+	void CallUIMethod(EnvMapVulkanEntityID element, EnvMapVulkanEntityID target, const std::string& method, const float* value);
 
 	EnvMapVulkanScene* m_Scene = nullptr;
 	std::vector<Instance> m_Instances; // in the order they were made: the order they are called in

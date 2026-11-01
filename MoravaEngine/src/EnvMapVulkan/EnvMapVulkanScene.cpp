@@ -278,6 +278,38 @@ const char* RigidBodyComponent::GetTypeName(BodyType type)
 	return "Dynamic";
 }
 
+// UISliderComponent
+
+float UISliderComponent::Constrain(float value) const
+{
+	const float low = std::min(Min, Max), high = std::max(Min, Max);
+	if (!std::isfinite(value))
+	{
+		value = low;
+	}
+	value = std::clamp(value, low, high);
+	if (WholeNumbers)
+	{
+		value = std::clamp(std::round(value), std::ceil(low), std::max(std::ceil(low), std::floor(high)));
+	}
+	return value;
+}
+
+float UISliderComponent::GetNormalized() const
+{
+	return Max != Min ? std::clamp((Constrain(Value) - Min) / (Max - Min), 0.0f, 1.0f) : 0.0f;
+}
+
+float UISliderComponent::GetStep() const
+{
+	if (Step > 0.0f)
+	{
+		return WholeNumbers ? std::max(1.0f, std::round(Step)) : Step;
+	}
+	const float tenth = std::abs(Max - Min) * 0.1f;
+	return WholeNumbers ? std::max(1.0f, std::round(tenth)) : tenth;
+}
+
 // UITextComponent
 
 const char* UITextComponent::GetAlignName(UITextAlign align)
@@ -489,6 +521,10 @@ void EnvMapVulkanScene::RemapEntityReferences(EnvMapVulkanEntityID entity, const
 	if (UIButtonComponent* button = TryGet<UIButtonComponent>(entity))
 	{
 		remap(button->OnClickTarget);
+	}
+	if (UISliderComponent* slider = TryGet<UISliderComponent>(entity))
+	{
+		remap(slider->OnValueChangedTarget);
 	}
 }
 

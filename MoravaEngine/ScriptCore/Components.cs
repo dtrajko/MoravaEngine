@@ -11,7 +11,7 @@ namespace Morava
 
         // The engine's numbers for the kinds (ScriptComponent in src/Scripting/ScriptApi.h)
         internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5, Animator = 6,
-            UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10 }
+            UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11 }
 
         internal static Kind KindOf(Type type)
         {
@@ -26,6 +26,7 @@ namespace Morava
             if (type == typeof(UIText)) return Kind.UIText;
             if (type == typeof(UIImage)) return Kind.UIImage;
             if (type == typeof(UIButton)) return Kind.UIButton;
+            if (type == typeof(UISlider)) return Kind.UISlider;
             throw new ArgumentException($"{type.Name} is not a component of the engine");
         }
 

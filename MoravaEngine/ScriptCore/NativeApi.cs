@@ -109,6 +109,8 @@ namespace Morava
         public delegate* unmanaged<char*, int, int> Settings_Remove;
         public delegate* unmanaged<int> Settings_Save;
         public delegate* unmanaged<char*, int, int> Settings_GetFile;
+        public delegate* unmanaged<ulong, NativeUISlider*, int> UISlider_Get;
+        public delegate* unmanaged<ulong, NativeUISlider*, int> UISlider_Set;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -168,6 +170,13 @@ namespace Morava
         public Vector4 Color;
         public float Size, LineSpacing;
         public int Align, VerticalAlign, Wrap, Reserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeUISlider
+    {
+        public float Value, Min, Max, Step;
+        public int WholeNumbers, Interactable;
     }
 
     [StructLayout(LayoutKind.Sequential)]

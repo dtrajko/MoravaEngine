@@ -329,6 +329,7 @@ void GameSystems::Update(float frameTime, float unscaledFrameTime, float alpha)
 	m_Scripts.RemoveDestroyed();
 	m_UI.Update(m_Input, unscaledFrameTime);
 	m_Scripts.DispatchButtonClicks(m_UI.GetClicks());
+	m_Scripts.DispatchSliderChanges(m_UI.GetValueChanges());
 	ScriptBindings::DestroyQueued(m_ScriptContext);
 	m_Scripts.RemoveDestroyed();
 
