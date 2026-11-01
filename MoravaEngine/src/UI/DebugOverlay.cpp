@@ -121,6 +121,10 @@ namespace
 	{
 		std::vector<Row> rows;
 		AddRow(rows, "FPS", Format("%.0f   %.2f ms", frame.Fps, frame.CpuMs));
+		if (!frame.VSync.empty())
+		{
+			AddRow(rows, "VSync", frame.VSync);
+		}
 		AddRow(rows, "GPU", frame.GpuValid ? Format("%.2f ms", frame.GpuMs) : "not measured");
 		rows.push_back({ Row::Kind::Graph });
 		AddRow(rows, "Draw calls", FormatCount(frame.Draws) + ", " + FormatCount(frame.Triangles) + " triangles");

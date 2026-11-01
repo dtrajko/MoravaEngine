@@ -38,6 +38,10 @@ namespace H2M
 		void Present();
 
 		uint32_t GetImageCount() const { return m_ImageCount; }
+		// VSync as asked for (Create), and the present mode the swapchain got: FIFO waits for the display's refresh
+		// (also when VSync is off but the surface has no other mode), MAILBOX and IMMEDIATE don't
+		bool IsVSyncRequested() const { return m_VSync; }
+		VkPresentModeKHR GetPresentMode() const { return m_PresentMode; }
 
 		uint32_t GetWidth() const { return m_Width; }
 		uint32_t GetHeight() const { return m_Height; }
@@ -77,6 +81,7 @@ namespace H2M
 		VulkanAllocatorH2M m_Allocator;
 
 		bool m_VSync = false;
+		VkPresentModeKHR m_PresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
 		VkFormat m_ColorFormat;
 		VkColorSpaceKHR m_ColorSpace;
