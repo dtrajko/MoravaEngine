@@ -1064,6 +1064,40 @@ Entities:
       VerticalAlign: Middle
       Wrap: false
       LineSpacing: 1
+  - ID: 7310000000000000318
+    Name: Exit Button
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 210], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Exit}
+  - ID: 7310000000000000319
+    Name: Label
+    Parent: 7310000000000000318
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Exit
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
   - ID: 7310000000000000317
     Name: Hint
     Parent: 7310000000000000311

@@ -9,6 +9,7 @@
 
 
 class EnvMapVulkanScene;
+class GameSettings;
 class InputSystem;
 class SceneAnimation;
 class SceneAudio;
@@ -30,12 +31,14 @@ struct ScriptContext
 	ScriptRuntime* Scripts = nullptr;
 	InputSystem* Input = nullptr;   // nullptr: no input (Simulate, where scripts don't run)
 	SceneUI* UI = nullptr;          // the game UI's buttons and selection (7.3)
+	GameSettings* Settings = nullptr; // what the game remembers between runs (Milestone 2: the C# Settings class)
 
 	// The scene's name and file (relative to the project; empty: never saved), and the one Scene.Load asked for (6.2): done
 	// by the game's owner at the end of the frame (GameSystems::TakeSceneLoad). An empty path: the current scene again
 	std::string SceneName, ScenePath;
 	bool SceneLoadRequested = false;
 	std::string SceneLoadPath;
+	bool QuitRequested = false;     // Application.Quit: the owner ends the game after this frame (GameSystems::TakeQuit)
 
 	bool InFixedStep = false;       // in OnFixedUpdate: Input's edges and Time.DeltaTime are the fixed step's
 	float DeltaTime = 0.0f;         // the current update's

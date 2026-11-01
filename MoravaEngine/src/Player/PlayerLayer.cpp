@@ -75,6 +75,8 @@ void PlayerLayer::OnAttach()
 	GameSystems::LoadScripts();
 	m_Input.SetMap(GameSystems::LoadInputMap());
 	m_Systems.SetSceneInfo(name, m_ScenePath);
+	// What the game remembered from its last run, in the user's folder (the C# Settings class)
+	m_Systems.OpenSettings(Project::GetOpen() ? GameSettings::GetUserFile(*Project::GetOpen()) : std::string());
 	m_Systems.Begin(&m_Scene, &m_Input);
 	m_Playing = true;
 }
@@ -135,6 +137,10 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	if (m_Systems.TakeSceneLoad(load))
 	{
 		LoadScene(load.empty() ? m_ScenePath : load);
+	}
+	if (m_Systems.TakeQuit())
+	{
+		Application::Get()->GetWindow()->SetShouldClose(true); // as if the window was closed: this frame is the last
 	}
 
 	// The view fills the window: the camera's aspect ratio follows it (the swapchain's size, in pixels)

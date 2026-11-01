@@ -25,6 +25,16 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 	m_Scene = scene;
 	m_Input = input;
 	Start(false);
+	if (!scene)
+	{
+		m_Settings.Close(); // the game is over: what changed is saved
+	}
+}
+
+GameSystems::~GameSystems()
+{
+	ScriptBindings::SetContext(nullptr);
+	m_Settings.Close();
 }
 
 void GameSystems::Restart()
@@ -36,6 +46,13 @@ void GameSystems::SetSceneInfo(const std::string& name, const std::string& path)
 {
 	m_ScriptContext.SceneName = name;
 	m_ScriptContext.ScenePath = path;
+}
+
+bool GameSystems::TakeQuit()
+{
+	const bool quit = m_ScriptContext.QuitRequested;
+	m_ScriptContext.QuitRequested = false;
+	return quit;
 }
 
 bool GameSystems::TakeSceneLoad(std::string& path)
@@ -82,6 +99,7 @@ void GameSystems::Start(bool keepClock)
 	m_ScriptContext.Scripts = &m_Scripts;
 	m_ScriptContext.Input = m_Input;
 	m_ScriptContext.UI = &m_UI;
+	m_ScriptContext.Settings = &m_Settings;
 	m_ScriptContext.FixedDeltaTime = GameLoop::FixedStep;
 	ScriptBindings::Bind();
 	ScriptBindings::SetContext(m_Scene ? &m_ScriptContext : nullptr);
@@ -116,7 +134,10 @@ void GameSystems::Start(bool keepClock)
 		// sound)
 		if (m_Input)
 		{
-			AudioEngine::SetVolumes(project ? project->Volumes : AudioVolumes());
+			if (!keepClock)
+			{
+				AudioEngine::SetVolumes(project ? project->Volumes : AudioVolumes()); // a loaded scene keeps the game's (Audio.SetBusVolume)
+			}
 			m_Audio.Start(*m_Scene);
 			m_UI.Start(*m_Scene, m_Input->GetMap());
 			m_Scripts.Start(*m_Scene);

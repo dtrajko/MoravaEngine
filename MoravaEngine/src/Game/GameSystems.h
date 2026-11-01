@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameLoop.h"
+#include "GameSettings.h"
 
 #include "Animation/SceneAnimation.h"
 
@@ -32,7 +33,11 @@ class InputSystem;
  * scripts' OnUpdate, what it destroyed, the animators' poses, the sounds.
  *
  * Scene.Load (6.2) is the owner's to do at the end of the frame (the player, the editor's Play: they know where the scene
- * goes): TakeSceneLoad says what was asked for, the owner opens it into the same scene and calls Restart.
+ * goes): TakeSceneLoad says what was asked for, the owner opens it into the same scene and calls Restart. Application.Quit
+ * (Milestone 2) is the owner's too: TakeQuit says it was asked for (the player closes, the editor stops Play).
+ *
+ * The game's settings (GameSettings, the C# Settings class): the owner opens their file before Begin; they stay while
+ * scenes load, and are saved when the game is over (Begin(nullptr, nullptr)).
  */
 class GameSystems : public GameLoopSystems
 {
@@ -42,7 +47,7 @@ public:
 	// the bodies are gone). Begin(scene, nullptr): Simulate (3.7): physics only, without the game's logic (the input test
 	// and the scripts); a character stands where it is, since its game moves it.
 	void Begin(EnvMapVulkanScene* scene, InputSystem* input);
-	~GameSystems() override { ScriptBindings::SetContext(nullptr); }
+	~GameSystems() override;
 	// The scene's name and file (absolute; empty: never saved), for the scripts' Scene.Name and Scene.Path: before Begin
 	// and Restart (OnCreate may ask for them)
 	void SetSceneInfo(const std::string& name, const std::string& path);
@@ -53,6 +58,12 @@ public:
 	// The game again on its scene, whose content the owner replaced (Scene.Load): bodies, sounds and scripts made anew,
 	// the clock going on
 	void Restart();
+	// Application.Quit asked for the game to end in this frame: true once
+	bool TakeQuit();
+
+	// The file of the game's settings (GameSettings::GetUserFile, GetEditorFile; empty: for this run only), before Begin
+	void OpenSettings(const std::string& file) { m_Settings.Open(file); }
+	const GameSettings& GetSettings() const { return m_Settings; }
 
 	// The mouse over the game's view (view: its size in pixels), each frame before the input is sampled: the mouse buttons
 	// the game's UI holds, for InputSystem::SetBlockedMouseButtons (0 without a game, or in Simulate)
@@ -89,4 +100,5 @@ private:
 	SceneAudio m_Audio;
 	SceneAnimation m_Animation;
 	SceneUI m_UI;
+	GameSettings m_Settings;
 };

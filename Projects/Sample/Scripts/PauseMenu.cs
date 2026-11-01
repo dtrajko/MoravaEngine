@@ -7,8 +7,8 @@ namespace Sample
     /// <summary>
     /// A pause menu (on its canvas): Pause (Escape, the gamepad's Start) stops the game (Time.TimeScale 0) and shows the
     /// menu with its first button selected, so the gamepad and the arrow keys work at once. Resume is wired in the
-    /// Inspector (the button's On Click: Resume, found on this script, its canvas); Restart listens in code
-    /// (RestartButton.Clicked). The title pulses in real time: the menu lives while the game stands still.
+    /// Inspector (the button's On Click: Resume, found on this script, its canvas), as Exit is (On Click: Exit); Restart
+    /// listens in code (RestartButton.Clicked). The title pulses in real time: the menu lives while the game stands still.
     /// </summary>
     public class PauseMenu : Entity
     {
@@ -68,6 +68,13 @@ namespace Sample
             Input.CursorLocked = cursorWasLocked;
             Show(false);
             Log.Info("Resumed");
+        }
+
+        // The Exit button's On Click (Inspector): the player closes, the editor stops Play
+        void Exit()
+        {
+            Log.Info("Exit from the pause menu");
+            Application.Quit();
         }
 
         void Restart()
