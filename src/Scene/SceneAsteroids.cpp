@@ -1,4 +1,5 @@
 #include "Scene/SceneAsteroids.h"
+#include "Core/EnginePaths.h"
 
 
 SceneAsteroids::SceneAsteroids()
@@ -24,10 +25,10 @@ SceneAsteroids::SceneAsteroids()
 
 void SceneAsteroids::SetupShaders()
 {
-	m_ShaderPlanet = MoravaShader::Create("Shaders/asteroids_planet.vs", "Shaders/asteroids.fs");
+	m_ShaderPlanet = MoravaShader::Create(SHADERS_DIR "/asteroids_planet.vs", SHADERS_DIR "/asteroids.fs");
 	printf("SceneAsteroids: m_ShaderPlanet shader compiled [programID=%d]\n", m_ShaderPlanet->GetProgramID());
 
-	m_ShaderAsteroids = MoravaShader::Create("Shaders/asteroids.vs", "Shaders/asteroids.fs");
+	m_ShaderAsteroids = MoravaShader::Create(SHADERS_DIR "/asteroids.vs", SHADERS_DIR "/asteroids.fs");
 	printf("SceneAsteroids: m_ShaderAsteroids shader compiled [programID=%d]\n", m_ShaderAsteroids->GetProgramID());
 }
 
@@ -96,20 +97,20 @@ void SceneAsteroids::SetupGeometry()
 
 void SceneAsteroids::SetSkybox()
 {
-	skyboxFaces.push_back("Textures/skybox_1/right.jpg");
-	skyboxFaces.push_back("Textures/skybox_1/left.jpg");
-	skyboxFaces.push_back("Textures/skybox_1/top.jpg");
-	skyboxFaces.push_back("Textures/skybox_1/bottom.jpg");
-	skyboxFaces.push_back("Textures/skybox_1/back.jpg");
-	skyboxFaces.push_back("Textures/skybox_1/front.jpg");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_1/right.jpg");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_1/left.jpg");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_1/top.jpg");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_1/bottom.jpg");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_1/back.jpg");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_1/front.jpg");
 
 	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
 void SceneAsteroids::SetupModels()
 {
-	ModelJoey* rock = new ModelJoey("Models/rock.obj", "Textures");
-	ModelJoey* planet = new ModelJoey("Models/planet.obj", "Textures");
+	ModelJoey* rock = new ModelJoey(MODELS_DIR "/rock.obj", TEXTURES_DIR);
+	ModelJoey* planet = new ModelJoey(MODELS_DIR "/planet.obj", TEXTURES_DIR);
 	models.insert(std::make_pair("rock", rock));
 	models.insert(std::make_pair("planet", planet));
 }

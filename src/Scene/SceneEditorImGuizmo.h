@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Raycast.h"
+#include "Core/EnginePaths.h"
 #include "Editor_Legacy/Gizmo.h"
 #include "Editor_Legacy/SceneObjectParticleSystem.h"
 #include "Framebuffer/MoravaFramebuffer.h"
@@ -156,7 +157,7 @@ private:
 	bool m_OrthographicViewEnabled;
 
 	glm::vec3 defaultSpawnPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-	const char* m_SceneFilename = "Scenes/scene_tmp.scene";
+	const char* m_SceneFilename = SCENES_DIR "/scene_tmp.scene";
 
 	bool m_DirLightEnabledPrev;
 	glm::vec3 m_DirLightColorPrev;

@@ -1,4 +1,5 @@
 #include "Scene/SceneInstanced.h"
+#include "Core/EnginePaths.h"
 
 #include "Mesh/VertexInstanced.h"
 
@@ -18,7 +19,7 @@ SceneInstanced::SceneInstanced()
 
 void SceneInstanced::SetupShaders()
 {
-	m_ShaderInstanced = MoravaShader::Create("Shaders/instanced.vert", "Shaders/instanced.frag");
+	m_ShaderInstanced = MoravaShader::Create(SHADERS_DIR "/instanced.vert", SHADERS_DIR "/instanced.frag");
 	printf("SceneInstanced: m_ShaderInstanced compiled [programID=%d]\n", m_ShaderInstanced->GetProgramID());
 }
 

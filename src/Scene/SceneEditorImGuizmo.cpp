@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Scene/SceneEditorImGuizmo.h"
+#include "Core/EnginePaths.h"
 
 #include "../../ImGuizmo/src/ImGuizmo.h"
 
@@ -1696,34 +1697,34 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
     if (m_HDRI_Edit != m_HDRI_Edit_Prev || m_BlurLevel != m_BlurLevelPrev)
     {
         if (m_HDRI_Edit == HDRI_GREENWICH_PARK) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/greenwich_park_02_1k.hdr", m_BlurLevel);
         }
         else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/san_giuseppe_bridge_1k.hdr", m_BlurLevel);
         }
         else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/Tropical_Beach_3k.hdr", m_BlurLevel);
         }
         else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/vignaioli_night_1k.hdr", m_BlurLevel);
         }
         else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/006_hdrmaps_com_free.hdr", m_BlurLevel);
         }
         else if (m_HDRI_Edit == HDRI_BIRCHWOOD) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/birchwood_4k.hdr", m_BlurLevel);
         }
         else if (m_HDRI_Edit == HDRI_PINK_SUNRISE) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/pink_sunrise_4k.hdr", m_BlurLevel);
         }
         else if (m_HDRI_Edit == HDRI_ROOITOU_PARK) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/rooitou_park_4k.hdr", m_BlurLevel);
         }
         else if (m_HDRI_Edit == HDRI_VENICE_DAWN) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/venice_dawn_1_4k.hdr", m_BlurLevel);
         }
         else if (m_HDRI_Edit == HDRI_PEPPERMINT_POWERPLANT) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/peppermint_powerplant_1k.hdr", m_BlurLevel);
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/peppermint_powerplant_1k.hdr", m_BlurLevel);
         }
 
         m_BlurEffect->Init(m_MaterialWorkflowPBR->m_CaptureSize, m_MaterialWorkflowPBR->m_CaptureSize, ResourceManager::HotLoadTexture("crate")->GetID());
@@ -1864,17 +1865,17 @@ Mesh* SceneEditorImGuizmo::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::s
         *name = "ring";
         break;
     case MESH_TYPE_BOB_LAMP:
-        mesh = new SkinnedMesh("Models/OGLdev/BobLamp/boblampclean.md5mesh", "Models/OGLdev/BobLamp");
+        mesh = new SkinnedMesh(MODELS_DIR "/OGLdev/BobLamp/boblampclean.md5mesh", MODELS_DIR "/OGLdev/BobLamp");
         ((SkinnedMesh*)mesh)->SetTimeMultiplier(1.0f);
         *name = "bob_lamp";
         break;
     case MESH_TYPE_ANIM_BOY:
-        mesh = new SkinnedMesh("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", "Textures");
+        mesh = new SkinnedMesh(MODELS_DIR "/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", TEXTURES_DIR);
         ((SkinnedMesh*)mesh)->SetTimeMultiplier(800.0f);
         *name = "anim_boy";
         break;
     case MESH_TYPE_TERRAIN:
-        mesh = new TerrainHeightMap("Textures/horizon_mountains.png", 4.0f, nullptr);
+        mesh = new TerrainHeightMap(TEXTURES_DIR "/horizon_mountains.png", 4.0f, nullptr);
         *name = "terrain";
         break;
     case MESH_TYPE_WATER:
@@ -1882,11 +1883,11 @@ Mesh* SceneEditorImGuizmo::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::s
         *name = "water";
         break;
     case MESH_TYPE_DRONE:
-        mesh = new SkinnedMesh("Models/BusterDrone/busterDrone.gltf", "Textures/BusterDrone");
+        mesh = new SkinnedMesh(MODELS_DIR "/BusterDrone/busterDrone.gltf", TEXTURES_DIR "/BusterDrone");
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new H2M::ModelH2M("Models/M1911/m1911.fbx", H2M::RefH2M<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
+        mesh = new H2M::ModelH2M(MODELS_DIR "/M1911/m1911.fbx", H2M::RefH2M<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
         *name = "M1911";
         break;
     default:
@@ -2206,37 +2207,37 @@ Model* SceneEditorImGuizmo::AddNewModel(int modelID, glm::vec3 scale)
     switch (modelID)
     {
     case MODEL_STONE_CARVED:
-        model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
+        model = new Model(MODELS_DIR "/Stone_Carved/tf3pfhzda_LOD0.fbx");
         break;
     case MODEL_OLD_STOVE:
-        model = new Model("Models/Old_Stove/udmheheqx_LOD0.fbx");
+        model = new Model(MODELS_DIR "/Old_Stove/udmheheqx_LOD0.fbx");
         break;
     case MODEL_BUDDHA:
-        model = new Model("Models/OGLdev/buddha/buddha.obj", "Textures/OGLdev/buddha");
+        model = new Model(MODELS_DIR "/OGLdev/buddha/buddha.obj", TEXTURES_DIR "/OGLdev/buddha");
         break;
     case MODEL_HHELI:
-        model = new Model("Models/OGLdev/hheli/hheli.obj", "Textures/OGLdev/hheli");
+        model = new Model(MODELS_DIR "/OGLdev/hheli/hheli.obj", TEXTURES_DIR "/OGLdev/hheli");
         break;
     case MODEL_JEEP:
-        model = new Model("Models/OGLdev/jeep/jeep.obj", "Textures/OGLdev/jeep");
+        model = new Model(MODELS_DIR "/OGLdev/jeep/jeep.obj", TEXTURES_DIR "/OGLdev/jeep");
         break;
     case MODEL_DAMAGED_HELMET:
-        model = new Model("Models/DamagedHelmet.gltf", "Textures/PBR/DamagedHelmet");
+        model = new Model(MODELS_DIR "/DamagedHelmet.gltf", TEXTURES_DIR "/PBR/DamagedHelmet");
         break;
     case MODEL_SF_HELMET:
-        model = new Model("Models/SciFiHelmet.gltf", "Textures/PBR/SciFiHelmet");
+        model = new Model(MODELS_DIR "/SciFiHelmet.gltf", TEXTURES_DIR "/PBR/SciFiHelmet");
         break;
     case MODEL_CERBERUS:
-        model = new Model("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
+        model = new Model(MODELS_DIR "/Cerberus/Cerberus_LP.FBX", MODELS_DIR "/Cerberus/Textures");
         break;
     case MODEL_PINE:
-        model = new Model("Models/ThinMatrix/pine.obj", "Textures/ThinMatrix");
+        model = new Model(MODELS_DIR "/ThinMatrix/pine.obj", TEXTURES_DIR "/ThinMatrix");
         break;
     case MODEL_BOULDER:
-        model = new Model("Models/ThinMatrix/boulder.obj", "Textures/ThinMatrix");
+        model = new Model(MODELS_DIR "/ThinMatrix/boulder.obj", TEXTURES_DIR "/ThinMatrix");
         break;
     default:
-        model = new Model("Models/Stone_Carved/tf3pfhzda_LOD0.fbx");
+        model = new Model(MODELS_DIR "/Stone_Carved/tf3pfhzda_LOD0.fbx");
         break;
     }
     return model;

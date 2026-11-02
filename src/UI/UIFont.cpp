@@ -1,4 +1,5 @@
 #include "UIFont.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Log.h"
 #include "Project/Project.h"
@@ -61,12 +62,12 @@ static std::string GetCacheFolder()
 	{
 		return project->GetDirectory() + "/Library/FontCache";
 	}
-	return "Resources/Cache/Fonts";
+	return RESOURCES_DIR "/Cache/Fonts";
 }
 
 const std::string& UIFont::GetDefaultFontPath()
 {
-	static const std::string s_Path = "Fonts/opensans/OpenSans-Regular.ttf";
+	static const std::string s_Path = FONTS_DIR "/opensans/OpenSans-Regular.ttf";
 	return s_Path;
 }
 

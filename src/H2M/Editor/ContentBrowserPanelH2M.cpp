@@ -1,4 +1,5 @@
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
@@ -21,8 +22,8 @@ namespace H2M
 	{
 		// m_TextureDirectory = HazelTexture2D::Create("Textures/UI/directory_transparent.png", false);
 		// m_TextureFile = HazelTexture2D::Create("Textures/UI/file_transparent.png", false);
-		m_TextureDirectory = Texture2D_H2M::Create("Textures/UI/directory_modern_transparent.png", false);
-		m_TextureFile = Texture2D_H2M::Create("Textures/UI/file_modern_transparent.png", false);
+		m_TextureDirectory = Texture2D_H2M::Create(TEXTURES_DIR "/UI/directory_modern_transparent.png", false);
+		m_TextureFile = Texture2D_H2M::Create(TEXTURES_DIR "/UI/file_modern_transparent.png", false);
 	}
 
 	ContentBrowserPanelH2M::~ContentBrowserPanelH2M()

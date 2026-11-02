@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EnvMapVulkanRenderSettings.h"
+#include "Core/EnginePaths.h"
 #include "EnvMapVulkanScene.h"
 
 #include <yaml-cpp/yaml.h>
@@ -32,7 +33,7 @@
  */
 namespace EnvMapVulkanSceneSerializer
 {
-	constexpr const char* ScenesFolder = "Scenes";
+	constexpr const char* ScenesFolder = SCENES_DIR;
 	constexpr const char* FileExtension = ".mscene";
 
 	// A part's material as the file names it, until the caller finds or loads it

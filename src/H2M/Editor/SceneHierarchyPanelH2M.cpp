@@ -5,6 +5,7 @@
  */
 
 #include "SceneHierarchyPanelH2M.h"
+#include "Core/EnginePaths.h"
 #include "H2M/ImGui/ImGuiH2M.h"
 
 // Morava
@@ -36,9 +37,9 @@ namespace H2M
 
 	void SceneHierarchyPanelH2M::Init()
 	{
-		s_PencilIcon = Texture2D_H2M::Create("Resources/Editor/pencil_icon.png", false);
-		s_PlusIcon = Texture2D_H2M::Create("Resources/Editor/plus_icon.png", false);
-		s_GearIcon = Texture2D_H2M::Create("Resources/Editor/gear_icon.png", false);
+		s_PencilIcon = Texture2D_H2M::Create(RESOURCES_DIR "/Editor/pencil_icon.png", false);
+		s_PlusIcon = Texture2D_H2M::Create(RESOURCES_DIR "/Editor/plus_icon.png", false);
+		s_GearIcon = Texture2D_H2M::Create(RESOURCES_DIR "/Editor/gear_icon.png", false);
 	}
 
 	void SceneHierarchyPanelH2M::Shutdown()

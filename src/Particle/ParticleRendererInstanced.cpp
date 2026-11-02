@@ -1,4 +1,5 @@
 #include "Particle/ParticleRendererInstanced.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"
@@ -14,7 +15,7 @@ ParticleRendererInstanced::ParticleRendererInstanced(int maxInstances)
 {
 	m_MaxInstances = maxInstances;
 
-	m_Shader = MoravaShader::Create("Shaders/ThinMatrix/particle_instanced.vs", "Shaders/ThinMatrix/particle_instanced.fs");
+	m_Shader = MoravaShader::Create(SHADERS_DIR "/ThinMatrix/particle_instanced.vs", SHADERS_DIR "/ThinMatrix/particle_instanced.fs");
 	printf("ParticleRenderer: m_Shader compiled [programID=%d]\n", m_Shader->GetProgramID());
 
 	m_Mesh = new QuadInstanced();

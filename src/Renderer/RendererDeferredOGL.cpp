@@ -1,4 +1,5 @@
 #include "RendererDeferredOGL.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "Mesh/QuadSSAO.h"
@@ -42,11 +43,11 @@ void RendererDeferredOGL::CreateBuffers()
 
 void RendererDeferredOGL::SetShaders()
 {
-	m_ShaderForwardBasic = MoravaShader::Create("Shaders/OGLdev/tutorial35/forward_basic.vs", "Shaders/OGLdev/tutorial35/forward_basic.fs");
+	m_ShaderForwardBasic = MoravaShader::Create(SHADERS_DIR "/OGLdev/tutorial35/forward_basic.vs", SHADERS_DIR "/OGLdev/tutorial35/forward_basic.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("forward_basic", m_ShaderForwardBasic.Raw()));
 	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderForwardBasic compiled [programID={0}]", m_ShaderForwardBasic->GetProgramID());
 
-	m_ShaderGeometryPass = MoravaShader::Create("Shaders/OGLdev/tutorial35/geometry_pass.vs", "Shaders/OGLdev/tutorial35/geometry_pass.fs");
+	m_ShaderGeometryPass = MoravaShader::Create(SHADERS_DIR "/OGLdev/tutorial35/geometry_pass.vs", SHADERS_DIR "/OGLdev/tutorial35/geometry_pass.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("geometry_pass", m_ShaderGeometryPass.Raw()));
 	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 }
@@ -58,8 +59,8 @@ void RendererDeferredOGL::SetupTextureSlots()
 
 void RendererDeferredOGL::SetupTextures()
 {
-	ResourceManager::LoadTexture("crate_diffuse", "Textures/crate.png");
-	ResourceManager::LoadTexture("crate_normal",  "Textures/crateNormal.png");
+	ResourceManager::LoadTexture("crate_diffuse", TEXTURES_DIR "/crate.png");
+	ResourceManager::LoadTexture("crate_normal",  TEXTURES_DIR "/crateNormal.png");
 }
 
 void RendererDeferredOGL::SetupMeshes()

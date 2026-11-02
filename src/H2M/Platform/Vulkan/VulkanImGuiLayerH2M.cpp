@@ -5,6 +5,7 @@
  */
 
 #include "VulkanImGuiLayerH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "VulkanUIImagesH2M.h"
 
@@ -90,13 +91,13 @@ namespace H2M
 
 
 		io.Fonts->AddFontFromFileTTF(
-			"Fonts/opensans/OpenSans-Bold.ttf",
+			FONTS_DIR "/opensans/OpenSans-Bold.ttf",
 			16.0f
 		);
 
 		io.FontDefault =
 			io.Fonts->AddFontFromFileTTF(
-				"Fonts/opensans/OpenSans-Regular.ttf",
+				FONTS_DIR "/opensans/OpenSans-Regular.ttf",
 				16.0f
 			);
 

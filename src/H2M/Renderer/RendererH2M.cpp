@@ -5,6 +5,7 @@
  */
 
 #include "RendererH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Core/AssertH2M.h"
 #if defined(GRAPHICS_API_VULKAN)
@@ -129,65 +130,65 @@ namespace H2M
 		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 		{
 			// RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ClearCubeMap.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EquirectangularToCubeMap.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentMipFilter.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentIrradiance.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EquirectangularToCubeMap.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EnvironmentMipFilter.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EnvironmentIrradiance.glsl");
 
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Grid.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SceneComposite.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ViewportComposite.glsl"); // SceneEnvMapVulkan: composite with bloom
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Present.glsl");           // SceneEnvMapVulkan: the composite into the window
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/RenderTextureComposite.glsl"); // SceneEnvMapVulkan: a texture camera's view, tonemapped
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/UI.glsl");                // SceneEnvMapVulkan: the game UI over the composite
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/BloomPass.glsl");         // SceneEnvMapVulkan: bloom downsample/upsample chain
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Anim.glsl"); // skinned meshes (SceneEnvMapVulkan)
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Cutout_Static.glsl"); // SceneEnvMapVulkan: cutout materials without the prepass (the water's reflection)
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Cutout_Anim.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Glass_Static.glsl"); // SceneEnvMapVulkan: meshes with a glass material
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Static.glsl"); // SceneEnvMapVulkan: the G-buffer prepass
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Anim.glsl");   // SceneEnvMapVulkan: the G-buffer prepass (skinned)
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Cutout_Static.glsl"); // SceneEnvMapVulkan: the prepass of cutout materials
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Cutout_Anim.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Water.glsl");         // SceneEnvMapVulkan: the water plane
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/WaterFog.glsl");      // SceneEnvMapVulkan: the water volume (underwater fog)
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/WaterCaustics.glsl"); // SceneEnvMapVulkan: the light the waves focus under the water
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/WaterWireframe.glsl"); // SceneEnvMapVulkan: the water surface's grid as lines
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EditorOverlay.glsl");      // SceneEnvMapVulkan: wireframe, bounding boxes, selection mask
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EditorOverlay_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EditorVectors.glsl");      // SceneEnvMapVulkan: normal, tangent and bitangent lines
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EditorVectors_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth.glsl");      // SceneEnvMapVulkan: shadow map cascades
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth_Cutout.glsl");      // SceneEnvMapVulkan: shadows of cutout materials
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth_Cutout_Anim.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowMapView.glsl");    // SceneEnvMapVulkan: spot / point shadow map viewer
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeEnvFill.glsl");     // SceneEnvMapVulkan: the probe volume, filled from the environment
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeSpheres.glsl");     // SceneEnvMapVulkan: the probes shown as balls
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeCapture_Static.glsl");   // SceneEnvMapVulkan: the probe update: the meshes into a cube around a probe
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeCapture_Anim.glsl");     // SceneEnvMapVulkan: the same for skinned meshes
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeResample.glsl");         // SceneEnvMapVulkan: the probe update: the cubes into the ray buffer
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBlendIrradiance.glsl");  // SceneEnvMapVulkan: the probe update: the rays into the irradiance atlas
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBlendVisibility.glsl");  // SceneEnvMapVulkan: the probe update: the rays into the visibility atlas
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBorders.glsl");          // SceneEnvMapVulkan: the probe update: the border texels of the updated tiles
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeRelocate.glsl");         // SceneEnvMapVulkan: the probe update: probes moved out of the meshes
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAODepth.glsl");             // SceneEnvMapVulkan: ambient occlusion: the depth buffer to linear depth
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAODepthMip.glsl");          // SceneEnvMapVulkan: ambient occlusion: the linear depth's smaller levels
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAOGTAO.glsl");              // SceneEnvMapVulkan: ambient occlusion: GTAO
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAODenoise.glsl");           // SceneEnvMapVulkan: ambient occlusion: the blur that keeps edges
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAOUpsample.glsl");          // SceneEnvMapVulkan: ambient occlusion: to the viewport's size
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/TemporalFilter_R8.glsl");     // SceneEnvMapVulkan: the temporal filter (one-channel images)
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/TemporalFilter_RGBA16F.glsl"); // SceneEnvMapVulkan: the temporal filter (four-channel float images)
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ReflectionResolve.glsl");     // SceneEnvMapVulkan: ray-traced reflections: to the viewport's size
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Grid.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/SceneComposite.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ViewportComposite.glsl"); // SceneEnvMapVulkan: composite with bloom
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Present.glsl");           // SceneEnvMapVulkan: the composite into the window
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/RenderTextureComposite.glsl"); // SceneEnvMapVulkan: a texture camera's view, tonemapped
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/UI.glsl");                // SceneEnvMapVulkan: the game UI over the composite
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/BloomPass.glsl");         // SceneEnvMapVulkan: bloom downsample/upsample chain
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Static.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Anim.glsl"); // skinned meshes (SceneEnvMapVulkan)
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Cutout_Static.glsl"); // SceneEnvMapVulkan: cutout materials without the prepass (the water's reflection)
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Cutout_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Glass_Static.glsl"); // SceneEnvMapVulkan: meshes with a glass material
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Static.glsl"); // SceneEnvMapVulkan: the G-buffer prepass
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Anim.glsl");   // SceneEnvMapVulkan: the G-buffer prepass (skinned)
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Cutout_Static.glsl"); // SceneEnvMapVulkan: the prepass of cutout materials
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Cutout_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Water.glsl");         // SceneEnvMapVulkan: the water plane
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/WaterFog.glsl");      // SceneEnvMapVulkan: the water volume (underwater fog)
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/WaterCaustics.glsl"); // SceneEnvMapVulkan: the light the waves focus under the water
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/WaterWireframe.glsl"); // SceneEnvMapVulkan: the water surface's grid as lines
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Outline.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EditorOverlay.glsl");      // SceneEnvMapVulkan: wireframe, bounding boxes, selection mask
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EditorOverlay_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EditorVectors.glsl");      // SceneEnvMapVulkan: normal, tangent and bitangent lines
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EditorVectors_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth.glsl");      // SceneEnvMapVulkan: shadow map cascades
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Cutout.glsl");      // SceneEnvMapVulkan: shadows of cutout materials
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Cutout_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowMapView.glsl");    // SceneEnvMapVulkan: spot / point shadow map viewer
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeEnvFill.glsl");     // SceneEnvMapVulkan: the probe volume, filled from the environment
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeSpheres.glsl");     // SceneEnvMapVulkan: the probes shown as balls
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeCapture_Static.glsl");   // SceneEnvMapVulkan: the probe update: the meshes into a cube around a probe
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeCapture_Anim.glsl");     // SceneEnvMapVulkan: the same for skinned meshes
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeResample.glsl");         // SceneEnvMapVulkan: the probe update: the cubes into the ray buffer
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeBlendIrradiance.glsl");  // SceneEnvMapVulkan: the probe update: the rays into the irradiance atlas
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeBlendVisibility.glsl");  // SceneEnvMapVulkan: the probe update: the rays into the visibility atlas
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeBorders.glsl");          // SceneEnvMapVulkan: the probe update: the border texels of the updated tiles
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeRelocate.glsl");         // SceneEnvMapVulkan: the probe update: probes moved out of the meshes
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/SSAODepth.glsl");             // SceneEnvMapVulkan: ambient occlusion: the depth buffer to linear depth
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/SSAODepthMip.glsl");          // SceneEnvMapVulkan: ambient occlusion: the linear depth's smaller levels
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/SSAOGTAO.glsl");              // SceneEnvMapVulkan: ambient occlusion: GTAO
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/SSAODenoise.glsl");           // SceneEnvMapVulkan: ambient occlusion: the blur that keeps edges
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/SSAOUpsample.glsl");          // SceneEnvMapVulkan: ambient occlusion: to the viewport's size
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/TemporalFilter_R8.glsl");     // SceneEnvMapVulkan: the temporal filter (one-channel images)
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/TemporalFilter_RGBA16F.glsl"); // SceneEnvMapVulkan: the temporal filter (four-channel float images)
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ReflectionResolve.glsl");     // SceneEnvMapVulkan: ray-traced reflections: to the viewport's size
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Skybox.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Texture.glsl");
 
 			// Renderer2D_H2M
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Renderer2D.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Renderer2D_Line.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Renderer2D_Circle.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Renderer2D_Text.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Renderer2D.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Renderer2D_Line.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Renderer2D_Circle.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Renderer2D_Text.glsl");
 		}
 
 		// Compile shaders

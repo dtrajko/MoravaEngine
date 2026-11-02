@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Scene/SceneProceduralLandmass.h"
+#include "Core/EnginePaths.h"
 
 #include "Camera/CameraControllerVoxelTerrain.h"
 #include "Core/Application.h"
@@ -98,8 +99,8 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     ResourceManager::Init();
 
     /**** Configure Map Generator ***/
-    m_MapGenConf.heightMapFilePath = "Textures/Noise/heightMap.png";
-    m_MapGenConf.colorMapFilePath = "Textures/Noise/colorMap.png";
+    m_MapGenConf.heightMapFilePath = TEXTURES_DIR "/Noise/heightMap.png";
+    m_MapGenConf.colorMapFilePath = TEXTURES_DIR "/Noise/colorMap.png";
     m_MapGenConf.drawMode = MapGenerator::DrawMode::Mesh;
     m_MapGenConf.mapChunkSize = 61;
     // m_MapGenConf.mapWidth = 241;
@@ -190,9 +191,9 @@ void SceneProceduralLandmass::SetCamera()
 
 void SceneProceduralLandmass::SetupTextures()
 {
-    ResourceManager::LoadTexture("diffuse", "Textures/plain.png");
-    ResourceManager::LoadTexture("normal", "Textures/normal_map_default.png");
-    ResourceManager::LoadTexture("water", "Textures/water.png");
+    ResourceManager::LoadTexture("diffuse", TEXTURES_DIR "/plain.png");
+    ResourceManager::LoadTexture("normal", TEXTURES_DIR "/normal_map_default.png");
+    ResourceManager::LoadTexture("water", TEXTURES_DIR "/water.png");
 }
 
 void SceneProceduralLandmass::SetupTextureSlots()

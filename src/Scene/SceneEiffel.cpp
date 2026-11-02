@@ -1,4 +1,5 @@
 #include "Scene/SceneEiffel.h"
+#include "Core/EnginePaths.h"
 
 #include "Mesh/MeshData.h"
 #include "Mesh/Tile2D.h"
@@ -57,23 +58,23 @@ SceneEiffel::~SceneEiffel()
 
 void SceneEiffel::SetSkybox()
 {
-	skyboxFaces.push_back("Textures/skybox_3/right.png");
-	skyboxFaces.push_back("Textures/skybox_3/left.png");
-	skyboxFaces.push_back("Textures/skybox_3/top.png");
-	skyboxFaces.push_back("Textures/skybox_3/bottom.png");
-	skyboxFaces.push_back("Textures/skybox_3/back.png");
-	skyboxFaces.push_back("Textures/skybox_3/front.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_3/right.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_3/left.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_3/top.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_3/bottom.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_3/back.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_3/front.png");
 	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
 void SceneEiffel::SetupTextures()
 {
-	textures.insert(std::make_pair("sponzaFloorDiffuse", TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_diff.tga", false, false)));
-	textures.insert(std::make_pair("sponzaFloorNormal",  TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_ddn.tga", false, false)));
-	textures.insert(std::make_pair("sponzaCeilDiffuse",  TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_diff.tga", false, false)));
-	textures.insert(std::make_pair("sponzaCeilNormal",   TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_ddn.tga", false, false)));
-	textures.insert(std::make_pair("water",              TextureLoader::Get()->GetTexture("Textures/water.png", false, false)));
-	textures.insert(std::make_pair("pyramid",            TextureLoader::Get()->GetTexture("Textures/pyramid.png", false, false)));
+	textures.insert(std::make_pair("sponzaFloorDiffuse", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_floor_a_diff.tga", false, false)));
+	textures.insert(std::make_pair("sponzaFloorNormal",  TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_floor_a_ddn.tga", false, false)));
+	textures.insert(std::make_pair("sponzaCeilDiffuse",  TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_ceiling_a_diff.tga", false, false)));
+	textures.insert(std::make_pair("sponzaCeilNormal",   TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_ceiling_a_ddn.tga", false, false)));
+	textures.insert(std::make_pair("water",              TextureLoader::Get()->GetTexture(TEXTURES_DIR "/water.png", false, false)));
+	textures.insert(std::make_pair("pyramid",            TextureLoader::Get()->GetTexture(TEXTURES_DIR "/pyramid.png", false, false)));
 }
 
 void SceneEiffel::SetupMeshes()
@@ -96,13 +97,13 @@ void SceneEiffel::SetupMeshes()
 
 void SceneEiffel::SetupModels()
 { 
-	Model* eiffel = new Model("Models/Eiffel_Tower.obj");
+	Model* eiffel = new Model(MODELS_DIR "/Eiffel_Tower.obj");
 	models.insert(std::make_pair("eiffel", eiffel));
 
-	Model* watchtower = new Model("Models/wooden_watch_tower.obj");
+	Model* watchtower = new Model(MODELS_DIR "/wooden_watch_tower.obj");
 	models.insert(std::make_pair("watchtower", watchtower));
 
-	Model* helicopter = new Model("Models/OGLdev/hheli/hheli.obj", "Textures/OGLdev/hheli");
+	Model* helicopter = new Model(MODELS_DIR "/OGLdev/hheli/hheli.obj", TEXTURES_DIR "/OGLdev/hheli");
 	models.insert(std::make_pair("helicopter", helicopter));
 }
 

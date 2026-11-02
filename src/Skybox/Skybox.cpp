@@ -1,4 +1,5 @@
 #include "Skybox.h"
+#include "Core/EnginePaths.h"
 
 
 Skybox::Skybox()
@@ -10,8 +11,8 @@ Skybox::Skybox(std::vector<std::string> faceLocations, bool flipVert)
 	// Shader setup
 	MoravaShaderSpecification moravaShaderSpecification;
 	moravaShaderSpecification.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
-	moravaShaderSpecification.VertexShaderPath = "Shaders/skybox.vert";
-	moravaShaderSpecification.FragmentShaderPath = "Shaders/skybox.frag";
+	moravaShaderSpecification.VertexShaderPath = SHADERS_DIR "/skybox.vert";
+	moravaShaderSpecification.FragmentShaderPath = SHADERS_DIR "/skybox.frag";
 	m_SkyShader = MoravaShader::Create(moravaShaderSpecification);
 
 	// Texture setup

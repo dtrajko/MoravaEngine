@@ -1,4 +1,5 @@
 #include "EnvMapVulkanEditorLayer.h"
+#include "Core/EnginePaths.h"
 
 #include "EnvMapVulkanImGuiLayer.h"
 #include "EnvMapVulkanRenderer.h"
@@ -26,23 +27,23 @@ void EnvMapVulkanEditorLayer::OnAttach()
 	H2M::TexturePropertiesH2M clampProps;
 	clampProps.SamplerWrap = H2M::TextureWrapH2M::Clamp;
 
-	m_CheckerboardTex = H2M::Texture2D_H2M::Create("Resources/Editor/Checkerboard.tga", false);
-	m_PlayButtonTex = H2M::Texture2D_H2M::Create("Resources/Editor/PlayButton.png", false);
-	m_PauseButtonTex = H2M::Texture2D_H2M::Create("Resources/Editor/PauseButton.png", false);
-	m_StopButtonTex = H2M::Texture2D_H2M::Create("Resources/Editor/StopButton.png", false);
-	m_SimulateButtonTex = H2M::Texture2D_H2M::Create("Resources/Editor/SimulateButton.png", false);
-	m_SelectToolTex = H2M::Texture2D_H2M::Create("Resources/Editor/icon_pointer.png", clampProps);
-	m_MoveToolTex = H2M::Texture2D_H2M::Create("Resources/Editor/MoveTool.png", false);
-	m_RotateToolTex = H2M::Texture2D_H2M::Create("Resources/Editor/icon_rotate.png", false);
-	m_ScaleToolTex = H2M::Texture2D_H2M::Create("Resources/Editor/ScaleTool.png", clampProps);
+	m_CheckerboardTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/Checkerboard.tga", false);
+	m_PlayButtonTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/PlayButton.png", false);
+	m_PauseButtonTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/PauseButton.png", false);
+	m_StopButtonTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/StopButton.png", false);
+	m_SimulateButtonTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/SimulateButton.png", false);
+	m_SelectToolTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/icon_pointer.png", clampProps);
+	m_MoveToolTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/MoveTool.png", false);
+	m_RotateToolTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/icon_rotate.png", false);
+	m_ScaleToolTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/ScaleTool.png", clampProps);
 
-	m_LogoTex = H2M::Texture2D_H2M::Create("Resources/Editor/H_logo.png", clampProps);
-	m_IconMinimize = H2M::Texture2D_H2M::Create("Resources/Editor/window_minimize.png", clampProps);
-	m_IconMaximize = H2M::Texture2D_H2M::Create("Resources/Editor/window_maximize.png", clampProps);
-	m_IconRestore = H2M::Texture2D_H2M::Create("Resources/Editor/window_restore.png", clampProps);
-	m_IconClose = H2M::Texture2D_H2M::Create("Resources/Editor/window_close.png", clampProps);
+	m_LogoTex = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/H_logo.png", clampProps);
+	m_IconMinimize = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/window_minimize.png", clampProps);
+	m_IconMaximize = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/window_maximize.png", clampProps);
+	m_IconRestore = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/window_restore.png", clampProps);
+	m_IconClose = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/window_close.png", clampProps);
 
-	m_PointLightIcon = H2M::Texture2D_H2M::Create("Resources/Editor/Icons/PointLight.png", false);
+	m_PointLightIcon = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Editor/Icons/PointLight.png", false);
 
 	/////////// Configure Panels ///////////
 	// m_PanelManager = CreateScope<PanelManager>();

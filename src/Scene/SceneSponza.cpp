@@ -1,4 +1,5 @@
 #include "Scene/SceneSponza.h"
+#include "Core/EnginePaths.h"
 
 #include "Mesh/MeshData.h"
 #include "Mesh/Tile2D.h"
@@ -43,12 +44,12 @@ SceneSponza::SceneSponza()
 
 void SceneSponza::SetSkybox()
 {
-	skyboxFaces.push_back("Textures/skybox_4/right.png");
-	skyboxFaces.push_back("Textures/skybox_4/left.png");
-	skyboxFaces.push_back("Textures/skybox_4/top.png");
-	skyboxFaces.push_back("Textures/skybox_4/bottom.png");
-	skyboxFaces.push_back("Textures/skybox_4/back.png");
-	skyboxFaces.push_back("Textures/skybox_4/front.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/right.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/left.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/top.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/bottom.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/back.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/front.png");
 	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
@@ -71,7 +72,7 @@ void SceneSponza::SetupMeshes()
 
 void SceneSponza::SetupModels()
 {
-	Model* sponza = new Model("Models/sponza.obj", "Textures");
+	Model* sponza = new Model(MODELS_DIR "/sponza.obj", TEXTURES_DIR);
     models.insert(std::make_pair("sponza", sponza));
 }
 

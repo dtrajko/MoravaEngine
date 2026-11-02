@@ -1,4 +1,5 @@
 #include "Scene/SceneBloom.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "Core/Input.h"
@@ -42,8 +43,8 @@ void SceneBloom::SetupTextures()
 {
     // m_TextureWood = H2M::Texture2D_H2M::Create("Textures/wood.png", true, H2M::TextureWrap::Clamp);
 
-    m_TextureWood = loadTexture("Textures/wood.png", true); // note that we're loading the texture as an SRGB texture
-    m_TextureContainer = loadTexture("Textures/container/container2.png", true); // note that we're loading the texture as an SRGB texture
+    m_TextureWood = loadTexture(TEXTURES_DIR "/wood.png", true); // note that we're loading the texture as an SRGB texture
+    m_TextureContainer = loadTexture(TEXTURES_DIR "/container/container2.png", true); // note that we're loading the texture as an SRGB texture
 }
 
 void SceneBloom::SetupTextureSlots()
@@ -60,16 +61,16 @@ void SceneBloom::SetupModels()
 
 void SceneBloom::SetupShaders()
 {
-    m_ShaderBloom = MoravaShader::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.bloom.fs");
+    m_ShaderBloom = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/7.bloom.vs", SHADERS_DIR "/LearnOpenGL/7.bloom.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBloom compiled [programID={0}]", m_ShaderBloom->GetProgramID());
 
-    m_ShaderLightBox = MoravaShader::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.light_box.fs");
+    m_ShaderLightBox = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/7.bloom.vs", SHADERS_DIR "/LearnOpenGL/7.light_box.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderLightBox compiled [programID={0}]", m_ShaderLightBox->GetProgramID());
 
-    m_ShaderBlur = MoravaShader::Create("Shaders/LearnOpenGL/7.blur.vs", "Shaders/LearnOpenGL/7.blur.fs");
+    m_ShaderBlur = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/7.blur.vs", SHADERS_DIR "/LearnOpenGL/7.blur.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBlur compiled [programID={0}]", m_ShaderBlur->GetProgramID());
 
-    m_ShaderBloomFinal = MoravaShader::Create("Shaders/LearnOpenGL/7.bloom_final.vs", "Shaders/LearnOpenGL/7.bloom_final.fs");
+    m_ShaderBloomFinal = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/7.bloom_final.vs", SHADERS_DIR "/LearnOpenGL/7.bloom_final.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBloomFinal compiled [programID={0}]", m_ShaderBloomFinal->GetProgramID());
 
     m_ShaderBloom->Bind();

@@ -1,4 +1,5 @@
 #include "EnvMapVulkanPathTracer.h"
+#include "Core/EnginePaths.h"
 
 #include "EnvMapVulkanRayTracing.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -40,7 +41,7 @@ void EnvMapVulkanPathTracer::Create()
 		return;
 	}
 	// The shader only compiles for a device with ray tracing, so it is loaded here, not with the other shaders
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/PathTrace.glsl");
+	H2M::RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/PathTrace.glsl");
 	m_Pipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(H2M::RendererH2M::GetShaderLibrary()->Get("PathTrace"));
 	m_FrameSet = m_Pipeline->GetShader()->CreateDescriptorSets(0);
 	m_ImageSet = m_Pipeline->GetShader()->CreateDescriptorSets(1);

@@ -1,4 +1,5 @@
 #include "Scene/SceneNanosuit.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Timer.h"
 #include "ImGui/ImGuiWrapper.h"
@@ -33,24 +34,24 @@ SceneNanosuit::SceneNanosuit()
 
 void SceneNanosuit::SetupShaders()
 {
-	m_ShaderNanosuit = MoravaShader::Create("Shaders/nanosuit.vs", "Shaders/nanosuit.fs");
+	m_ShaderNanosuit = MoravaShader::Create(SHADERS_DIR "/nanosuit.vs", SHADERS_DIR "/nanosuit.fs");
 	printf("SceneNanosuit: m_ShaderNanosuit compiled [programID=%d]\n", m_ShaderNanosuit->GetProgramID());
 }
 
 void SceneNanosuit::SetupTextures()
 {
-	textures.insert(std::make_pair("plain", TextureLoader::Get()->GetTexture("Textures/plain.png", false, false)));
+	textures.insert(std::make_pair("plain", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/plain.png", false, false)));
 }
 
 void SceneNanosuit::SetupModels()
 {
-	ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
+	ModelJoey* nanosuit = new ModelJoey(MODELS_DIR "/nanosuit.obj", TEXTURES_DIR "/nanosuit");
 	models.insert(std::make_pair("nanosuit", nanosuit));
 
 	Sphere* sphere = new Sphere();
 	meshes.insert(std::make_pair("sphere", sphere));
 
-	CubeNanosuit* cubeNanosuit = new CubeNanosuit("Textures/container");
+	CubeNanosuit* cubeNanosuit = new CubeNanosuit(TEXTURES_DIR "/container");
 	MeshJoey* cube = cubeNanosuit->GetMesh();
 	meshesJoey.insert(std::make_pair("cube", cube));
 }

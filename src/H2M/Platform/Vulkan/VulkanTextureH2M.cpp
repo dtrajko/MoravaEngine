@@ -5,6 +5,7 @@
  */
 
 #include "VulkanTextureH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "VulkanContextH2M.h"
 #include "VulkanImageH2M.h"
@@ -202,7 +203,7 @@ namespace H2M {
 		if (!loaded)
 		{
 			// TODO(Yan): move this to asset manager
-			LoadImageH2M("Resources/Textures/ErrorTexture.png");
+			LoadImageH2M(RESOURCES_DIR "/Textures/ErrorTexture.png");
 		}
 
 		ImageSpecificationH2M imageSpec;

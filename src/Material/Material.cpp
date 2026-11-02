@@ -1,4 +1,5 @@
 #include "Material/Material.h"
+#include "Core/EnginePaths.h"
 
 #include "Texture/TextureLoader.h"
 
@@ -26,7 +27,7 @@ Material::Material() : H2M::MaterialH2M(H2M::RefH2M<H2M::ShaderH2M>())
 	m_AmbientOcclusionMap = -1;
 	m_EmissionMap         = -1;
 
-	m_TexturePlaceholder = TextureLoader::Get()->GetTexture("Textures/plain.png", false, false);
+	m_TexturePlaceholder = TextureLoader::Get()->GetTexture(TEXTURES_DIR "/plain.png", false, false);
 
 	m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
 	m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;

@@ -7,6 +7,7 @@
 
 
 #include "Animation/AnimationClip.h"
+#include "Core/EnginePaths.h"
 #include "Animation/AnimatorController.h"
 #include "Animation/SceneAnimation.h"
 
@@ -66,7 +67,7 @@ void OpenAnimatorController(const std::string& path)
 std::string CreateAnimatorController(const H2M::RefH2M<H2M::ModelH2M>& model, const std::string& name)
 {
 	const Project* project = Project::GetOpen();
-	const std::filesystem::path folder = std::filesystem::u8path(project ? project->GetAssetFolder() : std::string("assets")) / "Animators";
+	const std::filesystem::path folder = std::filesystem::u8path(project ? project->GetAssetFolder() : std::string(ASSETS_DIR)) / "Animators";
 	std::error_code error;
 	std::filesystem::create_directories(folder, error);
 	const std::string base = EnvMapVulkanMaterialLibrary::MakeFileName(name, "Animator");

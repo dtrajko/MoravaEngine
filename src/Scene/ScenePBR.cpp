@@ -1,4 +1,5 @@
 #include "Scene/ScenePBR.h"
+#include "Core/EnginePaths.h"
 
 #include "Mesh/Sphere.h"
 #include "Renderer/Renderer.h"
@@ -87,39 +88,39 @@ ScenePBR::ScenePBR()
 
 void ScenePBR::SetSkybox()
 {
-	skyboxFaces.push_back("Textures/skybox_4/right.png");
-	skyboxFaces.push_back("Textures/skybox_4/left.png");
-	skyboxFaces.push_back("Textures/skybox_4/top.png");
-	skyboxFaces.push_back("Textures/skybox_4/bottom.png");
-	skyboxFaces.push_back("Textures/skybox_4/back.png");
-	skyboxFaces.push_back("Textures/skybox_4/front.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/right.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/left.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/top.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/bottom.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/back.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/front.png");
 	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
 void ScenePBR::SetupTextures()
 {
 	// PBR sphere
-	textures.insert(std::make_pair("rustedIronAlbedo",           TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/albedo.png", false, false)));
-	textures.insert(std::make_pair("rustedIronNormal",           TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/normal.png", false, false)));
-	textures.insert(std::make_pair("rustedIronMetallic",         TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/metallic.png", false, false)));
-	textures.insert(std::make_pair("rustedIronRoughness",        TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/roughness.png", false, false)));
-	textures.insert(std::make_pair("rustedIronAmbientOcclusion", TextureLoader::Get()->GetTexture("Textures/PBR/rusted_iron/ao.png", false, false)));
+	textures.insert(std::make_pair("rustedIronAlbedo",           TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/rusted_iron/albedo.png", false, false)));
+	textures.insert(std::make_pair("rustedIronNormal",           TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/rusted_iron/normal.png", false, false)));
+	textures.insert(std::make_pair("rustedIronMetallic",         TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/rusted_iron/metallic.png", false, false)));
+	textures.insert(std::make_pair("rustedIronRoughness",        TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/rusted_iron/roughness.png", false, false)));
+	textures.insert(std::make_pair("rustedIronAmbientOcclusion", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/rusted_iron/ao.png", false, false)));
 
 	// PBR gold
-	textures.insert(std::make_pair("goldAlbedo",           TextureLoader::Get()->GetTexture("Textures/PBR/gold/albedo.png", false, false)));
-	textures.insert(std::make_pair("goldNormal",           TextureLoader::Get()->GetTexture("Textures/PBR/gold/normal.png", false, false)));
-	textures.insert(std::make_pair("goldMetallic",         TextureLoader::Get()->GetTexture("Textures/PBR/gold/metallic.png", false, false)));
-	textures.insert(std::make_pair("goldRoughness",        TextureLoader::Get()->GetTexture("Textures/PBR/gold/roughness.png", false, false)));
-	textures.insert(std::make_pair("goldAmbientOcclusion", TextureLoader::Get()->GetTexture("Textures/PBR/gold/ao.png", false, false)));
+	textures.insert(std::make_pair("goldAlbedo",           TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/gold/albedo.png", false, false)));
+	textures.insert(std::make_pair("goldNormal",           TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/gold/normal.png", false, false)));
+	textures.insert(std::make_pair("goldMetallic",         TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/gold/metallic.png", false, false)));
+	textures.insert(std::make_pair("goldRoughness",        TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/gold/roughness.png", false, false)));
+	textures.insert(std::make_pair("goldAmbientOcclusion", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/gold/ao.png", false, false)));
 
 	// PBR cerberus
 	if (m_CerberusEnabled)
 	{
-		textures.insert(std::make_pair("cerberusAlbedo",       TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_A.tga", false, false)));
-		textures.insert(std::make_pair("cerberusNormal",       TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_N.tga", false, false)));
-		textures.insert(std::make_pair("cerberusMetallic",     TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_M.tga", false, false)));
-		textures.insert(std::make_pair("cerberusRoughness",    TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_R.tga", false, false)));
-		textures.insert(std::make_pair("cerberusAmbOcclusion", TextureLoader::Get()->GetTexture("Models/Cerberus/Textures/Cerberus_AO.tga", false, false)));
+		textures.insert(std::make_pair("cerberusAlbedo",       TextureLoader::Get()->GetTexture(MODELS_DIR "/Cerberus/Textures/Cerberus_A.tga", false, false)));
+		textures.insert(std::make_pair("cerberusNormal",       TextureLoader::Get()->GetTexture(MODELS_DIR "/Cerberus/Textures/Cerberus_N.tga", false, false)));
+		textures.insert(std::make_pair("cerberusMetallic",     TextureLoader::Get()->GetTexture(MODELS_DIR "/Cerberus/Textures/Cerberus_M.tga", false, false)));
+		textures.insert(std::make_pair("cerberusRoughness",    TextureLoader::Get()->GetTexture(MODELS_DIR "/Cerberus/Textures/Cerberus_R.tga", false, false)));
+		textures.insert(std::make_pair("cerberusAmbOcclusion", TextureLoader::Get()->GetTexture(MODELS_DIR "/Cerberus/Textures/Cerberus_AO.tga", false, false)));
 	}
 }
 
@@ -130,12 +131,12 @@ void ScenePBR::SetupMaterials()
 
 	// silver
 	TextureInfo textureInfoSilver = {};
-	textureInfoSilver.albedo = "Textures/PBR/silver/albedo.png";
-	textureInfoSilver.normal = "Textures/PBR/silver/normal.png";
-	textureInfoSilver.metallic = "Textures/PBR/silver/metallic.png";
-	textureInfoSilver.roughness = "Textures/PBR/silver/roughness.png";
-	textureInfoSilver.ao = "Textures/PBR/silver/ao.png";
-	textureInfoSilver.emissive = "Textures/PBR/silver/emissive.png";
+	textureInfoSilver.albedo = TEXTURES_DIR "/PBR/silver/albedo.png";
+	textureInfoSilver.normal = TEXTURES_DIR "/PBR/silver/normal.png";
+	textureInfoSilver.metallic = TEXTURES_DIR "/PBR/silver/metallic.png";
+	textureInfoSilver.roughness = TEXTURES_DIR "/PBR/silver/roughness.png";
+	textureInfoSilver.ao = TEXTURES_DIR "/PBR/silver/ao.png";
+	textureInfoSilver.emissive = TEXTURES_DIR "/PBR/silver/emissive.png";
 
 	materials.insert(std::make_pair("silver", new Material(textureInfoSilver, materialSpecular, materialShininess)));
 }
@@ -147,7 +148,7 @@ void ScenePBR::SetupModels()
 
 	if (m_CerberusEnabled)
 	{
-		Model* cerberus = new Model("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
+		Model* cerberus = new Model(MODELS_DIR "/Cerberus/Cerberus_LP.FBX", MODELS_DIR "/Cerberus/Textures");
 		models.insert(std::make_pair("cerberus", cerberus));
 	}
 }

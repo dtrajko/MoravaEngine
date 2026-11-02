@@ -5,6 +5,7 @@
  */
 
 #include "VulkanRendererH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "VulkanH2M.h"
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
@@ -231,15 +232,15 @@ namespace H2M
 		// s_Data.m_ShaderLibrary->Load("Resources/Shaders/SceneComposite.glsl");
 		// s_Data.m_ShaderLibrary->Load("Resources/Shaders/HazelSimple.glsl");
 		// s_Data.m_ShaderLibrary->Load("Resources/Shaders/Outline.glsl");
-		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EquirectangularToCubeMap.glsl", true);
-		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentMipFilter.glsl", true);
-		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentIrradiance.glsl", true);
-		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
-		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
-		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
-		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SceneComposite.glsl");
-		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Grid.glsl");
-		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
+		RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EquirectangularToCubeMap.glsl", true);
+		RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EnvironmentMipFilter.glsl", true);
+		RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/EnvironmentIrradiance.glsl", true);
+		RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Static.glsl");
+		RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Skybox.glsl");
+		RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Texture.glsl");
+		RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/SceneComposite.glsl");
+		RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Grid.glsl");
+		RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Outline.glsl");
 
 		SceneRendererH2M::Init();
 
@@ -450,9 +451,9 @@ namespace H2M
 		// s_Data.EnvironmentMap = RendererH2M::CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 		// s_Data.EnvironmentMap = RendererH2M::CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
 		// s_Data.EnvironmentMap = RendererH2M::CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
-		s_Data.EnvironmentMap = RendererH2M::CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
+		s_Data.EnvironmentMap = RendererH2M::CreateEnvironmentMap(TEXTURES_DIR "/HDR/newport_loft.hdr");
 
-		s_Data.BRDFLut = Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga", false);
+		s_Data.BRDFLut = Texture2D_H2M::Create(ASSETS_DIR "/textures/BRDF_LUT.tga", false);
 
 		// RendererH2M::Submit([environment]() mutable {});
 		{

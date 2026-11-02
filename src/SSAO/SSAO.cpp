@@ -1,4 +1,5 @@
 #include "SSAO.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -42,16 +43,16 @@ void SSAO::Init()
 
 void SSAO::SetupShaders()
 {
-	m_ShaderGeometryPass = MoravaShader::Create("Shaders/LearnOpenGL/ssao_geometry.vs", "Shaders/LearnOpenGL/ssao_geometry.fs");
+	m_ShaderGeometryPass = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/ssao_geometry.vs", SHADERS_DIR "/LearnOpenGL/ssao_geometry.fs");
 	Log::GetLogger()->info("SSAO: shaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 
-	m_ShaderLightingPass = MoravaShader::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_lighting.fs");
+	m_ShaderLightingPass = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/ssao.vs", SHADERS_DIR "/LearnOpenGL/ssao_lighting.fs");
 	Log::GetLogger()->info("SSAO: shaderLightingPass compiled [programID={0}]", m_ShaderLightingPass->GetProgramID());
 
-	m_ShaderSSAO = MoravaShader::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao.fs");
+	m_ShaderSSAO = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/ssao.vs", SHADERS_DIR "/LearnOpenGL/ssao.fs");
 	Log::GetLogger()->info("SSAO: shaderSSAO compiled [programID={0}]", m_ShaderSSAO->GetProgramID());
 
-	m_ShaderSSAOBlur = MoravaShader::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_blur.fs");
+	m_ShaderSSAOBlur = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/ssao.vs", SHADERS_DIR "/LearnOpenGL/ssao_blur.fs");
 	Log::GetLogger()->info("SSAO: shaderSSAOBlur compiled [programID={0}]", m_ShaderSSAOBlur->GetProgramID());
 }
 

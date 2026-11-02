@@ -1,4 +1,5 @@
 #include "Core/Application.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Core/BaseH2M.h"
 #include "H2M/ImGui/ImGuiLayerH2M.h"
@@ -154,7 +155,7 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 bool Application::IsWorkingDirectoryValid()
 {
 	std::error_code error;
-	if (std::filesystem::is_directory("Resources/Shaders", error))
+	if (std::filesystem::is_directory(RESOURCE_SHADERS_DIR, error))
 	{
 		return true;
 	}

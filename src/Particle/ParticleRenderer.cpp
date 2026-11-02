@@ -1,4 +1,5 @@
 #include "Particle/ParticleRenderer.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Util.h"
 #include "Renderer/RendererBasic.h"
@@ -6,7 +7,7 @@
 
 ParticleRenderer::ParticleRenderer()
 {
-	m_Shader = MoravaShader::Create("Shaders/ThinMatrix/particle.vs", "Shaders/ThinMatrix/particle.fs");
+	m_Shader = MoravaShader::Create(SHADERS_DIR "/ThinMatrix/particle.vs", SHADERS_DIR "/ThinMatrix/particle.fs");
 	printf("ParticleRenderer: m_Shader compiled [programID=%d]\n", m_Shader->GetProgramID());
 
 	m_Mesh = new Quad();

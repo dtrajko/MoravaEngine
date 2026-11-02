@@ -1,4 +1,5 @@
 #include "Renderer/RendererOmniShadows.h"
+#include "Core/EnginePaths.h"
 
 
 RendererOmniShadows::RendererOmniShadows()
@@ -16,11 +17,11 @@ void RendererOmniShadows::Init(Scene* scene)
 
 void RendererOmniShadows::SetShaders()
 {
-	H2M::RefH2M<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+	H2M::RefH2M<MoravaShader> shaderOmniShadow = MoravaShader::Create(SHADERS_DIR "/omni_shadow_map.vert", SHADERS_DIR "/omni_shadow_map.geom", SHADERS_DIR "/omni_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	Log::GetLogger()->info("RendererOmniShadows: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
+	H2M::RefH2M<MoravaShader> shaderMain = MoravaShader::Create(SHADERS_DIR "/shader.vert", SHADERS_DIR "/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererOmniShadows: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 }

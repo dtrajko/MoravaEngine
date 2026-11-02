@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Scene/SceneCottage.h"
+#include "Core/EnginePaths.h"
 
 #include "Mesh/MeshData.h"
 #include "Mesh/Sphere.h"
@@ -73,27 +74,27 @@ SceneCottage::SceneCottage()
 
 void SceneCottage::SetSkybox()
 {
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_lf.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_up.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_dn.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_bk.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_ft.tga");
+	skyboxFaces.push_back(TEXTURES_DIR "/Skybox/cupertin-lake_rt.tga");
+	skyboxFaces.push_back(TEXTURES_DIR "/Skybox/cupertin-lake_lf.tga");
+	skyboxFaces.push_back(TEXTURES_DIR "/Skybox/cupertin-lake_up.tga");
+	skyboxFaces.push_back(TEXTURES_DIR "/Skybox/cupertin-lake_dn.tga");
+	skyboxFaces.push_back(TEXTURES_DIR "/Skybox/cupertin-lake_bk.tga");
+	skyboxFaces.push_back(TEXTURES_DIR "/Skybox/cupertin-lake_ft.tga");
 	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
 void SceneCottage::SetupTextures()
 {
-	textures.insert(std::make_pair("brick",              TextureLoader::Get()->GetTexture("Textures/brick.png", false, false)));
-	textures.insert(std::make_pair("crateDiffuse",       TextureLoader::Get()->GetTexture("Textures/crate.png", false, false)));
-	textures.insert(std::make_pair("crateNormal",        TextureLoader::Get()->GetTexture("Textures/crateNormal.png", false, false)));
-	textures.insert(std::make_pair("grass",              TextureLoader::Get()->GetTexture("Textures/grass.jpg", false, false)));
-	textures.insert(std::make_pair("sponzaFloorDiffuse", TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_diff.tga", false, false)));
-	textures.insert(std::make_pair("sponzaFloorNormal",  TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_ddn.tga", false, false)));
-	textures.insert(std::make_pair("sponzaWallDiffuse",  TextureLoader::Get()->GetTexture("Textures/sponza_bricks_a_diff.tga", false, false)));
-	textures.insert(std::make_pair("sponzaWallNormal",   TextureLoader::Get()->GetTexture("Textures/sponza_bricks_a_ddn.tga", false, false)));
-	textures.insert(std::make_pair("sponzaCeilDiffuse",  TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_diff.tga", false, false)));
-	textures.insert(std::make_pair("sponzaCeilNormal",   TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_ddn.tga", false, false)));
+	textures.insert(std::make_pair("brick",              TextureLoader::Get()->GetTexture(TEXTURES_DIR "/brick.png", false, false)));
+	textures.insert(std::make_pair("crateDiffuse",       TextureLoader::Get()->GetTexture(TEXTURES_DIR "/crate.png", false, false)));
+	textures.insert(std::make_pair("crateNormal",        TextureLoader::Get()->GetTexture(TEXTURES_DIR "/crateNormal.png", false, false)));
+	textures.insert(std::make_pair("grass",              TextureLoader::Get()->GetTexture(TEXTURES_DIR "/grass.jpg", false, false)));
+	textures.insert(std::make_pair("sponzaFloorDiffuse", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_floor_a_diff.tga", false, false)));
+	textures.insert(std::make_pair("sponzaFloorNormal",  TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_floor_a_ddn.tga", false, false)));
+	textures.insert(std::make_pair("sponzaWallDiffuse",  TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_bricks_a_diff.tga", false, false)));
+	textures.insert(std::make_pair("sponzaWallNormal",   TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_bricks_a_ddn.tga", false, false)));
+	textures.insert(std::make_pair("sponzaCeilDiffuse",  TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_ceiling_a_diff.tga", false, false)));
+	textures.insert(std::make_pair("sponzaCeilNormal",   TextureLoader::Get()->GetTexture(TEXTURES_DIR "/sponza_ceiling_a_ddn.tga", false, false)));
 }
 
 void SceneCottage::SetupMeshes()
@@ -113,7 +114,7 @@ void SceneCottage::SetupMeshes()
 
 void SceneCottage::SetupModels()
 {
-	Model* cottage = new Model("Models/cottage.obj");
+	Model* cottage = new Model(MODELS_DIR "/cottage.obj");
 	models.insert(std::make_pair("cottage", cottage));
 
 	Sphere* sphere = new Sphere();

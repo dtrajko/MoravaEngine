@@ -1,6 +1,7 @@
 ﻿#include "VulkanSceneRenderer.h"
 
 #include "H2M/Core/AssertH2M.h"
+#include "Core/EnginePaths.h"
 #if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLRenderPassH2M.h"
 #endif
@@ -160,27 +161,27 @@ void VulkanSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene)
     // targetFramebufferComp->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
     s_Data.CompositePass = H2M::RenderPassH2M::Create(compRenderPassSpec);
 
-    s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga", false);
+    s_Data.BRDFLUT = H2M::Texture2D_H2M::Create(TEXTURES_DIR "/Hazel/BRDF_LUT.tga", false);
 }
 
 void VulkanSceneRenderer::SetupShaders()
 {
-    s_Data.CompositeShader = H2M::ShaderH2M::Create("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
+    s_Data.CompositeShader = H2M::ShaderH2M::Create(SHADERS_DIR "/Hazel/SceneComposite.vs", SHADERS_DIR "/Hazel/SceneComposite.fs");
     Log::GetLogger()->info("VulkanSceneRenderer: s_ShaderComposite compiled [programID={0}]", s_Data.CompositeShader->GetRendererID());
 
-    s_ShaderEquirectangularConversion = H2M::ShaderH2M::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
+    s_ShaderEquirectangularConversion = H2M::ShaderH2M::Create(SHADERS_DIR "/Hazel/EquirectangularToCubeMap.cs");
     Log::GetLogger()->info("VulkanSceneRenderer: s_ShaderEquirectangularConversion compiled [programID={0}]", s_ShaderEquirectangularConversion->GetRendererID());
 
-    s_ShaderEnvFiltering = H2M::ShaderH2M::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
+    s_ShaderEnvFiltering = H2M::ShaderH2M::Create(SHADERS_DIR "/Hazel/EnvironmentMipFilter.cs");
     Log::GetLogger()->info("VulkanSceneRenderer: s_ShaderEnvFiltering compiled [programID={0}]", s_ShaderEnvFiltering->GetRendererID());
 
-    s_ShaderEnvIrradiance = H2M::ShaderH2M::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
+    s_ShaderEnvIrradiance = H2M::ShaderH2M::Create(SHADERS_DIR "/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("VulkanSceneRenderer: s_ShaderEnvIrradiance compiled [programID={0}]", s_ShaderEnvIrradiance->GetRendererID());
 
-    s_ShaderSkybox = H2M::ShaderH2M::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
+    s_ShaderSkybox = H2M::ShaderH2M::Create(SHADERS_DIR "/Hazel/Skybox.vs", SHADERS_DIR "/Hazel/Skybox.fs");
     Log::GetLogger()->info("VulkanSceneRenderer: s_ShaderSkybox compiled [programID={0}]", s_ShaderSkybox->GetRendererID());
 
-    s_ShaderGrid = H2M::ShaderH2M::Create("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
+    s_ShaderGrid = H2M::ShaderH2M::Create(SHADERS_DIR "/Hazel/Grid.vs", SHADERS_DIR "/Hazel/Grid.fs");
     Log::GetLogger()->info("VulkanSceneRenderer: s_ShaderGrid compiled [programID={0}]", s_ShaderGrid->GetRendererID());
 
     ResourceManager::AddShader("Hazel/SceneComposite", s_Data.CompositeShader);

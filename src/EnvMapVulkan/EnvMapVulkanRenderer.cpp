@@ -5,6 +5,7 @@
  */
 
 #include "EnvMapVulkanRenderer.h"
+#include "Core/EnginePaths.h"
 
 #include "EnvMapVulkanPrefab.h"
 #include "EnvMapVulkanLights.h"
@@ -1863,11 +1864,11 @@ void EnvMapVulkanRenderer::Init()
 	// aligned to it at startup (see Draw).
 	if (s_EnvMapFilename.empty())
 	{
-		s_EnvMapFilename = "Textures/HDR/rooitou_park_4k.hdr";
+		s_EnvMapFilename = TEXTURES_DIR "/HDR/rooitou_park_4k.hdr";
 	}
 	s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap(s_EnvMapFilename);
 
-	s_Data.BRDFLut = H2M::Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga", false);
+	s_Data.BRDFLut = H2M::Texture2D_H2M::Create(ASSETS_DIR "/textures/BRDF_LUT.tga", false);
 
 	CreateShadowMap(s_RenderSettings.Shadows.Resolution, false); // the descriptor is written with the rest of set 0, below
 	CreateLocalShadowMaps();
@@ -3625,7 +3626,7 @@ static void CreateBloomResources()
 
 	try
 	{
-		s_BloomDirtTexture = H2M::Texture2D_H2M::Create("Textures/dirt.png", true);
+		s_BloomDirtTexture = H2M::Texture2D_H2M::Create(TEXTURES_DIR "/dirt.png", true);
 	}
 	catch (...)
 	{

@@ -1,4 +1,5 @@
 #include "Scene/SceneDeferred.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "Mesh/Block.h"
@@ -41,7 +42,7 @@ void SceneDeferred::SetupModels()
 {
     stbi_set_flip_vertically_on_load(true);
 
-    m_Backpack = new ModelSSAO("Models/backpack/backpack.obj", "Models/backpack");
+    m_Backpack = new ModelSSAO(MODELS_DIR "/backpack/backpack.obj", MODELS_DIR "/backpack");
 
     m_ObjectPositions.push_back(glm::vec3(-3.0f, -0.5f, -3.0f));
     m_ObjectPositions.push_back(glm::vec3( 0.0f, -0.5f, -3.0f));
@@ -64,13 +65,13 @@ void SceneDeferred::SetupFramebuffers()
 
 void SceneDeferred::SetupShaders()
 {
-    m_ShaderGeometryPass = MoravaShader::Create("Shaders/LearnOpenGL/8.2.g_buffer.vs", "Shaders/LearnOpenGL/8.2.g_buffer.fs");
+    m_ShaderGeometryPass = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/8.2.g_buffer.vs", SHADERS_DIR "/LearnOpenGL/8.2.g_buffer.fs");
     Log::GetLogger()->info("SceneDeferred: m_ShaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 
-    m_ShaderLightingPass = MoravaShader::Create("Shaders/LearnOpenGL/8.2.deferred_shading.vs", "Shaders/LearnOpenGL/8.2.deferred_shading.fs");
+    m_ShaderLightingPass = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/8.2.deferred_shading.vs", SHADERS_DIR "/LearnOpenGL/8.2.deferred_shading.fs");
     Log::GetLogger()->info("SceneDeferred: m_ShaderLightingPass compiled [programID={0}]", m_ShaderLightingPass->GetProgramID());
 
-    m_ShaderLightBox = MoravaShader::Create("Shaders/LearnOpenGL/8.2.deferred_light_box.vs", "Shaders/LearnOpenGL/8.2.deferred_light_box.fs");
+    m_ShaderLightBox = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/8.2.deferred_light_box.vs", SHADERS_DIR "/LearnOpenGL/8.2.deferred_light_box.fs");
     Log::GetLogger()->info("SceneDeferred: m_ShaderLightBox compiled [programID={0}]", m_ShaderLightBox->GetProgramID());
 
     m_ShaderLightingPass->Bind();

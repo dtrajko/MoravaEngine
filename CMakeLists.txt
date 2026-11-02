@@ -122,11 +122,12 @@ set(USE_STATIC_CRT ${MORAVA_MSVC_STATIC_RUNTIME} CACHE BOOL "" FORCE)         # 
 # so they don't leak into the vendor projects
 
 # =========================================================
-# ROOT PATH
+# PATHS
 # =========================================================
 
-set(ROOT_PATH_ABS ${CMAKE_CURRENT_SOURCE_DIR})
-message(STATUS "ROOT_PATH_ABS = ${ROOT_PATH_ABS}")
+set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
+set(VENDOR_CROSS_PLATFORM_DIR ${VENDOR_DIR}/cross-platform)
 
 # =========================================================
 # THIRD-PARTY CONFIG
@@ -224,29 +225,29 @@ endfunction()
 # VENDORS (ORDER MATTERS)
 # =========================================================
 
-add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/glfw glfw)
-add_optional(${ROOT_PATH_ABS}/vendor/box2d box2d)
+add_optional(${VENDOR_CROSS_PLATFORM_DIR}/glfw glfw)
+add_optional(${VENDOR_DIR}/box2d box2d)
 # Jolt's CMakeLists.txt is in its Build folder
-add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/JoltPhysics/Build JoltPhysics)
+add_optional(${VENDOR_CROSS_PLATFORM_DIR}/JoltPhysics/Build JoltPhysics)
 if(NOT TARGET Jolt)
     message(FATAL_ERROR "Jolt Physics not found: git submodule update --init vendor/cross-platform/JoltPhysics")
 endif()
-add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp yaml-cpp)
-add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross spirv-cross)
-add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/shaderc shaderc)
+add_optional(${VENDOR_CROSS_PLATFORM_DIR}/yaml-cpp yaml-cpp)
+add_optional(${VENDOR_CROSS_PLATFORM_DIR}/SPIRV-Cross spirv-cross)
+add_optional(${VENDOR_CROSS_PLATFORM_DIR}/shaderc shaderc)
 if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
-    add_optional(${ROOT_PATH_ABS}/vendor/DirectXTex directxtex) # loads the DirectX 11 textures
+    add_optional(${VENDOR_DIR}/DirectXTex directxtex) # loads the DirectX 11 textures
 endif()
-add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/assimp assimp)
+add_optional(${VENDOR_CROSS_PLATFORM_DIR}/assimp assimp)
 # assimp turns on Clang's -Wunsafe-buffer-usage for its own sources (~9000 warnings about raw pointer indexing in every
 # Clang build); off again for its target, whose options come after the folder's
 if(TARGET assimp AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(assimp PRIVATE -Wno-unsafe-buffer-usage -Wno-unsafe-buffer-usage-in-libc-call)
 endif()
-add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/nativefiledialog-extended nfd)
+add_optional(${VENDOR_CROSS_PLATFORM_DIR}/nativefiledialog-extended nfd)
 # FreeType 2.11 asks for CMake 2.8.12, which CMake 4 no longer accepts: taken as 3.5 for its folder alone
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
-add_optional(${ROOT_PATH_ABS}/vendor/msdf-atlas-gen/msdfgen/freetype freetype)
+add_optional(${VENDOR_DIR}/msdf-atlas-gen/msdfgen/freetype freetype)
 unset(CMAKE_POLICY_VERSION_MINIMUM)
 if(NOT TARGET freetype)
     message(FATAL_ERROR "FreeType not found: git submodule update --init --recursive vendor/msdf-atlas-gen")
@@ -256,13 +257,13 @@ endif()
 # SOURCES
 # =========================================================
 
-file(GLOB_RECURSE SRC CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+file(GLOB_RECURSE SRC CONFIGURE_DEPENDS RELATIVE ${SRC_DIR}
+    ${SRC_DIR}/*.cpp
 )
 
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
+file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS RELATIVE ${SRC_DIR}
+    ${SRC_DIR}/*.h
+    ${SRC_DIR}/*.hpp
 )
 
 # Only the classes of the build's graphics APIs are compiled. A source file belongs to an API by its name:
@@ -357,9 +358,9 @@ foreach(part CORE EDITOR PLAYER)
 endforeach()
 message(STATUS "Sources compiled for ${MORAVA_GRAPHICS_APIS_TEXT}: core ${MORAVA_CORE_SOURCE_COUNT}, editor ${MORAVA_EDITOR_SOURCE_COUNT}, player ${MORAVA_PLAYER_SOURCE_COUNT}")
 
-list(TRANSFORM CORE_SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-list(TRANSFORM EDITOR_SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-list(TRANSFORM PLAYER_SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+list(TRANSFORM CORE_SRC PREPEND ${SRC_DIR}/)
+list(TRANSFORM EDITOR_SRC PREPEND ${SRC_DIR}/)
+list(TRANSFORM PLAYER_SRC PREPEND ${SRC_DIR}/)
 
 add_library(MoravaCore STATIC ${CORE_SRC})
 add_executable(${PROJECT_NAME} ${EDITOR_SRC})
@@ -414,14 +415,14 @@ foreach(tgt ${MORAVA_ENGINE_TARGETS})
     target_compile_definitions(${tgt} PRIVATE _CRT_SECURE_NO_WARNINGS=)
 
     target_include_directories(${tgt} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${ROOT_PATH_ABS}/vendor
-        ${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross
+        ${SRC_DIR}
+        ${VENDOR_DIR}
+        ${VENDOR_CROSS_PLATFORM_DIR}/SPIRV-Cross
     )
 
     # Precompiled header: stable third-party and standard headers, included first in every source file
     # (src/PrecompiledHeader.h; the older src/pch.h is an ordinary header some engine headers include)
-    target_precompile_headers(${tgt} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/PrecompiledHeader.h)
+    target_precompile_headers(${tgt} PRIVATE ${SRC_DIR}/PrecompiledHeader.h)
 endforeach()
 
 # The editor's sources draw with ImGui
@@ -432,35 +433,35 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE <imgui.h>)
 # =========================================================
 
 add_library(glm INTERFACE)
-target_include_directories(glm INTERFACE ${ROOT_PATH_ABS}/vendor/GLM)
+target_include_directories(glm INTERFACE ${VENDOR_DIR}/GLM)
 
 add_library(tinyobjloader INTERFACE)
-target_include_directories(tinyobjloader INTERFACE ${ROOT_PATH_ABS}/vendor/tinyobjloader)
+target_include_directories(tinyobjloader INTERFACE ${VENDOR_DIR}/tinyobjloader)
 
 add_library(entt INTERFACE)
-target_include_directories(entt INTERFACE ${ROOT_PATH_ABS}/vendor/entt/include)
+target_include_directories(entt INTERFACE ${VENDOR_DIR}/entt/include)
 
 add_library(spdlog INTERFACE)
-target_include_directories(spdlog INTERFACE ${ROOT_PATH_ABS}/vendor/spdlog/include)
+target_include_directories(spdlog INTERFACE ${VENDOR_DIR}/spdlog/include)
 
 add_library(mono INTERFACE)
-target_include_directories(mono INTERFACE ${ROOT_PATH_ABS}/vendor/mono/include)
+target_include_directories(mono INTERFACE ${VENDOR_DIR}/mono/include)
 
 add_library(NvidiaAftermath INTERFACE)
-target_include_directories(NvidiaAftermath INTERFACE ${ROOT_PATH_ABS}/vendor/NvidiaAftermath)
+target_include_directories(NvidiaAftermath INTERFACE ${VENDOR_DIR}/NvidiaAftermath)
 
 add_library(Optick INTERFACE)
-target_include_directories(Optick INTERFACE ${ROOT_PATH_ABS}/vendor/Optick/src)
+target_include_directories(Optick INTERFACE ${VENDOR_DIR}/Optick/src)
 
 add_library(farbot INTERFACE)
-target_include_directories(farbot INTERFACE ${ROOT_PATH_ABS}/vendor/farbot)
+target_include_directories(farbot INTERFACE ${VENDOR_DIR}/farbot)
 
 # =========================================================
 # GLEW
 # =========================================================
 
 # Built from the release sources (src/glew.c); defines the static target 'glew'
-add_subdirectory(${ROOT_PATH_ABS}/vendor/GLEW ${CMAKE_BINARY_DIR}/glew)
+add_subdirectory(${VENDOR_DIR}/GLEW ${CMAKE_BINARY_DIR}/glew)
 
 # =========================================================
 # VULKAN MEMORY ALLOCATOR
@@ -468,14 +469,14 @@ add_subdirectory(${ROOT_PATH_ABS}/vendor/GLEW ${CMAKE_BINARY_DIR}/glew)
 
 add_library(VulkanMemoryAllocator INTERFACE)
 target_include_directories(VulkanMemoryAllocator INTERFACE
-    ${ROOT_PATH_ABS}/vendor/VulkanMemoryAllocator
+    ${VENDOR_DIR}/VulkanMemoryAllocator
 )
 
 # =========================================================
 # IMGUI
 # =========================================================
 
-set(IMGUI_DIR ${ROOT_PATH_ABS}/vendor/ImGui)
+set(IMGUI_DIR ${VENDOR_DIR}/ImGui)
 
 add_library(imgui STATIC
     ${IMGUI_DIR}/imgui.cpp
@@ -488,7 +489,7 @@ add_library(imgui STATIC
 target_include_directories(imgui PUBLIC
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
-    ${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include
+    ${VENDOR_CROSS_PLATFORM_DIR}/glfw/include
 )
 
 # imgui_impl_vulkan.cpp needs the Vulkan headers (from the Vulkan SDK)
@@ -514,12 +515,12 @@ endif()
 # =========================================================
 
 file(GLOB IMGUIZMO_SRC
-    ${ROOT_PATH_ABS}/vendor/cross-platform/ImGuizmo/src/*.cpp
+    ${VENDOR_CROSS_PLATFORM_DIR}/ImGuizmo/src/*.cpp
 )
 
 add_library(ImGuizmo STATIC ${IMGUIZMO_SRC})
 target_include_directories(ImGuizmo PUBLIC
-    ${ROOT_PATH_ABS}/vendor/cross-platform/ImGuizmo/src
+    ${VENDOR_CROSS_PLATFORM_DIR}/ImGuizmo/src
 )
 target_link_libraries(ImGuizmo PUBLIC imgui)
 
@@ -529,8 +530,8 @@ target_link_libraries(ImGuizmo PUBLIC imgui)
 
 # One C file: miniaudio's implementation with stb_vorbis (src/Audio/MiniaudioLibrary.c). Not miniaudio's own CMakeLists,
 # which looks for libvorbis and libopus. A vendor's warnings are off
-add_library(miniaudio STATIC ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio/MiniaudioLibrary.c)
-target_include_directories(miniaudio PUBLIC ${ROOT_PATH_ABS}/vendor/cross-platform/miniaudio)
+add_library(miniaudio STATIC ${SRC_DIR}/Audio/MiniaudioLibrary.c)
+target_include_directories(miniaudio PUBLIC ${VENDOR_CROSS_PLATFORM_DIR}/miniaudio)
 if(MSVC)
     target_compile_options(miniaudio PRIVATE /w)
 else()
@@ -553,7 +554,7 @@ endif()
 # msdfgen (a glyph's outline to a multi-channel signed distance field) and msdf-atlas-gen (a font's glyphs packed into one
 # atlas) as one library: their own build files are premake (msdfgen, TheCherno's fork) or build the command-line tool.
 # Without the tool's main, SVG import or Skia. A vendor's warnings are off
-set(MSDF_DIR ${ROOT_PATH_ABS}/vendor/msdf-atlas-gen)
+set(MSDF_DIR ${VENDOR_DIR}/msdf-atlas-gen)
 file(GLOB MSDF_SRC
     ${MSDF_DIR}/msdfgen/core/*.cpp
     ${MSDF_DIR}/msdf-atlas-gen/*.cpp
@@ -583,7 +584,7 @@ target_link_libraries(msdf PUBLIC freetype Threads::Threads)
 # LINKING
 # =========================================================
 
-set(MONO_DIR ${ROOT_PATH_ABS}/vendor/mono)
+set(MONO_DIR ${VENDOR_DIR}/mono)
 
 # The core's libraries: the executables get them through the core
 target_link_libraries(MoravaCore PUBLIC

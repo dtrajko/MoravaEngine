@@ -5,6 +5,7 @@
  */
 
 #include "OpenGLShaderH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Utilities/FileSystemH2M.h"
@@ -37,7 +38,7 @@ namespace H2M
 		static const char* GetCacheDirectory()
 		{
 			// TODO: make sure the assets directory is valid
-			return "assets/cache/shader/opengl";
+			return ASSETS_DIR "/cache/shader/opengl";
 		}
 
 		static void CreateCacheDirectoryIfNeeded()

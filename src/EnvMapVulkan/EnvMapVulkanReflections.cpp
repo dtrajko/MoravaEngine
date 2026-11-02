@@ -1,4 +1,5 @@
 #include "EnvMapVulkanReflections.h"
+#include "Core/EnginePaths.h"
 
 #include "EnvMapVulkanGBuffer.h"
 #include "EnvMapVulkanRayTracing.h"
@@ -35,7 +36,7 @@ void EnvMapVulkanReflections::Create()
 		return;
 	}
 	// The trace only compiles for a device with ray tracing, so it is loaded here, not with the other shaders
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ReflectionTrace.glsl");
+	H2M::RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ReflectionTrace.glsl");
 	m_TracePipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(H2M::RendererH2M::GetShaderLibrary()->Get("ReflectionTrace"));
 	m_TraceFrameSet = m_TracePipeline->GetShader()->CreateDescriptorSets(0);
 	m_TraceSet = m_TracePipeline->GetShader()->CreateDescriptorSets(1);

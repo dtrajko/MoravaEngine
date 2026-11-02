@@ -1,4 +1,5 @@
 #include "PostProcessing/BlurEffect.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -44,12 +45,12 @@ void BlurEffect::Init(int width, int height, int textureID)
 void BlurEffect::SetupShaders()
 {
 	if (!m_ShaderHorizontalBlur) {
-		m_ShaderHorizontalBlur = MoravaShader::Create("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
+		m_ShaderHorizontalBlur = MoravaShader::Create(SHADERS_DIR "/ThinMatrix/blur_horizontal.vs", SHADERS_DIR "/ThinMatrix/blur.fs");
 		Log::GetLogger()->info("BlurEffect: m_ShaderHorizontalBlur compiled [programID={0}]", m_ShaderHorizontalBlur->GetProgramID());
 	}
 
 	if (!m_ShaderVerticalBlur) {
-		m_ShaderVerticalBlur = MoravaShader::Create("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
+		m_ShaderVerticalBlur = MoravaShader::Create(SHADERS_DIR "/ThinMatrix/blur_vertical.vs", SHADERS_DIR "/ThinMatrix/blur.fs");
 		Log::GetLogger()->info("BlurEffect: m_ShaderVerticalBlur compiled [programID={0}]", m_ShaderVerticalBlur->GetProgramID());
 	}
 }

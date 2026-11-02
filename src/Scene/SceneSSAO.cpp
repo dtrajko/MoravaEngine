@@ -1,4 +1,5 @@
 #include "Scene/SceneSSAO.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "ImGui/ImGuiWrapper.h"
@@ -39,8 +40,8 @@ SceneSSAO::SceneSSAO()
 
 void SceneSSAO::SetupTextures()
 {
-    ResourceManager::LoadTexture("crate",       "Textures/crate.png");
-    ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
+    ResourceManager::LoadTexture("crate",       TEXTURES_DIR "/crate.png");
+    ResourceManager::LoadTexture("crateNormal", TEXTURES_DIR "/crateNormal.png");
 }
 
 void SceneSSAO::SetupTextureSlots()
@@ -64,7 +65,7 @@ void SceneSSAO::SetupMeshes()
 
 void SceneSSAO::SetupModels()
 {
-    ModelSSAO* gladiator = new ModelSSAO("Models/Gladiator/Gladiator.fbx", "IgnoreTextures");
+    ModelSSAO* gladiator = new ModelSSAO(MODELS_DIR "/Gladiator/Gladiator.fbx", "IgnoreTextures");
     modelsSSAO.insert(std::make_pair("gladiator", gladiator));
 }
 
