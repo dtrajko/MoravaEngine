@@ -107,6 +107,7 @@ static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_PresentDescriptorSet;
 // With antialiasing, the composite draws into the target's image, and the smoothed picture and the UI into the framebuffer above
 static EnvMapVulkanAntialiasing s_Antialiasing;
 static EnvMapVulkanAntialiasing::Target s_AntialiasingTarget;
+static EnvMapVulkanAntialiasing::TemporalFrame s_TemporalFrame; // TAA, this frame's (UpdateFrameUniforms)
 
 // How the scene is drawn: shadows, ray tracing, reflections, ambient occlusion, bloom (see EnvMapVulkanRenderSettings).
 // This frame's copy of the scene owner's settings.
@@ -772,6 +773,8 @@ static glm::vec4 GetDisplayTone()
 
 // Per-frame uniform buffers of the mesh shaders (set 0): written once per frame, read by every mesh. They belong to the
 // HazelPBR_Static shader in the shader library, whose buffers the per-frame descriptor set points to (see Init).
+static AntialiasingMode GetViewAntialiasing();
+
 static void UpdateFrameUniforms()
 {
 	H2M::RefH2M<H2M::VulkanShaderH2M> shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
@@ -779,12 +782,28 @@ static void UpdateFrameUniforms()
 	const uint32_t frameSet = H2M::VulkanShaderH2M::FrameDescriptorSet;
 
 	// binding 0: Camera (vertex stage), see Include/FrameCamera.glslh: the view-projection, then the previous frame's (the
-	// motion vectors of the G-buffer prepass; the first frame has no motion)
-	static glm::mat4 s_PreviousViewProjection;
+	// motion vectors of the G-buffer prepass; the first frame has no motion).
+	// TAA moves the picture by less than a pixel, every frame differently: both matrices as they were drawn with, so everything
+	// that shares this block follows, and the motion is that of the jittered pictures: the temporal filters of the ambient
+	// occlusion and the reflections find the same surface point in their history. TAA's resolve takes the jitter out again.
+	static glm::mat4 s_PreviousViewProjection, s_PreviousDrawnViewProjection;
+	static glm::vec2 s_PreviousJitter(0.0f);
+	static uint64_t s_JitterFrame = 0;
 	static bool s_HasPreviousViewProjection = false;
-	glm::mat4 viewProjection = camera.GetViewProjection();
-	glm::mat4 cameraMatrices[2] = { viewProjection, s_HasPreviousViewProjection ? s_PreviousViewProjection : viewProjection };
+	const glm::mat4 viewProjection = camera.GetViewProjection();
+	const glm::vec2 jitter = GetViewAntialiasing() == AntialiasingMode::TAA ?
+		EnvMapVulkanAntialiasing::GetJitter(s_JitterFrame++, s_ViewportWidth, s_ViewportHeight) : glm::vec2(0.0f);
+	glm::mat4 jitterOffset(1.0f);
+	jitterOffset[3][0] = jitter.x;
+	jitterOffset[3][1] = jitter.y;
+	// A translation in clip space times w: after the division by w, every point on the screen moved by the same offset
+	const glm::mat4 drawnViewProjection = jitterOffset * viewProjection;
+	glm::mat4 cameraMatrices[2] = { drawnViewProjection, s_HasPreviousViewProjection ? s_PreviousDrawnViewProjection : drawnViewProjection };
+	s_TemporalFrame.CurrentToPrevious = (s_HasPreviousViewProjection ? s_PreviousViewProjection : viewProjection) * glm::inverse(viewProjection);
+	s_TemporalFrame.JitterMotion = s_HasPreviousViewProjection ? (jitter - s_PreviousJitter) * 0.5f : glm::vec2(0.0f); // in UV
 	s_PreviousViewProjection = viewProjection;
+	s_PreviousDrawnViewProjection = drawnViewProjection;
+	s_PreviousJitter = jitter;
 	s_HasPreviousViewProjection = true;
 	void* ubPtr = shader->MapUniformBuffer(0, frameSet);
 	memcpy(ubPtr, cameraMatrices, sizeof(cameraMatrices));
@@ -3911,8 +3930,6 @@ static std::string DescribeVSync(const H2M::VulkanSwapChainH2M& swapChain, int r
 	}
 }
 
-static AntialiasingMode GetViewAntialiasing();
-
 // The main view's antialiasing in words, with what its passes cost: inside the viewport composite's scope (the texture
 // cameras' passes of the same names are inside their own scopes)
 static std::string DescribeAntialiasing(const EnvMapVulkanProfiler::FrameResults& results)
@@ -3934,13 +3951,15 @@ static std::string DescribeAntialiasing(const EnvMapVulkanProfiler::FrameResults
 		{
 			break;
 		}
-		else if (scope.Name == "FXAA" || scope.Name.rfind("SMAA ", 0) == 0)
+		else if (scope.Name == "FXAA" || scope.Name.rfind("SMAA ", 0) == 0 || scope.Name.rfind("TAA ", 0) == 0)
 		{
 			ms += scope.SmoothedGpuMs;
 		}
 	}
+	// Its share of the whole frame: the time the FPS row shows
+	const double frameMs = EnvMapVulkanProfiler::GetSmoothedCpuFrameMs();
 	char text[64];
-	snprintf(text, sizeof(text), "%s, %.2f ms", GetAntialiasingModeName(mode), ms);
+	snprintf(text, sizeof(text), "%s, %.2f ms  %.1f %%", GetAntialiasingModeName(mode), ms, frameMs > 0.0 ? 100.0 * ms / frameMs : 0.0);
 	return text;
 }
 
@@ -4002,13 +4021,17 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 	return frame;
 }
 
-// The main view's antialiasing this frame: the scene's; the views of SMAA's passes need SMAA, and the other debug views show
-// their data as it is
+// The main view's antialiasing this frame: the scene's; the views of SMAA's and TAA's passes need them, and the other debug
+// views show their data as it is
 static AntialiasingMode GetViewAntialiasing()
 {
 	if (s_ViewOptions.DebugView == DebugViewSMAAEdges || s_ViewOptions.DebugView == DebugViewSMAAWeights)
 	{
 		return AntialiasingMode::SMAA;
+	}
+	if (s_ViewOptions.DebugView == DebugViewTAARejection)
+	{
+		return AntialiasingMode::TAA;
 	}
 	return s_ViewOptions.DebugView == DebugViewOff ? s_RenderSettings.Antialiasing : AntialiasingMode::Off;
 }
@@ -4099,7 +4122,7 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	if (antialiasing != AntialiasingMode::Off)
 	{
 		vkCmdEndRenderPass(commandBuffer);
-		s_Antialiasing.RecordPrepasses(commandBuffer, s_AntialiasingTarget, antialiasing);
+		s_Antialiasing.RecordPrepasses(commandBuffer, s_AntialiasingTarget, antialiasing, &s_TemporalFrame);
 		renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
 		renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -4108,7 +4131,8 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 		s_Antialiasing.RecordResolve(commandBuffer, s_AntialiasingTarget, antialiasing,
 			s_ViewOptions.DebugView == DebugViewSMAAEdges ? EnvMapVulkanAntialiasing::Output::Edges :
-			s_ViewOptions.DebugView == DebugViewSMAAWeights ? EnvMapVulkanAntialiasing::Output::Weights : EnvMapVulkanAntialiasing::Output::Picture);
+			s_ViewOptions.DebugView == DebugViewSMAAWeights ? EnvMapVulkanAntialiasing::Output::Weights :
+			s_ViewOptions.DebugView == DebugViewTAARejection ? EnvMapVulkanAntialiasing::Output::TAARejection : EnvMapVulkanAntialiasing::Output::Picture);
 	}
 
 	// The game UI, over the tonemapped image, then the debug overlay over it (one list: the UI's buffers are written once a frame)
@@ -4562,7 +4586,10 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_ViewOptions.DebugView = DebugViewOff;
 	}
 
-	s_Antialiasing.Prepare(s_AntialiasingTarget, GetViewAntialiasing(), s_ViewportCompositeFramebuffer->GetWidth(), s_ViewportCompositeFramebuffer->GetHeight());
+	EnvMapVulkanAntialiasing::TemporalImages temporalImages;
+	temporalImages.Motion = s_GBuffer.GetMotionInfo();
+	temporalImages.Depth = s_GBuffer.GetDepthInfo();
+	s_Antialiasing.Prepare(s_AntialiasingTarget, GetViewAntialiasing(), s_ViewportCompositeFramebuffer->GetWidth(), s_ViewportCompositeFramebuffer->GetHeight(), &temporalImages);
 
 	// The cameras that draw into render textures: their views' set 0 gets what the per-frame set holds (as it is now, after
 	// everything above that may have rewritten it), their cameras this frame's places
@@ -4948,6 +4975,7 @@ void EnvMapVulkanRenderer::WaitIdle()
 void EnvMapVulkanRenderer::OnSceneReplaced()
 {
 	s_Probes.RequestReset(); // what the probes captured belongs to the scene that went
+	EnvMapVulkanAntialiasing::ResetHistory(s_AntialiasingTarget); // and so does TAA's picture
 	UILayout::ClearImageCache(); // images that couldn't be read are tried again
 }
 

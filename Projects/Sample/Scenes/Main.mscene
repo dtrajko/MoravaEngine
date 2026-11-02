@@ -37,6 +37,7 @@ RenderSettings:
     HalfResolution: true
     RayTraced: true
     Rays: 2
+  Antialiasing: SMAA
   Bloom:
     Enabled: true
     Threshold: 1

@@ -142,7 +142,7 @@ namespace
 			AddHeader(rows, "GPU passes");
 			for (size_t i = 0; i < passes.size() && i < 5; i++)
 			{
-				AddRow(rows, passes[i].Name, Format("%.2f ms", passes[i].GpuMs));
+				AddRow(rows, passes[i].Name, frame.GpuMs > 0.0 ? Format("%.2f ms  %3.0f %%", passes[i].GpuMs, 100.0 * passes[i].GpuMs / frame.GpuMs) : Format("%.2f ms", passes[i].GpuMs));
 			}
 		}
 
