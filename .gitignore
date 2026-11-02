@@ -74,7 +74,7 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
-!MoravaEngine/Models/*.obj
+!Models/*.obj
 *.iobj
 *.pch
 *.pdb
@@ -352,7 +352,7 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-MoravaEngine/Scenes/scene_tmp.scene
+Scenes/scene_tmp.scene
 build/
 build-linux/
 
@@ -360,24 +360,24 @@ vendor/cross-platform/bullet3/*.*
 vendor/cross-platform/glew/*.*
 vendor/cross-platform/glfw/*.*
 
-MoravaEngine/Models/Bistro_v5_1/
-MoravaEngine/Models/Zombie_Boss/
-MoravaEngine/Models/Chest/
-MoravaEngine/Models/FireHydrant/
-MoravaEngine/Hazel/bin-int/
+Models/Bistro_v5_1/
+Models/Zombie_Boss/
+Models/Chest/
+Models/FireHydrant/
+Hazel/bin-int/
 
-MoravaEngine/imgui.ini
+imgui.ini
 
-MoravaEngine/Models/Pilot/
-MoravaEngine/Models/Sponza/
-MoravaEngine/Models/Stormtrooper/
-MoravaEngine/Models/Paladin/
-MoravaEngine/Models/Enfield_no2_mk_i/
-MoravaEngine/Models/Maria_J_J_Ong/
-MoravaEngine/Models/LowPolyBuildingCollection/
+Models/Pilot/
+Models/Sponza/
+Models/Stormtrooper/
+Models/Paladin/
+Models/Enfield_no2_mk_i/
+Models/Maria_J_J_Ong/
+Models/LowPolyBuildingCollection/
 
-MoravaEngine/assets/shaders/cached/
-MoravaEngine/Models/TankScene/
+assets/shaders/cached/
+Models/TankScene/
 vendor/box2d
 vendor/cross-platform/shaderc
 vendor/cross-platform/SPIRV-Cross
@@ -391,9 +391,9 @@ vendor/PhysX
 # Claude Code personal settings
 .claude/settings.local.json
 .claude
-MoravaEngine/Resources/Shaders/cached
+Resources/Shaders/cached
 # What the engine makes from fonts and other files, made again when missing (the game UI's font atlases)
-MoravaEngine/Resources/Cache/Fonts/
+Resources/Cache/Fonts/
 Projects/*/Library/
 
 # Tools/Testing: logs and screenshots of the test scripts
