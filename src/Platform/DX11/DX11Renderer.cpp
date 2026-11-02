@@ -1,4 +1,5 @@
 #include "DX11Renderer.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
@@ -167,8 +168,8 @@ void DX11Renderer::Init()
 
 	MoravaShaderSpecification moravaShaderSpecIlluminated;
 	moravaShaderSpecIlluminated.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-	moravaShaderSpecIlluminated.VertexShaderPath = "Shaders/HLSL/DirLightVertexShader.hlsl";
-	moravaShaderSpecIlluminated.PixelShaderPath = "Shaders/HLSL/DirLightPixelShader.hlsl";
+	moravaShaderSpecIlluminated.VertexShaderPath = SHADERS_DIR "/HLSL/DirLightVertexShader.hlsl";
+	moravaShaderSpecIlluminated.PixelShaderPath = SHADERS_DIR "/HLSL/DirLightPixelShader.hlsl";
 	moravaShaderSpecIlluminated.ForceCompile = false;
 	pipelineSpecIlluminated.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecIlluminated);
 
@@ -182,8 +183,8 @@ void DX11Renderer::Init()
 
 	MoravaShaderSpecification moravaShaderSpecUnlit;
 	moravaShaderSpecUnlit.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-	moravaShaderSpecUnlit.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
-	moravaShaderSpecUnlit.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
+	moravaShaderSpecUnlit.VertexShaderPath = SHADERS_DIR "/HLSL/UnlitVertexShader.hlsl";
+	moravaShaderSpecUnlit.PixelShaderPath = SHADERS_DIR "/HLSL/UnlitPixelShader.hlsl";
 	moravaShaderSpecUnlit.ForceCompile = false;
 	pipelineSpecUnlit.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecUnlit);
 
@@ -222,11 +223,11 @@ void DX11Renderer::Init()
 	// Create the light material
 	s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
 	// Load Hazel/Renderer/HazelTexture
-	s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2D_H2M("Textures/light_bulb.png", true);
+	s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/light_bulb.png", true);
 	s_LightMaterial->GetAlbedoInput().UseTexture = true;
 	MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
-	s_CheckerboardTexture = ResourceManager::LoadTexture2D_H2M("Textures/Hazel/Checkerboard.png", true);
+	s_CheckerboardTexture = ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/Hazel/Checkerboard.png", true);
 
 	s_ImGuizmoTransform = nullptr;
 
@@ -883,7 +884,7 @@ void DX11Renderer::DrawToScreen(H2M::CameraH2M* camera)
 
 	std::vector<H2M::RefH2M<H2M::TextureH2M>> textures;
 	H2M::RefH2M<H2M::Texture2D_H2M> textureDiffuse = s_RenderTarget;
-	H2M::RefH2M<H2M::Texture2D_H2M> textureNormal = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png", false);
+	H2M::RefH2M<H2M::Texture2D_H2M> textureNormal = ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/PardCode/normal_blank.png", false);
 	textures.push_back(textureDiffuse.As<DX11Texture2D>());
 	textures.push_back(textureNormal.As<DX11Texture2D>());
 	dx11ShaderUnlit->GetVertexShader()->SetTextures(textures);
@@ -1246,8 +1247,8 @@ void DX11Renderer::DrawToFramebuffer(H2M::CameraH2M* camera)
 		dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 		std::vector<H2M::RefH2M<H2M::TextureH2M>> textures;
-		H2M::RefH2M<H2M::Texture2D_H2M> textureDiffuse = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/umhlanga_sunrise_4k.jpg", true);
-		H2M::RefH2M<H2M::Texture2D_H2M> textureNormal = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png", false);
+		H2M::RefH2M<H2M::Texture2D_H2M> textureDiffuse = ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/PardCode/umhlanga_sunrise_4k.jpg", true);
+		H2M::RefH2M<H2M::Texture2D_H2M> textureNormal = ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/PardCode/normal_blank.png", false);
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
 
@@ -1283,8 +1284,8 @@ void DX11Renderer::DrawToFramebuffer(H2M::CameraH2M* camera)
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 		std::vector<H2M::RefH2M<H2M::TextureH2M>> textures;
-		H2M::RefH2M<H2M::Texture2D_H2M> textureDiffuse = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/gold.png", true);
-		H2M::RefH2M<H2M::Texture2D_H2M> textureNormal = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png", false);
+		H2M::RefH2M<H2M::Texture2D_H2M> textureDiffuse = ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/PardCode/gold.png", true);
+		H2M::RefH2M<H2M::Texture2D_H2M> textureNormal = ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/PardCode/normal_blank.png", false);
 
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
@@ -1422,11 +1423,11 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 
 		if (renderObject.Textures.size() < 1)
 		{
-			renderObject.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/default_material_albedo.png", true));
+			renderObject.Textures.push_back(ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/default_material_albedo.png", true));
 		}
 		if (renderObject.Textures.size() < 2)
 		{
-			renderObject.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/normal_map_default.png", false));
+			renderObject.Textures.push_back(ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/normal_map_default.png", false));
 		}
 
 		textures.push_back(renderObject.Textures.at(0).As<DX11Texture2D>()); // Albedo Map

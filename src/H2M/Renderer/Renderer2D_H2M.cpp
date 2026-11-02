@@ -5,6 +5,7 @@
  */
 
 #include "Renderer2D_H2M.h"
+#include "Core/EnginePaths.h"
 
 #include "config.h" // SCENE_...
 
@@ -356,9 +357,9 @@ namespace H2M
 		// s_Data.QuadShader = ShaderH2M::Create("assets/shaders/Renderer2D_Quad.glsl");
 		// s_Data.CircleShader = ShaderH2M::Create("assets/shaders/Renderer2D_Circle.glsl");
 
-		s_Data.QuadShader   = MoravaShader::Create("Shaders/Hazel/Renderer2D_Quad.vs", "Shaders/Hazel/Renderer2D_Quad.fs");
-		s_Data.CircleShader = MoravaShader::Create("Shaders/Hazel/Renderer2D_Circle.vs", "Shaders/Hazel/Renderer2D_Circle.fs");
-		s_Data.LineShader   = MoravaShader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+		s_Data.QuadShader   = MoravaShader::Create(SHADERS_DIR "/Hazel/Renderer2D_Quad.vs", SHADERS_DIR "/Hazel/Renderer2D_Quad.fs");
+		s_Data.CircleShader = MoravaShader::Create(SHADERS_DIR "/Hazel/Renderer2D_Circle.vs", SHADERS_DIR "/Hazel/Renderer2D_Circle.fs");
+		s_Data.LineShader   = MoravaShader::Create(SHADERS_DIR "/Hazel/Renderer2D_Line.vs", SHADERS_DIR "/Hazel/Renderer2D_Line.fs");
 
 		// Set first texture slot to 0
 		s_Data.TextureSlots[0] = s_Data.WhiteTexture;
@@ -374,7 +375,7 @@ namespace H2M
 		{
 			if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 			{
-				s_Data.LineShader = ShaderH2M::Create("Resources/Shaders/Renderer2D_Line.glsl"); // not in use, only for constructor testing
+				s_Data.LineShader = ShaderH2M::Create(RESOURCE_SHADERS_DIR "/Renderer2D_Line.glsl"); // not in use, only for constructor testing
 			}
 
 			//	PipelineSpecificationH2M pipelineSpec;

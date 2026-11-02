@@ -1,4 +1,5 @@
 #include "Mesh/Model.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Log.h"
 #include "Texture/TextureLoader.h"
@@ -8,13 +9,13 @@
 
 Model::Model()
 {
-	m_TexturesPath = "Textures";
+	m_TexturesPath = TEXTURES_DIR;
 	m_Scale = glm::vec3(1.0f);
 }
 
 Model::Model(const std::string& fileName, const std::string& texturesPath)
 {
-	m_TexturesPath = (texturesPath != "") ? texturesPath : "Textures";
+	m_TexturesPath = (texturesPath != "") ? texturesPath : TEXTURES_DIR;
 	LoadModel(fileName, m_TexturesPath);
 }
 
@@ -22,7 +23,7 @@ void Model::LoadModel(const std::string& fileName, const std::string& texturesPa
 {
 	Log::GetLogger()->info("[Model] Loading model '{0}'. Textures path '{1}'", fileName, texturesPath);
 
-	m_TexturesPath = (texturesPath != "") ? texturesPath : "Textures";
+	m_TexturesPath = (texturesPath != "") ? texturesPath : TEXTURES_DIR;
 	m_Scale = glm::vec3(1.0f);
 
 	std::chrono::time_point<std::chrono::high_resolution_clock> startTimepoint = std::chrono::high_resolution_clock::now();
@@ -198,7 +199,7 @@ void Model::LoadMaterials(const aiScene* scene)
 
 		if (!m_TextureList[i])
 		{
-			m_TextureList[i] = TextureLoader::Get()->GetTexture("Textures/plain.png", false, false);
+			m_TextureList[i] = TextureLoader::Get()->GetTexture(TEXTURES_DIR "/plain.png", false, false);
 		}
 	}
 }

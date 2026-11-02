@@ -1,4 +1,5 @@
 #include "EnvMapEditorLayer.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RenderPassH2M.h"
@@ -116,7 +117,7 @@ void EnvMapEditorLayer::Init()
     // Create the light material
     s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
     // Load Hazel/Renderer/HazelTexture
-    s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2D_H2M("Textures/light_bulb.png", true);
+    s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/light_bulb.png", true);
     s_LightMaterial->GetAlbedoInput().UseTexture = true;
     MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
@@ -176,11 +177,11 @@ void EnvMapEditorLayer::Init()
 
 void EnvMapEditorLayer::OnAttach()
 {
-    s_CheckerboardTexture = H2M::Texture2D_H2M::Create("Textures/Hazel/Checkerboard.tga", false);
-    m_PlayButtonTex = H2M::Texture2D_H2M::Create("Textures/Hazel/PlayButton.png", false);
+    s_CheckerboardTexture = H2M::Texture2D_H2M::Create(TEXTURES_DIR "/Hazel/Checkerboard.tga", false);
+    m_PlayButtonTex = H2M::Texture2D_H2M::Create(TEXTURES_DIR "/Hazel/PlayButton.png", false);
 
-    m_IconPlay = H2M::Texture2D_H2M::Create("Resources/Icons/PlayButton.png", false);
-    m_IconStop = H2M::Texture2D_H2M::Create("Resources/Icons/StopButton.png", false);
+    m_IconPlay = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Icons/PlayButton.png", false);
+    m_IconStop = H2M::Texture2D_H2M::Create(RESOURCES_DIR "/Icons/StopButton.png", false);
 }
 
 EnvMapEditorLayer::~EnvMapEditorLayer()
@@ -336,32 +337,32 @@ void EnvMapEditorLayer::ShowBoundingBoxes(bool showBoundingBoxes, bool showBound
 
 void EnvMapEditorLayer::SetupShaders()
 {
-    H2M::RefH2M<MoravaShader> shaderHazelPBR_Static = MoravaShader::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
+    H2M::RefH2M<MoravaShader> shaderHazelPBR_Static = MoravaShader::Create(SHADERS_DIR "/Hazel/HazelPBR_Static.vs", SHADERS_DIR "/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
 
     // PBR shader with the support for Cascaded Shadow Maps
     // H2M::RefH2M<MoravaShader> shaderHazelPBR_Static = MoravaShader::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR_Static_CSM.fs");
     // Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
 
-    H2M::RefH2M<MoravaShader> shaderHazelPBR_Anim = MoravaShader::Create("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
+    H2M::RefH2M<MoravaShader> shaderHazelPBR_Anim = MoravaShader::Create(SHADERS_DIR "/Hazel/HazelPBR_Anim.vs", SHADERS_DIR "/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
 
-    H2M::RefH2M<MoravaShader> shaderRenderer2D_Line = MoravaShader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+    H2M::RefH2M<MoravaShader> shaderRenderer2D_Line = MoravaShader::Create(SHADERS_DIR "/Hazel/Renderer2D_Line.vs", SHADERS_DIR "/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderRenderer2D_Line compiled [programID={0}]", shaderRenderer2D_Line->GetProgramID());
 
-    EnvMapSharedData::s_ShaderOutline = MoravaShader::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
+    EnvMapSharedData::s_ShaderOutline = MoravaShader::Create(SHADERS_DIR "/Hazel/Outline.vs", SHADERS_DIR "/Hazel/Outline.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: shaderOutline compiled [programID={0}]", EnvMapSharedData::s_ShaderOutline->GetProgramID());
 
-    m_ShaderShadow = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+    m_ShaderShadow = MoravaShader::Create(SHADERS_DIR "/directional_shadow_map.vert", SHADERS_DIR "/directional_shadow_map.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderShadow compiled [programID={0}]", m_ShaderShadow->GetProgramID());
 
-    m_ShaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+    m_ShaderOmniShadow = MoravaShader::Create(SHADERS_DIR "/omni_shadow_map.vert", SHADERS_DIR "/omni_shadow_map.geom", SHADERS_DIR "/omni_shadow_map.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderOmniShadow compiled [programID={0}]", m_ShaderOmniShadow->GetProgramID());
 
-    m_ShaderPostProcessing = MoravaShader::Create("Shaders/env_map_post_processing.vert", "Shaders/env_map_post_processing.frag");
+    m_ShaderPostProcessing = MoravaShader::Create(SHADERS_DIR "/env_map_post_processing.vert", SHADERS_DIR "/env_map_post_processing.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderPostProcessing compiled [programID={0}]", m_ShaderPostProcessing->GetProgramID());
 
-    m_ShaderBloomBlur = MoravaShader::Create("Shaders/env_map_post_processing_bloom_blur.vert", "Shaders/env_map_post_processing_bloom_blur.frag");
+    m_ShaderBloomBlur = MoravaShader::Create(SHADERS_DIR "/env_map_post_processing_bloom_blur.vert", SHADERS_DIR "/env_map_post_processing_bloom_blur.frag");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderBloomBlur compiled [programID={0}]", m_ShaderBloomBlur->GetProgramID());
 
     ResourceManager::AddShader("Hazel/HazelPBR_Static", shaderHazelPBR_Static);

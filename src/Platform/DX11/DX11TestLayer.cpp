@@ -1,4 +1,5 @@
 #include "DX11TestLayer.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Renderer/TextureH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
@@ -75,7 +76,7 @@ void DX11TestLayer::OnAttach()
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 
-	H2M::RefH2M<H2M::ModelH2M> meshSphere = H2M::RefH2M<H2M::ModelH2M>::Create("Models/PardCode/sphere_hq.obj");
+	H2M::RefH2M<H2M::ModelH2M> meshSphere = H2M::RefH2M<H2M::ModelH2M>::Create(MODELS_DIR "/PardCode/sphere_hq.obj");
 
 	/*
 	RenderObject renderObjectGladiator;
@@ -122,16 +123,16 @@ void DX11TestLayer::OnAttach()
 	*/
 
 	RenderObject renderObjectTerrain;
-	renderObjectTerrain.Mesh = H2M::RefH2M<H2M::ModelH2M>::Create("Models/PardCode/terrain.obj");
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/sand.jpg", true));
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png", false));
+	renderObjectTerrain.Mesh = H2M::RefH2M<H2M::ModelH2M>::Create(MODELS_DIR "/PardCode/terrain.obj");
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/PardCode/sand.jpg", true));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/PardCode/normal_blank.png", false));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
 	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(4.0f));
 	renderObjectTerrain.PipelineType = RenderObject::PipelineType::Unlit;
 	m_RenderObjects.push_back(renderObjectTerrain);
 
 	// ---- other assets ----
-	ResourceManager::LoadTexture2D_H2M("Textures/PardCode/sky.jpg", true);
+	ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/PardCode/sky.jpg", true);
 
 	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
 	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
@@ -145,7 +146,7 @@ void DX11TestLayer::OnAttach()
 	// ResourceManager::LoadHazelTexture2D("Textures/container/container2.png");
 	// ResourceManager::LoadHazelTexture2D("Textures/container/container2_normal.png");
 
-	s_Mesh = H2M::RefH2M<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
+	s_Mesh = H2M::RefH2M<DX11Mesh>::Create(L"" MODELS_DIR "/PardCode/teapot.obj");
 	// s_Mesh = H2M::RefH2M<DX11Mesh>::Create(L"Models/PardCode/spaceship.obj");
 
 	s_MeshLight = meshSphere;
@@ -159,8 +160,8 @@ void DX11TestLayer::OnAttach()
 
 	MoravaShaderSpecification moravaShaderSpecificationUnlit;
 	moravaShaderSpecificationUnlit.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-	moravaShaderSpecificationUnlit.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
-	moravaShaderSpecificationUnlit.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
+	moravaShaderSpecificationUnlit.VertexShaderPath = SHADERS_DIR "/HLSL/UnlitVertexShader.hlsl";
+	moravaShaderSpecificationUnlit.PixelShaderPath = SHADERS_DIR "/HLSL/UnlitPixelShader.hlsl";
 	moravaShaderSpecificationUnlit.ForceCompile = false;
 	ResourceManager::CreateOrLoadShader(moravaShaderSpecificationUnlit);
 	pipelineSpecUnlit.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationUnlit);
@@ -177,8 +178,8 @@ void DX11TestLayer::OnAttach()
 
 	MoravaShaderSpecification moravaShaderSpecificationIlluminated;
 	moravaShaderSpecificationIlluminated.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-	moravaShaderSpecificationIlluminated.VertexShaderPath = "Shaders/HLSL/DirLightVertexShader.hlsl";
-	moravaShaderSpecificationIlluminated.PixelShaderPath = "Shaders/HLSL/DirLightPixelShader.hlsl";
+	moravaShaderSpecificationIlluminated.VertexShaderPath = SHADERS_DIR "/HLSL/DirLightVertexShader.hlsl";
+	moravaShaderSpecificationIlluminated.PixelShaderPath = SHADERS_DIR "/HLSL/DirLightPixelShader.hlsl";
 	moravaShaderSpecificationIlluminated.ForceCompile = false;
 	pipelineSpecIlluminated.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationIlluminated);
 

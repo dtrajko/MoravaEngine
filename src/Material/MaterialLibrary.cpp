@@ -1,4 +1,5 @@
 #include "MaterialLibrary.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Scene/ComponentsH2M.h"
 
@@ -17,12 +18,12 @@ void MaterialLibrary::Init()
 {
     // Setup default texture info
     s_TextureInfoDefault = {};
-    s_TextureInfoDefault.albedo    = "Textures/default_material_albedo.png";
-    s_TextureInfoDefault.normal    = "Textures/PBR/non_reflective/normal.png";
-    s_TextureInfoDefault.metallic  = "Textures/PBR/non_reflective/metallic.png";
-    s_TextureInfoDefault.roughness = "Textures/PBR/non_reflective/roughness.png";
-    s_TextureInfoDefault.emissive  = "Textures/PBR/non_reflective/emissive.png";
-    s_TextureInfoDefault.ao        = "Textures/PBR/non_reflective/ao.png";
+    s_TextureInfoDefault.albedo    = TEXTURES_DIR "/default_material_albedo.png";
+    s_TextureInfoDefault.normal    = TEXTURES_DIR "/PBR/non_reflective/normal.png";
+    s_TextureInfoDefault.metallic  = TEXTURES_DIR "/PBR/non_reflective/metallic.png";
+    s_TextureInfoDefault.roughness = TEXTURES_DIR "/PBR/non_reflective/roughness.png";
+    s_TextureInfoDefault.emissive  = TEXTURES_DIR "/PBR/non_reflective/emissive.png";
+    s_TextureInfoDefault.ao        = TEXTURES_DIR "/PBR/non_reflective/ao.png";
 }
 
 H2M::RefH2M<MaterialData> MaterialLibrary::AddNewMaterial(std::string name)

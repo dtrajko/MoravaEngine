@@ -1,4 +1,5 @@
 #include "Scene/SceneOmniShadows.h"
+#include "Core/EnginePaths.h"
 
 #include "Mesh/Block.h"
 
@@ -96,8 +97,8 @@ SceneOmniShadows::SceneOmniShadows()
 
 void SceneOmniShadows::SetupTextures()
 {
-    ResourceManager::LoadTexture("crate",       "Textures/crate.png");
-    ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
+    ResourceManager::LoadTexture("crate",       TEXTURES_DIR "/crate.png");
+    ResourceManager::LoadTexture("crateNormal", TEXTURES_DIR "/crateNormal.png");
 }
 
 void SceneOmniShadows::SetupTextureSlots()

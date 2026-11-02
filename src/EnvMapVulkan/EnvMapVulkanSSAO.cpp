@@ -1,4 +1,5 @@
 #include "EnvMapVulkanSSAO.h"
+#include "Core/EnginePaths.h"
 
 #include "EnvMapVulkanGBuffer.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -53,7 +54,7 @@ void EnvMapVulkanSSAO::Create()
 	// The ray-traced occlusion: a shader that only compiles for a device with ray tracing, so it is loaded here
 	if (H2M::VulkanContextH2M::GetCurrentDevice()->IsRayTracingSupported())
 	{
-		H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAORayTraced.glsl");
+		H2M::RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/SSAORayTraced.glsl");
 		m_RayTracedPass.Create("SSAORayTraced");
 		m_RayTracedSet = m_RayTracedPass.Pipeline->GetShader()->CreateDescriptorSets(0);
 	}

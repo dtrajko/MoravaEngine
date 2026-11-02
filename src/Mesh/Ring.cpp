@@ -1,4 +1,5 @@
 #include "Mesh/Ring.h"
+#include "Core/EnginePaths.h"
 
 #include "Mesh/VertexTBN.h"
 
@@ -15,7 +16,7 @@ Ring::Ring(glm::vec3 scale) : Mesh(scale)
 {
 	m_Scale = scale;
 
-	m_Model = new Model("Models/Primitives/ring.obj");
+	m_Model = new Model(MODELS_DIR "/Primitives/ring.obj");
 	auto& meshList = m_Model->GetMeshList();
 	auto& mesh = meshList.at(0);
 

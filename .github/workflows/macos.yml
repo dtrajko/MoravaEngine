@@ -16,6 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SAMPLE_PROJECT_DIR: Projects/Sample
+
 jobs:
   macos:
     name: macOS ${{ matrix.name }}
@@ -28,7 +31,7 @@ jobs:
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
             smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20 --play
             # A project (Projects/Sample): its start scene, its own materials, its window
-            player-smoke-test: --project Projects/Sample/Sample.mproject --scene Projects/Sample/Scenes/RollABall.mscene --exit-after 20
+            player-smoke-test: --project $SAMPLE_PROJECT_DIR/Sample.mproject --scene $SAMPLE_PROJECT_DIR/Scenes/RollABall.mscene --exit-after 20
           # macOS stops at OpenGL 4.1: an older scene (HAZEL_ENV_MAP needs 4.5)
           - name: Clang OpenGL
             cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=EDITOR_IMGUIZMO
@@ -178,7 +181,7 @@ jobs:
           VK_LOADER_DEBUG: error,warn
         run: |
           set -o pipefail
-          gtimeout 600 build/MoravaPlayer --project Projects/Sample/Sample.mproject --scene Projects/Sample/Scenes/Character.mscene --exit-after 10 2>&1 | tee animator-smoke-test.log
+          gtimeout 600 build/MoravaPlayer --project $SAMPLE_PROJECT_DIR/Sample.mproject --scene $SAMPLE_PROJECT_DIR/Scenes/Character.mscene --exit-after 10 2>&1 | tee animator-smoke-test.log
           if grep -q VulkanDebugCallback animator-smoke-test.log; then
             echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
             exit 1
@@ -199,7 +202,7 @@ jobs:
           VK_LOADER_DEBUG: error,warn
         run: |
           set -o pipefail
-          gtimeout 600 build/MoravaPlayer --project Projects/Sample/Sample.mproject --scene Projects/Sample/Scenes/Erika.mscene --exit-after 10 --debug-overlay 2>&1 | tee erika-smoke-test.log
+          gtimeout 600 build/MoravaPlayer --project $SAMPLE_PROJECT_DIR/Sample.mproject --scene $SAMPLE_PROJECT_DIR/Scenes/Erika.mscene --exit-after 10 --debug-overlay 2>&1 | tee erika-smoke-test.log
           if grep -q VulkanDebugCallback erika-smoke-test.log; then
             echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
             exit 1
@@ -223,7 +226,7 @@ jobs:
           fi
           # The sounds her script plays at the animator's Footstep events, the jump and the landing
           for sound in Footstep_1 Footstep_2 Footstep_3 Footstep_4 JumpTakeoff Land; do
-            test -f "Projects/Sample/Assets/Audio/$sound.wav" || { echo "::error::Erika's sound $sound.wav is missing"; exit 1; }
+            test -f "$SAMPLE_PROJECT_DIR/Assets/Audio/$sound.wav" || { echo "::error::Erika's sound $sound.wav is missing"; exit 1; }
           done
 
       # The coin collector (Milestone 2): the project's start scene (the main menu, its saved settings applied), then Level 2
@@ -234,8 +237,8 @@ jobs:
           VK_LOADER_DEBUG: error,warn
         run: |
           set -o pipefail
-          gtimeout 600 build/MoravaPlayer --project Projects/Sample/Sample.mproject --exit-after 8 2>&1 | tee collector-smoke-test.log
-          gtimeout 600 build/MoravaPlayer --project Projects/Sample/Sample.mproject --scene Projects/Sample/Scenes/Level2.mscene --exit-after 10 --debug-overlay 2>&1 | tee -a collector-smoke-test.log
+          gtimeout 600 build/MoravaPlayer --project $SAMPLE_PROJECT_DIR/Sample.mproject --exit-after 8 2>&1 | tee collector-smoke-test.log
+          gtimeout 600 build/MoravaPlayer --project $SAMPLE_PROJECT_DIR/Sample.mproject --scene $SAMPLE_PROJECT_DIR/Scenes/Level2.mscene --exit-after 10 --debug-overlay 2>&1 | tee -a collector-smoke-test.log
           if grep -q VulkanDebugCallback collector-smoke-test.log; then
             echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
             exit 1

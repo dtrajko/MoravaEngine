@@ -5,6 +5,7 @@
  */
 
 #include "SceneH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Core/BaseH2M.h"
 #if defined(GRAPHICS_API_VULKAN)
@@ -413,21 +414,21 @@ namespace H2M
 #if defined(GRAPHICS_API_OPENGL)
 		case RendererAPITypeH2M::OpenGL:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
-			moravaShaderSpec.VertexShaderPath = "Shaders/Hazel/Skybox.vs";
-			moravaShaderSpec.FragmentShaderPath = "Shaders/Hazel/Skybox.fs";
+			moravaShaderSpec.VertexShaderPath = SHADERS_DIR "/Hazel/Skybox.vs";
+			moravaShaderSpec.FragmentShaderPath = SHADERS_DIR "/Hazel/Skybox.fs";
 			break;
 #endif
 #if defined(GRAPHICS_API_VULKAN)
 		case RendererAPITypeH2M::Vulkan:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
-			moravaShaderSpec.HazelShaderPath = "Resources/Shaders/Skybox.glsl";
+			moravaShaderSpec.HazelShaderPath = RESOURCE_SHADERS_DIR "/Skybox.glsl";
 			break;
 #endif
 #if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-			moravaShaderSpec.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
-			moravaShaderSpec.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
+			moravaShaderSpec.VertexShaderPath = SHADERS_DIR "/HLSL/UnlitVertexShader.hlsl";
+			moravaShaderSpec.PixelShaderPath = SHADERS_DIR "/HLSL/UnlitPixelShader.hlsl";
 			break;
 #endif
 		default: break;

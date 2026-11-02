@@ -1,4 +1,5 @@
 #include "FramebufferSSAO.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Log.h"
 #include "Core/Math.h"
@@ -33,7 +34,7 @@ bool FramebufferSSAO::Init(unsigned int width, unsigned int height)
 		return false;
 	}
 
-	m_ShaderSSAO = MoravaShader::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao.fs");
+	m_ShaderSSAO = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/ssao.vs", SHADERS_DIR "/LearnOpenGL/ssao.fs");
 	Log::GetLogger()->info("FramebufferSSAO: m_ShaderSSAO compiled [programID={0}]", m_ShaderSSAO->GetProgramID());
 
 	m_QuadSSAO = H2M::RefH2M<QuadSSAO>::Create();

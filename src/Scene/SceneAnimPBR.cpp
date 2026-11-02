@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Scene/SceneAnimPBR.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "Core/Input.h"
@@ -134,7 +135,7 @@ SceneAnimPBR::SceneAnimPBR()
     m_MaterialWorkflowPBR->m_CaptureSize       = 512; // 512
     m_MaterialWorkflowPBR->m_PrefilterMapSize  = 128; // 128
     m_MaterialWorkflowPBR->m_IrradianceMapSize = 32;  //  32
-    m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
+    m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/rooitou_park_4k.hdr");
 
     m_LightPosition = glm::vec3(20.0f, 20.0f, 20.0f);
     m_LightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -182,10 +183,10 @@ void SceneAnimPBR::ResizeViewport(glm::vec2 viewportPanelSize)
 
 void SceneAnimPBR::SetupTextures()
 {
-    ResourceManager::LoadTexture("crate", "Textures/crate.png");
-    ResourceManager::LoadTexture("crateNormal", "Textures/crateNormal.png");
+    ResourceManager::LoadTexture("crate", TEXTURES_DIR "/crate.png");
+    ResourceManager::LoadTexture("crateNormal", TEXTURES_DIR "/crateNormal.png");
 
-    std::string textureFilepath = "Textures/dds/Vespa_BaseColor.dds";
+    std::string textureFilepath = TEXTURES_DIR "/dds/Vespa_BaseColor.dds";
     try {
         ResourceManager::LoadTexture("Vespa_BaseColor", textureFilepath);
     }
@@ -205,25 +206,25 @@ void SceneAnimPBR::SetupMaterials()
 
 void SceneAnimPBR::SetupShaders()
 {
-    m_ShaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
+    m_ShaderMain = MoravaShader::Create(SHADERS_DIR "/shader.vert", SHADERS_DIR "/shader.frag");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderMain compiled [programID={0}]", m_ShaderMain->GetProgramID());
 
-    m_ShaderBackground = MoravaShader::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    m_ShaderBackground = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/2.2.2.background.vs", SHADERS_DIR "/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 
-    m_ShaderHybridAnimPBR = MoravaShader::Create("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
+    m_ShaderHybridAnimPBR = MoravaShader::Create(SHADERS_DIR "/HybridAnimPBR.vs", SHADERS_DIR "/HybridAnimPBR.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderHybridAnimPBR compiled [programID={0}]", m_ShaderHybridAnimPBR->GetProgramID());
 
-    m_ShaderEquirectangularConversion = MoravaShader::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
+    m_ShaderEquirectangularConversion = MoravaShader::Create(SHADERS_DIR "/Hazel/EquirectangularToCubeMap.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
 
-    m_ShaderEnvFiltering = MoravaShader::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
+    m_ShaderEnvFiltering = MoravaShader::Create(SHADERS_DIR "/Hazel/EnvironmentMipFilter.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
 
-    m_ShaderEnvIrradiance = MoravaShader::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
+    m_ShaderEnvIrradiance = MoravaShader::Create(SHADERS_DIR "/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
 
-    m_ShaderBasic = MoravaShader::Create("Shaders/basic.vs", "Shaders/basic.fs");
+    m_ShaderBasic = MoravaShader::Create(SHADERS_DIR "/basic.vs", SHADERS_DIR "/basic.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
 }
 
@@ -282,15 +283,15 @@ void SceneAnimPBR::SetupMeshes()
 
     // M1911
     TextureInfo textureInfoM1911 = {};
-    textureInfoM1911.albedo    = "Models/M1911/m1911_color.png";
-    textureInfoM1911.normal    = "Models/M1911/m1911_normal.png";
-    textureInfoM1911.metallic  = "Models/M1911/m1911_metalness.png";
-    textureInfoM1911.roughness = "Models/M1911/m1911_roughness.png";
-    textureInfoM1911.emissive  = "Textures/plain.png";
-    textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
+    textureInfoM1911.albedo    = MODELS_DIR "/M1911/m1911_color.png";
+    textureInfoM1911.normal    = MODELS_DIR "/M1911/m1911_normal.png";
+    textureInfoM1911.metallic  = MODELS_DIR "/M1911/m1911_metalness.png";
+    textureInfoM1911.roughness = MODELS_DIR "/M1911/m1911_roughness.png";
+    textureInfoM1911.emissive  = TEXTURES_DIR "/plain.png";
+    textureInfoM1911.ao        = TEXTURES_DIR "/PBR/silver/ao.png";
 
     m_BaseMaterial_M1911 = H2M::RefH2M<Material>::Create(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = H2M::RefH2M<H2M::ModelH2M>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
+    m_MeshAnimPBR_M1911 = H2M::RefH2M<H2M::ModelH2M>::Create(MODELS_DIR "/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
 
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
@@ -308,15 +309,15 @@ void SceneAnimPBR::SetupMeshes()
 
     // BobLamp
     TextureInfo textureInfoBobLamp = {};
-    textureInfoBobLamp.albedo    = "Textures/plain.png";
-    textureInfoBobLamp.normal    = "Textures/PBR/non_reflective/normal.png";
-    textureInfoBobLamp.metallic  = "Textures/PBR/non_reflective/metallic.png";
-    textureInfoBobLamp.roughness = "Textures/PBR/non_reflective/roughness.png";
-    textureInfoBobLamp.emissive  = "Textures/plain.png";
-    textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
+    textureInfoBobLamp.albedo    = TEXTURES_DIR "/plain.png";
+    textureInfoBobLamp.normal    = TEXTURES_DIR "/PBR/non_reflective/normal.png";
+    textureInfoBobLamp.metallic  = TEXTURES_DIR "/PBR/non_reflective/metallic.png";
+    textureInfoBobLamp.roughness = TEXTURES_DIR "/PBR/non_reflective/roughness.png";
+    textureInfoBobLamp.emissive  = TEXTURES_DIR "/plain.png";
+    textureInfoBobLamp.ao        = TEXTURES_DIR "/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_BobLamp = H2M::RefH2M<Material>::Create(textureInfoBobLamp, materialSpecular, materialShininess);
-    m_MeshAnimPBR_BobLamp = H2M::RefH2M<H2M::ModelH2M>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
+    m_MeshAnimPBR_BobLamp = H2M::RefH2M<H2M::ModelH2M>::Create(MODELS_DIR "/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
     m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
 
     m_Entities["BobLamp"].Transform.Scale = m_Entities["BobLamp"].Init.Transform.Scale;
@@ -333,15 +334,15 @@ void SceneAnimPBR::SetupMeshes()
 
     // Animated Boy
     TextureInfo textureInfoAnimBoy = {};
-    textureInfoAnimBoy.albedo    = "Models/ThinMatrix/AnimatedCharacter/AnimatedCharacterDiffuse.png";
-    textureInfoAnimBoy.normal    = "Textures/PBR/non_reflective/normal.png";
-    textureInfoAnimBoy.metallic  = "Textures/PBR/non_reflective/metallic.png";
-    textureInfoAnimBoy.roughness = "Textures/PBR/non_reflective/roughness.png";
-    textureInfoAnimBoy.emissive  = "Textures/plain.png";
-    textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
+    textureInfoAnimBoy.albedo    = MODELS_DIR "/ThinMatrix/AnimatedCharacter/AnimatedCharacterDiffuse.png";
+    textureInfoAnimBoy.normal    = TEXTURES_DIR "/PBR/non_reflective/normal.png";
+    textureInfoAnimBoy.metallic  = TEXTURES_DIR "/PBR/non_reflective/metallic.png";
+    textureInfoAnimBoy.roughness = TEXTURES_DIR "/PBR/non_reflective/roughness.png";
+    textureInfoAnimBoy.emissive  = TEXTURES_DIR "/plain.png";
+    textureInfoAnimBoy.ao        = TEXTURES_DIR "/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_AnimBoy = H2M::RefH2M<Material>::Create(textureInfoAnimBoy, materialSpecular, materialShininess);
-    m_MeshAnimPBR_AnimBoy = H2M::RefH2M<H2M::ModelH2M>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
+    m_MeshAnimPBR_AnimBoy = H2M::RefH2M<H2M::ModelH2M>::Create(MODELS_DIR "/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
     m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
 
     m_Entities["AnimBoy"].Transform.Scale = m_Entities["AnimBoy"].Init.Transform.Scale;
@@ -403,34 +404,34 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
     {
         if (m_HDRI_Edit == HDRI_GREENWICH_PARK) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/greenwich_park_02_1k.hdr");
         }
         else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/san_giuseppe_bridge_1k.hdr");
         }
         else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/Tropical_Beach_3k.hdr");
         }
         else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/vignaioli_night_1k.hdr");
         }
         else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/006_hdrmaps_com_free.hdr");
         }
         else if (m_HDRI_Edit == HDRI_BIRCHWOOD) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/birchwood_4k.hdr");
         }
         else if (m_HDRI_Edit == HDRI_PINK_SUNRISE) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/pink_sunrise_4k.hdr");
         }
         else if (m_HDRI_Edit == HDRI_ROOITOU_PARK) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/rooitou_park_4k.hdr");
         }
         else if (m_HDRI_Edit == HDRI_VENICE_DAWN) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/venice_dawn_1_4k.hdr");
         }
         else if (m_HDRI_Edit == HDRI_PEPPERMINT_POWERPLANT) {
-            m_MaterialWorkflowPBR->Init("Textures/HDR/peppermint_powerplant_1k.hdr");
+            m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/peppermint_powerplant_1k.hdr");
         }
 
         m_HDRI_Edit_Prev = m_HDRI_Edit;

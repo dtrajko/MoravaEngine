@@ -5,6 +5,7 @@
  */
 
 #include "ShaderCacheH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Core/HashH2M.h"
 
@@ -18,7 +19,7 @@
 namespace H2M
 {
 
-	static const char* s_ShaderRegistryPath = "Resources/Cache/Shader/ShaderRegistry.cache";
+	static const char* s_ShaderRegistryPath = RESOURCES_DIR "/Cache/Shader/ShaderRegistry.cache";
 
 	bool ShaderCacheH2M::HasChanged(const std::filesystem::path& shader, const std::string& source)
 	{

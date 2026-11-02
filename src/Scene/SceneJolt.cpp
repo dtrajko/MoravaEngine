@@ -1,4 +1,5 @@
 #include "Scene/SceneJolt.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Log.h"
 #include "Core/Profiler.h"
@@ -71,31 +72,31 @@ void SceneJolt::SetLightManager()
 
 void SceneJolt::SetSkybox()
 {
-	skyboxFaces.push_back("Textures/skybox_4/right.png");
-	skyboxFaces.push_back("Textures/skybox_4/left.png");
-	skyboxFaces.push_back("Textures/skybox_4/top.png");
-	skyboxFaces.push_back("Textures/skybox_4/bottom.png");
-	skyboxFaces.push_back("Textures/skybox_4/back.png");
-	skyboxFaces.push_back("Textures/skybox_4/front.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/right.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/left.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/top.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/bottom.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/back.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/front.png");
 	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
 void SceneJolt::SetupTextures()
 {
-	textures.insert(std::make_pair("pyramid",             TextureLoader::Get()->GetTexture("Textures/pyramid.png", false, false)));
-	textures.insert(std::make_pair("texture_gray",        TextureLoader::Get()->GetTexture("Textures/texture_gray.png", false, false)));
-	textures.insert(std::make_pair("texture_orange",      TextureLoader::Get()->GetTexture("Textures/texture_orange.png", false, false)));
-	textures.insert(std::make_pair("texture_blue",        TextureLoader::Get()->GetTexture("Textures/texture_blue.png", false, false)));
-	textures.insert(std::make_pair("crate_diffuse",       TextureLoader::Get()->GetTexture("Textures/crate.png", false, false)));
-	textures.insert(std::make_pair("crate_normal",        TextureLoader::Get()->GetTexture("Textures/crateNormal.png", false, false)));
-	textures.insert(std::make_pair("silver_diffuse",      TextureLoader::Get()->GetTexture("Textures/PBR/silver/albedo.png", false, false)));
-	textures.insert(std::make_pair("silver_normal",       TextureLoader::Get()->GetTexture("Textures/PBR/silver/normal.png", false, false)));
-	textures.insert(std::make_pair("texture_chess",       TextureLoader::Get()->GetTexture("Textures/texture_chess.png", false, GL_NEAREST, false)));
-	textures.insert(std::make_pair("texture_checker",     TextureLoader::Get()->GetTexture("Textures/texture_checker.png", false, GL_NEAREST, false)));
-	textures.insert(std::make_pair("texture_wall_albedo", TextureLoader::Get()->GetTexture("Textures/PBR/wall/albedo.png", false, GL_LINEAR, false)));
-	textures.insert(std::make_pair("texture_wall_normal", TextureLoader::Get()->GetTexture("Textures/PBR/wall/normal.png", false, GL_LINEAR, false)));
-	textures.insert(std::make_pair("texture_lego",        TextureLoader::Get()->GetTexture("Textures/lego.png", false, GL_LINEAR, false)));
-	textures.insert(std::make_pair("texture_plank",       TextureLoader::Get()->GetTexture("Textures/texture_plank.png", false, GL_LINEAR, false)));
+	textures.insert(std::make_pair("pyramid",             TextureLoader::Get()->GetTexture(TEXTURES_DIR "/pyramid.png", false, false)));
+	textures.insert(std::make_pair("texture_gray",        TextureLoader::Get()->GetTexture(TEXTURES_DIR "/texture_gray.png", false, false)));
+	textures.insert(std::make_pair("texture_orange",      TextureLoader::Get()->GetTexture(TEXTURES_DIR "/texture_orange.png", false, false)));
+	textures.insert(std::make_pair("texture_blue",        TextureLoader::Get()->GetTexture(TEXTURES_DIR "/texture_blue.png", false, false)));
+	textures.insert(std::make_pair("crate_diffuse",       TextureLoader::Get()->GetTexture(TEXTURES_DIR "/crate.png", false, false)));
+	textures.insert(std::make_pair("crate_normal",        TextureLoader::Get()->GetTexture(TEXTURES_DIR "/crateNormal.png", false, false)));
+	textures.insert(std::make_pair("silver_diffuse",      TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/silver/albedo.png", false, false)));
+	textures.insert(std::make_pair("silver_normal",       TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/silver/normal.png", false, false)));
+	textures.insert(std::make_pair("texture_chess",       TextureLoader::Get()->GetTexture(TEXTURES_DIR "/texture_chess.png", false, GL_NEAREST, false)));
+	textures.insert(std::make_pair("texture_checker",     TextureLoader::Get()->GetTexture(TEXTURES_DIR "/texture_checker.png", false, GL_NEAREST, false)));
+	textures.insert(std::make_pair("texture_wall_albedo", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/wall/albedo.png", false, GL_LINEAR, false)));
+	textures.insert(std::make_pair("texture_wall_normal", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/PBR/wall/normal.png", false, GL_LINEAR, false)));
+	textures.insert(std::make_pair("texture_lego",        TextureLoader::Get()->GetTexture(TEXTURES_DIR "/lego.png", false, GL_LINEAR, false)));
+	textures.insert(std::make_pair("texture_plank",       TextureLoader::Get()->GetTexture(TEXTURES_DIR "/texture_plank.png", false, GL_LINEAR, false)));
 }
 
 void SceneJolt::SetupMeshes()

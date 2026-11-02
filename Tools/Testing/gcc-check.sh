@@ -14,14 +14,14 @@
 cd "$(dirname "$0")/../.." || exit 2
 repo=$(pwd)
 
-v=vendor
+VENDOR_DIR=vendor
 includes=(
 	-Isrc
-	-I$v -I$v/GLM -I$v/entt/include -I$v/spdlog/include -I$v/ImGui -I$v/box2d/include -I$v/GLEW/include
-	-I$v/VulkanMemoryAllocator -I$v/Optick/src -I$v/farbot -I$v/choc
-	-I$v/cross-platform/glfw/include -I$v/cross-platform/miniaudio -I$v/cross-platform/JoltPhysics
-	-I$v/cross-platform/yaml-cpp/include -I$v/cross-platform/assimp/include -Ibuild/assimp/include
-	-I$v/cross-platform/ImGuizmo/src
+	-I$VENDOR_DIR -I$VENDOR_DIR/GLM -I$VENDOR_DIR/entt/include -I$VENDOR_DIR/spdlog/include -I$VENDOR_DIR/ImGui -I$VENDOR_DIR/box2d/include -I$VENDOR_DIR/GLEW/include
+	-I$VENDOR_DIR/VulkanMemoryAllocator -I$VENDOR_DIR/Optick/src -I$VENDOR_DIR/farbot -I$VENDOR_DIR/choc
+	-I$VENDOR_DIR/cross-platform/glfw/include -I$VENDOR_DIR/cross-platform/miniaudio -I$VENDOR_DIR/cross-platform/JoltPhysics
+	-I$VENDOR_DIR/cross-platform/yaml-cpp/include -I$VENDOR_DIR/cross-platform/assimp/include -Ibuild/assimp/include
+	-I$VENDOR_DIR/cross-platform/ImGuizmo/src
 )
 # nethost.h (C# scripting): from the Windows .NET SDK's app host pack, whichever version is installed
 nethost=$(ls -d "/mnt/c/Program Files/dotnet/packs/Microsoft.NETCore.App.Host.win-x64/"*/runtimes/win-x64/native 2>/dev/null | tail -1)

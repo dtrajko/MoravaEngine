@@ -1,4 +1,5 @@
 #include "Scene/SceneCubemaps.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/MousePicker.h"
 #include "ImGui/ImGuiWrapper.h"
@@ -41,24 +42,24 @@ void SceneCubemaps::SetSkybox()
 
 void SceneCubemaps::SetupTextures()
 {
-    textures.insert(std::make_pair("semi_transparent", TextureLoader::Get()->GetTexture("Textures/semi_transparent.png", false, false)));
+    textures.insert(std::make_pair("semi_transparent", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/semi_transparent.png", false, false)));
 }
 
 void SceneCubemaps::SetupShaders()
 {
-    m_ShaderCubemaps = MoravaShader::Create("Shaders/LearnOpenGL/6.2.cubemaps.vs", "Shaders/LearnOpenGL/6.2.cubemaps.fs");
+    m_ShaderCubemaps = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/6.2.cubemaps.vs", SHADERS_DIR "/LearnOpenGL/6.2.cubemaps.fs");
     printf("SceneCubemaps: m_ShaderCubemaps compiled [programID=%d]\n", m_ShaderCubemaps->GetProgramID());
 
-    m_ShaderCubemapsNanosuit = MoravaShader::Create("Shaders/LearnOpenGL/6.2.cubemaps_nanosuit.vs", "Shaders/LearnOpenGL/6.2.cubemaps.fs");
+    m_ShaderCubemapsNanosuit = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/6.2.cubemaps_nanosuit.vs", SHADERS_DIR "/LearnOpenGL/6.2.cubemaps.fs");
     printf("SceneCubemaps: m_ShaderCubemapsNanosuit compiled [programID=%d]\n", m_ShaderCubemapsNanosuit->GetProgramID());
 
-    m_ShaderSkybox = MoravaShader::Create("Shaders/LearnOpenGL/6.2.skybox.vs", "Shaders/LearnOpenGL/6.2.skybox.fs");
+    m_ShaderSkybox = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/6.2.skybox.vs", SHADERS_DIR "/LearnOpenGL/6.2.skybox.fs");
     printf("SceneCubemaps: m_ShaderSkybox compiled [programID=%d]\n", m_ShaderSkybox->GetProgramID());
 
-    m_ShaderBasic = MoravaShader::Create("Shaders/basic.vs", "Shaders/basic.fs");
+    m_ShaderBasic = MoravaShader::Create(SHADERS_DIR "/basic.vs", SHADERS_DIR "/basic.fs");
     printf("SceneCubemaps: m_ShaderBasic compiled [programID=%d]\n", m_ShaderBasic->GetProgramID());
 
-    m_ShaderFramebuffersScene = MoravaShader::Create("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
+    m_ShaderFramebuffersScene = MoravaShader::Create(SHADERS_DIR "/framebuffers_scene.vs", SHADERS_DIR "/framebuffers_scene.fs");
     printf("SceneCubemaps: m_ShaderFramebuffersScene compiled [programID=%d]\n", m_ShaderFramebuffersScene->GetProgramID());
 
     // shader configuration
@@ -82,11 +83,11 @@ void SceneCubemaps::SetupModels()
 {
     if (m_NanosuitModelEnabled)
     {
-        ModelJoey* nanosuit = new ModelJoey("Models/nanosuit.obj", "Textures/nanosuit");
+        ModelJoey* nanosuit = new ModelJoey(MODELS_DIR "/nanosuit.obj", TEXTURES_DIR "/nanosuit");
         models.insert(std::make_pair("nanosuit", nanosuit));
     }
 
-    m_Terrain = new TerrainHeightMap("Textures/heightmap_16x16.png", 4.0f, nullptr);
+    m_Terrain = new TerrainHeightMap(TEXTURES_DIR "/heightmap_16x16.png", 4.0f, nullptr);
     meshes.insert(std::make_pair("terrain", m_Terrain));
 
     MousePicker::Get()->SetTerrain(m_Terrain);
@@ -101,12 +102,12 @@ void SceneCubemaps::SetGeometry()
     // -------------
     std::vector<std::string> faces
     {
-        "Textures/skybox_cubemaps/right.jpg",
-        "Textures/skybox_cubemaps/left.jpg",
-        "Textures/skybox_cubemaps/top.jpg",
-        "Textures/skybox_cubemaps/bottom.jpg",
-        "Textures/skybox_cubemaps/front.jpg",
-        "Textures/skybox_cubemaps/back.jpg",
+        TEXTURES_DIR "/skybox_cubemaps/right.jpg",
+        TEXTURES_DIR "/skybox_cubemaps/left.jpg",
+        TEXTURES_DIR "/skybox_cubemaps/top.jpg",
+        TEXTURES_DIR "/skybox_cubemaps/bottom.jpg",
+        TEXTURES_DIR "/skybox_cubemaps/front.jpg",
+        TEXTURES_DIR "/skybox_cubemaps/back.jpg",
     };
 
     m_TextureCubeMap = new TextureCubemapFaces(faces);

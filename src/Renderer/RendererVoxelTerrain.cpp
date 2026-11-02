@@ -1,4 +1,5 @@
 #include "Renderer/RendererVoxelTerrain.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Profiler.h"
 #include "Core/ResourceManager.h"
@@ -65,31 +66,31 @@ void RendererVoxelTerrain::SetUniforms()
 
 void RendererVoxelTerrain::SetShaders()
 {
-	H2M::RefH2M<MoravaShader> shaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
+	H2M::RefH2M<MoravaShader> shaderMain = MoravaShader::Create(SHADERS_DIR "/shader.vert", SHADERS_DIR "/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderRenderInstanced  = MoravaShader::Create("Shaders/render_instanced.vs", "Shaders/render_instanced.fs");
+	H2M::RefH2M<MoravaShader> shaderRenderInstanced  = MoravaShader::Create(SHADERS_DIR "/render_instanced.vs", SHADERS_DIR "/render_instanced.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("render_instanced", shaderRenderInstanced));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderRenderInstanced compiled [programID={0}]", shaderRenderInstanced->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderBasic = MoravaShader::Create("Shaders/basic.vs", "Shaders/basic.fs");
+	H2M::RefH2M<MoravaShader> shaderBasic = MoravaShader::Create(SHADERS_DIR "/basic.vs", SHADERS_DIR "/basic.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("basic", shaderBasic));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderBasic compiled [programID={0}]", shaderBasic->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderMarchingCubes = MoravaShader::Create("Shaders/marching_cubes.vs", "Shaders/marching_cubes.fs");
+	H2M::RefH2M<MoravaShader> shaderMarchingCubes = MoravaShader::Create(SHADERS_DIR "/marching_cubes.vs", SHADERS_DIR "/marching_cubes.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("marching_cubes", shaderMarchingCubes));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderMarchingCubes compiled [programID={0}]", shaderMarchingCubes->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderShadowMap = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+	H2M::RefH2M<MoravaShader> shaderShadowMap = MoravaShader::Create(SHADERS_DIR "/directional_shadow_map.vert", SHADERS_DIR "/directional_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("shadow_map", shaderShadowMap));
 	Log::GetLogger()->info("RendererEditor: shaderShadowMap compiled [programID={0}]", shaderShadowMap->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+	H2M::RefH2M<MoravaShader> shaderOmniShadow = MoravaShader::Create(SHADERS_DIR "/omni_shadow_map.vert", SHADERS_DIR "/omni_shadow_map.geom", SHADERS_DIR "/omni_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
+	H2M::RefH2M<MoravaShader> shaderWater = MoravaShader::Create(SHADERS_DIR "/water.vert", SHADERS_DIR "/water.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
 	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 }

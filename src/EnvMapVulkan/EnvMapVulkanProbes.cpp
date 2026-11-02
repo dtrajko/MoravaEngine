@@ -1,4 +1,5 @@
 #include "EnvMapVulkanProbes.h"
+#include "Core/EnginePaths.h"
 
 #include "EnvMapVulkanProfiler.h"
 #include "EnvMapVulkanRayTracing.h"
@@ -764,7 +765,7 @@ void EnvMapVulkanProbes::CreateCaptureResources()
 	// loaded here). Its set 1 is the ray buffer; its set 0 is filled in PrepareTrace.
 	if (vulkanDevice->IsRayTracingSupported())
 	{
-		shaders->Load("Resources/Shaders/ProbeTrace.glsl");
+		shaders->Load(RESOURCE_SHADERS_DIR "/ProbeTrace.glsl");
 		m_TracePipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(shaders->Get("ProbeTrace"));
 		m_TraceFrameSet = m_TracePipeline->GetShader()->CreateDescriptorSets(0);
 		m_TraceRayBufferSet = m_TracePipeline->GetShader()->CreateDescriptorSets(1);

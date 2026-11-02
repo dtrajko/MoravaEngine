@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Scene/SceneVoxelTerrain.h"
+#include "Core/EnginePaths.h"
 
 #include "Camera/CameraControllerVoxelTerrain.h"
 #include "Core/MousePicker.h"
@@ -148,8 +149,8 @@ void SceneVoxelTerrain::SetCamera()
 
 void SceneVoxelTerrain::SetupTextures()
 {
-    ResourceManager::LoadTexture("diffuse", "Textures/plain.png");
-    ResourceManager::LoadTexture("normal",  "Textures/normal_map_default.png");
+    ResourceManager::LoadTexture("diffuse", TEXTURES_DIR "/plain.png");
+    ResourceManager::LoadTexture("normal",  TEXTURES_DIR "/normal_map_default.png");
 }
 
 void SceneVoxelTerrain::SetupTextureSlots()

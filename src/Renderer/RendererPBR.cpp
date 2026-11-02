@@ -1,4 +1,5 @@
 #include "Renderer/RendererPBR.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "Shader/ShaderMain.h"
@@ -65,23 +66,23 @@ void RendererPBR::SetUniforms()
 
 void RendererPBR::SetShaders()
 {
-	H2M::RefH2M<ShaderMain> shaderMain = H2M::RefH2M<ShaderMain>::Create("Shaders/shader.vert", "Shaders/shader.frag");
+	H2M::RefH2M<ShaderMain> shaderMain = H2M::RefH2M<ShaderMain>::Create(SHADERS_DIR "/shader.vert", SHADERS_DIR "/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	printf("Renderer: Main shader compiled [programID=%d]\n", shaderMain->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderDirectionalShadow = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+	H2M::RefH2M<MoravaShader> shaderDirectionalShadow = MoravaShader::Create(SHADERS_DIR "/directional_shadow_map.vert", SHADERS_DIR "/directional_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("directionalShadow", shaderDirectionalShadow));
 	printf("Renderer: Shadow shader compiled [programID=%d]\n", shaderDirectionalShadow->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+	H2M::RefH2M<MoravaShader> shaderOmniShadow = MoravaShader::Create(SHADERS_DIR "/omni_shadow_map.vert", SHADERS_DIR "/omni_shadow_map.geom", SHADERS_DIR "/omni_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
+	H2M::RefH2M<MoravaShader> shaderWater = MoravaShader::Create(SHADERS_DIR "/water.vert", SHADERS_DIR "/water.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
 	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
-	H2M::RefH2M<ShaderPBR> shaderPBR = H2M::RefH2M<ShaderPBR>::Create("Shaders/PBR.vert", "Shaders/PBR.frag");
+	H2M::RefH2M<ShaderPBR> shaderPBR = H2M::RefH2M<ShaderPBR>::Create(SHADERS_DIR "/PBR.vert", SHADERS_DIR "/PBR.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("pbr", shaderPBR));
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }

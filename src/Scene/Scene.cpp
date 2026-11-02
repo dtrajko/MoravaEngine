@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Scene/Scene.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Core/Events/ApplicationEventH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
@@ -280,10 +281,10 @@ void Scene::SetupTextures()
 {
 	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 	{
-		textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png", false, false)));
-		textures.insert(std::make_pair("shadowMapDefault", TextureLoader::Get()->GetTexture("Textures/shadow_map_default.png", false, false)));
-		textures.insert(std::make_pair("waterDuDv", TextureLoader::Get()->GetTexture("Textures/water/waterDuDv.png", false, false)));
-		textures.insert(std::make_pair("waterNormal", TextureLoader::Get()->GetTexture("Textures/water/waterNormal.png", false, false)));
+		textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/normal_map_default.png", false, false)));
+		textures.insert(std::make_pair("shadowMapDefault", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/shadow_map_default.png", false, false)));
+		textures.insert(std::make_pair("waterDuDv", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/water/waterDuDv.png", false, false)));
+		textures.insert(std::make_pair("waterNormal", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/water/waterNormal.png", false, false)));
 	}
 }
 

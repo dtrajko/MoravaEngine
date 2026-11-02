@@ -1,4 +1,5 @@
 #include "EnvMapVulkanWater.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -263,7 +264,7 @@ void EnvMapVulkanWater::Create(H2M::RefH2M<H2M::FramebufferH2M> targetFramebuffe
 	m_IndexCount = (uint32_t)indices.size();
 
 	// Linear data (the slopes of the waves), not sRGB color
-	m_NormalMap = H2M::Texture2D_H2M::Create("Textures/water/waterNormal.png", false);
+	m_NormalMap = H2M::Texture2D_H2M::Create(TEXTURES_DIR "/water/waterNormal.png", false);
 
 	m_DescriptorSet = shader->CreateDescriptorSets(WaterSet);
 	std::array<VkWriteDescriptorSet, 2> writes;

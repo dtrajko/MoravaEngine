@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Scene/SceneJoey.h"
+#include "Core/EnginePaths.h"
 
 #include "ImGui/ImGuiWrapper.h"
 #include "Mesh/Sphere.h"
@@ -62,7 +63,7 @@ SceneJoey::SceneJoey()
 	SetupLights();
 
 	m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
-	m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr");
+	m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/san_giuseppe_bridge_1k.hdr");
 
 	m_HDRI_Edit = HDRI_SAN_GIUSEPPE_BRIDGE;
 	m_HDRI_Edit_Prev = m_HDRI_Edit;
@@ -73,19 +74,19 @@ SceneJoey::SceneJoey()
 
 void SceneJoey::SetupShaders()
 {
-	m_Shader_PBR = MoravaShader::Create("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.2.pbr.fs");
+	m_Shader_PBR = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/2.2.2.pbr.vs", SHADERS_DIR "/LearnOpenGL/2.2.2.pbr.fs");
 	printf("RendererJoey: m_Shader_PBR compiled [programID=%d]\n", m_Shader_PBR->GetProgramID());
 
-	m_Shader_PBR_MRE = MoravaShader::Create("Shaders/LearnOpenGL/2.2.2.pbr.vs", "Shaders/LearnOpenGL/2.2.3.pbr.fs");
+	m_Shader_PBR_MRE = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/2.2.2.pbr.vs", SHADERS_DIR "/LearnOpenGL/2.2.3.pbr.fs");
 	printf("RendererJoey: m_Shader_PBR_MRE compiled [programID=%d]\n", m_Shader_PBR_MRE->GetProgramID());
 
-	m_ShaderBackground = MoravaShader::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+	m_ShaderBackground = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/2.2.2.background.vs", SHADERS_DIR "/LearnOpenGL/2.2.2.background.fs");
 	printf("RendererJoey: m_ShaderBackground compiled [programID=%d]\n", m_ShaderBackground->GetProgramID());
 
-	m_ShaderBlurHorizontal = MoravaShader::Create("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
+	m_ShaderBlurHorizontal = MoravaShader::Create(SHADERS_DIR "/ThinMatrix/blur_horizontal.vs", SHADERS_DIR "/ThinMatrix/blur.fs");
 	printf("RendererJoey: m_ShaderBlurHorizontal compiled [programID=%d]\n", m_ShaderBlurHorizontal->GetProgramID());
 
-	m_ShaderBlurVertical = MoravaShader::Create("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
+	m_ShaderBlurVertical = MoravaShader::Create(SHADERS_DIR "/ThinMatrix/blur_vertical.vs", SHADERS_DIR "/ThinMatrix/blur.fs");
 	printf("RendererJoey: m_ShaderBlurVertical compiled [programID=%d]\n", m_ShaderBlurVertical->GetProgramID());
 
 	m_Shader_PBR->Bind();
@@ -117,96 +118,96 @@ void SceneJoey::SetupMaterials()
 {
 	// rusted iron
 	TextureInfo textureInfoRustedIron = {};
-	textureInfoRustedIron.albedo    = "Textures/PBR/rusted_iron/albedo.png";
-	textureInfoRustedIron.normal    = "Textures/PBR/rusted_iron/normal.png";
-	textureInfoRustedIron.metallic  = "Textures/PBR/rusted_iron/metallic.png";
-	textureInfoRustedIron.roughness = "Textures/PBR/rusted_iron/roughness.png";
-	textureInfoRustedIron.ao        = "Textures/PBR/rusted_iron/ao.png";
-	textureInfoRustedIron.emissive  = "Textures/PBR/rusted_iron/emissive.png";
+	textureInfoRustedIron.albedo    = TEXTURES_DIR "/PBR/rusted_iron/albedo.png";
+	textureInfoRustedIron.normal    = TEXTURES_DIR "/PBR/rusted_iron/normal.png";
+	textureInfoRustedIron.metallic  = TEXTURES_DIR "/PBR/rusted_iron/metallic.png";
+	textureInfoRustedIron.roughness = TEXTURES_DIR "/PBR/rusted_iron/roughness.png";
+	textureInfoRustedIron.ao        = TEXTURES_DIR "/PBR/rusted_iron/ao.png";
+	textureInfoRustedIron.emissive  = TEXTURES_DIR "/PBR/rusted_iron/emissive.png";
 	materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron, m_MaterialSpecular, m_MaterialShininess)));
 
 	// gold
 	TextureInfo textureInfoGold = {};
-	textureInfoGold.albedo    = "Textures/PBR/gold/albedo.png";
-	textureInfoGold.normal    = "Textures/PBR/gold/normal.png";
-	textureInfoGold.metallic  = "Textures/PBR/gold/metallic.png";
-	textureInfoGold.roughness = "Textures/PBR/gold/roughness.png";
-	textureInfoGold.ao        = "Textures/PBR/gold/ao.png";
+	textureInfoGold.albedo    = TEXTURES_DIR "/PBR/gold/albedo.png";
+	textureInfoGold.normal    = TEXTURES_DIR "/PBR/gold/normal.png";
+	textureInfoGold.metallic  = TEXTURES_DIR "/PBR/gold/metallic.png";
+	textureInfoGold.roughness = TEXTURES_DIR "/PBR/gold/roughness.png";
+	textureInfoGold.ao        = TEXTURES_DIR "/PBR/gold/ao.png";
 	materials.insert(std::make_pair("gold", new Material(textureInfoGold, m_MaterialSpecular, m_MaterialShininess)));
 
 	// silver
 	TextureInfo textureInfoSilver = {};
-	textureInfoSilver.albedo    = "Textures/PBR/silver/albedo.png";
-	textureInfoSilver.normal    = "Textures/PBR/silver/normal.png";
-	textureInfoSilver.metallic  = "Textures/PBR/silver/metallic.png";
-	textureInfoSilver.roughness = "Textures/PBR/silver/roughness.png";
-	textureInfoSilver.ao        = "Textures/PBR/silver/ao.png";
+	textureInfoSilver.albedo    = TEXTURES_DIR "/PBR/silver/albedo.png";
+	textureInfoSilver.normal    = TEXTURES_DIR "/PBR/silver/normal.png";
+	textureInfoSilver.metallic  = TEXTURES_DIR "/PBR/silver/metallic.png";
+	textureInfoSilver.roughness = TEXTURES_DIR "/PBR/silver/roughness.png";
+	textureInfoSilver.ao        = TEXTURES_DIR "/PBR/silver/ao.png";
 	materials.insert(std::make_pair("silver", new Material(textureInfoSilver, m_MaterialSpecular, m_MaterialShininess)));
 
 	// grass
 	TextureInfo textureInfoGrass = {};
-	textureInfoGrass.albedo    = "Textures/PBR/grass/albedo.png";
-	textureInfoGrass.normal    = "Textures/PBR/grass/normal.png";
-	textureInfoGrass.metallic  = "Textures/PBR/metalness.png";
-	textureInfoGrass.roughness = "Textures/PBR/grass/roughness.png";
-	textureInfoGrass.ao        = "Textures/PBR/grass/ao.png";
+	textureInfoGrass.albedo    = TEXTURES_DIR "/PBR/grass/albedo.png";
+	textureInfoGrass.normal    = TEXTURES_DIR "/PBR/grass/normal.png";
+	textureInfoGrass.metallic  = TEXTURES_DIR "/PBR/metalness.png";
+	textureInfoGrass.roughness = TEXTURES_DIR "/PBR/grass/roughness.png";
+	textureInfoGrass.ao        = TEXTURES_DIR "/PBR/grass/ao.png";
 	materials.insert(std::make_pair("grass", new Material(textureInfoGrass, m_MaterialSpecular, m_MaterialShininess)));
 
 	// plastic
 	TextureInfo textureInfoPlastic = {};
-	textureInfoPlastic.albedo    = "Textures/PBR/plastic/albedo.png";
-	textureInfoPlastic.normal    = "Textures/PBR/plastic/normal.png";
-	textureInfoPlastic.metallic  = "Textures/PBR/plastic/metallic.png";
-	textureInfoPlastic.roughness = "Textures/PBR/plastic/roughness.png";
-	textureInfoPlastic.ao        = "Textures/PBR/plastic/ao.png";
+	textureInfoPlastic.albedo    = TEXTURES_DIR "/PBR/plastic/albedo.png";
+	textureInfoPlastic.normal    = TEXTURES_DIR "/PBR/plastic/normal.png";
+	textureInfoPlastic.metallic  = TEXTURES_DIR "/PBR/plastic/metallic.png";
+	textureInfoPlastic.roughness = TEXTURES_DIR "/PBR/plastic/roughness.png";
+	textureInfoPlastic.ao        = TEXTURES_DIR "/PBR/plastic/ao.png";
 	materials.insert(std::make_pair("plastic", new Material(textureInfoPlastic, m_MaterialSpecular, m_MaterialShininess)));
 
 	// wall
 	TextureInfo textureInfoWall = {};
-	textureInfoWall.albedo    = "Textures/PBR/wall/albedo.png";
-	textureInfoWall.normal    = "Textures/PBR/wall/normal.png";
-	textureInfoWall.metallic  = "Textures/PBR/metalness.png";
-	textureInfoWall.roughness = "Textures/PBR/wall/roughness.png";
-	textureInfoWall.ao        = "Textures/PBR/wall/ao.png";
+	textureInfoWall.albedo    = TEXTURES_DIR "/PBR/wall/albedo.png";
+	textureInfoWall.normal    = TEXTURES_DIR "/PBR/wall/normal.png";
+	textureInfoWall.metallic  = TEXTURES_DIR "/PBR/metalness.png";
+	textureInfoWall.roughness = TEXTURES_DIR "/PBR/wall/roughness.png";
+	textureInfoWall.ao        = TEXTURES_DIR "/PBR/wall/ao.png";
 	materials.insert(std::make_pair("wall", new Material(textureInfoWall, m_MaterialSpecular, m_MaterialShininess)));
 
 	// Cerberus model PBR textures
 	TextureInfo textureInfoCerberus = {};
-	textureInfoCerberus.albedo    = "Models/Cerberus/Textures/Cerberus_A.tga";
-	textureInfoCerberus.normal    = "Models/Cerberus/Textures/Cerberus_N.tga";
-	textureInfoCerberus.metallic  = "Models/Cerberus/Textures/Cerberus_M.tga";
-	textureInfoCerberus.roughness = "Models/Cerberus/Textures/Cerberus_R.tga";
-	textureInfoCerberus.ao        = "Models/Cerberus/Textures/Cerberus_AO.tga";
+	textureInfoCerberus.albedo    = MODELS_DIR "/Cerberus/Textures/Cerberus_A.tga";
+	textureInfoCerberus.normal    = MODELS_DIR "/Cerberus/Textures/Cerberus_N.tga";
+	textureInfoCerberus.metallic  = MODELS_DIR "/Cerberus/Textures/Cerberus_M.tga";
+	textureInfoCerberus.roughness = MODELS_DIR "/Cerberus/Textures/Cerberus_R.tga";
+	textureInfoCerberus.ao        = MODELS_DIR "/Cerberus/Textures/Cerberus_AO.tga";
 	materials.insert(std::make_pair("cerberus", new Material(textureInfoCerberus, m_MaterialSpecular, m_MaterialShininess)));
 
 	// Khronos DamagedHelmet model PBR textures
 	TextureInfo textureInfoDamagedHelmet = {};
-	textureInfoDamagedHelmet.albedo    = "Textures/PBR/DamagedHelmet/Default_albedo.jpg";
-	textureInfoDamagedHelmet.normal    = "Textures/PBR/DamagedHelmet/Default_normal.jpg";
-	textureInfoDamagedHelmet.metallic  = "Textures/PBR/DamagedHelmet/Default_metalRoughness.jpg";
-	textureInfoDamagedHelmet.roughness = "Textures/PBR/DamagedHelmet/Default_emissive.jpg";
-	textureInfoDamagedHelmet.ao        = "Textures/PBR/DamagedHelmet/Default_AO.jpg";
+	textureInfoDamagedHelmet.albedo    = TEXTURES_DIR "/PBR/DamagedHelmet/Default_albedo.jpg";
+	textureInfoDamagedHelmet.normal    = TEXTURES_DIR "/PBR/DamagedHelmet/Default_normal.jpg";
+	textureInfoDamagedHelmet.metallic  = TEXTURES_DIR "/PBR/DamagedHelmet/Default_metalRoughness.jpg";
+	textureInfoDamagedHelmet.roughness = TEXTURES_DIR "/PBR/DamagedHelmet/Default_emissive.jpg";
+	textureInfoDamagedHelmet.ao        = TEXTURES_DIR "/PBR/DamagedHelmet/Default_AO.jpg";
 	materials.insert(std::make_pair("damaged_helmet", new Material(textureInfoDamagedHelmet, m_MaterialSpecular, m_MaterialShininess)));
 
 	// Khronos SciFiHelmet model PBR textures
 	TextureInfo textureInfoSFHelmet = {};
-	textureInfoSFHelmet.albedo    = "Textures/PBR/SciFiHelmet/SciFiHelmet_BaseColor.png";
-	textureInfoSFHelmet.normal    = "Textures/PBR/SciFiHelmet/SciFiHelmet_Normal.png";
-	textureInfoSFHelmet.metallic  = "Textures/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png";
-	textureInfoSFHelmet.roughness = "Textures/PBR/SciFiHelmet/SciFiHelmet_Emissive.png";
-	textureInfoSFHelmet.ao        = "Textures/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png";
+	textureInfoSFHelmet.albedo    = TEXTURES_DIR "/PBR/SciFiHelmet/SciFiHelmet_BaseColor.png";
+	textureInfoSFHelmet.normal    = TEXTURES_DIR "/PBR/SciFiHelmet/SciFiHelmet_Normal.png";
+	textureInfoSFHelmet.metallic  = TEXTURES_DIR "/PBR/SciFiHelmet/SciFiHelmet_MetallicRoughness.png";
+	textureInfoSFHelmet.roughness = TEXTURES_DIR "/PBR/SciFiHelmet/SciFiHelmet_Emissive.png";
+	textureInfoSFHelmet.ao        = TEXTURES_DIR "/PBR/SciFiHelmet/SciFiHelmet_AmbientOcclusion.png";
 	materials.insert(std::make_pair("sf_helmet", new Material(textureInfoSFHelmet, m_MaterialSpecular, m_MaterialShininess)));
 }
 
 void SceneJoey::SetupModels()
 {
-	Model* cerberus = new Model("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
+	Model* cerberus = new Model(MODELS_DIR "/Cerberus/Cerberus_LP.FBX", MODELS_DIR "/Cerberus/Textures");
 	models.insert(std::make_pair("cerberus", cerberus));
 
-	Model* damagedHelmet = new Model("Models/DamagedHelmet.gltf", "Textures/PBR/DamagedHelmet");
+	Model* damagedHelmet = new Model(MODELS_DIR "/DamagedHelmet.gltf", TEXTURES_DIR "/PBR/DamagedHelmet");
 	models.insert(std::make_pair("damagedHelmet", damagedHelmet));
 
-	Model* sfHelmet = new Model("Models/SciFiHelmet.gltf", "Textures/PBR/SciFiHelmet");
+	Model* sfHelmet = new Model(MODELS_DIR "/SciFiHelmet.gltf", TEXTURES_DIR "/PBR/SciFiHelmet");
 	models.insert(std::make_pair("sfHelmet", sfHelmet));
 }
 
@@ -254,34 +255,34 @@ void SceneJoey::Update(float timestep, Window* mainWindow)
 	if (m_HDRI_Edit != m_HDRI_Edit_Prev || m_BlurLevel != m_BlurLevelPrev)
 	{
 		if (m_HDRI_Edit == HDRI_GREENWICH_PARK) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/greenwich_park_02_1k.hdr", m_BlurLevel);
 		}
 		else if (m_HDRI_Edit == HDRI_SAN_GIUSEPPE_BRIDGE) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/san_giuseppe_bridge_1k.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/san_giuseppe_bridge_1k.hdr", m_BlurLevel);
 		}
 		else if (m_HDRI_Edit == HDRI_TROPICAL_BEACH) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/Tropical_Beach_3k.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/Tropical_Beach_3k.hdr", m_BlurLevel);
 		}
 		else if (m_HDRI_Edit == HDRI_VIGNAIOLI_NIGHT) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/vignaioli_night_1k.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/vignaioli_night_1k.hdr", m_BlurLevel);
 		}
 		else if (m_HDRI_Edit == HDRI_EARLY_EVE_WARM_SKY) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/006_hdrmaps_com_free.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/006_hdrmaps_com_free.hdr", m_BlurLevel);
 		}
 		else if (m_HDRI_Edit == HDRI_BIRCHWOOD) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/birchwood_4k.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/birchwood_4k.hdr", m_BlurLevel);
 		}
 		else if (m_HDRI_Edit == HDRI_PINK_SUNRISE) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/pink_sunrise_4k.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/pink_sunrise_4k.hdr", m_BlurLevel);
 		}
 		else if (m_HDRI_Edit == HDRI_ROOITOU_PARK) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/rooitou_park_4k.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/rooitou_park_4k.hdr", m_BlurLevel);
 		}
 		else if (m_HDRI_Edit == HDRI_VENICE_DAWN) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/venice_dawn_1_4k.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/venice_dawn_1_4k.hdr", m_BlurLevel);
 		}
 		else if (m_HDRI_Edit == HDRI_PEPPERMINT_POWERPLANT) {
-			m_MaterialWorkflowPBR->Init("Textures/HDR/peppermint_powerplant_1k.hdr", m_BlurLevel);
+			m_MaterialWorkflowPBR->Init(TEXTURES_DIR "/HDR/peppermint_powerplant_1k.hdr", m_BlurLevel);
 		}
 
 		m_HDRI_Edit_Prev = m_HDRI_Edit;

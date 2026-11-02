@@ -1,4 +1,5 @@
 #include "DX11ImGuiLayer.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "DX11.h"
@@ -54,8 +55,8 @@ void DX11ImGuiLayer::OnAttach()
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
-	io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Bold.ttf", 16.0f);
-	io.FontDefault = io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Regular.ttf", 16.0f);
+	io.Fonts->AddFontFromFileTTF(FONTS_DIR "/opensans/OpenSans-Bold.ttf", 16.0f);
+	io.FontDefault = io.Fonts->AddFontFromFileTTF(FONTS_DIR "/opensans/OpenSans-Regular.ttf", 16.0f);
 
 	ImGui::StyleColorsDark();
 

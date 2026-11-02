@@ -1,4 +1,5 @@
 #include "MaterialEditorPanel.h"
+#include "Core/EnginePaths.h"
 
 #include "Material/MaterialLibrary.h"
 
@@ -7,7 +8,7 @@
 
 MaterialEditorPanel::MaterialEditorPanel()
 {
-	m_CheckerboardTexture = ResourceManager::LoadTexture2D_H2M("Textures/Hazel/Checkerboard.png", true);
+	m_CheckerboardTexture = ResourceManager::LoadTexture2D_H2M(TEXTURES_DIR "/Hazel/Checkerboard.png", true);
 }
 
 MaterialEditorPanel::~MaterialEditorPanel()

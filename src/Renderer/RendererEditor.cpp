@@ -1,4 +1,5 @@
 #include "Renderer/RendererEditor.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Application.h"
 #include "Core/Profiler.h"
@@ -35,47 +36,47 @@ void RendererEditor::SetUniforms()
 
 void RendererEditor::SetShaders()
 {
-    H2M::RefH2M<OpenGLMoravaShader> shaderEditor = MoravaShader::Create("Shaders/editor_object.vs", "Shaders/editor_object.fs");
+    H2M::RefH2M<OpenGLMoravaShader> shaderEditor = MoravaShader::Create(SHADERS_DIR "/editor_object.vs", SHADERS_DIR "/editor_object.fs");
     RendererBasic::GetShaders().insert(std::make_pair("editor_object", shaderEditor));
     Log::GetLogger()->info("RendererEditor: shaderEditor compiled [programID={0}]", shaderEditor->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderEditorPBR = MoravaShader::Create("Shaders/editor_object.vs", "Shaders/PBR/editor_object_pbr.fs");
+    H2M::RefH2M<OpenGLMoravaShader> shaderEditorPBR = MoravaShader::Create(SHADERS_DIR "/editor_object.vs", SHADERS_DIR "/PBR/editor_object_pbr.fs");
     RendererBasic::GetShaders().insert(std::make_pair("editor_object_pbr", shaderEditorPBR));
     Log::GetLogger()->info("RendererEditor: shaderEditorPBR compiled [programID={0}]", shaderEditorPBR->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderSkinning = MoravaShader::Create("Shaders/OGLdev/skinning.vs", "Shaders/OGLdev/skinning.fs");
+    H2M::RefH2M<OpenGLMoravaShader> shaderSkinning = MoravaShader::Create(SHADERS_DIR "/OGLdev/skinning.vs", SHADERS_DIR "/OGLdev/skinning.fs");
     RendererBasic::GetShaders().insert(std::make_pair("skinning", shaderSkinning));
     Log::GetLogger()->info("RendererEditor: shaderSkinning compiled [programID={0}]", shaderSkinning->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderHybridAnimPBR = MoravaShader::Create("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
+    H2M::RefH2M<OpenGLMoravaShader> shaderHybridAnimPBR = MoravaShader::Create(SHADERS_DIR "/HybridAnimPBR.vs", SHADERS_DIR "/HybridAnimPBR.fs");
     RendererBasic::GetShaders().insert(std::make_pair("hybrid_anim_pbr", shaderHybridAnimPBR));
     Log::GetLogger()->info("RendererEditor: shaderHybridAnimPBR compiled [programID={0}]", shaderHybridAnimPBR->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderShadowMap = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+    H2M::RefH2M<OpenGLMoravaShader> shaderShadowMap = MoravaShader::Create(SHADERS_DIR "/directional_shadow_map.vert", SHADERS_DIR "/directional_shadow_map.frag");
     RendererBasic::GetShaders().insert(std::make_pair("shadow_map", shaderShadowMap));
     Log::GetLogger()->info("RendererEditor: shaderShadowMap compiled [programID={0}]", shaderShadowMap->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderOmniShadowMap = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+    H2M::RefH2M<OpenGLMoravaShader> shaderOmniShadowMap = MoravaShader::Create(SHADERS_DIR "/omni_shadow_map.vert", SHADERS_DIR "/omni_shadow_map.geom", SHADERS_DIR "/omni_shadow_map.frag");
     RendererBasic::GetShaders().insert(std::make_pair("omni_shadow_map", shaderOmniShadowMap));
     Log::GetLogger()->info("RendererEditor: shaderOmniShadowMap compiled [programID={0}]", shaderOmniShadowMap->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
+    H2M::RefH2M<OpenGLMoravaShader> shaderWater = MoravaShader::Create(SHADERS_DIR "/water.vert", SHADERS_DIR "/water.frag");
     RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
     Log::GetLogger()->info("RendererEditor: shaderWater compiled [programID={0}]", shaderWater->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderBackground = MoravaShader::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    H2M::RefH2M<OpenGLMoravaShader> shaderBackground = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/2.2.2.background.vs", SHADERS_DIR "/LearnOpenGL/2.2.2.background.fs");
     RendererBasic::GetShaders().insert(std::make_pair("background", shaderBackground));
     Log::GetLogger()->info("RendererEditor: shaderBackground compiled [programID={0}]", shaderBackground->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderBasic = MoravaShader::Create("Shaders/basic.vs", "Shaders/basic.fs");
+    H2M::RefH2M<OpenGLMoravaShader> shaderBasic = MoravaShader::Create(SHADERS_DIR "/basic.vs", SHADERS_DIR "/basic.fs");
     RendererBasic::GetShaders().insert(std::make_pair("basic", shaderBasic));
     Log::GetLogger()->info("RendererEditor: shaderBasic compiled [programID={0}]", shaderBasic->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderGizmo = MoravaShader::Create("Shaders/gizmo.vs", "Shaders/gizmo.fs");
+    H2M::RefH2M<OpenGLMoravaShader> shaderGizmo = MoravaShader::Create(SHADERS_DIR "/gizmo.vs", SHADERS_DIR "/gizmo.fs");
     RendererBasic::GetShaders().insert(std::make_pair("gizmo", shaderGizmo));
     Log::GetLogger()->info("RendererEditor: shaderGizmo compiled [programID={0}]", shaderGizmo->GetProgramID());
 
-    H2M::RefH2M<OpenGLMoravaShader> shaderGlass = MoravaShader::Create("Shaders/glass.vs", "Shaders/glass.fs");
+    H2M::RefH2M<OpenGLMoravaShader> shaderGlass = MoravaShader::Create(SHADERS_DIR "/glass.vs", SHADERS_DIR "/glass.fs");
     RendererBasic::GetShaders().insert(std::make_pair("glass", shaderGlass));
     Log::GetLogger()->info("RendererEditor: shaderGlass compiled [programID={0}]", shaderGlass->GetProgramID());
 

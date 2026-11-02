@@ -1,4 +1,5 @@
 #include "CsGame.h"
+#include "Core/EnginePaths.h"
 
 #include "Core/Log.h"
 #include "Mono/GameInvoker/CsBind.h"
@@ -18,7 +19,7 @@ CsGame::CsGame()
         Log::GetLogger()->info("Mono Domain successfully initialized!");
 
         // Load a Mono assembly HangmanScript.dll
-        std::string assemblyFilepath = "Projects/Old/HangmanScript/bin/Debug/netstandard2.0/HangmanScript.dll";
+        std::string assemblyFilepath = PROJECTS_DIR "/Old/HangmanScript/bin/Debug/netstandard2.0/HangmanScript.dll";
         m_ptrGameAssembly = mono_domain_assembly_open(m_ptrMonoDomain, assemblyFilepath.c_str());
         if (m_ptrGameAssembly)
         {

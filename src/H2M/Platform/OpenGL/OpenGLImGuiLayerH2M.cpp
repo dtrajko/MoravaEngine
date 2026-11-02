@@ -5,6 +5,7 @@
  */
 
 #include "OpenGLImGuiLayerH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Renderer/RendererH2M.h"
 
@@ -75,8 +76,8 @@ namespace H2M
 		// }
 		// ImGui_ImplGlfw_InitForVulkan(Application::Get()->GetWindow()->GetHandle(), true); // Vulkan
 
-		io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Bold.ttf", 16.0f);
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Regular.ttf", 16.0f);
+		io.Fonts->AddFontFromFileTTF(FONTS_DIR "/opensans/OpenSans-Bold.ttf", 16.0f);
+		io.FontDefault = io.Fonts->AddFontFromFileTTF(FONTS_DIR "/opensans/OpenSans-Regular.ttf", 16.0f);
 
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();

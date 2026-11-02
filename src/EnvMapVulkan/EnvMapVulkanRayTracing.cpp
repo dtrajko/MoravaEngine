@@ -1,4 +1,5 @@
 #include "EnvMapVulkanRayTracing.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanIndexBufferH2M.h"
@@ -246,8 +247,8 @@ void EnvMapVulkanRayTracing::Create()
 	m_ScratchAlignment = std::max<VkDeviceSize>(structureProperties.minAccelerationStructureScratchOffsetAlignment, 1);
 
 	// These shaders only compile for a device with ray tracing: loaded here, not with the others (RendererH2M::Init)
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/RayTracingSkinning.glsl");
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/RayTracingView.glsl");
+	H2M::RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/RayTracingSkinning.glsl");
+	H2M::RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/RayTracingView.glsl");
 	m_SkinningPipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(H2M::RendererH2M::GetShaderLibrary()->Get("RayTracingSkinning"));
 	m_ViewPipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(H2M::RendererH2M::GetShaderLibrary()->Get("RayTracingView"));
 	// Every shader that includes Include/RayTracing.glslh declares set 3 the same way, so this set is valid for all of them

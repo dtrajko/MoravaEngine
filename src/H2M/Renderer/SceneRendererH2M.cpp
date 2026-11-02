@@ -5,6 +5,7 @@
  */
 
 #include "SceneRendererH2M.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/ImGui/ImGuiH2M.h"
 #if defined(GRAPHICS_API_VULKAN)
@@ -145,7 +146,7 @@ namespace H2M
 
 		s_Data.CompositeShader = RendererH2M::GetShaderLibrary()->Get("SceneComposite");
 		s_Data.CompositeMaterial = HazelMaterial::Create(s_Data.CompositeShader, "CompositeMaterial");
-		s_Data.BRDFLUT = Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga");
+		s_Data.BRDFLUT = Texture2D_H2M::Create(ASSETS_DIR "/textures/BRDF_LUT.tga");
 
 		// Grid pipeline
 		{
@@ -175,9 +176,9 @@ namespace H2M
 #endif
 
 #if 0
-		s_Data.CompositeShader = MoravaShader::Create("Resources/Shaders/SceneComposite.glsl");
-		s_Data.BloomBlurShader = MoravaShader::Create("Resources/Shaders/BloomBlur.glsl");
-		s_Data.BloomBlendShader = MoravaShader::Create("Resources/Shaders/BloomBlend.glsl");
+		s_Data.CompositeShader = MoravaShader::Create(RESOURCE_SHADERS_DIR "/SceneComposite.glsl");
+		s_Data.BloomBlurShader = MoravaShader::Create(RESOURCE_SHADERS_DIR "/BloomBlur.glsl");
+		s_Data.BloomBlendShader = MoravaShader::Create(RESOURCE_SHADERS_DIR "/BloomBlend.glsl");
 #endif
 
 	}
@@ -248,7 +249,7 @@ namespace H2M
 
 		RefH2M<TextureCubeH2M> envUnfiltered = TextureCubeH2M::Create(ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
 		if (!equirectangularConversionShader)
-			equirectangularConversionShader = ShaderH2M::Create("Resources/Shaders/EquirectangularToCubeMap.glsl");
+			equirectangularConversionShader = ShaderH2M::Create(RESOURCE_SHADERS_DIR "/EquirectangularToCubeMap.glsl");
 		RefH2M<Texture2D_H2M> envEquirect = Texture2D_H2M::Create(filepath, false);
 		H2M_CORE_ASSERT(envEquirect->GetFormat() == ImageFormatH2M::RGBA16F, "Texture is not HDR!");
 
@@ -262,7 +263,7 @@ namespace H2M
 		});
 
 		if (!envFilteringShader) {
-			envFilteringShader = ShaderH2M::Create("Resources/Shaders/EnvironmentMipFilter.glsl");
+			envFilteringShader = ShaderH2M::Create(RESOURCE_SHADERS_DIR "/EnvironmentMipFilter.glsl");
 		}
 
 		RefH2M<TextureCubeH2M> envFiltered = TextureCubeH2M::Create(ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
@@ -290,7 +291,7 @@ namespace H2M
 		});
 
 		if (!envIrradianceShader) {
-			envIrradianceShader = ShaderH2M::Create("Resources/Shaders/EnvironmentIrradiance.glsl");
+			envIrradianceShader = ShaderH2M::Create(RESOURCE_SHADERS_DIR "/EnvironmentIrradiance.glsl");
 		}
 
 		RefH2M<TextureCubeH2M> irradianceMap = TextureCubeH2M::Create(ImageFormatH2M::RGBA16F, irradianceMapSize, irradianceMapSize);

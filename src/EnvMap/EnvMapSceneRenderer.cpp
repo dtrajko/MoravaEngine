@@ -1,4 +1,5 @@
 #include "EnvMapSceneRenderer.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Core/AssertH2M.h"
 #include "H2M/ImGui/ImGuiH2M.h"
@@ -213,7 +214,7 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene, EnvMa
     targetFramebufferComp->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
     s_Data.CompositePass = H2M::RenderPassH2M::Create(compRenderPassSpec);
 
-    s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga", false);
+    s_Data.BRDFLUT = H2M::Texture2D_H2M::Create(TEXTURES_DIR "/Hazel/BRDF_LUT.tga", false);
 
     s_Renderer2D = H2M::RefH2M<H2M::Renderer2D_H2M>::Create();
 }
@@ -222,25 +223,25 @@ void EnvMapSceneRenderer::SetupShaders()
 {
     MoravaShaderSpecification moravaShaderSpecification;
     moravaShaderSpecification.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
-    moravaShaderSpecification.VertexShaderPath = "Shaders/Hazel/SceneComposite.vs";
-    moravaShaderSpecification.FragmentShaderPath = "Shaders/Hazel/SceneComposite.fs";
+    moravaShaderSpecification.VertexShaderPath = SHADERS_DIR "/Hazel/SceneComposite.vs";
+    moravaShaderSpecification.FragmentShaderPath = SHADERS_DIR "/Hazel/SceneComposite.fs";
     moravaShaderSpecification.ForceCompile = false;
     s_Data.CompositeShader = MoravaShader::Create(moravaShaderSpecification);
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderComposite compiled [programID={0}]", s_Data.CompositeShader->GetProgramID());
 
-    s_ShaderEquirectangularConversion = MoravaShader::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
+    s_ShaderEquirectangularConversion = MoravaShader::Create(SHADERS_DIR "/Hazel/EquirectangularToCubeMap.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderEquirectangularConversion compiled [programID={0}]", s_ShaderEquirectangularConversion->GetProgramID());
 
-    s_ShaderEnvFiltering = MoravaShader::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
+    s_ShaderEnvFiltering = MoravaShader::Create(SHADERS_DIR "/Hazel/EnvironmentMipFilter.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderEnvFiltering compiled [programID={0}]", s_ShaderEnvFiltering->GetProgramID());
 
-    s_ShaderEnvIrradiance = MoravaShader::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
+    s_ShaderEnvIrradiance = MoravaShader::Create(SHADERS_DIR "/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderEnvIrradiance compiled [programID={0}]", s_ShaderEnvIrradiance->GetProgramID());
 
-    s_ShaderSkybox = MoravaShader::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
+    s_ShaderSkybox = MoravaShader::Create(SHADERS_DIR "/Hazel/Skybox.vs", SHADERS_DIR "/Hazel/Skybox.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderSkybox compiled [programID={0}]", s_ShaderSkybox->GetProgramID());
 
-    s_ShaderGrid = MoravaShader::Create("Shaders/Hazel/Grid.vs", "Shaders/Hazel/Grid.fs");
+    s_ShaderGrid = MoravaShader::Create(SHADERS_DIR "/Hazel/Grid.vs", SHADERS_DIR "/Hazel/Grid.fs");
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderGrid compiled [programID={0}]", s_ShaderGrid->GetProgramID());
 
     ResourceManager::AddShader("Hazel/SceneComposite", s_Data.CompositeShader);

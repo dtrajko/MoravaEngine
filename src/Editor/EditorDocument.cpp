@@ -3,6 +3,7 @@
 
 
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
+#include "Core/EnginePaths.h"
 #include "EnvMapVulkan/EnvMapVulkanProfiler.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
@@ -192,7 +193,7 @@ static std::string GetScenesFolderForDialog()
 static std::string GetProjectsFolderForDialog()
 {
 	std::error_code error;
-	const std::filesystem::path folder = std::filesystem::absolute("Projects", error).lexically_normal();
+	const std::filesystem::path folder = std::filesystem::absolute(PROJECTS_DIR, error).lexically_normal();
 	return !error && std::filesystem::is_directory(folder, error) ? folder.u8string() : std::string();
 }
 

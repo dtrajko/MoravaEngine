@@ -8,6 +8,7 @@
 
 
 #include "Animation/AnimatorController.h"
+#include "Core/EnginePaths.h"
 
 #include "EnvMapVulkan/EnvMapVulkanRenderTexture.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneLoader.h"
@@ -69,7 +70,7 @@ static std::string Lower(std::string text)
 // build, the libraries, the documentation or the DLLs
 static bool IsEngineContentFolder(const std::string& name)
 {
-	static const std::array<const char*, 7> folders = { "assets", "Fonts", "Models", "Resources", "Scenes", "Shaders", "Textures" };
+	static const std::array<const char*, 7> folders = { ASSETS_DIR, FONTS_DIR, MODELS_DIR, RESOURCES_DIR, SCENES_DIR, SHADERS_DIR, TEXTURES_DIR };
 	return std::find(folders.begin(), folders.end(), name) != folders.end();
 }
 

@@ -1,4 +1,5 @@
 #include "Scene/SceneTerrain.h"
+#include "Core/EnginePaths.h"
 
 #include "Mesh/Tile2D.h"
 #include "Renderer/Renderer.h"
@@ -54,18 +55,18 @@ SceneTerrain::SceneTerrain()
 
 void SceneTerrain::SetSkybox()
 {
-	skyboxFaces.push_back("Textures/skybox_4/right.png");
-	skyboxFaces.push_back("Textures/skybox_4/left.png");
-	skyboxFaces.push_back("Textures/skybox_4/top.png");
-	skyboxFaces.push_back("Textures/skybox_4/bottom.png");
-	skyboxFaces.push_back("Textures/skybox_4/back.png");
-	skyboxFaces.push_back("Textures/skybox_4/front.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/right.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/left.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/top.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/bottom.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/back.png");
+	skyboxFaces.push_back(TEXTURES_DIR "/skybox_4/front.png");
 	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
 void SceneTerrain::SetupTextures()
 {
-	textures.insert(std::make_pair("rock", TextureLoader::Get()->GetTexture("Textures/rock.png", false, false)));
+	textures.insert(std::make_pair("rock", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/rock.png", false, false)));
 }
 
 void SceneTerrain::SetupMeshes()
@@ -76,7 +77,7 @@ void SceneTerrain::SetupMeshes()
 
 void SceneTerrain::SetupModels()
 {
-	TerrainHeightMap* terrain = new TerrainHeightMap("Textures/Noise/noise_001.png", 4.0f, nullptr); // heightmap_island_8x6.png
+	TerrainHeightMap* terrain = new TerrainHeightMap(TEXTURES_DIR "/Noise/noise_001.png", 4.0f, nullptr); // heightmap_island_8x6.png
 	meshes.insert(std::make_pair("terrain", terrain));
 }
 

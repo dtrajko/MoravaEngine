@@ -5,6 +5,7 @@
  */
 
 #include "VulkanTestLayer.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanVertexBufferH2M.h"
@@ -88,7 +89,7 @@ namespace H2M {
 		s_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(s_Scene);
 		s_ContentBrowserPanel = new H2M::ContentBrowserPanelH2M();
 		s_MaterialEditorPanel = new MaterialEditorPanel();
-		s_Meshes.push_back(RefH2M<ModelH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		s_Meshes.push_back(RefH2M<ModelH2M>::Create(MODELS_DIR "/Cerberus/CerberusMaterials.fbx"));
 	}
 
 	void VulkanTestLayer::OnDetach() {}

@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "Scene/SceneHazelEnvMap.h"
+#include "Core/EnginePaths.h"
 
 #include "H2M/Scene/ComponentsH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
@@ -117,7 +118,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMaterials();
     SetupFramebuffers();
 
-    m_EnvMapEditorLayer = new EnvMapEditorLayer("Textures/HDR/umhlanga_sunrise_4k.hdr", this);
+    m_EnvMapEditorLayer = new EnvMapEditorLayer(TEXTURES_DIR "/HDR/umhlanga_sunrise_4k.hdr", this);
 
     SetupMeshes();
     SetupModels();
@@ -142,10 +143,10 @@ SceneHazelEnvMap::~SceneHazelEnvMap()
 
 void SceneHazelEnvMap::SetupShaders()
 {
-    m_ShaderBackground = MoravaShader::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    m_ShaderBackground = MoravaShader::Create(SHADERS_DIR "/LearnOpenGL/2.2.2.background.vs", SHADERS_DIR "/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 
-    m_ShaderBasic = MoravaShader::Create("Shaders/basic.vs", "Shaders/basic.fs");
+    m_ShaderBasic = MoravaShader::Create(SHADERS_DIR "/basic.vs", SHADERS_DIR "/basic.fs");
     Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
 
     ResourceManager::AddShader("LearnOpenGL/2.2.2.background", m_ShaderBackground);

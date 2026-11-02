@@ -1,4 +1,5 @@
 #include "Scene/SceneFramebuffers.h"
+#include "Core/EnginePaths.h"
 
 #include "ImGui/ImGuiWrapper.h"
 #include "Mesh/GeometryFactory.h"
@@ -29,17 +30,17 @@ SceneFramebuffers::SceneFramebuffers()
 
 void SceneFramebuffers::SetupTextures()
 {
-	textures.insert(std::make_pair("floor_metal", TextureLoader::Get()->GetTexture("Textures/metal.png", false, false)));
-	textures.insert(std::make_pair("cube_marble", TextureLoader::Get()->GetTexture("Textures/marble.jpg", false, false)));
-	textures.insert(std::make_pair("cube_wood",   TextureLoader::Get()->GetTexture("Textures/container/container2.png", false, false)));
+	textures.insert(std::make_pair("floor_metal", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/metal.png", false, false)));
+	textures.insert(std::make_pair("cube_marble", TextureLoader::Get()->GetTexture(TEXTURES_DIR "/marble.jpg", false, false)));
+	textures.insert(std::make_pair("cube_wood",   TextureLoader::Get()->GetTexture(TEXTURES_DIR "/container/container2.png", false, false)));
 }
 
 void SceneFramebuffers::SetupShaders()
 {
-	m_ShaderFramebuffersScene = MoravaShader::Create("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
+	m_ShaderFramebuffersScene = MoravaShader::Create(SHADERS_DIR "/framebuffers_scene.vs", SHADERS_DIR "/framebuffers_scene.fs");
 	printf("SceneFramebuffers: m_ShaderFramebuffersScene compiled [programID=%d]\n", m_ShaderFramebuffersScene->GetProgramID());
 
-	m_ShaderFramebuffersScreen = MoravaShader::Create("Shaders/framebuffers_screen.vs", "Shaders/framebuffers_screen.fs");
+	m_ShaderFramebuffersScreen = MoravaShader::Create(SHADERS_DIR "/framebuffers_screen.vs", SHADERS_DIR "/framebuffers_screen.fs");
 	printf("SceneFramebuffers: m_ShaderFramebuffersScreen compiled [programID=%d]\n", m_ShaderFramebuffersScreen->GetProgramID());
 
 	// shader configuration

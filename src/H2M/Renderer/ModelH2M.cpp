@@ -7,6 +7,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "ModelH2M.h"
+#include "Core/EnginePaths.h"
 
 #include <algorithm>
 
@@ -97,7 +98,7 @@ namespace H2M
 			return path.string();
 		}
 
-		std::filesystem::path fallback = std::filesystem::path("Textures/PBR") / std::filesystem::path(modelPath).stem() / std::filesystem::path(texturePath).filename();
+		std::filesystem::path fallback = std::filesystem::path(TEXTURES_DIR "/PBR") / std::filesystem::path(modelPath).stem() / std::filesystem::path(texturePath).filename();
 		if (std::filesystem::exists(fallback))
 		{
 			return fallback.string();
@@ -197,15 +198,15 @@ namespace H2M
 			{
 				MoravaShaderSpecification moravaShaderSpecificationStatic;
 				moravaShaderSpecificationStatic.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
-				moravaShaderSpecificationStatic.VertexShaderPath = "Shaders/Hazel/HazelPBR_Static.vs";
-				moravaShaderSpecificationStatic.FragmentShaderPath = "Shaders/Hazel/HazelPBR.fs";
+				moravaShaderSpecificationStatic.VertexShaderPath = SHADERS_DIR "/Hazel/HazelPBR_Static.vs";
+				moravaShaderSpecificationStatic.FragmentShaderPath = SHADERS_DIR "/Hazel/HazelPBR.fs";
 				// moravaShaderSpecificationStatic.FragmentShaderPath = "Shaders/Hazel/HazelPBR_Static_CSM.fs"; // fragment shader with Cascaded Shadow Maps
 				moravaShaderSpecificationStatic.ForceCompile = false;
 
 				MoravaShaderSpecification moravaShaderSpecificationAnim;
 				moravaShaderSpecificationAnim.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
-				moravaShaderSpecificationAnim.VertexShaderPath = "Shaders/Hazel/HazelPBR_Anim.vs";
-				moravaShaderSpecificationAnim.FragmentShaderPath = "Shaders/Hazel/HazelPBR.fs";
+				moravaShaderSpecificationAnim.VertexShaderPath = SHADERS_DIR "/Hazel/HazelPBR_Anim.vs";
+				moravaShaderSpecificationAnim.FragmentShaderPath = SHADERS_DIR "/Hazel/HazelPBR.fs";
 				moravaShaderSpecificationAnim.ForceCompile = false;
 
 				m_MeshShader = m_IsAnimated ? MoravaShader::Create(moravaShaderSpecificationAnim) : MoravaShader::Create(moravaShaderSpecificationStatic);
@@ -214,7 +215,7 @@ namespace H2M
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
 				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
-				moravaShaderSpecificationHazelVulkan.HazelShaderPath = m_IsAnimated ? "Resources/Shaders/HazelPBR_Anim.glsl" : "Resources/Shaders/HazelPBR_Static.glsl";
+				moravaShaderSpecificationHazelVulkan.HazelShaderPath = m_IsAnimated ? RESOURCE_SHADERS_DIR "/HazelPBR_Anim.glsl" : RESOURCE_SHADERS_DIR "/HazelPBR_Static.glsl";
 				moravaShaderSpecificationHazelVulkan.ForceCompile = false; // the shader cache is recompiled when the source is newer
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
@@ -223,8 +224,8 @@ namespace H2M
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelDX11;
 				moravaShaderSpecificationHazelDX11.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-				moravaShaderSpecificationHazelDX11.VertexShaderPath = "Shaders/HLSL/BasicVertexShader.hlsl";
-				moravaShaderSpecificationHazelDX11.PixelShaderPath = "Shaders/HLSL/BasicPixelShader.hlsl";
+				moravaShaderSpecificationHazelDX11.VertexShaderPath = SHADERS_DIR "/HLSL/BasicVertexShader.hlsl";
+				moravaShaderSpecificationHazelDX11.PixelShaderPath = SHADERS_DIR "/HLSL/BasicPixelShader.hlsl";
 				moravaShaderSpecificationHazelDX11.ForceCompile = false;
 				m_MeshShader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationHazelDX11);
 			}
@@ -696,7 +697,7 @@ namespace H2M
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The NORMAL map failed to load. Loading the default texture placeholder instead.");
-						texture = Texture2D_H2M::Create("Textures/normal_map_default.png", false);
+						texture = Texture2D_H2M::Create(TEXTURES_DIR "/normal_map_default.png", false);
 					}
 
 					if (texture && texture->Loaded())
@@ -1360,12 +1361,12 @@ namespace H2M
 	{
 		// Setup default Material
 		TextureInfo textureInfoDefault = {};
-		textureInfoDefault.albedo    = "Textures/plain.png";
-		textureInfoDefault.normal    = "Textures/normal_map_default.png";
-		textureInfoDefault.metallic  = "Textures/plain.png";
-		textureInfoDefault.roughness = "Textures/plain.png";
-		textureInfoDefault.emissive  = "Textures/plain.png";
-		textureInfoDefault.ao        = "Textures/plain.png";
+		textureInfoDefault.albedo    = TEXTURES_DIR "/plain.png";
+		textureInfoDefault.normal    = TEXTURES_DIR "/normal_map_default.png";
+		textureInfoDefault.metallic  = TEXTURES_DIR "/plain.png";
+		textureInfoDefault.roughness = TEXTURES_DIR "/plain.png";
+		textureInfoDefault.emissive  = TEXTURES_DIR "/plain.png";
+		textureInfoDefault.ao        = TEXTURES_DIR "/plain.png";
 		m_BaseMaterial = RefH2M<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
 	}
 
@@ -1373,7 +1374,7 @@ namespace H2M
 	{
 		if (!m_BaseTexture) {
 			try {
-				m_BaseTexture = Texture2D_H2M::Create("Textures/plain.png", false);
+				m_BaseTexture = Texture2D_H2M::Create(TEXTURES_DIR "/plain.png", false);
 			}
 			catch (...) {
 				Log::GetLogger()->warn("Failed to load the base texture!");

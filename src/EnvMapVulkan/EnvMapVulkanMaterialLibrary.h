@@ -1,6 +1,7 @@
 #pragma once
 
 #include "H2M/Core/RefH2M.h"
+#include "Core/EnginePaths.h"
 #include "H2M/Platform/Vulkan/VulkanMaterialH2M.h"
 #include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
@@ -225,7 +226,7 @@ public:
 	// Material files (.mmat, YAML): the name, the values, the maps (image files and whether they are used) and, for an
 	// imported material, the model file and material index it came from (so loading that model again reuses it).
 	// Paths are written and read through ProjectPaths: relative to the open project's folder or to the engine's.
-	static constexpr const char* MaterialsFolder = "assets/Materials"; // the engine's (its assets folder is lowercase)
+	static constexpr const char* MaterialsFolder = ASSETS_DIR "/Materials"; // the engine's (its assets folder is lowercase)
 	static constexpr const char* FileExtension = ".mmat";
 
 	// Where materials never saved go: the open project's asset folder's Materials, else the engine's MaterialsFolder
