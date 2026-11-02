@@ -125,7 +125,7 @@ set(USE_STATIC_CRT ${MORAVA_MSVC_STATIC_RUNTIME} CACHE BOOL "" FORCE)         # 
 # ROOT PATH
 # =========================================================
 
-set(ROOT_PATH_ABS ${CMAKE_CURRENT_SOURCE_DIR}/..)
+set(ROOT_PATH_ABS ${CMAKE_CURRENT_SOURCE_DIR})
 message(STATUS "ROOT_PATH_ABS = ${ROOT_PATH_ABS}")
 
 # =========================================================
@@ -770,7 +770,7 @@ if(MORAVA_SCRIPTING)
     # The sample project's scripts (Projects/Sample/Scripts), which its scenes use: built after ScriptCore into the sample's
     # Scripts/bin (where Sample.mproject's ScriptAssembly points) when a .cs or the .csproj changed. The smoke tests play
     # the sample with them
-    set(MORAVA_SAMPLE_SCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Projects/Sample/Scripts")
+    set(MORAVA_SAMPLE_SCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Projects/Sample/Scripts")
     if(EXISTS "${MORAVA_SAMPLE_SCRIPTS_DIR}/Sample.csproj")
         file(GLOB MORAVA_SAMPLE_SCRIPT_SOURCES CONFIGURE_DEPENDS
             ${MORAVA_SAMPLE_SCRIPTS_DIR}/*.cs

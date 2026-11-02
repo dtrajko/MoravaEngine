@@ -80,7 +80,7 @@ struct Project
 
 /**
  * The paths in scene and material files. In a file, a path is relative to the open project's folder for the project's
- * files, relative to the working directory (the engine's folder) for the engine's own (its models, environment maps,
+ * files, relative to the working directory (the repository's root) for the engine's own (its models, environment maps,
  * materials), and absolute for anything else. In memory, a path is one that opens the file: the project's files absolute,
  * the engine's relative to the working directory. Without a project, both are the same: relative to the working directory.
  */

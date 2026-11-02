@@ -2,7 +2,7 @@ MoravaEngine - summary of the Claude Code session
 =================================================
 
 Written summary of the changes made in this session, grouped by topic.
-Paths are relative to MoravaEngine/src unless stated otherwise.
+Paths are relative to src unless stated otherwise.
 The work was committed by the user in several commits; the last topics
 (SceneBullet physics, Timer, ball tuning) were not committed yet when this
 summary was written.

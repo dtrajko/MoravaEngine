@@ -1,6 +1,6 @@
 #pragma once
 
-// The graphics APIs are switched on in CMake (MoravaEngine/CMakeLists.txt), any combination: MORAVA_VULKAN, MORAVA_OPENGL
+// The graphics APIs are switched on in CMake (CMakeLists.txt), any combination: MORAVA_VULKAN, MORAVA_OPENGL
 // and MORAVA_DIRECTX11 define GRAPHICS_API_VULKAN, GRAPHICS_API_OPENGL and GRAPHICS_API_DIRECTX11. Only the classes of
 // those APIs are compiled, and all their scenes: code that names a class of one API stands inside
 // #if defined(GRAPHICS_API_...). Which API runs is decided at startup (main.cpp, RendererAPI_H2M::Current()).

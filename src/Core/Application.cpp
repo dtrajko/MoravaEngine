@@ -160,7 +160,7 @@ bool Application::IsWorkingDirectoryValid()
 	}
 	const std::string folder = std::filesystem::current_path(error).u8string();
 	Log::GetLogger()->error("Resources/Shaders not found in the working directory '{0}'.", folder);
-	Log::GetLogger()->error("Start MoravaEngine from the MoravaEngine/MoravaEngine folder of the repository.");
+	Log::GetLogger()->error("Start MoravaEngine from the root folder of the repository.");
 	return false;
 }
 

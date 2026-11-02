@@ -21,6 +21,7 @@
 #include "imgui_internal.h" // BeginDragDropTargetCustom: the whole panel takes an entity
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <chrono>
 #include <filesystem>
@@ -64,10 +65,19 @@ static std::string Lower(std::string text)
 	return text;
 }
 
+// The engine's folder is the repository's root: of what is there, only the engine's own content is shown, not the
+// build, the libraries, the documentation or the DLLs
+static bool IsEngineContentFolder(const std::string& name)
+{
+	static const std::array<const char*, 7> folders = { "assets", "Fonts", "Models", "Resources", "Scenes", "Shaders", "Textures" };
+	return std::find(folders.begin(), folders.end(), name) != folders.end();
+}
+
 // The folder's entries: folders first, then files, by name; hidden ones (".vs", ".vscode") left out
 static void Scan(const fs::path& folder)
 {
 	s_Entries.clear();
+	const bool engineRoot = (!Project::GetOpen() || s_BrowseEngine) && s_Folder.empty();
 	std::error_code error;
 	for (fs::directory_iterator it(folder, fs::directory_options::skip_permission_denied, error), end; !error && it != end; it.increment(error))
 	{
@@ -80,6 +90,10 @@ static void Scan(const fs::path& folder)
 		}
 		std::error_code typeError;
 		entry.Directory = it->is_directory(typeError);
+		if (engineRoot && !(entry.Directory && IsEngineContentFolder(entry.Name)))
+		{
+			continue;
+		}
 		entry.Extension = Lower(entry.Path.extension().u8string());
 		s_Entries.push_back(entry);
 	}

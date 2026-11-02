@@ -6,20 +6,20 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "Build scripts",
-      "program": "${workspaceFolder}/../../../MoravaEngine/build/Debug/MoravaPlayer",
-      "windows": { "program": "${workspaceFolder}/../../../MoravaEngine/build/Debug/MoravaPlayer.exe" },
+      "program": "${workspaceFolder}/../../../build/Debug/MoravaPlayer",
+      "windows": { "program": "${workspaceFolder}/../../../build/Debug/MoravaPlayer.exe" },
       "args": [ "--project", "${workspaceFolder}/../Sample.mproject" ],
-      "cwd": "${workspaceFolder}/../../../MoravaEngine"
+      "cwd": "${workspaceFolder}/../../.."
     },
     {
       "name": "Morava Editor",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "Build scripts",
-      "program": "${workspaceFolder}/../../../MoravaEngine/build/Debug/MoravaEngine",
-      "windows": { "program": "${workspaceFolder}/../../../MoravaEngine/build/Debug/MoravaEngine.exe" },
+      "program": "${workspaceFolder}/../../../build/Debug/MoravaEngine",
+      "windows": { "program": "${workspaceFolder}/../../../build/Debug/MoravaEngine.exe" },
       "args": [ "--project", "${workspaceFolder}/../Sample.mproject" ],
-      "cwd": "${workspaceFolder}/../../../MoravaEngine"
+      "cwd": "${workspaceFolder}/../../.."
     },
     {
       "name": "Attach to the Morava editor",
