@@ -4,6 +4,7 @@
  * @licence Apache License 2.0
  */
 
+#include "EnvMapVulkanAntialiasing.h"
 #include "EnvMapVulkanRenderer.h"
 #include "Core/EnginePaths.h"
 
@@ -103,6 +104,9 @@ static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_ViewportCompositeDesc
 // The window shows that image too, under the user interface (all of the window in the player): see CompositePass
 static H2M::RefH2M<H2M::PipelineH2M> s_PresentPipeline;
 static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_PresentDescriptorSet; // the viewport composite (Present.glsl)
+// With antialiasing, the composite draws into the target's image, and the smoothed picture and the UI into the framebuffer above
+static EnvMapVulkanAntialiasing s_Antialiasing;
+static EnvMapVulkanAntialiasing::Target s_AntialiasingTarget;
 
 // How the scene is drawn: shadows, ray tracing, reflections, ambient occlusion, bloom (see EnvMapVulkanRenderSettings).
 // This frame's copy of the scene owner's settings.
@@ -1831,7 +1835,8 @@ void EnvMapVulkanRenderer::Init()
 	s_Data.QuadVertexBuffer = H2M::VertexBufferH2M::Create(data, 4 * sizeof(QuadVertex));
 	uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 	s_Data.QuadIndexBuffer = H2M::IndexBufferH2M::Create(indices, 6 * sizeof(uint32_t));
-	s_TextureViews.Create(s_Data.QuadVertexBuffer, s_Data.QuadIndexBuffer); // their composite draws the quad
+	s_Antialiasing.Create(s_Data.QuadVertexBuffer, s_Data.QuadIndexBuffer);
+	s_TextureViews.Create(s_Data.QuadVertexBuffer, s_Data.QuadIndexBuffer, &s_Antialiasing); // their composite draws the quad
 
 	// H2M::RendererH2M::Submit([=]() {});
 	{
@@ -1971,6 +1976,8 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_Water.Destroy();
 	s_Glass.Destroy();
 	s_TextureViews.Destroy();
+	s_Antialiasing.Release(s_AntialiasingTarget);
+	s_Antialiasing.Destroy();
 	s_UI.Destroy();
 	s_UIDrawList.Clear();
 	UILayout::ClearImageCache();
@@ -3904,6 +3911,39 @@ static std::string DescribeVSync(const H2M::VulkanSwapChainH2M& swapChain, int r
 	}
 }
 
+static AntialiasingMode GetViewAntialiasing();
+
+// The main view's antialiasing in words, with what its passes cost: inside the viewport composite's scope (the texture
+// cameras' passes of the same names are inside their own scopes)
+static std::string DescribeAntialiasing(const EnvMapVulkanProfiler::FrameResults& results)
+{
+	const AntialiasingMode mode = GetViewAntialiasing();
+	if (mode == AntialiasingMode::Off || !results.Valid)
+	{
+		return GetAntialiasingModeName(mode);
+	}
+	double ms = 0.0;
+	int compositeDepth = -1;
+	for (const EnvMapVulkanProfiler::ScopeResult& scope : results.Scopes)
+	{
+		if (compositeDepth < 0)
+		{
+			compositeDepth = scope.Name == "Viewport Composite" ? (int)scope.Depth : -1;
+		}
+		else if ((int)scope.Depth <= compositeDepth)
+		{
+			break;
+		}
+		else if (scope.Name == "FXAA" || scope.Name.rfind("SMAA ", 0) == 0)
+		{
+			ms += scope.SmoothedGpuMs;
+		}
+	}
+	char text[64];
+	snprintf(text, sizeof(text), "%s, %.2f ms", GetAntialiasingModeName(mode), ms);
+	return text;
+}
+
 static DebugOverlayFrame GatherDebugOverlayFrame()
 {
 	DebugOverlayFrame frame;
@@ -3912,6 +3952,7 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
 	frame.Fps = EnvMapVulkanProfiler::GetFps();
 	frame.CpuMs = EnvMapVulkanProfiler::GetSmoothedCpuFrameMs();
+	frame.Antialiasing = DescribeAntialiasing(results);
 	frame.GpuValid = results.Valid;
 	frame.GpuMs = results.SmoothedGpuMs;
 	frame.History = EnvMapVulkanProfiler::GetCpuHistory().data();
@@ -3961,6 +4002,17 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 	return frame;
 }
 
+// The main view's antialiasing this frame: the scene's; the views of SMAA's passes need SMAA, and the other debug views show
+// their data as it is
+static AntialiasingMode GetViewAntialiasing()
+{
+	if (s_ViewOptions.DebugView == DebugViewSMAAEdges || s_ViewOptions.DebugView == DebugViewSMAAWeights)
+	{
+		return AntialiasingMode::SMAA;
+	}
+	return s_ViewOptions.DebugView == DebugViewOff ? s_RenderSettings.Antialiasing : AntialiasingMode::Off;
+}
+
 void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 {
 	H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_ViewportCompositeFramebuffer.As<H2M::VulkanFramebufferH2M>();
@@ -3976,8 +4028,10 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 
 	VkRenderPassBeginInfo renderPassBeginInfo = {};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
-	renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
+	const AntialiasingMode antialiasing = GetViewAntialiasing();
+	H2M::RefH2M<H2M::VulkanFramebufferH2M> compositeTarget = antialiasing != AntialiasingMode::Off ? s_AntialiasingTarget.Input.As<H2M::VulkanFramebufferH2M>() : framebuffer;
+	renderPassBeginInfo.renderPass = compositeTarget->GetRenderPass();
+	renderPassBeginInfo.framebuffer = compositeTarget->GetVulkanFramebuffer();
 	renderPassBeginInfo.renderArea.extent.width = width;
 	renderPassBeginInfo.renderArea.extent.height = height;
 	renderPassBeginInfo.clearValueCount = 2; // Color + depth
@@ -4040,6 +4094,22 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 
 	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 	EnvMapVulkanProfiler::CountDraw(s_Data.QuadIndexBuffer->GetCount() / 3);
+
+	// The picture smoothed, in the framebuffer the UI goes on in
+	if (antialiasing != AntialiasingMode::Off)
+	{
+		vkCmdEndRenderPass(commandBuffer);
+		s_Antialiasing.RecordPrepasses(commandBuffer, s_AntialiasingTarget, antialiasing);
+		renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+		renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
+		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		EnvMapVulkanProfiler::CountRenderPass(width, height);
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+		s_Antialiasing.RecordResolve(commandBuffer, s_AntialiasingTarget, antialiasing,
+			s_ViewOptions.DebugView == DebugViewSMAAEdges ? EnvMapVulkanAntialiasing::Output::Edges :
+			s_ViewOptions.DebugView == DebugViewSMAAWeights ? EnvMapVulkanAntialiasing::Output::Weights : EnvMapVulkanAntialiasing::Output::Picture);
+	}
 
 	// The game UI, over the tonemapped image, then the debug overlay over it (one list: the UI's buffers are written once a frame)
 	s_UIDrawList.Clear();
@@ -4491,6 +4561,8 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		s_ViewOptions.DebugView = DebugViewOff;
 	}
+
+	s_Antialiasing.Prepare(s_AntialiasingTarget, GetViewAntialiasing(), s_ViewportCompositeFramebuffer->GetWidth(), s_ViewportCompositeFramebuffer->GetHeight());
 
 	// The cameras that draw into render textures: their views' set 0 gets what the per-frame set holds (as it is now, after
 	// everything above that may have rewritten it), their cameras this frame's places

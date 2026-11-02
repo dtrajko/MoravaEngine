@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EnvMapVulkanAntialiasingMode.h"
 #include "EnvMapVulkanReflections.h"
 #include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanSSAO.h"
@@ -35,6 +36,7 @@ struct EnvMapVulkanRenderSettings
 	EnvMapVulkanReflectionSettings Reflections;
 	EnvMapVulkanSSAOSettings AmbientOcclusion;
 	EnvMapVulkanBloomSettings Bloom;
+	AntialiasingMode Antialiasing = AntialiasingMode::SMAA; // a new scene's; a scene saved without it: Off
 
 	// The content of the RenderSettings map
 	void Serialize(YAML::Emitter& out) const;

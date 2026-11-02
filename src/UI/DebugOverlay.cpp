@@ -125,6 +125,10 @@ namespace
 		{
 			AddRow(rows, "VSync", frame.VSync);
 		}
+		if (!frame.Antialiasing.empty())
+		{
+			AddRow(rows, "Antialiasing", frame.Antialiasing);
+		}
 		AddRow(rows, "GPU", frame.GpuValid ? Format("%.2f ms", frame.GpuMs) : "not measured");
 		rows.push_back({ Row::Kind::Graph });
 		AddRow(rows, "Draw calls", FormatCount(frame.Draws) + ", " + FormatCount(frame.Triangles) + " triangles");

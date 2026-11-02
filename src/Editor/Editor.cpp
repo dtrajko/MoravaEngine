@@ -252,6 +252,18 @@ void Editor::OnImGuiRender()
 					{
 						SetViewportFullscreen(!s_ViewportFullscreen);
 					}
+					if (ImGui::BeginMenu("Antialiasing"))
+					{
+						const AntialiasingMode modes[] = { AntialiasingMode::Off, AntialiasingMode::FXAA, AntialiasingMode::SMAA };
+						for (const AntialiasingMode mode : modes)
+						{
+							if (ImGui::MenuItem(GetAntialiasingModeName(mode), nullptr, s_RenderSettings.Antialiasing == mode))
+							{
+								s_RenderSettings.Antialiasing = mode;
+							}
+						}
+						ImGui::EndMenu();
+					}
 					ImGui::MenuItem("Input", nullptr, &s_ShowInputPanel);
 					ImGui::MenuItem("Physics", nullptr, &s_ShowPhysicsPanel);
 					ImGui::MenuItem("Audio", nullptr, &s_ShowAudioPanel);

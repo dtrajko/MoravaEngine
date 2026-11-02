@@ -193,7 +193,7 @@ namespace H2M
 			// We need one blend attachment state per color attachment (even if blending is not used)
 			VkPipelineColorBlendAttachmentState blendAttachmentState[1] = {};
 			blendAttachmentState[0].colorWriteMask = m_Specification.WriteAlpha ? 0xf : 0x7; // RGB only: the target keeps its alpha
-			blendAttachmentState[0].blendEnable = VK_TRUE;
+			blendAttachmentState[0].blendEnable = m_Specification.Blend ? VK_TRUE : VK_FALSE;
 			blendAttachmentState[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 			blendAttachmentState[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			blendAttachmentState[0].colorBlendOp = VK_BLEND_OP_ADD;
@@ -463,7 +463,7 @@ namespace H2M
 			if (framebuffer->GetSpecification().SwapChainTarget)
 			{
 				blendAttachmentStates[0].colorWriteMask = m_Specification.WriteAlpha ? 0xf : 0x7;
-				blendAttachmentStates[0].blendEnable = VK_TRUE;
+				blendAttachmentStates[0].blendEnable = m_Specification.Blend ? VK_TRUE : VK_FALSE;
 				blendAttachmentStates[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 				blendAttachmentStates[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 				blendAttachmentStates[0].colorBlendOp = VK_BLEND_OP_ADD;
@@ -487,7 +487,7 @@ namespace H2M
 						? attachmentSpec.BlendMode
 						: framebuffer->GetSpecification().BlendMode;
 
-					blendAttachmentStates[i].blendEnable = attachmentSpec.Blend ? VK_TRUE : VK_FALSE;
+					blendAttachmentStates[i].blendEnable = attachmentSpec.Blend && m_Specification.Blend ? VK_TRUE : VK_FALSE;
 					if (blendMode == FramebufferBlendModeH2M::SrcAlphaOneMinusSrcAlpha)
 					{
 						blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
