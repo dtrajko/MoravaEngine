@@ -3,6 +3,7 @@
 #include "H2M/Core/RefH2M.h"
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
 
+#include "EnvMapVulkanAntialiasing.h"
 #include "EnvMapVulkanComponents.h"
 #include "EnvMapVulkanGlass.h"
 #include "EnvMapVulkanRenderTexture.h"
@@ -45,6 +46,7 @@ struct EnvMapVulkanWaterSettings;
  * A Color render texture gets the view exposed and tonemapped with the scene's exposure (RenderTextureComposite.glsl),
  * then copied bit for bit into the texture (the composite is gamma encoded as the sRGB texture expects); an HDR one gets
  * the linear light as it is (exposed by the view that shows it). Then the texture's smaller mip levels are made again.
+ * A Color texture's camera may choose antialiasing (CameraComponent::Antialiasing): it runs on the composite, before the copy.
  *
  * Each frame (one frame in flight: the views' buffers and sets are written while the GPU is idle): Update finds the
  * cameras and prepares their views, Record draws them. A view whose camera is gone is destroyed.
@@ -52,8 +54,10 @@ struct EnvMapVulkanWaterSettings;
 class EnvMapVulkanTextureViews
 {
 public:
-	// The pipelines and the full-screen quad the composite draws with (the renderer's: position, texture coordinate)
-	void Create(const H2M::RefH2M<H2M::VertexBufferH2M>& quadVertexBuffer, const H2M::RefH2M<H2M::IndexBufferH2M>& quadIndexBuffer);
+	// The pipelines and the full-screen quad the composite draws with (the renderer's: position, texture coordinate), and
+	// the renderer's antialiasing passes (they outlive this object's views)
+	void Create(const H2M::RefH2M<H2M::VertexBufferH2M>& quadVertexBuffer, const H2M::RefH2M<H2M::IndexBufferH2M>& quadIndexBuffer,
+		EnvMapVulkanAntialiasing* antialiasing);
 	void Destroy();
 
 	// What a view's camera draws with this frame, besides the scene: from the renderer
@@ -119,6 +123,8 @@ private:
 
 		H2M::RefH2M<H2M::FramebufferH2M> SceneFramebuffer;     // linear HDR color and depth
 		H2M::RefH2M<H2M::FramebufferH2M> CompositeFramebuffer; // Color textures: the tonemapped picture (8 bits, gamma encoded)
+		AntialiasingMode Antialiasing = AntialiasingMode::Off; // its camera's, this frame (Color textures)
+		EnvMapVulkanAntialiasing::Target AntialiasingTarget;   // with antialiasing, the composite draws into this first
 		std::unique_ptr<EnvMapVulkanGlass> Glass;              // the glass pipeline and the copy of the scene it looks through
 		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet FrameSet;     // set 0 of the PBR shaders
 		H2M::VulkanShaderH2M::UniformBufferH2M CameraBuffer;            // binding 0: Camera
@@ -137,6 +143,7 @@ private:
 	H2M::RefH2M<H2M::VertexBufferH2M> m_QuadVertexBuffer;
 	H2M::RefH2M<H2M::IndexBufferH2M> m_QuadIndexBuffer;
 	H2M::RefH2M<H2M::PipelineH2M> m_CompositePipeline;
+	EnvMapVulkanAntialiasing* m_Antialiasing = nullptr;
 	// A view per camera entity with a target
 	std::map<EnvMapVulkanEntityID, View> m_Views;
 	uint32_t m_ActiveViews = 0;

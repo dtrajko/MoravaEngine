@@ -17,6 +17,7 @@ enum EnvMapVulkanDebugView
 	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewReflectionOcclusion, DebugViewAO, DebugViewAODenoised, DebugViewAORaw,
 	DebugViewRayTracedNormals, DebugViewRayTracedAlbedo, DebugViewRayTracedInstances,
 	DebugViewReflections, DebugViewReflectionsRaw, DebugViewPathTraced,
+	DebugViewSMAAEdges, DebugViewSMAAWeights, // SMAA's passes, whichever antialiasing the scene has
 	DebugViewCount
 };
 

@@ -96,8 +96,10 @@ static H2M::RefH2M<H2M::FramebufferH2M> CreateFramebuffer(H2M::ImageFormatH2M co
 	return H2M::FramebufferH2M::Create(spec);
 }
 
-void EnvMapVulkanTextureViews::Create(const H2M::RefH2M<H2M::VertexBufferH2M>& quadVertexBuffer, const H2M::RefH2M<H2M::IndexBufferH2M>& quadIndexBuffer)
+void EnvMapVulkanTextureViews::Create(const H2M::RefH2M<H2M::VertexBufferH2M>& quadVertexBuffer, const H2M::RefH2M<H2M::IndexBufferH2M>& quadIndexBuffer,
+	EnvMapVulkanAntialiasing* antialiasing)
 {
+	m_Antialiasing = antialiasing;
 	m_QuadVertexBuffer = quadVertexBuffer;
 	m_QuadIndexBuffer = quadIndexBuffer;
 
@@ -209,6 +211,7 @@ void EnvMapVulkanTextureViews::DestroyView(View& view)
 		view.Glass.reset();
 	}
 	view.Draw = ViewDraw();
+	m_Antialiasing->Release(view.AntialiasingTarget);
 	view.SceneFramebuffer = {};
 	view.CompositeFramebuffer = {};
 	view.RenderTexture = nullptr;
@@ -259,6 +262,8 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 			ResizeView(view, settings.Width, settings.Height);
 			view.FramesUntilDraw = 0; // a new texture: its picture at once
 		}
+		view.Antialiasing = settings.Format == RenderTextureFormat::Color ? lens.Antialiasing : AntialiasingMode::Off;
+		m_Antialiasing->Prepare(view.AntialiasingTarget, view.Antialiasing, view.Width, view.Height);
 
 		// Every DrawEvery frames (the texture keeps its picture in between). A new view draws at once; after that the views
 		// made together are spread over the frames, so they don't all draw in the same one
@@ -406,8 +411,10 @@ void EnvMapVulkanTextureViews::Record(VkCommandBuffer commandBuffer, const std::
 			H2M::RefH2M<H2M::VulkanFramebufferH2M> composite = view.CompositeFramebuffer.As<H2M::VulkanFramebufferH2M>();
 			H2M::RefH2M<H2M::VulkanPipelineH2M> pipeline = m_CompositePipeline.As<H2M::VulkanPipelineH2M>();
 			VkRenderPassBeginInfo compositeBeginInfo = beginInfo;
-			compositeBeginInfo.renderPass = composite->GetRenderPass();
-			compositeBeginInfo.framebuffer = composite->GetVulkanFramebuffer();
+			const bool antialiased = view.Antialiasing != AntialiasingMode::Off;
+			H2M::RefH2M<H2M::VulkanFramebufferH2M> compositeTarget = antialiased ? view.AntialiasingTarget.Input.As<H2M::VulkanFramebufferH2M>() : composite;
+			compositeBeginInfo.renderPass = compositeTarget->GetRenderPass();
+			compositeBeginInfo.framebuffer = compositeTarget->GetVulkanFramebuffer();
 			vkCmdBeginRenderPass(commandBuffer, &compositeBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 			EnvMapVulkanProfiler::CountRenderPass(view.Width, view.Height);
 			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -423,6 +430,18 @@ void EnvMapVulkanTextureViews::Record(VkCommandBuffer commandBuffer, const std::
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(uniforms), uniforms);
 			vkCmdDrawIndexed(commandBuffer, m_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 			EnvMapVulkanProfiler::CountDraw(m_QuadIndexBuffer->GetCount() / 3);
+			if (antialiased)
+			{
+				vkCmdEndRenderPass(commandBuffer);
+				m_Antialiasing->RecordPrepasses(commandBuffer, view.AntialiasingTarget, view.Antialiasing);
+				compositeBeginInfo.renderPass = composite->GetRenderPass();
+				compositeBeginInfo.framebuffer = composite->GetVulkanFramebuffer();
+				vkCmdBeginRenderPass(commandBuffer, &compositeBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+				EnvMapVulkanProfiler::CountRenderPass(view.Width, view.Height);
+				vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+				vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+				m_Antialiasing->RecordResolve(commandBuffer, view.AntialiasingTarget, view.Antialiasing);
+			}
 			vkCmdEndRenderPass(commandBuffer);
 		}
 

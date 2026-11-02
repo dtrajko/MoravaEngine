@@ -1,0 +1,15 @@
+// What the SMAA passes share (see EnvMapVulkanAntialiasing). SMAA 1x at its High preset; the vertex functions run in the
+// fragment shaders, because the metrics come from the image's size: g_Metrics, set first thing in main().
+vec4 g_Metrics;
+
+#define SMAA_RT_METRICS g_Metrics
+#define SMAA_GLSL_4
+#define SMAA_PRESET_HIGH
+#define SMAA_INCLUDE_VS 1
+#define SMAA_INCLUDE_PS 1
+#include "SMAA.glslh"
+
+void SetMetrics(ivec2 size)
+{
+	g_Metrics = vec4(1.0 / vec2(size), vec2(size));
+}

@@ -172,11 +172,42 @@ void OnImGuiRenderEnvironment()
 			}
 		}
 
+		// First: the setting to try while looking at the picture. Also in the View menu
+		if (ImGui::CollapsingHeader("Antialiasing", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID("Antialiasing");
+			const AntialiasingMode modes[] = { AntialiasingMode::Off, AntialiasingMode::FXAA, AntialiasingMode::SMAA };
+			for (const AntialiasingMode mode : modes)
+			{
+				if (mode != AntialiasingMode::Off)
+				{
+					ImGui::SameLine();
+				}
+				if (ImGui::RadioButton(GetAntialiasingModeName(mode), s_RenderSettings.Antialiasing == mode))
+				{
+					s_RenderSettings.Antialiasing = mode;
+				}
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("Smooths the stair steps along edges in the finished picture, before the UI is drawn over it.\n"
+						"SMAA: three passes, keeps the picture sharp. FXAA: one pass, cheaper, a little softer.\n"
+						"Neither calms details that shimmer when the camera moves.\n"
+						"Saved with the scene. The Debug Overlay (F3) shows the mode and its cost.");
+				}
+			}
+			if (s_ViewOptions.DebugView != DebugViewOff)
+			{
+				ImGui::TextDisabled(s_ViewOptions.DebugView == DebugViewSMAAEdges || s_ViewOptions.DebugView == DebugViewSMAAWeights
+					? "The Debug View below shows SMAA's pass." : "Not applied while a Debug View is on.");
+			}
+			ImGui::PopID();
+		}
+
 		// What the viewport shows instead of the finished image: the G-buffer's contents, or one part of the lighting
 		if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::PushID("DebugView");
-			ImGui::Combo("View", &s_ViewOptions.DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0Path Traced\0");
+			ImGui::Combo("View", &s_ViewOptions.DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0Path Traced\0SMAA Edges\0SMAA Weights\0");
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -213,7 +244,10 @@ void OnImGuiRenderEnvironment()
 					"Path Traced: the whole image by rays alone, as a reference. Every pixel's light is followed through all\n"
 					"  its bounces: no probes, no ambient occlusion pass, no reflection image, no shadow maps. Noisy at first;\n"
 					"  it gets cleaner with every frame while the camera and the scene stand still. What the normal view\n"
-					"  should look like where its approximations hold. Needs Ray Tracing.");
+					"  should look like where its approximations hold. Needs Ray Tracing.\n"
+					"SMAA Edges, SMAA Weights: what the SMAA antialiasing finds in the finished picture: the edges (red: at the\n"
+					"  left of the pixel, green: at its top) and how much of its neighbors each edge pixel takes. Shown whichever\n"
+					"  antialiasing the scene has. The other debug views are drawn without antialiasing.");
 			}
 			if (s_ViewOptions.DebugView == DebugViewLinearDepth)
 			{

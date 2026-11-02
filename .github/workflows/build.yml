@@ -30,7 +30,7 @@ jobs:
             cc: gcc
             cxx: g++
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
-            smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20 --play
+            smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20 --play --debug-view 19
             # A project (Projects/Sample): its start scene, its own materials, its window
             player-smoke-test: --project $SAMPLE_PROJECT_DIR/Sample.mproject --scene $SAMPLE_PROJECT_DIR/Scenes/RollABall.mscene --exit-after 20
           # Without -fno-pch-timestamp Clang rejects a precompiled header that ccache restored (its file time differs)

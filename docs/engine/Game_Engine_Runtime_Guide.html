@@ -1217,6 +1217,13 @@ struct UIButtonComponent { glm::vec4 Normal, Hover, Pressed, Disabled; std::stri
     <li><b>Debug view:</b> SMAA's detected edges, and its blend weights, in the Environment panel's Debug View list.</li>
   </ul>
 
+  <div class="box ok"><b>As built (8.1)</b>
+  <code>EnvMapVulkanAntialiasing</code> holds SMAA 1x (High preset) and FXAA; one object serves the main view and the texture views, whose framebuffers all have the same formats. A picture being smoothed has a <code>Target</code>: the composite draws into its Input image, SMAA's edges and weights follow, and the smoothed picture is drawn in the usual framebuffer's render pass, where the UI goes on. With Off the target's images are freed and the frame is as it was before. The vertex functions of <code>SMAA.hlsl</code> run in the fragment shaders, with the metrics from the image's size; the passes take their coordinates from the quad's position, so they don't flip the picture. <code>PipelineSpecificationH2M::Blend</code> is new: the weights' alpha is data.
+  <br><br><b>Sources:</b> <code>Resources/Shaders/Include/SMAA.glslh</code> and <code>vendor/smaa</code> (lookup textures) are the files of iryoku/smaa, unchanged (MIT license); FXAA is our own short shader. Phase 11's license notices must list SMAA.
+  <br><br><b>Controls:</b> three radio buttons at the top of the Environment panel, and the same choice under View &gt; Antialiasing. The F3 overlay has a row with the main view's mode and the cost of its passes. A texture camera with a Color target has its own choice in the Inspector, saved only when it isn't Off. Debug views 19 and 20 show SMAA Edges and SMAA Weights whichever mode the scene has; all other debug views are drawn without antialiasing, so their values can be read.
+  <br><br><b>Measured</b> (Debug build, Erika's room, 2560x1400): SMAA 0.20 ms, FXAA 0.09 ms, in a GPU frame of about 13.8 ms.
+  <br><br><b>Limits:</b> blending happens on the gamma encoded picture, not in linear light. The editor's overlays and the selection outline are part of the composite, so they are smoothed with it. Details that shimmer under camera motion stay until 8.2. The CI editor smoke test runs with <code>--debug-view 19</code>, so SMAA's passes run on Mesa and MoltenVK.</div>
+
   <h3>8.2 Temporal antialiasing (TAA)</h3>
   <ul>
     <li><b>Jitter:</b> each frame the projection is moved by a sub-pixel offset (a Halton sequence), so over several frames every pixel sees several sample positions.</li>

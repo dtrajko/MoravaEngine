@@ -139,6 +139,10 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ViewportComposite.glsl"); // SceneEnvMapVulkan: composite with bloom
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Present.glsl");           // SceneEnvMapVulkan: the composite into the window
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/RenderTextureComposite.glsl"); // SceneEnvMapVulkan: a texture camera's view, tonemapped
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/AntialiasingSMAAEdges.glsl");   // SceneEnvMapVulkan: antialiasing of the composite
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/AntialiasingSMAAWeights.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/AntialiasingSMAABlend.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/AntialiasingFXAA.glsl");
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/UI.glsl");                // SceneEnvMapVulkan: the game UI over the composite
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/BloomPass.glsl");         // SceneEnvMapVulkan: bloom downsample/upsample chain
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Static.glsl");

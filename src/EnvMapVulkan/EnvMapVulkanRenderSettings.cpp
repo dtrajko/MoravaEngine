@@ -57,6 +57,7 @@ void EnvMapVulkanRenderSettings::Serialize(YAML::Emitter& out) const
 	out << YAML::Key << "Rays" << YAML::Value << AmbientOcclusion.Rays;
 	out << YAML::EndMap;
 
+	out << YAML::Key << "Antialiasing" << YAML::Value << GetAntialiasingModeName(Antialiasing);
 	out << YAML::Key << "Bloom" << YAML::Value << YAML::BeginMap;
 	out << YAML::Key << "Enabled" << YAML::Value << Bloom.Enabled;
 	out << YAML::Key << "Threshold" << YAML::Value << Bloom.Threshold;
@@ -71,6 +72,8 @@ void EnvMapVulkanRenderSettings::Serialize(YAML::Emitter& out) const
 EnvMapVulkanRenderSettings EnvMapVulkanRenderSettings::Deserialize(const YAML::Node& node)
 {
 	EnvMapVulkanRenderSettings settings;
+	// Scenes saved before antialiasing existed look as they did until it is chosen
+	settings.Antialiasing = GetAntialiasingModeFromName(node["Antialiasing"].as<std::string>("Off").c_str());
 	if (!node)
 	{
 		return settings;

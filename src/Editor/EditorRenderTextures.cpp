@@ -165,6 +165,20 @@ void RenderTargetControls(CameraComponent& camera)
 		s_PendingRenderTextureChanges.push_back({ renderTexture->GetFilePath(), settings });
 	}
 
+	if (settings.Format == RenderTextureFormat::Color)
+	{
+		int antialiasing = (int)camera.Antialiasing;
+		if (ImGui::Combo("Antialiasing", &antialiasing, "Off\0FXAA\0SMAA\0"))
+		{
+			camera.Antialiasing = (AntialiasingMode)antialiasing;
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Smooths the edges in this camera's picture. Off by default: a small picture on a screen rarely\n"
+				"needs it, and it adds to the camera's cost. Color textures only.");
+		}
+	}
+
 	int drawEvery = (int)camera.DrawEvery;
 	if (ImGui::DragInt("Draw Every", &drawEvery, 0.1f, 1, 120, drawEvery == 1 ? "frame" : "%d frames", ImGuiSliderFlags_AlwaysClamp))
 	{

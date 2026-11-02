@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EnvMapVulkanAntialiasingMode.h"
+
 #include "EnvMapVulkanProbes.h"
 #include "EnvMapVulkanWater.h"
 
@@ -181,6 +183,8 @@ struct CameraComponent
 	// nothing (a monitor nobody looks at, a closed menu's portrait). Enabled again, it draws at once. The screen's cameras
 	// don't use it (Primary chooses the game's view)
 	bool Enabled = true;
+	// A camera with a Color target: how its picture's edges are smoothed (8.1). Off by default: its picture is small and cheap
+	AntialiasingMode Antialiasing = AntialiasingMode::Off;
 
 	static constexpr float MinFieldOfView = 10.0f;
 	static constexpr float MaxFieldOfView = 120.0f;
