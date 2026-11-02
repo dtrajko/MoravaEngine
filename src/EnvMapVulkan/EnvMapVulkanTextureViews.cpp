@@ -262,7 +262,8 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 			ResizeView(view, settings.Width, settings.Height);
 			view.FramesUntilDraw = 0; // a new texture: its picture at once
 		}
-		view.Antialiasing = settings.Format == RenderTextureFormat::Color ? lens.Antialiasing : AntialiasingMode::Off;
+		// Not TAA: a texture view has no G-buffer and no history
+		view.Antialiasing = settings.Format == RenderTextureFormat::Color && lens.Antialiasing != AntialiasingMode::TAA ? lens.Antialiasing : AntialiasingMode::Off;
 		m_Antialiasing->Prepare(view.AntialiasingTarget, view.Antialiasing, view.Width, view.Height);
 
 		// Every DrawEvery frames (the texture keeps its picture in between). A new view draws at once; after that the views

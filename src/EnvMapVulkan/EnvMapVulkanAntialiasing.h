@@ -7,6 +7,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include <glm/glm.hpp>
+
 
 namespace H2M
 {
@@ -19,14 +21,14 @@ namespace H2M
 
 /**
  * Antialiasing of a finished picture (docs/engine/Game_Engine_Runtime_Guide.html, 8.1): after the composite (exposure,
- * bloom, tonemapping), before the UI is drawn over it. SMAA 1x or FXAA, on the gamma encoded picture.
+ * bloom, tonemapping), before the UI is drawn over it. SMAA 1x, FXAA or TAA (8.2), on the gamma encoded picture.
  *
  * A picture being smoothed has a Target: the composite draws into its Input instead of its usual framebuffer, then
- * RecordPrepasses draws SMAA's edges and weights, and RecordResolve draws the smoothed picture in the usual framebuffer's
- * render pass, where the UI goes on. Off: no Target images, and nothing of this costs anything.
+ * RecordPrepasses draws SMAA's edges and weights (TAA's mix with its history), and RecordResolve draws the smoothed picture in
+ * the usual framebuffer's render pass, where the UI goes on. Off: no Target images, and nothing of this costs anything.
  *
  * One object serves the main view and the texture views: their framebuffers all have the formats of the main composite
- * (RGBA8 + depth), so the pipelines fit each of them.
+ * (RGBA8 + depth), so the pipelines fit each of them. TAA only serves the main view: it needs a G-buffer and a history.
  */
 class EnvMapVulkanAntialiasing
 {
@@ -40,31 +42,59 @@ public:
 		H2M::RefH2M<H2M::FramebufferH2M> Edges;   // SMAA only
 		H2M::RefH2M<H2M::FramebufferH2M> Weights; // SMAA only
 		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet EdgesSet, WeightsSet, BlendSet, FXAASet;
+		H2M::RefH2M<H2M::FramebufferH2M> History[2]; // TAA only: RGBA16F (in 8 bits a tenth of a small change would be lost)
+		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet ResolveSet[2], SharpenSet[2]; // by the history written this frame
+		VkImageView MotionView = VK_NULL_HANDLE, DepthView = VK_NULL_HANDLE; // what ResolveSet was written with
+		uint32_t HistoryWritten = 0; // the History the latest frame wrote
+		bool HasHistory = false;
 	};
 
 	// What RecordResolve draws: the debug views show SMAA's passes
-	enum class Output { Picture = 0, Edges = 1, Weights = 2 };
+	enum class Output { Picture = 0, Edges = 1, Weights = 2, TAARejection = 3 };
+
+	// TAA's images of the G-buffer (nearest filtering; the depth readable from the composite on)
+	struct TemporalImages
+	{
+		VkDescriptorImageInfo Motion = {};
+		VkDescriptorImageInfo Depth = {};
+	};
+
+	// What TAA needs of the frame
+	struct TemporalFrame
+	{
+		glm::mat4 CurrentToPrevious = glm::mat4(1.0f); // clip space, the camera alone, without jitter
+		glm::vec2 JitterMotion = glm::vec2(0.0f);      // what the jitter adds to the G-buffer's motion
+	};
+
+	// The sub-pixel offset of a frame's picture in clip space: a Halton sequence over 8 frames
+	static glm::vec2 GetJitter(uint64_t frame, uint32_t width, uint32_t height);
 
 	// The full-screen quad the composite draws with (the renderer's: position, texture coordinate)
 	void Create(const H2M::RefH2M<H2M::VertexBufferH2M>& quadVertexBuffer, const H2M::RefH2M<H2M::IndexBufferH2M>& quadIndexBuffer);
 	void Destroy();
 
 	// Before anything of the frame is recorded: the target's images for this mode and size. Any change waits for the GPU.
-	void Prepare(Target& target, AntialiasingMode mode, uint32_t width, uint32_t height);
+	// temporal: TAA's images (needed only with TAA).
+	void Prepare(Target& target, AntialiasingMode mode, uint32_t width, uint32_t height, const TemporalImages* temporal = nullptr);
 	// Frees a target's images and sets (Off does the same through Prepare)
 	void Release(Target& target);
+	// The picture starts over (a new scene: what the history shows is gone)
+	static void ResetHistory(Target& target) { target.HasHistory = false; }
 
-	// Outside a render pass, after the composite was drawn into target.Input
-	void RecordPrepasses(VkCommandBuffer commandBuffer, Target& target, AntialiasingMode mode);
+	// Outside a render pass, after the composite was drawn into target.Input. temporal: needed only with TAA
+	void RecordPrepasses(VkCommandBuffer commandBuffer, Target& target, AntialiasingMode mode, const TemporalFrame* temporal = nullptr);
 	// Inside the render pass of the picture's usual framebuffer, with its viewport
 	void RecordResolve(VkCommandBuffer commandBuffer, Target& target, AntialiasingMode mode, Output output = Output::Picture);
 
 private:
 	void RecordPass(VkCommandBuffer commandBuffer, const H2M::RefH2M<H2M::FramebufferH2M>& framebuffer,
 		const H2M::RefH2M<H2M::PipelineH2M>& pipeline, const H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet& set);
+	void RecordClear(VkCommandBuffer commandBuffer, const H2M::RefH2M<H2M::FramebufferH2M>& framebuffer);
 	void DrawQuad(VkCommandBuffer commandBuffer, const H2M::RefH2M<H2M::PipelineH2M>& pipeline,
 		const H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet& set);
 	void WriteSets(Target& target);
+	void WriteTemporalSets(Target& target, const TemporalImages& temporal);
+	void ReleaseTemporal(Target& target);
 
 	H2M::RefH2M<H2M::VertexBufferH2M> m_QuadVertexBuffer;
 	H2M::RefH2M<H2M::IndexBufferH2M> m_QuadIndexBuffer;
@@ -72,6 +102,8 @@ private:
 	H2M::RefH2M<H2M::PipelineH2M> m_WeightsPipeline;
 	H2M::RefH2M<H2M::PipelineH2M> m_BlendPipeline;
 	H2M::RefH2M<H2M::PipelineH2M> m_FXAAPipeline;
+	H2M::RefH2M<H2M::PipelineH2M> m_TAAResolvePipeline; // draws into a History (its own format)
+	H2M::RefH2M<H2M::PipelineH2M> m_TAASharpenPipeline;
 	H2M::RefH2M<H2M::Texture2D_H2M> m_AreaTexture;
 	H2M::RefH2M<H2M::Texture2D_H2M> m_SearchTexture;
 	VkDescriptorImageInfo m_AreaInfo = {};   // the lookup textures with a clamping sampler

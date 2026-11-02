@@ -254,7 +254,7 @@ void Editor::OnImGuiRender()
 					}
 					if (ImGui::BeginMenu("Antialiasing"))
 					{
-						const AntialiasingMode modes[] = { AntialiasingMode::Off, AntialiasingMode::FXAA, AntialiasingMode::SMAA };
+						const AntialiasingMode modes[] = { AntialiasingMode::Off, AntialiasingMode::FXAA, AntialiasingMode::SMAA, AntialiasingMode::TAA };
 						for (const AntialiasingMode mode : modes)
 						{
 							if (ImGui::MenuItem(GetAntialiasingModeName(mode), nullptr, s_RenderSettings.Antialiasing == mode))

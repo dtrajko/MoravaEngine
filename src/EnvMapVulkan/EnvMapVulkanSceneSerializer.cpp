@@ -614,6 +614,10 @@ namespace EnvMapVulkanSceneSerializer
 			Read(cameraNode, "DrawEvery", camera.DrawEvery);
 			camera.DrawEvery = std::max(camera.DrawEvery, 1u);
 			camera.Antialiasing = GetAntialiasingModeFromName(cameraNode["Antialiasing"].as<std::string>("Off").c_str());
+			if (camera.Antialiasing == AntialiasingMode::TAA)
+			{
+				camera.Antialiasing = AntialiasingMode::Off; // texture views have no history
+			}
 			Read(cameraNode, "Enabled", camera.Enabled); // scenes saved before 7.5.4: enabled
 		}
 		if (YAML::Node testNode = node["InputTest"])

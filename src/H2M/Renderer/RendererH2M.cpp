@@ -143,6 +143,8 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/AntialiasingSMAAWeights.glsl");
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/AntialiasingSMAABlend.glsl");
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/AntialiasingFXAA.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/AntialiasingTAAResolve.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/AntialiasingTAASharpen.glsl");
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/UI.glsl");                // SceneEnvMapVulkan: the game UI over the composite
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/BloomPass.glsl");         // SceneEnvMapVulkan: bloom downsample/upsample chain
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Static.glsl");
