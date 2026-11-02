@@ -14,7 +14,7 @@ Entities:
       Rotation: [0.706934094, -6.72457645e-11, 0.707279444, -6.72457645e-11]
       Scale: [1, 1, 1]
     MeshComponent:
-      AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\cube.obj
+      AssetPath: D:\Workspace\MoravaEngine\Models\cube.obj
   - Entity: 0
     TagComponent:
       Tag: Wall_05
@@ -23,7 +23,7 @@ Entities:
       Rotation: [0.706934094, -6.72457645e-11, 0.707279444, -6.72457645e-11]
       Scale: [1, 1, 1]
     MeshComponent:
-      AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\cube.obj
+      AssetPath: D:\Workspace\MoravaEngine\Models\cube.obj
   - Entity: 0
     TagComponent:
       Tag: Wall_04
@@ -32,7 +32,7 @@ Entities:
       Rotation: [0.706934094, -6.72457645e-11, 0.707279444, -6.72457645e-11]
       Scale: [1, 1, 1]
     MeshComponent:
-      AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\cube.obj
+      AssetPath: D:\Workspace\MoravaEngine\Models\cube.obj
   - Entity: 0
     TagComponent:
       Tag: Wall_03
@@ -41,7 +41,7 @@ Entities:
       Rotation: [0.706934094, -6.72457645e-11, 0.707279444, -6.72457645e-11]
       Scale: [1, 1, 1]
     MeshComponent:
-      AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\cube.obj
+      AssetPath: D:\Workspace\MoravaEngine\Models\cube.obj
   - Entity: 0
     TagComponent:
       Tag: Wall_02
@@ -50,7 +50,7 @@ Entities:
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
-      AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\cube.obj
+      AssetPath: D:\Workspace\MoravaEngine\Models\cube.obj
   - Entity: 0
     TagComponent:
       Tag: Wall_01
@@ -59,7 +59,7 @@ Entities:
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     MeshComponent:
-      AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\cube.obj
+      AssetPath: D:\Workspace\MoravaEngine\Models\cube.obj
   - Entity: 0
     TagComponent:
       Tag: Floor
@@ -68,7 +68,7 @@ Entities:
       Rotation: [1, 0, 0, 0]
       Scale: [2, 1, 1.9991076]
     MeshComponent:
-      AssetPath: D:\workspace\cpp\MoravaEngine\MoravaEngine\Models\PardCode\plane.obj
+      AssetPath: D:\Workspace\MoravaEngine\Models\PardCode\plane.obj
   - Entity: 0
     TagComponent:
       Tag: Directional Light

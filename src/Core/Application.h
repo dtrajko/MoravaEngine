@@ -86,7 +86,7 @@ public:
 	ApplicationClient* GetClient() const { return m_Client.get(); }
 
 	// Shaders, models, textures and scenes are loaded relative to the working directory: false (and why, in the log) when
-	// it isn't the MoravaEngine/MoravaEngine folder of the repository
+	// it isn't the root folder of the repository
 	static bool IsWorkingDirectoryValid();
 
 	void InitWindow(WindowSpecification windowSpecification);

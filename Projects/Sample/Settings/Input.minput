@@ -1,4 +1,4 @@
-# The game's actions and their bindings (MoravaEngine/src/Input/InputMap.h lists the names of keys and gamepad controls)
+# The game's actions and their bindings (src/Input/InputMap.h lists the names of keys and gamepad controls)
 Actions:
   - Name: Move          # Axis2D: x = right, y = forward
     Type: Axis2D

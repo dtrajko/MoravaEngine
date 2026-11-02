@@ -31,8 +31,8 @@
 [submodule "vendor/DirectXTex"]
 	path = vendor/DirectXTex
 	url = https://github.com/microsoft/DirectXTex.git
-[submodule "MoravaEngine/src/Hazel"]
-	path = MoravaEngine/src/Hazel
+[submodule "src/Hazel"]
+	path = src/Hazel
 	url = https://github.com/dtrajko/Hazel-dev.git
 [submodule "vendor/PhysX"]
 	path = vendor/PhysX

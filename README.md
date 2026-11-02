@@ -57,7 +57,7 @@ The rendering design of the Vulkan editor is described in [docs/rendering/SSAO_G
 
 ## Building
 
-The build is one CMake project, `MoravaEngine/CMakeLists.txt`. It builds the engine and the libraries it uses (GLFW, assimp, shaderc, SPIRV-Cross, Jolt Physics, miniaudio, yaml-cpp, ImGui and others) from source.
+The build is one CMake project, `CMakeLists.txt` in the repository's root. It builds the engine and the libraries it uses (GLFW, assimp, shaderc, SPIRV-Cross, Jolt Physics, miniaudio, yaml-cpp, ImGui and others) from source.
 
 ### Requirements
 
@@ -82,7 +82,7 @@ The last command downloads the libraries shaderc itself depends on (glslang, SPI
 
 ### Configure and build
 
-From the `MoravaEngine/MoravaEngine` folder:
+From the repository's root folder:
 
 ```
 cmake -S . -B build
@@ -93,11 +93,11 @@ This builds the default: the scene SceneEnvMapVulkan (the Vulkan editor) with th
 
 The first build takes a while, because it also builds the libraries. `--config Release` builds the optimized version.
 
-To work in Visual Studio instead, run only the first command and open `MoravaEngine/build/MoravaEngine.sln`. MoravaEngine is the startup project.
+To work in Visual Studio instead, run only the first command and open `build/MoravaEngine.sln`. MoravaEngine is the startup project.
 
 ### Run
 
-The engine loads its shaders, models and textures relative to the `MoravaEngine/MoravaEngine` folder, so start it from there:
+The engine loads its shaders, models and textures relative to the repository's root folder, so start it from there:
 
 ```
 build\Debug\MoravaEngine.exe
@@ -107,20 +107,15 @@ Visual Studio is already set up to start it in that folder.
 
 ### Run a project with MoravaPlayer
 
-The Vulkan build also makes `MoravaPlayer`, the game player: it plays a project's start scene in the project's window, without the editor. It is built next to the editor (`build\Debug\MoravaPlayer.exe`; `build-linux/MoravaPlayer` on Linux) and, like the editor, has to be started from the `MoravaEngine/MoravaEngine` folder, where the engine's shaders are. The project's path is then relative to that folder:
+The Vulkan build also makes `MoravaPlayer`, the game player: it plays a project's start scene in the project's window, without the editor. It is built next to the editor (`build\Debug\MoravaPlayer.exe`; `build-linux/MoravaPlayer` on Linux) and, like the editor, has to be started from the repository's root folder, where the engine's shaders are. The project's path is then relative to that folder:
 
 ```
-cd MoravaEngine
 build\Debug\MoravaPlayer.exe --project ..\Projects\Sample\Sample.mproject
 ```
 
 In the player, Alt+Enter and F11 switch between fullscreen and a maximized window, Escape leaves fullscreen (unless the game uses Escape itself), and Alt+F4 closes the game.
 
-Started from another folder, it stops at once with "Resources/Shaders not found in the working directory". From the repository's root folder, PowerShell can set the working folder for one run:
-
-```
-Start-Process .\MoravaEngine\build\Debug\MoravaPlayer.exe -WorkingDirectory .\MoravaEngine -ArgumentList "--project ..\Projects\Sample\Sample.mproject"
-```
+Started from another folder, it stops at once with "Resources/Shaders not found in the working directory".
 
 A project is a folder of its own, anywhere (`Projects/Sample` is the sample): a `.mproject` file names the project, its start scene, its asset folder and the game's window (size, full screen, VSync, title). Its scenes and materials are found in the project's folder first, then in the engine's (its models and environment maps). In the editor, File > New Project makes one in a chosen folder (with a first scene as its start scene), File > Open Project opens one, and File > Project Settings edits it; its *Scenes* list opens the project's scenes (double-click, or *Open*). `--scene <file>` instead of `--project` plays a single scene.
 
@@ -136,7 +131,7 @@ A collider marked *Trigger* is a zone things pass through: the log says what ent
 
 Simulate (the button after Play, CTRL + SHIFT + P) runs physics alone, without the game's logic and input, on a copy of the scene like Play: the view stays the editor's camera and models can be selected and moved while the bodies fall, roll and settle. Stop brings the scene back as it was.
 
-Games are scripted in C# on .NET 10 (in progress). The build puts `Morava.ScriptCore.dll` (the engine's C# side) and a private copy of the .NET runtime (`dotnet/`, about 75 MB) next to the executables, and the engine starts .NET from there at startup, as a shipped game will: the log says `C# scripting: .NET 10.0.x from ...`. The C# API scripts use is in `MoravaEngine/ScriptCore` (namespace `Morava`): `Entity` (transform, name, tags, `Destroy`, components, collision and trigger methods), `Rigidbody`, `CharacterController`, `Scene`, `Input`, `Physics` queries and `Time`. Entities get tags for the scripts in the Inspector, under the name (*Tags, separated by commas*).
+Games are scripted in C# on .NET 10 (in progress). The build puts `Morava.ScriptCore.dll` (the engine's C# side) and a private copy of the .NET runtime (`dotnet/`, about 75 MB) next to the executables, and the engine starts .NET from there at startup, as a shipped game will: the log says `C# scripting: .NET 10.0.x from ...`. The C# API scripts use is in `ScriptCore` (namespace `Morava`): `Entity` (transform, name, tags, `Destroy`, components, collision and trigger methods), `Rigidbody`, `CharacterController`, `Scene`, `Input`, `Physics` queries and `Time`. Entities get tags for the scripts in the Inspector, under the name (*Tags, separated by commas*).
 
 A project's scripts are a C# project of its own, built into a DLL that the project's settings name (*Script Assembly*); the sample's are in `Projects/Sample/Scripts`, and the build makes them. A script is a class deriving from `Morava.Entity`: in the Inspector, an entity's *Script* section picks the class and shows its public fields (numbers, text, vectors, other entities, enums) to set for that entity. While the game runs, each script gets `OnCreate`, `OnUpdate`, `OnFixedUpdate` and its collision and trigger calls; a script that throws an exception pauses Play, and the log has the file and line. The editor builds the scripts itself when one is saved (*Build on Save*, or *Scripts > Build Scripts*, CTRL + B) and reloads them after each build (a build during Play: at Stop), keeping the values set in the scenes. Compiler errors and a script's exceptions appear in *View > Console*: double-click one to open the file at that line in the code editor (Visual Studio, VS Code or Rider, chosen in the Project Settings). *Scripts > New Script* makes a script from a template, and the Inspector's *Edit Script* opens an entity's. To debug the scripts, start the game from the code editor: in Visual Studio (or Rider) F5 with the *Morava Player* launch profile, in VS Code the *Morava Player* configuration in *Run and Debug* (the *Morava Editor* ones start the editor instead, to debug during Play). Both build the scripts first and open the project. Or attach the .NET debugger to an editor already running (Visual Studio: *Debug > Attach to Process*, `MoravaEngine.exe`, code type *Managed (.NET Core, .NET 5+)*; VS Code: *Attach to the Morava editor*). Breakpoints in the scripts hit during Play. The sample's start scene, `Scenes/RollABall.mscene`, is a small game made this way: roll the ball with Move (WASD, arrows, the left stick) to collect the 12 pickups. C (the gamepad's Y) switches the camera: above the playground, behind the ball, or the ball's eyes; Q, E, R and F (the right stick) turn the view behind and in front of it, and while the ball rolls the view turns behind its direction by itself. The game starts behind the ball.
 
@@ -170,7 +165,7 @@ Install the .NET 10 SDK for C# scripting (Microsoft's `dotnet-sdk-10.0` package,
 
 Get the sources as above (`git clone --recursive`, then `python3 vendor/cross-platform/shaderc/utils/git-sync-deps`). In a clone made without `--recursive`, run `git submodule update --init --recursive`: the file dialog library needs its own submodule (`wayland-protocols`) on Linux.
 
-Configure and build from the `MoravaEngine/MoravaEngine` folder. Ninja builds one configuration, chosen when configuring:
+Configure and build from the repository's root folder. Ninja builds one configuration, chosen when configuring:
 
 ```
 cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Debug
@@ -195,7 +190,7 @@ The graphics APIs are selected when CMake configures the project, with `-D` sett
 * In `src/config.h`, the block `#if !defined(MORAVA_SCENE_FROM_CMAKE)` has one line per API with the scene it runs, by default the first scene of that API in the list above it (`SCENE_ENV_MAP_VULKAN`, `SCENE_COTTAGE`, `SCENE_DX11`). Change the line to run another scene. When several APIs are compiled, the first in the order Vulkan, OpenGL, DirectX 11 runs its scene.
 * `MORAVA_SCENE` (optional) selects the scene in CMake instead, and then `src/config.h`'s choice is ignored. The graphics API of that scene is compiled automatically.
 
-**Example: the OpenGL classes and all OpenGL scenes.** From the `MoravaEngine/MoravaEngine` folder:
+**Example: the OpenGL classes and all OpenGL scenes.** From the repository's root folder:
 
 ```
 cmake -S . -B build -DMORAVA_OPENGL=ON -DMORAVA_VULKAN=OFF -DMORAVA_DIRECTX11=OFF
@@ -287,7 +282,7 @@ For the Vulkan editor (`ENV_MAP_VULKAN`):
 
 | Option | Meaning |
 |---|---|
-| `--project <file>` | Open this project and its start scene at startup, e.g. `--project ../Projects/Sample/Sample.mproject` (also MoravaPlayer: plays it) |
+| `--project <file>` | Open this project and its start scene at startup, e.g. `--project Projects/Sample/Sample.mproject` (also MoravaPlayer: plays it) |
 | `--scene <file>` | Open this scene at startup, e.g. `--scene Scenes/Old_Stove_Corner.mscene` (also MoravaPlayer: plays it) |
 | `--select <name>` | Select the entity of this name in that scene |
 | `--debug-view <number>` | Start with this entry of the Environment panel's Debug View list (0 = off) |
@@ -336,22 +331,22 @@ Older editor scenes (`EDITOR`, `EDITOR_IMGUIZMO`):
 
 The Vulkan editor on Linux (Ubuntu in WSL2, rendered by Mesa's llvmpipe on the CPU):
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2026-10-17_03-56-20.png)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2026-10-17_03-56-20.png)
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2021-09-15_04-36-54.jpg)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2021-09-15_04-36-54.jpg)
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2021-03-23_07-35-56.jpg)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2021-03-23_07-35-56.jpg)
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-10-14_16-14-02.jpg)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2020-10-14_16-14-02.jpg)
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-10-14_16-23-01.jpg)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2020-10-14_16-23-01.jpg)
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-09-21_03-46-55.jpg)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2020-09-21_03-46-55.jpg)
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-03-19-2106.jpg)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2020-03-19-2106.jpg)
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-03-18-0101.jpg)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2020-03-18-0101.jpg)
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-08-12_16-53-48.png)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2020-08-12_16-53-48.png)
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-07-08_0158.jpg)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/Screenshots/2020-07-08_0158.jpg)

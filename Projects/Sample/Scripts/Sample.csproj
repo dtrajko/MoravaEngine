@@ -10,7 +10,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <OutputPath>bin/</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <MoravaScriptCoreDir Condition="'$(MoravaScriptCoreDir)' == ''">$(MSBuildThisFileDirectory)../../../MoravaEngine/build/Debug/</MoravaScriptCoreDir>
+    <MoravaScriptCoreDir Condition="'$(MoravaScriptCoreDir)' == ''">$(MSBuildThisFileDirectory)../../../build/Debug/</MoravaScriptCoreDir>
   </PropertyGroup>
   <ItemGroup>
     <!-- The engine's API: not copied next to the game (the engine has it loaded already) -->

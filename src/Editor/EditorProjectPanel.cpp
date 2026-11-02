@@ -153,7 +153,7 @@ void OnImGuiRenderProjectPanel()
 	Project* project = Project::GetOpen();
 	if (!project)
 	{
-		ImGui::TextWrapped("No project is open: scenes, materials and models are the engine's (its MoravaEngine folder).");
+		ImGui::TextWrapped("No project is open: scenes, materials and models are the engine's own.");
 		ImGui::Spacing();
 		if (ImGui::Button("New Project..."))
 		{

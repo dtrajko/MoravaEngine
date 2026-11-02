@@ -12,10 +12,10 @@ window, read what its log says, and compile files with GCC as the Linux CI build
 
 ## Before you start
 
-- **Build first.** The scripts run what is in `MoravaEngine/build/Debug` (`-Config Release` for a Release build):
+- **Build first.** The scripts run what is in `build/Debug` (`-Config Release` for a Release build):
 
   ```powershell
-  cmake --build D:\Workspace\MoravaEngine\MoravaEngine\build --config Debug --parallel -- /nologo /v:minimal
+  cmake --build D:\Workspace\MoravaEngine\build --config Debug --parallel -- /nologo /v:minimal
   ```
 
   Close an open editor before building: Windows locks its executable and the link fails (`LNK1168`).
@@ -74,7 +74,7 @@ From `Tools/Testing`:
 .\Run-Engine.ps1 -Project D:\Workspace\Temp\Sample\Sample.mproject -DebugOverlay -Capture graph.png -Crop 960,40,320,100 -Zoom 2
 
 # As on a GPU without ray tracing, with a debug view (8: Probe Irradiance Only)
-.\Run-Engine.ps1 -Editor -Scene ..\..\MoravaEngine\Scenes\Old_Stove_Corner.mscene -Extra "--no-ray-tracing", "--debug-view", "8"
+.\Run-Engine.ps1 -Editor -Scene ..\..\Scenes\Old_Stove_Corner.mscene -Extra "--no-ray-tracing", "--debug-view", "8"
 ```
 
 ### The engine's own options
@@ -108,7 +108,7 @@ types, a missing `#include` that MSVC's headers happened to bring in). This comp
 without linking, in a few seconds per file. Run it in WSL from the repository root, with paths relative to it:
 
 ```bash
-wsl bash Tools/Testing/gcc-check.sh MoravaEngine/src/UI/DebugOverlay.cpp MoravaEngine/src/Player/PlayerLayer.cpp
+wsl bash Tools/Testing/gcc-check.sh src/UI/DebugOverlay.cpp src/Player/PlayerLayer.cpp
 ```
 
 Files are compiled as the Vulkan build compiles them. Code shared by every graphics API (`src/Core` and the like) is
@@ -119,7 +119,7 @@ build fails when it links: the functions behind the header aren't there. Guard t
 also lists any Vulkan-only header they still include:
 
 ```bash
-wsl bash Tools/Testing/gcc-check.sh --api opengl MoravaEngine/src/Core/ResourceManager.cpp
+wsl bash Tools/Testing/gcc-check.sh --api opengl src/Core/ResourceManager.cpp
 ```
 
 ```

@@ -4,7 +4,7 @@
     what went wrong (Vulkan validation messages, script errors, files that couldn't be loaded).
 
 .DESCRIPTION
-    Starts build\<Config>\MoravaPlayer.exe or MoravaEngine.exe from the MoravaEngine folder (the engine's working
+    Starts build\<Config>\MoravaPlayer.exe or MoravaEngine.exe from the repository's root (the engine's working
     directory) with --exit-after, waits until it closes and prints the summary. The log goes to a file through cmd's
     redirection: PowerShell's own (Start-Process -RedirectStandardOutput) slows the engine down to a crawl.
 
@@ -38,7 +38,6 @@ param(
 
 $ErrorActionPreference = "Stop"
 $repo = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
-$engineFolder = Join-Path $repo "MoravaEngine"
 $outputFolder = Join-Path $PSScriptRoot "Output"
 New-Item -ItemType Directory -Force $outputFolder | Out-Null
 
@@ -49,7 +48,7 @@ function Get-FullPath([string]$path, [string]$base)
 }
 
 $exeName = if ($Editor) { "MoravaEngine" } else { "MoravaPlayer" }
-$exe = Join-Path $engineFolder "build\$Config\$exeName.exe"
+$exe = Join-Path $repo "build\$Config\$exeName.exe"
 if (-not (Test-Path $exe)) { throw "Not built: $exe" }
 $Log = if ($Log) { Get-FullPath $Log (Get-Location) } else { Join-Path $outputFolder "$exeName.log" }
 
@@ -66,7 +65,7 @@ $arguments += $Extra
 $started = Get-Date
 $command = "`"`"$exe`" $($arguments -join ' ') > `"$Log`" 2>&1`""
 "Running $exeName $($arguments -join ' ')"
-$shell = Start-Process cmd.exe -ArgumentList "/c", $command -WorkingDirectory $engineFolder -WindowStyle Hidden -PassThru
+$shell = Start-Process cmd.exe -ArgumentList "/c", $command -WorkingDirectory $repo -WindowStyle Hidden -PassThru
 
 # The engine's own process: the newest of its name started after this script started it
 $engine = $null
