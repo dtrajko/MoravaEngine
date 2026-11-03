@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Level1
 EditorCamera:
-  Translation: [3.0197365, 12.963264, 1.0255585]
-  Rotation: [57.800083, 85.19853, 0]
+  Translation: [5.355022, 11.738976, -5.215347]
+  Rotation: [11.3001585, 166.69821, 0]
   FieldOfView: 45
 RenderSettings:
   Shadows:

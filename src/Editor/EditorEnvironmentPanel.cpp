@@ -210,7 +210,7 @@ void OnImGuiRenderEnvironment()
 		if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::PushID("DebugView");
-			ImGui::Combo("View", &s_ViewOptions.DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0Path Traced\0SMAA Edges\0SMAA Weights\0TAA Rejection\0");
+			ImGui::Combo("View", &s_ViewOptions.DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0Path Traced\0SMAA Edges\0SMAA Weights\0TAA Rejection\0Shadow Transmittance\0");
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -252,7 +252,9 @@ void OnImGuiRenderEnvironment()
 					"  left of the pixel, green: at its top) and how much of its neighbors each edge pixel takes. Shown whichever\n"
 					"  antialiasing the scene has.\n"
 					"TAA Rejection: where TAA didn't trust what the frames before showed (yellow), over a dim picture: what moved\n"
-					"  or changed. Shown whichever antialiasing the scene has. The other debug views are drawn without antialiasing.");
+					"  or changed. Shown whichever antialiasing the scene has. The other debug views are drawn without antialiasing.\n"
+					"Shadow Transmittance: the color the sun's light has at each opaque surface: white where it is lit, black in\n"
+					"  shadow, the glass's color behind tinted glass. The map itself: Lights panel, the sun's Show Shadow Map.");
 			}
 			if (s_ViewOptions.DebugView == DebugViewLinearDepth)
 			{

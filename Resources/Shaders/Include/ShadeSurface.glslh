@@ -95,7 +95,7 @@ bool PointLightAt(int i, vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out ve
 	{
 		return false;
 	}
-	float attenuation = DistanceAttenuation(distance, u_PointLights[i].Range);
+	vec3 attenuation = vec3(DistanceAttenuation(distance, u_PointLights[i].Range));
 	if (u_PointLights[i].ShadowIndex >= 0.0)
 	{
 #ifdef SHADE_SURFACE_LIGHT_SHADOW
@@ -125,7 +125,7 @@ bool SpotLightAt(int i, vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec
 	{
 		return false;
 	}
-	float attenuation = DistanceAttenuation(distance, u_SpotLights[i].Range);
+	vec3 attenuation = vec3(DistanceAttenuation(distance, u_SpotLights[i].Range));
 	if (u_SpotLights[i].ShadowIndex >= 0.0)
 	{
 #ifdef SHADE_SURFACE_LIGHT_SHADOW

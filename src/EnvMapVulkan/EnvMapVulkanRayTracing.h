@@ -54,7 +54,8 @@ public:
 	static constexpr uint32_t MaskOpaqueStatic = 0x01;  // opaque meshes of the models that stand still
 	static constexpr uint32_t MaskGlass = 0x02;         // glass meshes
 	static constexpr uint32_t MaskOpaqueSkinned = 0x04; // the meshes of skinned models (all drawn as opaque)
-	static constexpr uint32_t MaskGlassShadow = 0x08;   // glass whose material casts a shadow (with MaskGlass)
+	static constexpr uint32_t MaskGlassShadow = 0x08;   // glass whose material casts a full shadow (with MaskGlass)
+	static constexpr uint32_t MaskGlassTinted = 0x10;   // glass whose shadow has its color (with MaskGlass)
 	static constexpr uint32_t MaskOpaque = MaskOpaqueStatic | MaskOpaqueSkinned;
 
 	// What the view image shows (RayTracingView.glsl)

@@ -219,8 +219,9 @@ public:
 	static constexpr uint32_t CaptureDescriptorSet = 1;
 
 	// The sun's shadow map of the probe volume (one layer, a comparison sampler), which the capture's fragment stage
-	// reads. Once, and again when the map is replaced (nothing in flight may use the set then).
-	void SetCaptureSunShadowMap(const VkDescriptorImageInfo& shadowMap);
+	// reads, and tinted glass in it (the nearest glass, the transmittance). Once, and again when one is replaced (nothing in
+	// flight may use the set then).
+	void SetCaptureSunShadowMap(const VkDescriptorImageInfo& shadowMap, const VkDescriptorImageInfo& glassDepth, const VkDescriptorImageInfo& transmittance);
 	// Every frame with a capture: the map's view-projection; drawn: the map was drawn this frame (false: no sun shadows);
 	// texelWorldSize: the world size of one of its texels; normalBias: in texels, as the scene's shadow settings
 	void SetCaptureSun(const glm::mat4& viewProjection, bool drawn, float texelWorldSize, uint32_t resolution, float normalBias);

@@ -169,6 +169,7 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Cutout.glsl");      // SceneEnvMapVulkan: shadows of cutout materials
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Cutout_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowTransmittance.glsl"); // SceneEnvMapVulkan: light through tinted glass
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowMapView.glsl");    // SceneEnvMapVulkan: spot / point shadow map viewer
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeEnvFill.glsl");     // SceneEnvMapVulkan: the probe volume, filled from the environment
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeSpheres.glsl");     // SceneEnvMapVulkan: the probes shown as balls

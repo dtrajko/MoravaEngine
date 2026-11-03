@@ -18,14 +18,17 @@ layout (std140, set = 1, binding = 0) uniform CaptureSun
 	                                 // a texel, z = 1 / resolution, w = the normal bias (texels)
 };
 layout (set = 1, binding = 1) uniform sampler2DArrayShadow u_CaptureSunShadowMap; // one layer
+// Tinted glass in that map (as u_ShadowGlassDepth and u_ShadowTransmittance in Include/FrameSet.glslh)
+layout (set = 1, binding = 2) uniform sampler2DArrayShadow u_CaptureGlassDepth;
+layout (set = 1, binding = 3) uniform sampler2DArray u_CaptureTransmittance;
 
-// How much of the sun reaches the point: 1 lit, 0 in shadow (as SampleShadowCascade in Include/Shadows.glslh, with a
+// How much of the sun reaches the point: white lit, black in shadow, tinted behind glass (as SampleShadowCascade in Include/Shadows.glslh, with a
 // smaller filter: the probes blur it anyway)
-float CaptureSunShadow(vec3 worldPosition, vec3 geometryNormal)
+vec3 CaptureSunShadow(vec3 worldPosition, vec3 geometryNormal)
 {
 	if (u_CaptureSunParams.x < 0.5)
 	{
-		return 1.0;
+		return vec3(1.0);
 	}
 	float cosTheta = clamp(dot(geometryNormal, u_Sun.Direction), 0.0, 1.0);
 	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
@@ -36,7 +39,7 @@ float CaptureSunShadow(vec3 worldPosition, vec3 geometryNormal)
 	vec2 uv = shadowCoord.xy * 0.5 + 0.5;
 	if (shadowCoord.z >= 1.0 || any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0))))
 	{
-		return 1.0; // outside the map: nothing known, lit
+		return vec3(1.0); // outside the map: nothing known, lit
 	}
 	float lit = 0.0;
 	for (int y = -1; y <= 1; y++)
@@ -46,7 +49,13 @@ float CaptureSunShadow(vec3 worldPosition, vec3 geometryNormal)
 			lit += texture(u_CaptureSunShadowMap, vec4(uv + vec2(x, y) * u_CaptureSunParams.z, 0.0, shadowCoord.z));
 		}
 	}
-	return lit / 9.0;
+	lit /= 9.0;
+	if (u_GlassShadowParams.x > 0.5)
+	{
+		float inFront = texture(u_CaptureGlassDepth, vec4(uv, 0.0, shadowCoord.z));
+		return lit * mix(texture(u_CaptureTransmittance, vec3(uv, 0.0)).rgb, vec3(1.0), inFront);
+	}
+	return vec3(lit);
 }
 
 // The sun's shadow from the map above, and the probes' light whether or not they light the scene (Light the Scene)

@@ -69,11 +69,23 @@ public:
 	{
 		GlassIOR = 0,     // index of refraction: 1 (air: no bending), 1.33 water, 1.5 glass, 2.42 diamond
 		GlassThickness,   // meters the light travels inside the glass: how far what's behind seems to move
-		GlassCastShadows, // 1: casts a shadow like an opaque mesh; 0: lets the light through (no shadow)
+		GlassCastShadows, // GlassShadowMode: its shadow. As a number in the file: materials saved when this was on (1) or off (0) stay so
 		GlassSolid,       // 1: a solid body (a block, a ball): the light bends entering and leaving, as through a lens;
 		                  // 0: thin (a pane, a shell, a hollow vase): what's behind only shifts a little
 		GlassValueCount
 	};
+	// What glass does to the light that passes through it
+	enum class GlassShadowMode : uint32_t
+	{
+		None = 0,   // the light passes as if it weren't there
+		Full = 1,   // a full shadow, as an opaque mesh casts
+		Tinted = 2, // the light passes, with the glass's color: lighter than an opaque mesh's shadow
+	};
+	GlassShadowMode GetGlassShadowMode() const
+	{
+		const float value = m_GlassValues[GlassCastShadows];
+		return value > 1.5f ? GlassShadowMode::Tinted : value > 0.5f ? GlassShadowMode::Full : GlassShadowMode::None;
+	}
 	Surface GetSurface() const { return m_Surface; }
 	void SetSurface(Surface surface) { m_Surface = surface; }
 	bool IsGlass() const { return m_Surface == Surface::Glass; }
@@ -166,7 +178,7 @@ private:
 	H2M::RefH2M<H2M::VulkanMaterialH2M> m_Values; // created with the shared HazelPBR_Static shader; also owns the material descriptor set
 	std::array<H2M::RefH2M<H2M::Texture2D_H2M>, MapCount> m_Maps; // keeps the bound images alive (null: placeholder bound)
 	Surface m_Surface = Surface::Opaque;
-	std::array<float, GlassValueCount> m_GlassValues = { 1.5f, 0.2f, 0.0f, 1.0f }; // see GlassValue
+	std::array<float, GlassValueCount> m_GlassValues = { 1.5f, 0.2f, 2.0f, 1.0f }; // see GlassValue. New glass: a tinted shadow
 	float m_Cutoff = 0.5f;
 	bool m_FlipHorizontally = false;
 

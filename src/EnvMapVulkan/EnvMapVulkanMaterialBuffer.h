@@ -33,7 +33,7 @@
 class EnvMapVulkanMaterialBuffer
 {
 public:
-	// std430, 80 bytes: must match GPUMaterial in Include/GPUMaterial.glslh
+	// std430, 96 bytes: must match GPUMaterial in Include/GPUMaterial.glslh
 	struct GPUMaterial
 	{
 		glm::vec4 AlbedoColor = glm::vec4(0.0f); // rgb: the albedo color, or the average color of the albedo map when it is used
@@ -50,6 +50,10 @@ public:
 		float EmissiveIntensity = 0.0f;  // multiplies the emissive map
 		float IOR = 1.5f;                // glass: its index of refraction
 		float Cutoff = 0.0f;             // cutout: the albedo map's alpha below which there is no surface
+		float Thickness = 0.0f;          // glass: meters the light travels inside it (a tinted shadow)
+		float GlassShadow = 0.0f;        // glass: its Cast Shadows (a change of it changes the entry: the probes see it)
+		float Padding1 = 0.0f;
+		float Padding2 = 0.0f;
 	};
 	static constexpr uint32_t NoMap = EnvMapVulkanTextureTable::NoSlot;
 	static constexpr uint32_t FlagGlass = 1u << 0;

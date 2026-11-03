@@ -1,4 +1,5 @@
-// Shadow lookups: the sun's cascades, spot and point lights (1 lit, 0 in shadow). Needs Include/FrameSet.glslh.
+// Shadow lookups: the sun's cascades, spot and point lights. What they return multiplies the light: white where it is
+// lit, black in shadow, the glass's color behind tinted glass. Needs Include/FrameSet.glslh.
 #ifndef SHADOWS_GLSLH
 #define SHADOWS_GLSLH
 
@@ -15,8 +16,78 @@ int GetShadowCascade(float viewDistance)
 	return 3;
 }
 
-// How much of the sun reaches the point in one cascade: 1 lit, 0 in shadow
-float SampleShadowCascade(int cascade, vec3 worldPosition, vec3 geometryNormal)
+// What tinted glass leaves of a light at a point of a map (uv, its layer or cube, its depth there). Behind the glass's
+// nearest surface the transmittance applies, in front of it nothing does. The lookups are a filter's: 3 x 3, a step apart,
+// wider where the glass is frosted (the corners and the center tell how frosted, so the edge softens on both sides).
+vec3 GlassLightSun(vec2 uv, int layer, float depth, vec2 filterStep)
+{
+	float frost = texture(u_ShadowTransmittance, vec3(uv, float(layer))).a;
+	for (int i = 0; i < 4; i++)
+	{
+		vec2 corner = vec2(i < 2 ? -3.0 : 3.0, (i & 1) == 0 ? -3.0 : 3.0);
+		frost = max(frost, texture(u_ShadowTransmittance, vec3(uv + corner * filterStep, float(layer))).a);
+	}
+	vec2 stepSize = filterStep * (1.0 + frost * u_GlassShadowParams.y);
+	vec3 light = vec3(0.0);
+	for (int y = -1; y <= 1; y++)
+	{
+		for (int x = -1; x <= 1; x++)
+		{
+			vec2 p = uv + vec2(x, y) * stepSize;
+			float inFront = texture(u_ShadowGlassDepth, vec4(p, float(layer), depth));
+			light += mix(texture(u_ShadowTransmittance, vec3(p, float(layer))).rgb, vec3(1.0), inFront);
+		}
+	}
+	return light / 9.0;
+}
+
+vec3 GlassLightSpot(vec2 uv, int layer, float depth, vec2 filterStep)
+{
+	float frost = texture(u_SpotTransmittance, vec3(uv, float(layer))).a;
+	for (int i = 0; i < 4; i++)
+	{
+		vec2 corner = vec2(i < 2 ? -3.0 : 3.0, (i & 1) == 0 ? -3.0 : 3.0);
+		frost = max(frost, texture(u_SpotTransmittance, vec3(uv + corner * filterStep, float(layer))).a);
+	}
+	vec2 stepSize = filterStep * (1.0 + frost * u_GlassShadowParams.y);
+	vec3 light = vec3(0.0);
+	for (int y = -1; y <= 1; y++)
+	{
+		for (int x = -1; x <= 1; x++)
+		{
+			vec2 p = uv + vec2(x, y) * stepSize;
+			float inFront = texture(u_SpotGlassDepth, vec4(p, float(layer), depth));
+			light += mix(texture(u_SpotTransmittance, vec3(p, float(layer))).rgb, vec3(1.0), inFront);
+		}
+	}
+	return light / 9.0;
+}
+
+// The cube's: directions around the offset instead of texture coordinates
+vec3 GlassLightPoint(vec3 offset, vec3 tangent, vec3 bitangent, int slot, float depth, float filterStep)
+{
+	float frost = 0.0;
+	for (int i = 0; i < 5; i++)
+	{
+		vec2 corner = i == 4 ? vec2(0.0) : vec2(i < 2 ? -3.0 : 3.0, (i & 1) == 0 ? -3.0 : 3.0);
+		frost = max(frost, texture(u_PointTransmittance, vec4(offset + (tangent * corner.x + bitangent * corner.y) * filterStep, float(slot))).a);
+	}
+	float stepSize = filterStep * (1.0 + frost * u_GlassShadowParams.y);
+	vec3 light = vec3(0.0);
+	for (int y = -1; y <= 1; y++)
+	{
+		for (int x = -1; x <= 1; x++)
+		{
+			vec3 direction = offset + (tangent * float(x) + bitangent * float(y)) * stepSize;
+			float inFront = texture(u_PointGlassDepth, vec4(direction, float(slot)), depth);
+			light += mix(texture(u_PointTransmittance, vec4(direction, float(slot))).rgb, vec3(1.0), inFront);
+		}
+	}
+	return light / 9.0;
+}
+
+// How much of the sun reaches the point in one cascade: white lit, black in shadow, tinted behind glass
+vec3 SampleShadowCascade(int cascade, vec3 worldPosition, vec3 geometryNormal)
 {
 	// Normal offset: look the map up from a point slightly off the surface (more on surfaces that turn away from the
 	// sun, and in proportion to the cascade's texel size), so a lit surface doesn't shadow itself ("shadow acne")
@@ -29,7 +100,7 @@ float SampleShadowCascade(int cascade, vec3 worldPosition, vec3 geometryNormal)
 	vec2 uv = shadowCoord.xy * 0.5 + 0.5;
 	if (shadowCoord.z >= 1.0)
 	{
-		return 1.0; // beyond the cascade's far plane: nothing can shadow it
+		return vec3(1.0); // beyond the cascade's far plane: nothing can shadow it
 	}
 
 	// PCF: a 5x5 grid of comparisons, each one already a blend of 2x2 texels (the sampler's linear filter)
@@ -42,26 +113,31 @@ float SampleShadowCascade(int cascade, vec3 worldPosition, vec3 geometryNormal)
 			lit += texture(u_ShadowMap, vec4(uv + vec2(x, y) * pcfStep, float(cascade), shadowCoord.z));
 		}
 	}
-	return lit / 25.0;
+	lit /= 25.0;
+	if (u_GlassShadowParams.x > 0.5 && lit > 0.0)
+	{
+		return lit * GlassLightSun(uv, cascade, shadowCoord.z, max(pcfStep, vec2(u_ShadowMapTexelSize)));
+	}
+	return vec3(lit);
 }
 
-// The sun's shadow at the fragment: 1 lit, 0 in shadow. Near the end of a cascade it blends into the next one (no
+// The sun's shadow at the fragment: white lit, black in shadow, tinted behind glass. Near the end of a cascade it blends into the next one (no
 // visible seam), and the shadows fade out before the shadow distance (no hard end).
-float SunShadow(vec3 worldPosition, vec3 geometryNormal)
+vec3 SunShadow(vec3 worldPosition, vec3 geometryNormal)
 {
 	if (u_ShadowsEnabled < 0.5)
 	{
-		return 1.0;
+		return vec3(1.0);
 	}
 	float viewDistance = dot(worldPosition - u_CameraPosition, u_CameraForward);
 	float shadowDistance = u_CascadeSplits[3];
 	if (viewDistance >= shadowDistance)
 	{
-		return 1.0;
+		return vec3(1.0);
 	}
 
 	int cascade = GetShadowCascade(viewDistance);
-	float shadow = SampleShadowCascade(cascade, worldPosition, geometryNormal);
+	vec3 shadow = SampleShadowCascade(cascade, worldPosition, geometryNormal);
 
 	// Blend zone: the last tenth of the cascade (the next cascade covers it too, see ComputeShadowCascades)
 	if (cascade < 3)
@@ -77,7 +153,7 @@ float SunShadow(vec3 worldPosition, vec3 geometryNormal)
 
 	// Fade out over the last tenth of the shadow distance
 	float fadeStart = shadowDistance * 0.9;
-	return mix(shadow, 1.0, clamp((viewDistance - fadeStart) / (shadowDistance - fadeStart), 0.0, 1.0));
+	return mix(shadow, vec3(1.0), clamp((viewDistance - fadeStart) / (shadowDistance - fadeStart), 0.0, 1.0));
 }
 
 // Show Cascades: red, green, blue, yellow
@@ -88,9 +164,9 @@ vec3 CascadeDebugColor(vec3 worldPosition)
 	return viewDistance < u_CascadeSplits[3] ? colors[GetShadowCascade(viewDistance)] : vec3(1.0);
 }
 
-// The shadow of a spot light (1 lit, 0 in shadow): its layer of the spot light shadow maps, like a sun cascade but in a
+// The shadow of a spot light (white lit, black in shadow, tinted behind glass): its layer of the spot light shadow maps, like a sun cascade but in a
 // perspective map. distance: from the light to the fragment.
-float SpotShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 L, float distance)
+vec3 SpotShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 L, float distance)
 {
 	// Normal offset, in proportion to the size of a shadow map texel at this distance
 	float cosTheta = clamp(dot(geometryNormal, L), 0.0, 1.0);
@@ -101,12 +177,12 @@ float SpotShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 L, floa
 	vec4 clip = u_SpotShadowViewProjection[slot] * vec4(position, 1.0);
 	if (clip.w <= 0.0)
 	{
-		return 1.0;
+		return vec3(1.0);
 	}
 	vec3 shadowCoord = clip.xyz / clip.w;
 	if (shadowCoord.z >= 1.0)
 	{
-		return 1.0;
+		return vec3(1.0);
 	}
 	vec2 uv = shadowCoord.xy * 0.5 + 0.5;
 
@@ -119,13 +195,18 @@ float SpotShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 L, floa
 			lit += texture(u_SpotShadowMaps, vec4(uv + vec2(x, y) * pcfStep, float(slot), shadowCoord.z));
 		}
 	}
-	return lit / 25.0;
+	lit /= 25.0;
+	if (u_GlassShadowParams.x > 0.5 && lit > 0.0)
+	{
+		return lit * GlassLightSpot(uv, slot, shadowCoord.z, max(pcfStep, vec2(u_LocalShadowParams.z)));
+	}
+	return vec3(lit);
 }
 
-// The shadow of a point light (1 lit, 0 in shadow): its cube in the point light shadow maps. The cube is looked up with the
+// The shadow of a point light (white lit, black in shadow, tinted behind glass): its cube in the point light shadow maps. The cube is looked up with the
 // direction from the light; the depth to compare is the perspective depth of the largest coordinate of that offset (the
 // view depth in the face the direction selects, see ComputePointShadowFaceViewProjections).
-float PointShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 lightPosition, vec3 L, float distance)
+vec3 PointShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 lightPosition, vec3 L, float distance)
 {
 	// Normal offset, in proportion to the size of a cube face texel at this distance (90 degree faces)
 	float cosTheta = clamp(dot(geometryNormal, L), 0.0, 1.0);
@@ -150,7 +231,12 @@ float PointShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 lightP
 			lit += texture(u_PointShadowMaps, vec4(direction, float(slot)), depth);
 		}
 	}
-	return lit / 25.0;
+	lit /= 25.0;
+	if (u_GlassShadowParams.x > 0.5 && lit > 0.0)
+	{
+		return lit * GlassLightPoint(offset, tangent, bitangent, slot, depth, max(pcfStep, 2.0 * z * u_LocalShadowParams.w));
+	}
+	return vec3(lit);
 }
 
 #endif

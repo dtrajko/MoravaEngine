@@ -8,7 +8,7 @@
 #include <cstring>
 
 
-static_assert(sizeof(EnvMapVulkanMaterialBuffer::GPUMaterial) == 80, "std430 layout mismatch with GPUMaterial in Include/GPUMaterial.glslh");
+static_assert(sizeof(EnvMapVulkanMaterialBuffer::GPUMaterial) == 96, "std430 layout mismatch with GPUMaterial in Include/GPUMaterial.glslh");
 
 static constexpr uint32_t InitialCapacity = 64; // materials
 
@@ -144,6 +144,8 @@ EnvMapVulkanMaterialBuffer::GPUMaterial EnvMapVulkanMaterialBuffer::Pack(const H
 	{
 		// What a ray needs to pass through it (the glass shader has these as push constants)
 		entry.IOR = std::max(material->GetGlassValue(EnvMapVulkanMaterial::GlassIOR), 1.0f);
+		entry.Thickness = material->GetGlassValue(EnvMapVulkanMaterial::GlassThickness);
+		entry.GlassShadow = (float)material->GetGlassShadowMode();
 		entry.Flags |= material->GetGlassValue(EnvMapVulkanMaterial::GlassSolid) > 0.5f ? FlagGlassSolid : 0;
 	}
 	if (material->IsCutout())

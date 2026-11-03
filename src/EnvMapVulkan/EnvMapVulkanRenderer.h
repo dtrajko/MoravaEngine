@@ -119,6 +119,8 @@ public:
 	static bool AreShadowsRendered();
 	static const EnvMapVulkanShadowCascade& GetShadowCascade(uint32_t cascade);
 	static uint64_t GetShadowCascadeImage(uint32_t cascade);
+	// The light through tinted glass in that cascade, for the user interface; 0 when no tinted glass is drawn this frame
+	static uint64_t GetShadowTransmittanceImage(uint32_t cascade);
 	// The box around everything that casts shadows (min > max: nothing)
 	static void GetShadowCasterBounds(glm::vec3& boundsMin, glm::vec3& boundsMax);
 	// The shadow slot of each point and spot light of the scene's lists (-1: no shadow this frame), and how many have one

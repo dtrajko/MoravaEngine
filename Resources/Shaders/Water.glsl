@@ -248,6 +248,6 @@ void main()
 	// Shadows Only (Lights panel): the sun's shadow on the water, gray for the other lights (they don't light the water yet)
 	if (u_ShadowDebug.x > 0.5)
 	{
-		color = vec4(vec3(u_ShadowDebug.x < 1.5 ? SunShadow(v_WorldPosition, up) : 0.2), 1.0);
+		color = vec4(u_ShadowDebug.x < 1.5 ? SunShadow(v_WorldPosition, up) : vec3(0.2), 1.0);
 	}
 }
