@@ -173,6 +173,11 @@ namespace H2M
 		uint32_t MaterialIndex;
 		uint32_t IndexCount;
 		uint32_t VertexCount = 0; // vertices of this mesh in the model's vertex buffer, from BaseVertex
+		uint32_t SourceIndex = UINT32_MAX; // which mesh of the file it is (stays when other meshes leave the model)
+
+		// In a model made by LoadShared: the same mesh of the file's shared model. Its geometry is that mesh's, whatever
+		// happens to this one's Transform
+		RefH2M<MeshH2M> Source;
 
 		glm::mat4 Transform;
 		AABB_H2M BoundingBox;
@@ -185,12 +190,22 @@ namespace H2M
 	};
 
 	// A model: a loaded model file (an aiScene), made of one or more meshes (GetMeshes), with its materials, skeleton and animations.
+	// LoadShared reads a file once. Every entity then has its own small model, with its own list of meshes, their transforms and
+	// its animation state; the vertex and index buffers, triangles, materials, skeleton and clips are those of the file's one model.
 	class ModelH2M : public Mesh
 	{
 	public:
 		ModelH2M(const std::string& filename);
 		ModelH2M(const std::string& filename, RefH2M<MoravaShader> shader, RefH2M<MaterialH2M> material, bool isAnimated);
+		ModelH2M(const RefH2M<ModelH2M>& source, const std::string& filename); // use LoadShared
 		virtual ~ModelH2M() override;
+
+		// A model of its own on the file's shared one, which is read now unless it is in memory and the file hasn't changed.
+		// Without geometry (no such file, or nothing in it) when the file can't be used: it isn't kept then.
+		static RefH2M<ModelH2M> LoadShared(const std::string& filepath);
+		// Forgets the files no model uses any more. Their resources go, so the GPU must be idle.
+		static void ReleaseUnusedShared();
+		static void ReleaseAllShared(); // when the renderer shuts down
 
 		virtual void Create() override;
 		virtual void OnUpdate(TimestepH2M ts, bool debug = false) override;
@@ -206,13 +221,13 @@ namespace H2M
 
 		RefH2M<ShaderH2M> GetMeshShader() { return m_MeshShader; }
 		RefH2M<MaterialH2M> GetMaterial() { return m_BaseMaterial; }
-		const std::vector<RefH2M<MaterialH2M>>& GetMaterials() const { return m_Materials; }
-		std::vector<RefH2M<MaterialH2M>>& GetMaterials() { return m_Materials; }
-		const std::vector<RefH2M<Texture2D_H2M>>& GetTextures() const { return m_Textures; }
-		std::vector<RefH2M<Texture2D_H2M>>& GetTextures() { return m_Textures; }
+		const std::vector<RefH2M<MaterialH2M>>& GetMaterials() const { return GetFileModel().m_Materials; }
+		std::vector<RefH2M<MaterialH2M>>& GetMaterials() { return GetFileModel().m_Materials; }
+		const std::vector<RefH2M<Texture2D_H2M>>& GetTextures() const { return GetFileModel().m_Textures; }
+		std::vector<RefH2M<Texture2D_H2M>>& GetTextures() { return GetFileModel().m_Textures; }
 		const std::string& GetFilePath() const { return m_FilePath; }
 
-		const std::vector<TriangleH2M> GetTriangleCache(uint32_t index) const;
+		const std::vector<TriangleH2M>& GetTriangleCache(uint32_t index) const;
 
 		RefH2M<VertexBufferH2M> GetVertexBuffer() { return m_VertexBuffer; }
 		RefH2M<IndexBufferH2M> GetIndexBuffer() { return m_IndexBuffer; }
@@ -228,12 +243,13 @@ namespace H2M
 			std::unordered_map<std::string, RefH2M<Texture2D_H2M>> Textures; // last texture written to each binding (e.g. "u_AlbedoTexture")
 		};
 		// Material descriptor sets (set 1 of the mesh shaders, VulkanShaderH2M::MaterialDescriptorSet): one per material, texture maps only
-		const MaterialDescriptor& GetDescriptorSet(uint32_t index) { return m_MaterialDescriptors[index]; }
+		const MaterialDescriptor& GetDescriptorSet(uint32_t index) { return GetFileModel().m_MaterialDescriptors[index]; }
 		// nullptr when the model has no material descriptor set for this index (e.g. a model without materials)
 		const MaterialDescriptor* FindDescriptorSet(uint32_t index) const
 		{
-			if (index >= m_MaterialDescriptors.size() || m_MaterialDescriptors[index].DescriptorSet.DescriptorSets.empty()) return nullptr;
-			return &m_MaterialDescriptors[index];
+			const std::vector<MaterialDescriptor>& descriptors = GetFileModel().m_MaterialDescriptors;
+			if (index >= descriptors.size() || descriptors[index].DescriptorSet.DescriptorSets.empty()) return nullptr;
+			return &descriptors[index];
 		}
 
 #endif
@@ -264,7 +280,7 @@ namespace H2M
 
 		// Animation playback (Models and Meshes panel in SceneEnvMapVulkan). Times are in animation ticks.
 		// True if the vertex buffer has bone IDs and weights (the model was loaded with animations)
-		bool IsSkinned() const { return !m_AnimatedVertices.empty(); }
+		bool IsSkinned() const { return !GetFileModel().m_AnimatedVertices.empty(); }
 		uint32_t GetBoneCount() const { return m_BoneCount; }
 		// The bone matrices start with the inverse root node transform (see AnimationSkeleton): rigged meshes are drawn with
 		// the model transform * this root transform (unit scale / axis conversion of the file)
@@ -281,7 +297,7 @@ namespace H2M
 
 		// The skeleton and the file's own clips (Animation/AnimationClip.h): nullptr and empty for a model without animations
 		const AnimationSkeleton* GetSkeleton() const { return m_Skeleton.get(); }
-		const std::vector<AnimationClip>& GetClips() const { return m_Clips; }
+		const std::vector<AnimationClip>& GetClips() const { return GetFileModel().m_Clips; }
 		// A pose from outside (the animator, 6.4): the bone matrices are its until ReleasePose, and OnUpdate leaves them
 		void SetPose(const AnimationPose& pose);
 		void ReleasePose();
@@ -298,6 +314,13 @@ namespace H2M
 		void CloneMesh(RefH2M<MeshH2M> mesh);
 
 	private:
+		// The model that holds what is read from the file: the shared one, or this one when it was loaded by itself
+		const ModelH2M& GetFileModel() const { return m_FileModel ? *m_FileModel.Raw() : *this; }
+		ModelH2M& GetFileModel() { return m_FileModel ? *m_FileModel.Raw() : *this; }
+
+		// Skinned on Vulkan: the set of this model's bone matrices, in the uniform buffer of its own shader
+		void CreateObjectDescriptorSet();
+
 		// The bone matrices of the played clip at time (in ticks; the bind pose when the model isn't animated)
 		void BoneTransform(float time);
 		void TraverseNodes(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
@@ -308,6 +331,8 @@ namespace H2M
 		RefH2M<Texture2D_H2M> LoadBaseTexture();
 
 	private:
+		RefH2M<ModelH2M> m_FileModel; // set by LoadShared: keeps the shared model, and the aiScene in m_Scene, alive
+
 		RefH2M<PipelineH2M> m_Pipeline;
 		RefH2M<VertexBufferH2M> m_VertexBuffer;
 		RefH2M<IndexBufferH2M> m_IndexBuffer;

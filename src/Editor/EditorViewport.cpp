@@ -116,7 +116,7 @@ void RaycastMesh(float ndcX, float ndcY, EnvMapVulkanEntityID& hitModel, int& hi
 				continue;
 			}
 
-			const auto triangles = model->GetTriangleCache((uint32_t)s);
+			const auto& triangles = model->GetTriangleCache((uint32_t)s);
 			if (triangles.empty())
 			{
 				nearestT = t; hitModel = m; hitMesh = s; // no triangle data: the bounding box has to do

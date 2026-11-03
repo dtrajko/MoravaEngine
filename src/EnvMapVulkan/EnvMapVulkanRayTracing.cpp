@@ -494,14 +494,17 @@ EnvMapVulkanRayTracing::MeshEntry* EnvMapVulkanRayTracing::GetMeshEntry(const Fr
 {
 	H2M::RefH2M<H2M::ModelH2M> model = instance.Model;
 	H2M::RefH2M<H2M::MeshH2M> mesh = instance.Mesh;
-	auto [found, isNew] = m_Meshes.try_emplace(mesh.Raw());
+	// One structure per mesh of a file for what stands still: the models using the file are instances of it. A skinned model
+	// has its own, of its own moved vertices.
+	const bool skinned = model->IsSkinned();
+	H2M::RefH2M<H2M::MeshH2M> fileMesh = skinned || !mesh->Source ? mesh : mesh->Source;
+	auto [found, isNew] = m_Meshes.try_emplace(fileMesh.Raw());
 	MeshEntry& entry = found->second;
 	if (!isNew)
 	{
 		return &entry;
 	}
 
-	const bool skinned = model->IsSkinned();
 	const uint32_t vertexSize = skinned ? (uint32_t)sizeof(H2M::AnimatedVertex) : (uint32_t)sizeof(H2M::VertexH2M);
 	const uint32_t modelVertexCount = model->GetVertexBuffer()->GetSize() / vertexSize;
 	const uint32_t meshVertexCount = mesh->VertexCount > 0 ? mesh->VertexCount : (modelVertexCount > mesh->BaseVertex ? modelVertexCount - mesh->BaseVertex : 0);
@@ -510,7 +513,7 @@ EnvMapVulkanRayTracing::MeshEntry* EnvMapVulkanRayTracing::GetMeshEntry(const Fr
 		m_Meshes.erase(found);
 		return nullptr;
 	}
-	entry.Mesh = mesh;
+	entry.Mesh = fileMesh;
 	entry.MaxVertex = meshVertexCount - 1;
 	entry.TriangleCount = mesh->IndexCount / 3;
 	entry.IndexAddress = GetBufferAddress(H2M::RefH2M<H2M::VulkanIndexBufferH2M>(model->GetIndexBuffer())->GetVulkanBuffer()) +

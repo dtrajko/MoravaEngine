@@ -297,7 +297,7 @@ static EnvMapVulkanEntityID PasteModel(const ClipboardEntity& copy, EnvMapVulkan
 		Log::GetLogger()->error("Paste: model '{0}' was not found", copy.ModelPath);
 		return NoEntity;
 	}
-	H2M::RefH2M<H2M::ModelH2M> model = H2M::RefH2M<H2M::ModelH2M>::Create(copy.ModelPath);
+	H2M::RefH2M<H2M::ModelH2M> model = H2M::ModelH2M::LoadShared(copy.ModelPath);
 	if (!model || model->GetMeshes().empty())
 	{
 		Log::GetLogger()->error("Paste: model '{0}' could not be loaded", copy.ModelPath);

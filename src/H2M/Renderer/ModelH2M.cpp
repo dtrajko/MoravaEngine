@@ -45,6 +45,7 @@
 #include "Shader/MoravaShaderLibrary.h"
 
 #include <filesystem>
+#include <unordered_map>
 
 
 namespace H2M
@@ -171,6 +172,104 @@ namespace H2M
 	//		Create();
 	//	}
 
+	// Vulkan's mesh shader for a model file: a skinned model needs one for itself, the uniform buffer of its bone matrices
+	// belongs to the shader (set 2). A static model has nothing of its own in it, so every static model shares the library's.
+	static RefH2M<MoravaShader> CreateVulkanMeshShader(bool animated)
+	{
+		if (!animated)
+		{
+			return RefH2M<MoravaShader>(RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static"));
+		}
+		MoravaShaderSpecification specification;
+		specification.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
+		specification.HazelShaderPath = RESOURCE_SHADERS_DIR "/HazelPBR_Anim.glsl";
+		specification.ForceCompile = false; // the shader cache is recompiled when the source is newer
+		return MoravaShader::Create(specification);
+	}
+
+	ModelH2M::ModelH2M(const RefH2M<ModelH2M>& source, const std::string& filename)
+		: m_FileModel(source)
+	{
+		const ModelH2M& file = *m_FileModel.Raw();
+		m_FilePath = filename;
+		m_Scene = file.m_Scene;
+		m_IsAnimated = file.m_IsAnimated;
+		m_InverseTransform = file.m_InverseTransform;
+		m_BoneCount = file.m_BoneCount;
+		m_VertexBuffer = file.m_VertexBuffer;
+		m_IndexBuffer = file.m_IndexBuffer;
+		m_VertexBufferLayout = file.m_VertexBufferLayout;
+		m_Skeleton = file.m_Skeleton;
+
+		m_Meshes.reserve(file.m_Meshes.size());
+		for (const RefH2M<MeshH2M>& sourceMesh : file.m_Meshes)
+		{
+			RefH2M<MeshH2M> mesh = RefH2M<MeshH2M>::Create();
+			mesh->BaseVertex = sourceMesh->BaseVertex;
+			mesh->BaseIndex = sourceMesh->BaseIndex;
+			mesh->MaterialIndex = sourceMesh->MaterialIndex;
+			mesh->IndexCount = sourceMesh->IndexCount;
+			mesh->VertexCount = sourceMesh->VertexCount;
+			mesh->SourceIndex = sourceMesh->SourceIndex;
+			mesh->Source = sourceMesh;
+			mesh->Transform = sourceMesh->Transform;
+			mesh->BoundingBox = sourceMesh->BoundingBox;
+			mesh->NodeName = sourceMesh->NodeName;
+			mesh->MeshName = sourceMesh->MeshName;
+			mesh->IsRigged = sourceMesh->IsRigged;
+			m_Meshes.push_back(mesh);
+		}
+
+		m_MeshShader = file.m_MeshShader;
+		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan && m_IsAnimated)
+		{
+			m_MeshShader = CreateVulkanMeshShader(true);
+			CreateObjectDescriptorSet();
+		}
+	}
+
+	struct SharedModelFile
+	{
+		RefH2M<ModelH2M> Model;
+		std::filesystem::file_time_type WriteTime;
+	};
+
+	static std::unordered_map<std::string, SharedModelFile> s_SharedModels; // by the file's canonical path
+
+	RefH2M<ModelH2M> ModelH2M::LoadShared(const std::string& filepath)
+	{
+		std::error_code error;
+		const std::filesystem::path file(filepath);
+		const std::string key = std::filesystem::weakly_canonical(file, error).generic_string();
+		const std::filesystem::file_time_type writeTime = std::filesystem::last_write_time(file, error);
+
+		auto shared = s_SharedModels.find(key);
+		if (shared == s_SharedModels.end() || shared->second.WriteTime != writeTime)
+		{
+			RefH2M<ModelH2M> model = RefH2M<ModelH2M>::Create(filepath);
+			if (model->GetMeshes().empty())
+			{
+				return model;
+			}
+			// A file that changed replaces the entry: the models made before keep the old one until they go
+			shared = s_SharedModels.insert_or_assign(key, SharedModelFile{ model, writeTime }).first;
+		}
+		return RefH2M<ModelH2M>::Create(shared->second.Model, filepath);
+	}
+
+	void ModelH2M::ReleaseUnusedShared()
+	{
+		for (auto it = s_SharedModels.begin(); it != s_SharedModels.end();)
+		{
+			it = it->second.Model->GetRefCount() == 1 ? s_SharedModels.erase(it) : std::next(it);
+		}
+	}
+
+	void ModelH2M::ReleaseAllShared()
+	{
+		s_SharedModels.clear();
+	}
+
 	void ModelH2M::Create()
 	{
 		LogStream::Initialize();
@@ -213,21 +312,7 @@ namespace H2M
 			}
 			else if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
 			{
-				// A static model has nothing of its own in its shader, and every static model shares the one in the library. A
-				// skinned one gets its own: the uniform buffer of its bone matrices belongs to the shader (set 2)
-				if (!m_IsAnimated)
-				{
-					m_MeshShader = RefH2M<MoravaShader>(RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static"));
-				}
-				else
-				{
-				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
-				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
-				moravaShaderSpecificationHazelVulkan.HazelShaderPath = m_IsAnimated ? RESOURCE_SHADERS_DIR "/HazelPBR_Anim.glsl" : RESOURCE_SHADERS_DIR "/HazelPBR_Static.glsl";
-				moravaShaderSpecificationHazelVulkan.ForceCompile = false; // the shader cache is recompiled when the source is newer
-
-				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
-				}
+				m_MeshShader = CreateVulkanMeshShader(m_IsAnimated);
 			}
 			else if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::DX11)
 			{
@@ -259,6 +344,7 @@ namespace H2M
 			mesh->MaterialIndex = sourceMesh->mMaterialIndex;
 			mesh->IndexCount = sourceMesh->mNumFaces * 3;
 			mesh->VertexCount = sourceMesh->mNumVertices;
+			mesh->SourceIndex = (uint32_t)m;
 			mesh->MeshName = sourceMesh->mName.C_Str();
 			m_Meshes.push_back(mesh);
 
@@ -1096,23 +1182,7 @@ namespace H2M
 
 		/**** END Materials ****/
 
-		// Per-object descriptor set of a skinned model (set 2): the bone matrices, updated every frame by the renderer
-#if defined(GRAPHICS_API_VULKAN)
-		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan && m_IsAnimated)
-		{
-			RefH2M<VulkanShaderH2M> vulkanShader = m_MeshShader.As<VulkanShaderH2M>();
-			if (vulkanShader->HasDescriptorSet(VulkanShaderH2M::ObjectDescriptorSet))
-			{
-				m_ObjectDescriptorSet = vulkanShader->CreateDescriptorSets(VulkanShaderH2M::ObjectDescriptorSet);
-
-				VkWriteDescriptorSet writeDescriptorSet = *vulkanShader->GetDescriptorSet("BoneTransforms", VulkanShaderH2M::ObjectDescriptorSet);
-				writeDescriptorSet.dstSet = m_ObjectDescriptorSet.DescriptorSets[0];
-				writeDescriptorSet.descriptorCount = 1;
-				writeDescriptorSet.pBufferInfo = &vulkanShader->GetUniformBuffer(0, VulkanShaderH2M::ObjectDescriptorSet).Descriptor;
-				vkUpdateDescriptorSets(VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &writeDescriptorSet, 0, nullptr);
-			}
-		}
-#endif
+		CreateObjectDescriptorSet();
 
 		HZ_MESH_LOG("H2M::ModelH2M: Creating a Vertex Buffer...");
 
@@ -1199,6 +1269,27 @@ namespace H2M
 
 	ModelH2M::~ModelH2M()
 	{
+	}
+
+	void ModelH2M::CreateObjectDescriptorSet()
+	{
+		// Per-object descriptor set of a skinned model (set 2): the bone matrices, updated every frame by the renderer
+#if defined(GRAPHICS_API_VULKAN)
+		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan && m_IsAnimated)
+		{
+			RefH2M<VulkanShaderH2M> vulkanShader = m_MeshShader.As<VulkanShaderH2M>();
+			if (vulkanShader->HasDescriptorSet(VulkanShaderH2M::ObjectDescriptorSet))
+			{
+				m_ObjectDescriptorSet = vulkanShader->CreateDescriptorSets(VulkanShaderH2M::ObjectDescriptorSet);
+
+				VkWriteDescriptorSet writeDescriptorSet = *vulkanShader->GetDescriptorSet("BoneTransforms", VulkanShaderH2M::ObjectDescriptorSet);
+				writeDescriptorSet.dstSet = m_ObjectDescriptorSet.DescriptorSets[0];
+				writeDescriptorSet.descriptorCount = 1;
+				writeDescriptorSet.pBufferInfo = &vulkanShader->GetUniformBuffer(0, VulkanShaderH2M::ObjectDescriptorSet).Descriptor;
+				vkUpdateDescriptorSets(VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &writeDescriptorSet, 0, nullptr);
+			}
+		}
+#endif
 	}
 
 	void ModelH2M::AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, RefH2M<Texture2D_H2M> texture)
@@ -1417,16 +1508,6 @@ namespace H2M
 			return;
 		}
 		m_Meshes.erase(m_Meshes.begin() + index);
-
-		std::unordered_map<uint32_t, std::vector<TriangleH2M>> triangleCache;
-		for (auto& [meshIndex, triangles] : m_TriangleCache)
-		{
-			if (meshIndex != index)
-			{
-				triangleCache[meshIndex > index ? meshIndex - 1 : meshIndex] = std::move(triangles);
-			}
-		}
-		m_TriangleCache = std::move(triangleCache);
 	}
 
 	void ModelH2M::CloneMesh(RefH2M<MeshH2M> mesh)
@@ -1446,10 +1527,10 @@ namespace H2M
 			return;
 		}
 		m_Skeleton->GetBindPose(m_Pose);
-		if (m_IsAnimated && m_AnimationIndex < m_Clips.size())
+		if (m_IsAnimated && m_AnimationIndex < GetClips().size())
 		{
-			const AnimationClip& clip = m_Clips[m_AnimationIndex];
-			AnimationSampling::SampleClip(clip, m_ClipBindings[m_AnimationIndex], time / GetAnimationTicksPerSecond(), true, false, m_Pose);
+			const AnimationClip& clip = GetClips()[m_AnimationIndex];
+			AnimationSampling::SampleClip(clip, GetFileModel().m_ClipBindings[m_AnimationIndex], time / GetAnimationTicksPerSecond(), true, false, m_Pose);
 		}
 		m_Skeleton->ComputeBoneTransforms(m_Pose, m_BoneTransforms);
 	}
@@ -1506,16 +1587,16 @@ namespace H2M
 		HZ_MESH_LOG("------------------------------------------------------");
 	}
 
-	const std::vector<TriangleH2M> ModelH2M::GetTriangleCache(uint32_t index) const
+	const std::vector<TriangleH2M>& ModelH2M::GetTriangleCache(uint32_t index) const
 	{
-		std::unordered_map<uint32_t, std::vector<TriangleH2M>>::const_iterator entry = m_TriangleCache.find(index);
-
-		if (index < m_TriangleCache.size() && entry != m_TriangleCache.end())
+		static const std::vector<TriangleH2M> s_NoTriangles;
+		if (index >= m_Meshes.size())
 		{
-			return entry->second;
+			return s_NoTriangles;
 		}
-
-		return std::vector<TriangleH2M>();
+		const std::unordered_map<uint32_t, std::vector<TriangleH2M>>& cache = GetFileModel().m_TriangleCache;
+		auto entry = cache.find(m_Meshes[index]->SourceIndex);
+		return entry != cache.end() ? entry->second : s_NoTriangles;
 	}
 
 	void ModelH2M::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials)

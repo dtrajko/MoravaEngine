@@ -33,7 +33,7 @@ namespace EnvMapVulkanSceneLoader
 			return NoEntity;
 		}
 
-		H2M::RefH2M<H2M::ModelH2M> model = H2M::RefH2M<H2M::ModelH2M>::Create(filepath);
+		H2M::RefH2M<H2M::ModelH2M> model = H2M::ModelH2M::LoadShared(filepath);
 		if (!model || model->GetMeshes().empty())
 		{
 			Log::GetLogger()->error("Model '{0}' was not loaded: no geometry found.", filepath);
@@ -82,7 +82,7 @@ namespace EnvMapVulkanSceneLoader
 			Log::GetLogger()->error("Scene: model '{0}' was not found", component.FilePath);
 			return false;
 		}
-		H2M::RefH2M<H2M::ModelH2M> model = H2M::RefH2M<H2M::ModelH2M>::Create(component.FilePath);
+		H2M::RefH2M<H2M::ModelH2M> model = H2M::ModelH2M::LoadShared(component.FilePath);
 		if (!model || model->GetMeshes().empty())
 		{
 			Log::GetLogger()->error("Scene: model '{0}' could not be loaded", component.FilePath);
@@ -212,6 +212,8 @@ namespace EnvMapVulkanSceneLoader
 				scene.DestroyEntity(entity);
 			}
 		}
+		// After the loading, so that a file the last scene used too wasn't read again
+		H2M::ModelH2M::ReleaseUnusedShared();
 		return true;
 	}
 }
