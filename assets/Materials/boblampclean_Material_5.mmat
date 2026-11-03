@@ -21,4 +21,5 @@ Material:
   Maps:
     Albedo:
       File: Models/OGLdev/BobLamp/guard1_body.tga
+      FileID: 10152210414467302166
       Enabled: true

@@ -6,6 +6,7 @@
 
 #include "VulkanIndexBufferH2M.h"
 
+#include "VulkanBufferReleaseH2M.h"
 #include "VulkanContextH2M.h"
 
 #include "H2M/Renderer/RendererH2M.h"
@@ -81,6 +82,12 @@ namespace H2M
 		vkUnmapMemory(device, m_DeviceMemory);
 
 		VK_CHECK_RESULT_H2M(vkBindBufferMemory(device, m_VulkanBuffer, m_DeviceMemory, 0));
+	}
+
+	VulkanIndexBufferH2M::~VulkanIndexBufferH2M()
+	{
+		VulkanBufferReleaseH2M::Queue(m_VulkanBuffer, m_DeviceMemory);
+		m_LocalData.Release();
 	}
 
 	void VulkanIndexBufferH2M::SetData(void* buffer, uint32_t size, uint32_t offset)

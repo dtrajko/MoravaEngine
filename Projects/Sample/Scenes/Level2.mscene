@@ -80,6 +80,7 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/Tropical_Beach_3k.hdr
+      FileID: 14740629034018722489
       Rotation: 4
       Exposure: 1
       AutoExposure: true
@@ -110,6 +111,7 @@ Entities:
       Scale: [0.9999992, 0.99999994, 0.9999992]
     Model:
       File: Models/Erika_Archer/Erika_Archer.dae
+      FileID: 18080854447661943173
     CharacterController:
       Height: 1.7
       Radius: 0.3
@@ -134,7 +136,7 @@ Entities:
         JumpSound: {String: Assets/Audio/JumpTakeoff.wav}
         LandSound: {String: Assets/Audio/Land.wav}
         SoundDistance: {Float: 4}
-    Animator: {Controller: Assets/Animators/Erika.manim}
+    Animator: {Controller: Assets/Animators/Erika.manim, ControllerID: 16350183885629532246}
   - ID: 7310463185520941002
     Name: Eyes
     Parent: 7310463185520941001
@@ -252,6 +254,7 @@ Entities:
       Scale: [5, 1, 5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -283,6 +286,7 @@ Entities:
       Scale: [1.5, 0.2, 1.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -314,6 +318,7 @@ Entities:
       Scale: [1.5, 0.2, 1.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -345,6 +350,7 @@ Entities:
       Scale: [1.5, 0.2, 1.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -376,6 +382,7 @@ Entities:
       Scale: [1.5, 0.2, 1.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -407,6 +414,7 @@ Entities:
       Scale: [1.5, 0.2, 1.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -438,6 +446,7 @@ Entities:
       Scale: [1, 0.2, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -469,6 +478,7 @@ Entities:
       Scale: [0.8, 0.2, 0.8]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -500,6 +510,7 @@ Entities:
       Scale: [0.8, 0.2, 0.8]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -531,6 +542,7 @@ Entities:
       Scale: [0.8, 0.2, 0.8]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -562,6 +574,7 @@ Entities:
       Scale: [2, 0.2, 2]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -593,6 +606,7 @@ Entities:
       Scale: [1.5, 0.2, 1.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -624,6 +638,7 @@ Entities:
       Scale: [1.5, 0.2, 1.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -655,6 +670,7 @@ Entities:
       Scale: [3, 0.15, 0.6]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -686,6 +702,7 @@ Entities:
       Scale: [2.5, 0.2, 2.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -717,6 +734,7 @@ Entities:
       Scale: [1.5, 0.15, 1.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -762,6 +780,7 @@ Entities:
       Scale: [1.5, 0.15, 2.1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -788,6 +807,7 @@ Entities:
         StopSound: {String: Assets/Audio/Elevator_Clank.wav}
     AudioSource:
       Clip: Assets/Audio/Elevator_Motor.wav
+      ClipID: 11522422177169028015
       Bus: Effects
       Volume: 0.6
       Pitch: 1
@@ -878,6 +898,7 @@ Entities:
       Scale: [0.2, 1.5, 0.2]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -909,6 +930,7 @@ Entities:
       Scale: [0.2, 1.5, 0.2]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -940,6 +962,7 @@ Entities:
       Scale: [1.3, 0.2, 0.2]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -971,6 +994,7 @@ Entities:
       Scale: [0.9, 1.25, 0.04]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
   - ID: 7310000000000004037
     Name: Cube
     Parent: 7310000000000004036
@@ -1003,7 +1027,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005101
     Name: Coin Model
     Parent: 7310000000000005001
@@ -1013,6 +1037,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005201
     Name: Cylinder
     Parent: 7310000000000005101
@@ -1045,7 +1070,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005102
     Name: Coin Model
     Parent: 7310000000000005002
@@ -1055,6 +1080,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005202
     Name: Cylinder
     Parent: 7310000000000005102
@@ -1087,7 +1113,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005103
     Name: Coin Model
     Parent: 7310000000000005003
@@ -1097,6 +1123,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005203
     Name: Cylinder
     Parent: 7310000000000005103
@@ -1129,7 +1156,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005104
     Name: Coin Model
     Parent: 7310000000000005004
@@ -1139,6 +1166,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005204
     Name: Cylinder
     Parent: 7310000000000005104
@@ -1171,7 +1199,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005105
     Name: Coin Model
     Parent: 7310000000000005005
@@ -1181,6 +1209,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005205
     Name: Cylinder
     Parent: 7310000000000005105
@@ -1213,7 +1242,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005106
     Name: Coin Model
     Parent: 7310000000000005006
@@ -1223,6 +1252,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005206
     Name: Cylinder
     Parent: 7310000000000005106
@@ -1255,7 +1285,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005107
     Name: Coin Model
     Parent: 7310000000000005007
@@ -1265,6 +1295,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005207
     Name: Cylinder
     Parent: 7310000000000005107
@@ -1297,7 +1328,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005108
     Name: Coin Model
     Parent: 7310000000000005008
@@ -1307,6 +1338,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005208
     Name: Cylinder
     Parent: 7310000000000005108
@@ -1339,7 +1371,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005109
     Name: Coin Model
     Parent: 7310000000000005009
@@ -1349,6 +1381,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005209
     Name: Cylinder
     Parent: 7310000000000005109
@@ -1381,7 +1414,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005110
     Name: Coin Model
     Parent: 7310000000000005010
@@ -1391,6 +1424,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005210
     Name: Cylinder
     Parent: 7310000000000005110
@@ -1423,7 +1457,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005111
     Name: Coin Model
     Parent: 7310000000000005011
@@ -1433,6 +1467,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005211
     Name: Cylinder
     Parent: 7310000000000005111
@@ -1465,7 +1500,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005112
     Name: Coin Model
     Parent: 7310000000000005012
@@ -1475,6 +1510,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005212
     Name: Cylinder
     Parent: 7310000000000005112
@@ -1507,7 +1543,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005113
     Name: Coin Model
     Parent: 7310000000000005013
@@ -1517,6 +1553,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005213
     Name: Cylinder
     Parent: 7310000000000005113
@@ -1549,7 +1586,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005114
     Name: Coin Model
     Parent: 7310000000000005014
@@ -1559,6 +1596,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005214
     Name: Cylinder
     Parent: 7310000000000005114
@@ -1591,7 +1629,7 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Coin
-    Prefab: {File: Assets/Prefabs/Coin.mprefab, PrefabHash: 10657789324009488261, InstanceHash: 13611664662195713499}
+    Prefab: {File: Assets/Prefabs/Coin.mprefab, FileID: 10378060263458553197, PrefabHash: 4956094264386230462, InstanceHash: 6137707471717883959, HashVersion: 2}
   - ID: 7310000000000005115
     Name: Coin Model
     Parent: 7310000000000005015
@@ -1601,6 +1639,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 7310000000000005215
     Name: Cylinder
     Parent: 7310000000000005115
@@ -1628,7 +1667,7 @@ Entities:
         NextScene: {String: Scenes/End.mscene}
         Goal: {Entity: 7310000000000004035}
         FallHeight: {Float: -1.5}
-        SparklePrefab: {Prefab: Assets/Prefabs/Sparkle.mprefab}
+        SparklePrefab: {Prefab: Assets/Prefabs/Sparkle.mprefab, PrefabID: 17877850850927617984}
         CoinText: {Entity: 7310000000000003002}
         LevelText: {Entity: 7310000000000003003}
         TimeText: {Entity: 7310000000000003004}
@@ -1642,6 +1681,7 @@ Entities:
       Scale: [1, 1, 1]
     AudioSource:
       Clip: Assets/Audio/Music.wav
+      ClipID: 13914811652133185307
       Bus: Music
       Volume: 0.6
       Pitch: 1

@@ -30,6 +30,7 @@ Entities:
       Scale: [0.3, 0.04, 0.3]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
   - ID: 3
     Name: Cylinder
     Parent: 2

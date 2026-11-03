@@ -23,6 +23,7 @@ namespace H2M
 	public:
 		VulkanIndexBufferH2M(uint32_t size);
 		VulkanIndexBufferH2M(void* data, uint32_t size = 0);
+		virtual ~VulkanIndexBufferH2M() override;
 
 		virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) override;
 		virtual void Bind() const override;
@@ -37,8 +38,8 @@ namespace H2M
 		uint32_t m_Size = 0;
 		BufferH2M m_LocalData;
 
-		VkBuffer m_VulkanBuffer;
-		VkDeviceMemory m_DeviceMemory;
+		VkBuffer m_VulkanBuffer = nullptr;
+		VkDeviceMemory m_DeviceMemory = nullptr;
 	};
 
 }

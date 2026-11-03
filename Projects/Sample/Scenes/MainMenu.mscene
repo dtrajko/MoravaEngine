@@ -76,6 +76,7 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/Tropical_Beach_3k.hdr
+      FileID: 14740629034018722489
       Rotation: 4
       Exposure: 1
       AutoExposure: true
@@ -105,6 +106,7 @@ Entities:
       Scale: [1, 1, 1]
     AudioSource:
       Clip: Assets/Audio/Music.wav
+      ClipID: 13914811652133185307
       Bus: Music
       Volume: 0.6
       Pitch: 1

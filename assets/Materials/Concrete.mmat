@@ -12,16 +12,21 @@ Material:
   Maps:
     Albedo:
       File: Textures/PBR/concrete3/concrete3-albedo.png
+      FileID: 5914390156461434462
       Enabled: true
     Normal:
       File: Textures/PBR/concrete3/concrete3-Normal-dx.png
+      FileID: 2979124350111785940
       Enabled: true
     Metalness:
       File: Textures/PBR/concrete3/concrete3-Metallic.png
+      FileID: 7493511879713594751
       Enabled: true
     Roughness:
       File: Textures/PBR/concrete3/concrete3-Roughness.png
+      FileID: 13140623778735832999
       Enabled: true
     AmbientOcclusion:
       File: Textures/PBR/concrete3/concrete3-ao.png
+      FileID: 8513196170416667893
       Enabled: true

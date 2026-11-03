@@ -4,6 +4,7 @@ Material:
   Name: Floor_Material
   Source:
     File: Models/Primitives/cube.obj
+    FileID: 14090977682447350047
     Index: 1
   AlbedoColor: [0.8, 0.8, 0.8]
   Metalness: 0
@@ -15,16 +16,21 @@ Material:
   Maps:
     Albedo:
       File: Textures/PBR/aged_planks_1/agedplanks1-albedo.png
+      FileID: 6731232853999297563
       Enabled: true
     Normal:
       File: Textures/PBR/aged_planks_1/agedplanks1-normal4-ue.png
+      FileID: 14939156804402779723
       Enabled: true
     Metalness:
       File: Textures/PBR/aged_planks_1/agedplanks1-metalness.png
+      FileID: 9336100537580022963
       Enabled: true
     Roughness:
       File: Textures/PBR/aged_planks_1/agedplanks1-roughness.png
+      FileID: 10006565626370226071
       Enabled: true
     AmbientOcclusion:
       File: Textures/PBR/aged_planks_1/agedplanks1-ao.png
+      FileID: 15349405907026925450
       Enabled: true

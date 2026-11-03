@@ -6,6 +6,7 @@
 
 #include "VulkanVertexBufferH2M.h"
 
+#include "VulkanBufferReleaseH2M.h"
 #include "VulkanContextH2M.h"
 
 #include "H2M/Renderer/RendererH2M.h"
@@ -86,6 +87,8 @@ namespace H2M
 
 	VulkanVertexBufferH2M::~VulkanVertexBufferH2M()
 	{
+		VulkanBufferReleaseH2M::Queue(m_VulkanBuffer, m_DeviceMemory);
+		m_LocalData.Release();
 	}
 
 	void VulkanVertexBufferH2M::SetData(void* buffer, uint32_t size, uint32_t offset)

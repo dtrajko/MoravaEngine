@@ -4,6 +4,7 @@ Material:
   Name: Erika_Eyelashes
   Source:
     File: Models/Erika_Archer/Erika_Archer.dae
+    FileID: 18080854447661943173
     Index: 3
   AlbedoColor: [1, 1, 1]
   Metalness: 0
@@ -22,4 +23,5 @@ Material:
   Maps:
     Albedo:
       File: Models/Erika_Archer/textures/FemaleFitA_eyelash_diffuse.png
+      FileID: 15775616543330500814
       Enabled: true

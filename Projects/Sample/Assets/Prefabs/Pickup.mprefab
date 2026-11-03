@@ -12,6 +12,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -25,6 +26,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1

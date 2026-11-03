@@ -4,6 +4,7 @@ Material:
   Name: Character
   Source:
     File: Models/PirateVoid/walking.dae
+    FileID: 15553284450537077592
     Index: 0
   AlbedoColor: [1, 1, 1]
   Metalness: 0
@@ -21,4 +22,5 @@ Material:
   Maps:
     Albedo:
       File: Textures/PirateVoid/piratevoid_diffuse.png
+      FileID: 5734083973565131253
       Enabled: true

@@ -19,4 +19,5 @@ Material:
   Maps:
     Emissive:
       File: Assets/RenderTextures/RenderTexture_01.mrtex
+      FileID: 5668478701291676083
       Enabled: true

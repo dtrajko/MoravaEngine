@@ -2,6 +2,7 @@
 
 #include "EnvMapVulkanMaterialLibrary.h"
 
+#include "Project/AssetRegistry.h"
 #include "Project/Project.h"
 
 #include <algorithm>
@@ -127,7 +128,7 @@ namespace EnvMapVulkanSceneSerializer
 	//     Speed: {Float: 4}
 	//     Camera: {Entity: 4797481855757227527}
 	//     Around: {Enum: Y}
-	//     Effect: {Prefab: Assets/Prefabs/Sparkle.mprefab}
+	//     Effect: {Prefab: Assets/Prefabs/Sparkle.mprefab, PrefabID: 5120958813940177203}
 	static void WriteScript(YAML::Emitter& out, const ScriptComponent& script)
 	{
 		out << YAML::Key << "Script" << YAML::Value << YAML::BeginMap;
@@ -150,8 +151,23 @@ namespace EnvMapVulkanSceneSerializer
 				case ScriptFieldType::Vector4: out << YAML::Flow << YAML::BeginSeq << v.Vector.x << v.Vector.y << v.Vector.z << v.Vector.w << YAML::EndSeq; break;
 				case ScriptFieldType::Entity:  out << v.Entity; break;
 				case ScriptFieldType::String:
-				case ScriptFieldType::Enum:
-				case ScriptFieldType::Prefab:  out << v.Text; break;
+				case ScriptFieldType::Enum:    out << v.Text; break;
+				case ScriptFieldType::Prefab:
+				{
+					// An asset reference (AssetReference), v.Text being the path as stored
+					const AssetID id = AssetReference::GetTextMode() == AssetReference::TextMode::Legacy ? 0 : AssetRegistry::GetID(ProjectPaths::Resolve(v.Text));
+					if (id != 0 && AssetReference::GetTextMode() == AssetReference::TextMode::Stable)
+					{
+						out << id;
+						break;
+					}
+					out << v.Text;
+					if (id != 0)
+					{
+						out << YAML::Key << "PrefabID" << YAML::Value << id;
+					}
+					break;
+				}
 				}
 				out << YAML::EndMap;
 			}
@@ -172,7 +188,7 @@ namespace EnvMapVulkanSceneSerializer
 		{
 			const YAML::Node typed = entry.second;
 			ScriptFieldValue v;
-			if (!typed.IsMap() || typed.size() != 1 || !ScriptFieldValue::ParseTypeName(typed.begin()->first.as<std::string>(), v.Type))
+			if (!typed.IsMap() || typed.size() == 0 || !ScriptFieldValue::ParseTypeName(typed.begin()->first.as<std::string>(), v.Type))
 			{
 				continue; // not a field this version knows
 			}
@@ -194,8 +210,13 @@ namespace EnvMapVulkanSceneSerializer
 				break;
 			case ScriptFieldType::Entity: v.Entity = value.as<uint64_t>(0); break;
 			case ScriptFieldType::String:
-			case ScriptFieldType::Enum:
-			case ScriptFieldType::Prefab: v.Text = value.as<std::string>(""); break;
+			case ScriptFieldType::Enum:   v.Text = value.as<std::string>(""); break;
+			case ScriptFieldType::Prefab:
+			{
+				const std::string found = typed["PrefabID"] ? AssetRegistry::FindPath(typed["PrefabID"].as<AssetID>(0)) : std::string();
+				v.Text = !found.empty() ? ProjectPaths::ToStored(found) : value.as<std::string>("");
+				break;
+			}
 			}
 			script.Fields.push_back({ entry.first.as<std::string>(), v });
 		}
@@ -222,7 +243,7 @@ namespace EnvMapVulkanSceneSerializer
 		if (const ModelComponent* model = scene.TryGet<ModelComponent>(entity))
 		{
 			out << YAML::Key << "Model" << YAML::Value << YAML::BeginMap;
-			out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(model->FilePath);
+			AssetReference::Write(out, "File", model->FilePath);
 			out << YAML::EndMap;
 		}
 		if (const MeshPartComponent* part = scene.TryGet<MeshPartComponent>(entity))
@@ -233,7 +254,10 @@ namespace EnvMapVulkanSceneSerializer
 			{
 				out << YAML::Key << "Material" << YAML::Value << YAML::BeginMap;
 				out << YAML::Key << "ID" << YAML::Value << part->Material->GetID();
-				out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(part->Material->GetFilePath());
+				if (AssetReference::GetTextMode() != AssetReference::TextMode::Stable) // its ID, just written, says what it is
+				{
+					out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(part->Material->GetFilePath());
+				}
 				out << YAML::Key << "Name" << YAML::Value << part->Material->GetName(); // for people reading the file
 				out << YAML::EndMap;
 			}
@@ -282,7 +306,7 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "FarClip" << YAML::Value << camera->FarClip;
 			if (!camera->Target.empty())
 			{
-				out << YAML::Key << "Target" << YAML::Value << ProjectPaths::ToStored(camera->Target);
+				AssetReference::Write(out, "Target", camera->Target);
 				out << YAML::Key << "DrawEvery" << YAML::Value << camera->DrawEvery;
 				out << YAML::Key << "Enabled" << YAML::Value << camera->Enabled;
 				if (camera->Antialiasing != AntialiasingMode::Off)
@@ -347,7 +371,7 @@ namespace EnvMapVulkanSceneSerializer
 		if (const AudioSourceComponent* source = scene.TryGet<AudioSourceComponent>(entity))
 		{
 			out << YAML::Key << "AudioSource" << YAML::Value << YAML::BeginMap;
-			out << YAML::Key << "Clip" << YAML::Value << ProjectPaths::ToStored(source->Clip);
+			AssetReference::Write(out, "Clip", source->Clip);
 			out << YAML::Key << "Bus" << YAML::Value << GetAudioBusName(source->Bus);
 			out << YAML::Key << "Volume" << YAML::Value << source->Volume;
 			out << YAML::Key << "Pitch" << YAML::Value << source->Pitch;
@@ -368,15 +392,19 @@ namespace EnvMapVulkanSceneSerializer
 		if (const AnimatorComponent* animator = scene.TryGet<AnimatorComponent>(entity))
 		{
 			out << YAML::Key << "Animator" << YAML::Value << YAML::Flow << YAML::BeginMap;
-			out << YAML::Key << "Controller" << YAML::Value << ProjectPaths::ToStored(animator->Controller);
+			AssetReference::Write(out, "Controller", animator->Controller);
 			out << YAML::EndMap;
 		}
 		if (const PrefabComponent* prefab = scene.TryGet<PrefabComponent>(entity))
 		{
 			out << YAML::Key << "Prefab" << YAML::Value << YAML::Flow << YAML::BeginMap;
-			out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(prefab->File);
+			AssetReference::Write(out, "File", prefab->File);
 			out << YAML::Key << "PrefabHash" << YAML::Value << prefab->PrefabHash;
 			out << YAML::Key << "InstanceHash" << YAML::Value << prefab->InstanceHash;
+			if (AssetReference::GetTextMode() != AssetReference::TextMode::Legacy)
+			{
+				out << YAML::Key << "HashVersion" << YAML::Value << prefab->HashVersion;
+			}
 			out << YAML::EndMap;
 		}
 		if (const UICanvasComponent* canvas = scene.TryGet<UICanvasComponent>(entity))
@@ -402,7 +430,7 @@ namespace EnvMapVulkanSceneSerializer
 		{
 			out << YAML::Key << "UIText" << YAML::Value << YAML::BeginMap;
 			out << YAML::Key << "Text" << YAML::Value << text->Text;
-			out << YAML::Key << "Font" << YAML::Value << ProjectPaths::ToStored(text->Font);
+			AssetReference::Write(out, "Font", text->Font);
 			out << YAML::Key << "Size" << YAML::Value << text->Size;
 			WriteVec4(out, "Color", text->Color);
 			out << YAML::Key << "Align" << YAML::Value << UITextComponent::GetAlignName(text->Align);
@@ -414,7 +442,7 @@ namespace EnvMapVulkanSceneSerializer
 		if (const UIImageComponent* image = scene.TryGet<UIImageComponent>(entity))
 		{
 			out << YAML::Key << "UIImage" << YAML::Value << YAML::Flow << YAML::BeginMap;
-			out << YAML::Key << "Texture" << YAML::Value << ProjectPaths::ToStored(image->Texture);
+			AssetReference::Write(out, "Texture", image->Texture);
 			WriteVec4(out, "Color", image->Color);
 			out << YAML::EndMap;
 		}
@@ -484,7 +512,7 @@ namespace EnvMapVulkanSceneSerializer
 		if (const EnvironmentComponent* environment = scene.TryGet<EnvironmentComponent>(entity))
 		{
 			out << YAML::Key << "Environment" << YAML::Value << YAML::BeginMap;
-			out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(environment->FilePath);
+			AssetReference::Write(out, "File", environment->FilePath);
 			out << YAML::Key << "Rotation" << YAML::Value << environment->Rotation;
 			out << YAML::Key << "Exposure" << YAML::Value << environment->Exposure;
 			out << YAML::Key << "AutoExposure" << YAML::Value << environment->AutoExposure;
@@ -553,7 +581,7 @@ namespace EnvMapVulkanSceneSerializer
 		}
 		if (YAML::Node modelNode = node["Model"])
 		{
-			scene.Add<ModelComponent>(entity).FilePath = ProjectPaths::Resolve(modelNode["File"].as<std::string>(""));
+			scene.Add<ModelComponent>(entity).FilePath = AssetReference::Read(modelNode, "File");
 		}
 		if (YAML::Node partNode = node["MeshPart"])
 		{
@@ -562,7 +590,7 @@ namespace EnvMapVulkanSceneSerializer
 			part.MeshIndex = part.SourceMeshIndex; // the caller sets it once the model's meshes are known
 			if (YAML::Node materialNode = partNode["Material"])
 			{
-				materialRefs[entity] = { materialNode["ID"].as<uint64_t>(0), ProjectPaths::Resolve(materialNode["File"].as<std::string>("")) };
+				materialRefs[entity] = { materialNode["ID"].as<uint64_t>(0), AssetReference::Read(materialNode, "File", "ID") };
 			}
 		}
 		if (YAML::Node sunNode = node["Sun"])
@@ -608,9 +636,7 @@ namespace EnvMapVulkanSceneSerializer
 			Read(cameraNode, "FieldOfView", camera.FieldOfView); // scenes saved before the camera had a lens: 45
 			Read(cameraNode, "NearClip", camera.NearClip);
 			Read(cameraNode, "FarClip", camera.FarClip);
-			std::string target;
-			Read(cameraNode, "Target", target);
-			camera.Target = target.empty() ? std::string() : ProjectPaths::Resolve(target);
+			camera.Target = AssetReference::Read(cameraNode, "Target");
 			Read(cameraNode, "DrawEvery", camera.DrawEvery);
 			camera.DrawEvery = std::max(camera.DrawEvery, 1u);
 			camera.Antialiasing = GetAntialiasingModeFromName(cameraNode["Antialiasing"].as<std::string>("Off").c_str());
@@ -691,7 +717,7 @@ namespace EnvMapVulkanSceneSerializer
 		if (YAML::Node sourceNode = node["AudioSource"]; sourceNode && sourceNode.IsMap())
 		{
 			AudioSourceComponent& source = scene.Add<AudioSourceComponent>(entity);
-			source.Clip = ProjectPaths::Resolve(sourceNode["Clip"].as<std::string>(""));
+			source.Clip = AssetReference::Read(sourceNode, "Clip");
 			if (!FindAudioBus(sourceNode["Bus"].as<std::string>("Effects").c_str(), source.Bus))
 			{
 				source.Bus = AudioBus::Effects;
@@ -711,13 +737,13 @@ namespace EnvMapVulkanSceneSerializer
 		}
 		if (YAML::Node animatorNode = node["Animator"]; animatorNode && animatorNode.IsMap())
 		{
-			const std::string controller = animatorNode["Controller"].as<std::string>("");
-			scene.Add<AnimatorComponent>(entity).Controller = controller.empty() ? std::string() : ProjectPaths::Resolve(controller);
+			scene.Add<AnimatorComponent>(entity).Controller = AssetReference::Read(animatorNode, "Controller");
 		}
 		if (YAML::Node prefabNode = node["Prefab"]; prefabNode && prefabNode.IsMap())
 		{
 			PrefabComponent& prefab = scene.Add<PrefabComponent>(entity);
-			prefab.File = ProjectPaths::Resolve(prefabNode["File"].as<std::string>(""));
+			prefab.File = AssetReference::Read(prefabNode, "File");
+			prefab.HashVersion = prefabNode["HashVersion"].as<uint32_t>(1); // older: see UpdatePrefabInstancesOfOpenedScene
 			Read(prefabNode, "PrefabHash", prefab.PrefabHash);
 			Read(prefabNode, "InstanceHash", prefab.InstanceHash);
 		}
@@ -742,8 +768,7 @@ namespace EnvMapVulkanSceneSerializer
 		{
 			UITextComponent& text = scene.Add<UITextComponent>(entity);
 			Read(textNode, "Text", text.Text);
-			const std::string font = textNode["Font"].as<std::string>("");
-			text.Font = font.empty() ? std::string() : ProjectPaths::Resolve(font);
+			text.Font = AssetReference::Read(textNode, "Font");
 			Read(textNode, "Size", text.Size);
 			ReadVec4(textNode["Color"], text.Color);
 			const std::string align = textNode["Align"].as<std::string>("Center");
@@ -762,8 +787,7 @@ namespace EnvMapVulkanSceneSerializer
 		if (YAML::Node imageNode = node["UIImage"]; imageNode && imageNode.IsMap())
 		{
 			UIImageComponent& image = scene.Add<UIImageComponent>(entity);
-			const std::string texture = imageNode["Texture"].as<std::string>("");
-			image.Texture = texture.empty() ? std::string() : ProjectPaths::Resolve(texture);
+			image.Texture = AssetReference::Read(imageNode, "Texture");
 			ReadVec4(imageNode["Color"], image.Color);
 		}
 		if (YAML::Node buttonNode = node["UIButton"]; buttonNode && buttonNode.IsMap())
@@ -829,8 +853,7 @@ namespace EnvMapVulkanSceneSerializer
 		if (YAML::Node environmentNode = node["Environment"])
 		{
 			EnvironmentComponent& environment = scene.Add<EnvironmentComponent>(entity);
-			Read(environmentNode, "File", environment.FilePath);
-			environment.FilePath = ProjectPaths::Resolve(environment.FilePath);
+			environment.FilePath = AssetReference::Read(environmentNode, "File");
 			Read(environmentNode, "Rotation", environment.Rotation);
 			Read(environmentNode, "Exposure", environment.Exposure);
 			Read(environmentNode, "AutoExposure", environment.AutoExposure);

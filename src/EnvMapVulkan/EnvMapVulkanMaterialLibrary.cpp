@@ -8,6 +8,7 @@
 #include "Core/Log.h"
 #include "Core/ResourceManager.h"
 
+#include "Project/AssetRegistry.h"
 #include "Project/Project.h"
 
 #include <yaml-cpp/yaml.h>
@@ -809,7 +810,7 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 	if (!material->m_SourceFile.empty())
 	{
 		out << YAML::Key << "Source" << YAML::Value << YAML::BeginMap;
-		out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(material->m_SourceFile);
+		AssetReference::Write(out, "File", material->m_SourceFile);
 		out << YAML::Key << "Index" << YAML::Value << material->m_SourceIndex;
 		out << YAML::EndMap;
 	}
@@ -863,7 +864,7 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 			continue;
 		}
 		out << YAML::Key << s_MapKeys[slot] << YAML::Value << YAML::BeginMap;
-		out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(map->GetPath());
+		AssetReference::Write(out, "File", map->GetPath());
 		out << YAML::Key << "Enabled" << YAML::Value << (material->Get<float>(s_MapToggleNames[slot]) > 0.5f);
 		out << YAML::EndMap;
 	}
@@ -939,7 +940,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 
 	if (YAML::Node source = node["Source"])
 	{
-		material->m_SourceFile = ProjectPaths::Resolve(source["File"].as<std::string>(""));
+		material->m_SourceFile = AssetReference::Read(source, "File");
 		material->m_SourceIndex = source["Index"].as<uint32_t>(0);
 	}
 	YAML::Node albedo = node["AlbedoColor"];
@@ -972,7 +973,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 	for (uint32_t slot = 0; slot < EnvMapVulkanMaterial::MapCount; slot++)
 	{
 		YAML::Node map = maps ? maps[s_MapKeys[slot]] : YAML::Node();
-		const std::string mapFile = map ? ProjectPaths::Resolve(map["File"].as<std::string>("")) : std::string();
+		const std::string mapFile = AssetReference::Read(map, "File");
 		H2M::RefH2M<H2M::Texture2D_H2M> texture;
 		if (!mapFile.empty())
 		{
@@ -1009,7 +1010,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 	{
 		const uint64_t parentID = parentNode["ID"].as<uint64_t>(0);
 		material->m_ParentID = parentID != material->m_ID ? parentID : 0;
-		const std::string parentFile = ProjectPaths::Resolve(parentNode["File"].as<std::string>(""));
+		const std::string parentFile = AssetReference::Read(parentNode, "File", "ID");
 		if (material->m_ParentID != 0 && !FindByID(material->m_ParentID) && !parentFile.empty() && std::filesystem::exists(parentFile))
 		{
 			Load(parentFile); // this material is in the library already, so a loop of parents ends here

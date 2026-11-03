@@ -273,6 +273,12 @@ void OnImGuiRenderNewScriptDialog();
 void RegisterEditorSettings();
 void SaveEditorSettings();
 
+// ---- The Assets panel, and the registry seeing files moved while the editor had no focus (EditorAssetsPanel.cpp)
+
+extern bool s_ShowAssetsPanel;
+void OnImGuiRenderAssetsPanel();
+void UpdateAssetRegistry();
+
 // ---- The Console panel (EditorConsolePanel.cpp)
 
 // The log in the editor (View > Console): filters, a message opened at its file and line (double-click)

@@ -241,6 +241,13 @@ void UpdatePrefabInstancesOfOpenedScene()
 			EnvMapVulkanPrefab::GetFileHash(prefab.File, prefab.PrefabHash);
 			prefab.InstanceHash = EnvMapVulkanPrefab::GetInstanceHash(s_Scene, entity);
 		}
+		else if (prefab.HashVersion < 2 && EnvMapVulkanPrefab::GetInstanceHashBeforeAssetIDs(s_Scene, entity) == prefab.InstanceHash)
+		{
+			// A scene from before assets had IDs: an instance unchanged by the old hash is unchanged by the new one (one
+			// changed keeps its old hash, which matches nothing, and stays changed)
+			prefab.InstanceHash = EnvMapVulkanPrefab::GetInstanceHash(s_Scene, entity);
+		}
+		prefab.HashVersion = 2;
 		const std::string file = ProjectPaths::Normalize(prefab.File);
 		if (std::find(files.begin(), files.end(), file) == files.end())
 		{

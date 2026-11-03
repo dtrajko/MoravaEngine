@@ -21,4 +21,5 @@ Material:
   Maps:
     Albedo:
       File: Models/OGLdev/BobLamp/iron_grill.tga
+      FileID: 7441140844286177870
       Enabled: true

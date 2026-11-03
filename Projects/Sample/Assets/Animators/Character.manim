@@ -6,7 +6,7 @@ Animator:
     - {Name: Use, Type: Trigger}
   States:
     - Name: Idle
-      Clip: {File: Models/PirateVoid/idle.dae, Name: ""}
+      Clip: {File: Models/PirateVoid/idle.dae, FileID: 10475256237366454729, Name: ""}
       Speed: 1
       Loop: true
       InPlace: true
@@ -17,7 +17,7 @@ Animator:
       Loop: true
       InPlace: true
     - Name: Use
-      Clip: {File: Models/PirateVoid/using0.dae, Name: ""}
+      Clip: {File: Models/PirateVoid/using0.dae, FileID: 11610650613309096276, Name: ""}
       Speed: 1
       Loop: false
       InPlace: true

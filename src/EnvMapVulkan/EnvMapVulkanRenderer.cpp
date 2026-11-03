@@ -40,6 +40,7 @@
 #include "Core/ResourceManager.h"
 
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
+#include "H2M/Platform/Vulkan/VulkanBufferReleaseH2M.h"
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanFramebufferH2M.h"
@@ -269,15 +270,6 @@ struct VulkanRendererData
 	H2M::RefH2M<H2M::RenderPassH2M> GeoPass;
 	H2M::RefH2M<H2M::PipelineH2M> GeometryPipeline;
 
-	struct DrawCommand
-	{
-		H2M::RefH2M<H2M::ModelH2M> Model;
-		H2M::RefH2M<H2M::MaterialH2M> Material;
-		glm::mat4 Transform;
-	};
-
-	std::vector<DrawCommand> DrawList;
-	std::vector<DrawCommand> SelectedMeshDrawList;
 
 	H2M::SceneRendererOptionsH2M Options;
 	/**** END temporary properties from VulkanTestLayer, while moving logic from VulkanTestLayer to VulkanRenderer ****/
@@ -1471,11 +1463,6 @@ void EnvMapVulkanRenderer::SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& mod
 	{
 		s_PreviousDrawTransforms.push_back(s < previousMeshTransforms.size() ? previousMeshTransforms[s] : EnvMapVulkanSceneData::GetMeshTransform(modelRef, meshes[s], transform));
 	}
-
-	// VulkanRendererData::DrawCommand drawCommand = {};
-	// drawCommand.Mesh = mesh;
-	// drawCommand.Transform = transform;
-	s_Data.DrawList.push_back({ model, H2M::RefH2M<H2M::MaterialH2M>(), transform });
 }
 /**** END to be removed from VulkanRenderer ****/
 
@@ -2074,6 +2061,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_SubmittedModels.clear();
 	s_GlassDraws.clear();
 	H2M::ModelH2M::ReleaseAllShared();
+	H2M::VulkanBufferReleaseH2M::Shutdown();
 
 	s_Framebuffer = {};
 	s_CompositeFramebuffer = {};
@@ -4566,6 +4554,9 @@ static void RecordEmptyFrame()
 
 void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 {
+	// Before anything of this frame refers to them: a file the last scene left goes, and later its buffers
+	H2M::ModelH2M::OnFrame();
+	H2M::VulkanBufferReleaseH2M::OnFrame();
 	if (!s_Scene)
 	{
 		RecordEmptyFrame(); // no scene yet (see SetScene)

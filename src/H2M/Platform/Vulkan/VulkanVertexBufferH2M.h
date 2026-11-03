@@ -41,7 +41,7 @@ namespace H2M
 		BufferH2M m_LocalData;
 
 		VkBuffer m_VulkanBuffer = nullptr;
-		VkDeviceMemory m_DeviceMemory;
+		VkDeviceMemory m_DeviceMemory = nullptr;
 		VmaAllocation m_MemoryAllocation;
 
 		VertexBufferLayoutH2M m_Layout;

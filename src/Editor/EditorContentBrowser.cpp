@@ -96,6 +96,10 @@ static void Scan(const fs::path& folder)
 			continue;
 		}
 		entry.Extension = Lower(entry.Path.extension().u8string());
+		if (entry.Extension == ".meta")
+		{
+			continue; // an asset's sidecar (AssetRegistry)
+		}
 		s_Entries.push_back(entry);
 	}
 	std::sort(s_Entries.begin(), s_Entries.end(), [](const ContentEntry& a, const ContentEntry& b)

@@ -4,6 +4,7 @@ Material:
   Name: Wall_Material
   Source:
     File: Models/Primitives/quad.obj
+    FileID: 9359370009891450298
     Index: 1
   AlbedoColor: [0.745098, 0, 0.46020767]
   Metalness: 0
@@ -21,19 +22,25 @@ Material:
   Maps:
     Albedo:
       File: Textures/PBR/modern_brick_1/modern-brick1_albedo.png
+      FileID: 16968702622314385050
       Enabled: true
     Normal:
       File: Textures/PBR/modern_brick_1/modern-brick1_normal-dx.png
+      FileID: 17962667884417998411
       Enabled: true
     Metalness:
       File: Textures/PBR/modern_brick_1/modern-brick1_metallic.png
+      FileID: 8554472463705077644
       Enabled: true
     Roughness:
       File: Textures/PBR/modern_brick_1/modern-brick1_roughness.png
+      FileID: 776102435893252906
       Enabled: true
     Emissive:
       File: Textures/PBR/non_reflective/emissive.png
+      FileID: 13952543211010374079
       Enabled: true
     AmbientOcclusion:
       File: Textures/PBR/modern_brick_1/modern-brick1_ao.png
+      FileID: 2831564293951028090
       Enabled: true

@@ -4,6 +4,7 @@ Material:
   Name: Orange
   Source:
     File: Models/Primitives/cube.obj
+    FileID: 14090977682447350047
     Index: 1
   AlbedoColor: [0.9, 0.35, 0.05]
   Metalness: 0

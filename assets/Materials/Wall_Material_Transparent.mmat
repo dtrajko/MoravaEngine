@@ -22,19 +22,25 @@ Material:
   Maps:
     Albedo:
       File: Textures/PBR/silver/albedo.png
+      FileID: 9292372084589728277
       Enabled: true
     Normal:
       File: Textures/PBR/dark_tiles_1/darktiles1_normal-DX.png
+      FileID: 10464573438970968776
       Enabled: true
     Metalness:
       File: Textures/PBR/silver/metallic.png
+      FileID: 17464358196723693527
       Enabled: true
     Roughness:
       File: Textures/PBR/dark_tiles_1/darktiles1_roughness.png
+      FileID: 994837523043616373
       Enabled: true
     Emissive:
       File: Textures/PBR/silver/emissive.png
+      FileID: 12032078744792479907
       Enabled: true
     AmbientOcclusion:
       File: Textures/PBR/dark_tiles_1/darktiles1_AO.png
+      FileID: 11022827009098734215
       Enabled: true

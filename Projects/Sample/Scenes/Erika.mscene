@@ -80,6 +80,7 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      FileID: 2763703905192543074
       Rotation: 4
       Exposure: 1
       AutoExposure: true
@@ -109,6 +110,7 @@ Entities:
       Scale: [10, 1, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -140,6 +142,7 @@ Entities:
       Scale: [9.999993, 0.9999972, 8.099895]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -171,6 +174,7 @@ Entities:
       Scale: [10, 0.9999972, 1.9998494]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -202,6 +206,7 @@ Entities:
       Scale: [9.999842, 0.99993837, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -233,6 +238,7 @@ Entities:
       Scale: [9.999682, 0.9999284, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -264,6 +270,7 @@ Entities:
       Scale: [9.999993, 0.9999972, 10.2]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -295,6 +302,7 @@ Entities:
       Scale: [10, 1, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -326,6 +334,7 @@ Entities:
       Scale: [0.9999992, 0.99999994, 0.9999992]
     Model:
       File: Models/Erika_Archer/Erika_Archer.dae
+      FileID: 18080854447661943173
     CharacterController:
       Height: 1.7
       Radius: 0.3
@@ -350,7 +359,7 @@ Entities:
         JumpSound: {String: Assets/Audio/JumpTakeoff.wav}
         LandSound: {String: Assets/Audio/Land.wav}
         SoundDistance: {Float: 4}
-    Animator: {Controller: Assets/Animators/Erika.manim}
+    Animator: {Controller: Assets/Animators/Erika.manim, ControllerID: 16350183885629532246}
   - ID: 7310463185520941002
     Name: Eyes
     Parent: 7310463185520941001
@@ -403,6 +412,19 @@ Entities:
         ID: 630468455590023961
         File: Assets/Materials/Erika_Body.mmat
         Name: Erika_Body
+  - ID: 7310000000000007001
+    Name: Player Light
+    Parent: 7310463185520941001
+    Transform:
+      Translation: [0, 2.4, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: false
+      Color: [1, 0.88, 0.7]
+      Intensity: 3
+      Range: 6
+      CastShadows: false
   - ID: 6151200438114250001
     Name: Spinning Cube
     Parent: 0
@@ -412,6 +434,7 @@ Entities:
       Scale: [0.5, 0.5, 0.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -438,19 +461,6 @@ Entities:
         ID: 16216856275011426933
         File: Assets/Materials/Orange_Glass.mmat
         Name: Orange_Glass
-  - ID: 7310000000000007001
-    Name: Player Light
-    Parent: 7310463185520941001
-    Transform:
-      Translation: [0, 2.4, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    PointLight:
-      Enabled: false
-      Color: [1, 0.88, 0.7]
-      Intensity: 3
-      Range: 6
-      CastShadows: false
   - ID: 3318840571902216447
     Name: Room Light
     Parent: 0
@@ -521,6 +531,7 @@ Entities:
       Scale: [8.181774, 0.09999999, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -552,6 +563,7 @@ Entities:
       Scale: [5.7, 0.09999998, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -583,6 +595,7 @@ Entities:
       Scale: [5.7, 0.09999998, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -614,6 +627,7 @@ Entities:
       Scale: [2, 0.09999998, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -635,6 +649,7 @@ Entities:
       Class: Sample.ElevatorMovement
     AudioSource:
       Clip: Assets/Audio/Elevator_Motor.wav
+      ClipID: 11522422177169028015
       Bus: Effects
       Volume: 0.6
       Pitch: 1
@@ -666,6 +681,7 @@ Entities:
       Scale: [8.639366, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -697,6 +713,7 @@ Entities:
       Scale: [1, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -728,6 +745,7 @@ Entities:
       Scale: [1, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -759,6 +777,7 @@ Entities:
       Scale: [1, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -790,6 +809,7 @@ Entities:
       Scale: [1, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -821,6 +841,7 @@ Entities:
       Scale: [1, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -852,6 +873,7 @@ Entities:
       Scale: [1, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -883,6 +905,7 @@ Entities:
       Scale: [1, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -914,6 +937,7 @@ Entities:
       Scale: [1, 0.100000046, 1]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -945,6 +969,7 @@ Entities:
       Scale: [8.811527, 0.10000051, 0.99999654]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -976,6 +1001,7 @@ Entities:
       Scale: [8.872857, 0.100000344, 0.9999902]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -1007,6 +1033,7 @@ Entities:
       Scale: [0.5, 0.5, 0.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -1046,6 +1073,7 @@ Entities:
       Scale: [0.5, 0.5, 0.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -1085,6 +1113,7 @@ Entities:
       Scale: [0.40000004, 2.85, 0.40000004]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -1116,6 +1145,7 @@ Entities:
       Scale: [0.40000004, 3.35, 0.40000004]
     Model:
       File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -1151,6 +1181,7 @@ Entities:
       NearClip: 0.01
       FarClip: 1000
       Target: Assets/RenderTextures/RenderTexture_01.mrtex
+      TargetID: 5668478701291676083
       DrawEvery: 1
       Enabled: true
     Script:
@@ -1167,6 +1198,7 @@ Entities:
       Scale: [1, 3.6, 4.8]
     Model:
       File: Models/Primitives/quad.obj
+      FileID: 9359370009891450298
   - ID: 17131232694880077655
     Name: Plane
     Parent: 18084572079776579706
@@ -1189,6 +1221,7 @@ Entities:
       Scale: [1, 4.8, 6.4]
     Model:
       File: Models/Primitives/quad.obj
+      FileID: 9359370009891450298
   - ID: 8543855589416522051
     Name: Plane
     Parent: 2247163320825194361
@@ -1211,6 +1244,7 @@ Entities:
       Scale: [1, 0.9, 1.6]
     Model:
       File: Models/Primitives/quad.obj
+      FileID: 9359370009891450298
     Script:
       Class: Sample.SecurityMonitor
       Fields:
@@ -1237,6 +1271,7 @@ Entities:
       Scale: [0.05, 1, 1.7]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
   - ID: 857215468359362121
     Name: Cube
     Parent: 1889488140086242240
@@ -1264,6 +1299,7 @@ Entities:
       NearClip: 0.05
       FarClip: 100
       Target: Assets/RenderTextures/Security_Monitor.mrtex
+      TargetID: 2954532708834528944
       DrawEvery: 2
       Enabled: true
   - ID: 1180162657825191871

@@ -4,6 +4,7 @@ Material:
   Name: Gladiator1
   Source:
     File: Models/Gladiator/Gladiator.fbx
+    FileID: 350759461919241944
     Index: 1
   AlbedoColor: [0.4, 0.4, 0.4]
   Metalness: 0.5
@@ -21,16 +22,21 @@ Material:
   Maps:
     Albedo:
       File: Models/Gladiator/Gladiator_BaseColor.jpg
+      FileID: 86288948422891467
       Enabled: true
     Normal:
       File: Models/Gladiator/Gladiator_Normal.jpg
+      FileID: 5242310840081339922
       Enabled: true
     Metalness:
       File: Models/Gladiator/Gladiator_Metallic.jpg
+      FileID: 1477053428329417464
       Enabled: true
     Roughness:
       File: Models/Gladiator/Gladiator_Roughness.jpg
+      FileID: 17533812031673869441
       Enabled: true
     AmbientOcclusion:
       File: Models/Gladiator/Gladiator_AO.jpg
+      FileID: 11522510884991258355
       Enabled: true

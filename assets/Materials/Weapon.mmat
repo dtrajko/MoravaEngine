@@ -4,6 +4,7 @@ Material:
   Name: Weapon
   Source:
     File: Models/Gladiator/Gladiator.fbx
+    FileID: 350759461919241944
     Index: 0
   AlbedoColor: [0.4, 0.4, 0.4]
   Metalness: 0.5
@@ -21,13 +22,17 @@ Material:
   Maps:
     Albedo:
       File: Models/Gladiator/Gladiator_weapon_BaseColor.jpg
+      FileID: 12053981890310642428
       Enabled: true
     Normal:
       File: Models/Gladiator/Gladiator_weapon_Normal.jpg
+      FileID: 6096750763314786300
       Enabled: true
     Metalness:
       File: Models/Gladiator/Gladiator_weapon_Metallic.jpg
+      FileID: 16801569982291228570
       Enabled: true
     Roughness:
       File: Models/Gladiator/Gladiator_weapon_Roughness.jpg
+      FileID: 8494999332947622844
       Enabled: true

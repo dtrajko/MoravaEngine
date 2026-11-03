@@ -4,6 +4,7 @@ Material:
   Name: Old_Stove_Material
   Source:
     File: Models/Old_Stove/udmheheqx_LOD0.fbx
+    FileID: 15330086936287359305
     Index: 0
   AlbedoColor: [0.8, 0.8, 0.8]
   Metalness: 0
@@ -15,13 +16,17 @@ Material:
   Maps:
     Albedo:
       File: Textures/PBR/Old_Stove/Albedo.jpg
+      FileID: 17518268604473477487
       Enabled: true
     Normal:
       File: Textures/PBR/Old_Stove/Normal_LOD0.jpg
+      FileID: 5587177729170928135
       Enabled: true
     Metalness:
       File: Textures/PBR/Old_Stove/Metalness.jpg
+      FileID: 7389746179090864072
       Enabled: true
     Roughness:
       File: Textures/PBR/Old_Stove/Roughness.jpg
+      FileID: 13130273286951508406
       Enabled: true

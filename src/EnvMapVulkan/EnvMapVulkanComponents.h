@@ -331,9 +331,10 @@ struct AnimatorComponent
 // are the instance's own (where it is placed); the rest of the instance is the prefab's
 struct PrefabComponent
 {
-	std::string File;            // absolute here, relative to the project in the scene file (an asset handle from Phase 10)
+	std::string File;            // absolute here; in the scene file an asset reference (AssetReference)
 	uint64_t PrefabHash = 0;     // the prefab file's content when the instance last matched it
 	uint64_t InstanceHash = 0;   // the instance's own content then (EnvMapVulkanPrefab::GetInstanceHash)
+	uint32_t HashVersion = 2;    // 1: InstanceHash was made before assets had IDs (a scene opened in the editor gets 2)
 };
 
 // ---- Game UI (docs/engine/Game_Engine_Runtime_Guide.html, 7.1): screen-space elements laid out by UI/UILayout and drawn

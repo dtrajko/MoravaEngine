@@ -80,6 +80,7 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      FileID: 2763703905192543074
       Rotation: 4
       Exposure: 1
       AutoExposure: true
@@ -109,6 +110,7 @@ Entities:
       Scale: [10, 1, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -140,6 +142,7 @@ Entities:
       Scale: [9.999993, 0.9999972, 7.9999247]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -171,6 +174,7 @@ Entities:
       Scale: [10, 0.9999972, 1.9998641]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -202,6 +206,7 @@ Entities:
       Scale: [9.999842, 0.99993837, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -233,6 +238,7 @@ Entities:
       Scale: [9.999682, 0.9999284, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -264,6 +270,7 @@ Entities:
       Scale: [9.999993, 0.9999972, 9.999189]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -295,6 +302,7 @@ Entities:
       Scale: [10, 1, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -326,6 +334,7 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Models/PirateVoid/walking.dae
+      FileID: 15553284450537077592
     CharacterController:
       Height: 1.8
       Radius: 0.3
@@ -338,7 +347,7 @@ Entities:
       Class: Sample.AnimatedCharacter
       Fields:
         Camera: {Entity: 4797481855757227527}
-    Animator: {Controller: Assets/Animators/Character.manim}
+    Animator: {Controller: Assets/Animators/Character.manim, ControllerID: 17439546297633111421}
   - ID: 5528310947716204812
     Name: Mesh1
     Parent: 5528310947716204811
@@ -361,6 +370,7 @@ Entities:
       Scale: [0.5, 0.5, 0.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]

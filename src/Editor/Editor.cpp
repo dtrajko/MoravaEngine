@@ -199,6 +199,7 @@ void Editor::OnImGuiRender()
 				OnImGuiRenderAnimatorPanel();
 				OnImGuiRenderScriptsPanel();
 				OnImGuiRenderConsolePanel();
+				OnImGuiRenderAssetsPanel();
 				OnImGuiRenderNewScriptDialog();
 			}
 
@@ -247,6 +248,7 @@ void Editor::OnImGuiRender()
 				if (ImGui::BeginMenu("View"))
 				{
 					ImGui::MenuItem("Renderer Stats", nullptr, &s_ShowRendererStats);
+					ImGui::MenuItem("Assets", nullptr, &s_ShowAssetsPanel);
 					ImGui::MenuItem("FPS in the Viewport", nullptr, &s_ShowViewportFps);
 					if (ImGui::MenuItem("Fullscreen Viewport", "F11", s_ViewportFullscreen))
 					{
@@ -345,6 +347,7 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 	// Stop in this frame, at once)
 	UpdateScriptBuild();
 	UpdateScriptReload();
+	UpdateAssetRegistry();
 	UpdateVisualStudio();
 
 	// The editor's copies of the scene's environment, lights, water and probe volume (see ExtractLights)

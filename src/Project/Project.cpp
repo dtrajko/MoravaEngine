@@ -1,5 +1,7 @@
 #include "Project.h"
 
+#include "AssetRegistry.h"
+
 #include "Core/Log.h"
 
 #include "Input/InputMap.h"
@@ -246,6 +248,7 @@ Project* Project::GetOpen()
 void Project::SetOpen(const Project& project)
 {
 	s_OpenProject = std::make_unique<Project>(project);
+	AssetRegistry::Invalidate();
 	Log::GetLogger()->info("Project '{0}' opened from '{1}'", project.Name, project.FilePath);
 }
 
@@ -256,6 +259,7 @@ void Project::Close()
 		Log::GetLogger()->info("Project '{0}' closed", s_OpenProject->Name);
 	}
 	s_OpenProject.reset();
+	AssetRegistry::Invalidate();
 }
 
 namespace ProjectPaths
