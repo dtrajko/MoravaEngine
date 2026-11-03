@@ -5,8 +5,6 @@
 
 #include "Core/Log.h"
 
-#include <assimp/scene.h>
-
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <cmath>
@@ -36,13 +34,12 @@ namespace AnimationSelfTest
 		};
 
 		// A skeleton: Root, and Bone one meter above it (the bone the skin is bound to, offset identity)
-		aiScene scene;
-		scene.mRootNode = new aiNode("Root");
-		aiNode* boneNode = new aiNode("Bone");
-		boneNode->mTransformation = aiMatrix4x4(1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1);
-		scene.mRootNode->addChildren(1, &boneNode);
+		const std::vector<AnimationSkeleton::SourceNode> nodes = {
+			{ "Root", -1, glm::mat4(1.0f) },
+			{ "Bone", 0, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)) },
+		};
 		const std::unordered_map<std::string, uint32_t> boneMapping = { { "Bone", 0 } };
-		const AnimationSkeleton skeleton(&scene, boneMapping, { glm::mat4(1.0f) });
+		const AnimationSkeleton skeleton(nodes, boneMapping, { glm::mat4(1.0f) });
 		if (skeleton.GetNodes().size() != 2 || skeleton.FindNode("Bone") != 1 || skeleton.GetNodes()[1].Parent != 0 || skeleton.GetBoneCount() != 1)
 		{
 			return fail("the skeleton's nodes");

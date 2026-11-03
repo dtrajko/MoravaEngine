@@ -373,6 +373,22 @@ namespace AssetRegistry
 		return AddFile(file, type, belongs) ? s_ByFile[file] : 0;
 	}
 
+	AssetID FindID(const std::string& path)
+	{
+		if (path.empty())
+		{
+			return 0;
+		}
+		EnsureScanned();
+		const std::string file = GetAbsolute(path);
+		if (auto found = s_ByFile.find(file); found != s_ByFile.end())
+		{
+			return found->second;
+		}
+		auto moved = s_Moved.find(file);
+		return moved != s_Moved.end() ? moved->second : 0;
+	}
+
 	std::string FindPath(AssetID id)
 	{
 		if (id == 0)

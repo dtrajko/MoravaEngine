@@ -1311,6 +1311,16 @@ struct UIButtonComponent { glm::vec4 Normal, Hover, Pressed, Disabled; std::stri
   </table></div>
   <p>Cooked files land in a cache (<code>&lt;Project&gt;/Library/Cooked/&lt;uuid&gt;</code>) keyed by a hash of source file, import settings and cooker version, so only changed assets are cooked again. The editor may also use cooked meshes and textures itself, which makes opening large scenes faster.</p>
 
+  <div class="box ok"><b>As built (2026-11-03): cooked models, the first part of 10.2</b>
+  <ul>
+    <li><b>Plain data between the file and the model:</b> <code>Assets/ModelData.h</code> holds what a model file has: vertices, indices, meshes, materials as values and paths, nodes, bones, clips. <code>Assets/ModelImport</code> fills it through assimp and is now the only code on the model path that uses assimp. <code>ModelH2M</code> and <code>AnimationClipLibrary</code> are built from it and keep no <code>aiScene</code>.</li>
+    <li><b>The cache:</b> <code>Assets/ModelCook</code> reads <code>&lt;Project&gt;/Library/Cooked/&lt;id&gt;.mmesh</code> (<code>Resources/Cache/Cooked</code> without a project), or imports and writes it. A file without a sidecar is named by a hash of its path, and a load never makes a sidecar. The player cooks too until the pack of 10.3 exists. The cache is never committed and can be deleted at any time (View &gt; Assets, Clear Cook Cache).</li>
+    <li><b>When it is cooked again:</b> the file lists every source the import opened (an <code>.obj</code>'s <code>.mtl</code>, a <code>.gltf</code>'s <code>.bin</code>), relative to the model, with size, write time and content hash. A changed or missing source, another cooker version, a cut file or a damaged one (hash of the data) means a new import. A new write time with the same content (a Git checkout) costs one hash, not an import. The ID in the name and the relative paths let a model move with its sidecar and stay cooked.</li>
+    <li><b>Measured</b> (Debug): Erika_Archer.dae 334 ms to 11.7 ms, PirateVoid/walking.dae about 540 ms to 14 ms, cube.obj 11 ms to 0.5 ms. Materials and textures still load after that, so a scene opens faster by less than this. Files are about 7 MB for a skinned character of 76,000 vertices; 12 MB for Physics and Erika's 10 files.</li>
+    <li><b>Differs from the plan:</b> no import settings in the sidecars yet: nothing a model needs reads them (an entity has its own scale). They come with textures, where sRGB and compression need them. A file used only for its clips (<code>idle.dae</code>) is cooked whole, skin included, and read whole.</li>
+    <li><b>Not in this step:</b> textures (KTX2, BC7, BC5), shaders, validated copies of scenes, and removing assimp from the player, which needs the pack of 10.3. The old Scene Hierarchy panel (<code>SceneHierarchyPanelH2M</code>) shows no node tree for a <code>ModelH2M</code>; the Mesh Hierarchy panel does.</li>
+  </ul></div>
+
   <h3>10.3 The pack file</h3>
 <pre><code><span class="c">// Game.mpak layout</span>
 struct PackHeader { char Magic[4] = {'M','P','A','K'}; uint32_t Version; uint64_t TocOffset; uint32_t EntryCount; };

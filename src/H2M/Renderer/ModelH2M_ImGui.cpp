@@ -18,19 +18,20 @@
 namespace H2M
 {
 
-	void ModelH2M::ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
+	void ModelH2M::ImGuiNodeHierarchy(uint32_t nodeIndex, const glm::mat4& parentTransform, uint32_t level)
 	{
-		glm::mat4 localTransform = Math::Mat4FromAssimpMat4(node->mTransformation);
+		const ModelH2M& file = GetFileModel();
+		const AnimationSkeleton::SourceNode& node = file.m_Nodes[nodeIndex];
+		glm::mat4 localTransform = node.Matrix;
 		glm::mat4 transform = parentTransform * localTransform;
 
-		for (uint32_t i = 0; i < node->mNumMeshes; i++)
+		for (uint32_t meshIndex : file.m_NodeMeshes[nodeIndex])
 		{
-			uint32_t meshIndex = node->mMeshes[i];
-			m_Meshes[meshIndex]->NodeName = node->mName.C_Str();
+			m_Meshes[meshIndex]->NodeName = node.Name;
 			m_Meshes[meshIndex]->Transform = transform;
 		}
 
-		if (ImGui::TreeNode(node->mName.C_Str()))
+		if (ImGui::TreeNode(node.Name.c_str()))
 		{
 			auto [translation, rotation, scale] = Math::GetTransformDecomposition(transform);
 			glm::vec3 rotationVec3 = glm::degrees(glm::eulerAngles(rotation));
@@ -50,9 +51,12 @@ namespace H2M
 			}
 			****/
 
-			for (uint32_t i = 0; i < node->mNumChildren; i++)
+			for (uint32_t child = nodeIndex + 1; child < (uint32_t)file.m_Nodes.size(); child++)
 			{
-				ImGuiNodeHierarchy(node->mChildren[i], transform, level + 1);
+				if (file.m_Nodes[child].Parent == (int)nodeIndex)
+				{
+					ImGuiNodeHierarchy(child, transform, level + 1);
+				}
 			}
 
 			ImGui::TreePop();
@@ -61,7 +65,7 @@ namespace H2M
 
 	void ModelH2M::OnImGuiRender(uint32_t id, bool* p_open)
 	{
-		if (!m_Scene)
+		if (GetFileModel().m_Nodes.empty())
 		{
 			Log::GetLogger()->error("Mesh: Scene not initialized!");
 			return;
@@ -69,14 +73,14 @@ namespace H2M
 
 		// Mesh Hierarchy
 		ImGui::Begin("Mesh Hierarchy", p_open);
-		ImGuiNodeHierarchy(m_Scene->mRootNode, glm::mat4(1.0f), 0);
+		ImGuiNodeHierarchy(0, glm::mat4(1.0f), 0);
 		ImGui::End();
 
 		ImGui::Begin("Mesh Debug", p_open);
 		std::string meshFileName = std::to_string(id) + ". " + Util::GetFileNameFromFullPath(m_FilePath);
 		if (ImGui::CollapsingHeader(meshFileName.c_str()))
 		{
-			if (m_IsAnimated && m_Scene->mAnimations)
+			if (m_IsAnimated && HasAnimations())
 			{
 				ImGui::Indent(10.0f);
 				if (ImGui::CollapsingHeader("Animation"))
@@ -84,7 +88,7 @@ namespace H2M
 					if (ImGui::Button(m_AnimationPlaying ? "Pause" : "Play"))
 						m_AnimationPlaying = !m_AnimationPlaying;
 
-					ImGui::SliderFloat("##AnimationTime", &m_AnimationTime, 0.0f, (float)m_Scene->mAnimations[0]->mDuration);
+					ImGui::SliderFloat("##AnimationTime", &m_AnimationTime, 0.0f, GetClips()[0].GetDuration() * GetClips()[0].GetTicksPerSecond());
 					ImGui::DragFloat("Time Scale", &m_TimeMultiplier, 0.05f, 0.0f, 100.0f);
 				}
 				ImGui::Unindent(10.0f);

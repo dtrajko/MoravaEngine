@@ -7,6 +7,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "ModelH2M.h"
+#include "Assets/ModelCook.h"
 #include "Core/EnginePaths.h"
 
 #include <algorithm>
@@ -19,12 +20,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
-
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <assimp/Importer.hpp>
-#include <assimp/DefaultLogger.hpp>
-#include <assimp/LogStream.hpp>
 
 #include "H2M/Scene/EntityH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
@@ -108,38 +103,6 @@ namespace H2M
 		return path.string();
 	}
 
-	static const uint32_t s_MeshImportFlags =
-		aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
-		aiProcess_Triangulate |             // Make sure we're triangles
-		aiProcess_SortByPType |             // Split meshes by primitive type
-		aiProcess_GenNormals |              // Make sure we have legit normals
-		aiProcess_GenUVCoords |             // Convert UVs if required 
-		aiProcess_OptimizeMeshes |          // Batch draws where possible
-		aiProcess_ValidateDataStructure;    // Validation
-
-	struct LogStream : public Assimp::LogStream
-	{
-		static void Initialize()
-		{
-			if (Assimp::DefaultLogger::isNullLogger())
-			{
-				Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
-				Assimp::DefaultLogger::get()->attachStream(new LogStream, Assimp::Logger::Err | Assimp::Logger::Warn);
-			}
-		}
-
-		virtual void write(const char* message) override
-		{
-			// Assimp prefixes messages with "Warn, " or "Error, " and ends them with a newline
-			std::string text(message);
-			while (!text.empty() && (text.back() == '\n' || text.back() == '\r')) text.pop_back();
-			if (text.rfind("Warn", 0) == 0)
-				Log::GetLogger()->warn("Assimp: {0}", text);
-			else
-				Log::GetLogger()->error("Assimp: {0}", text);
-		}
-	};
-
 	ModelH2M::ModelH2M(const std::string& filename)
 	{
 		m_FilePath = filename;
@@ -192,7 +155,6 @@ namespace H2M
 	{
 		const ModelH2M& file = *m_FileModel.Raw();
 		m_FilePath = filename;
-		m_Scene = file.m_Scene;
 		m_IsAnimated = file.m_IsAnimated;
 		m_InverseTransform = file.m_InverseTransform;
 		m_BoneCount = file.m_BoneCount;
@@ -296,22 +258,18 @@ namespace H2M
 
 	void ModelH2M::Create()
 	{
-		LogStream::Initialize();
-
 		HZ_MESH_LOG("H2M::ModelH2M: Loading model: {0}", m_FilePath.c_str());
 
-		m_Importer = std::make_unique<Assimp::Importer>();
-
-		const aiScene* scene = m_Importer->ReadFile(m_FilePath, s_MeshImportFlags);
-		if (!scene || !scene->HasMeshes()) {
-			Log::GetLogger()->error("Failed to load model file: {0}", m_FilePath);
+		ModelData data;
+		ModelCook::LoadInfo loadInfo;
+		std::string loadError;
+		if (!ModelCook::Load(m_FilePath, data, loadInfo, loadError) || data.Meshes.empty()) {
+			Log::GetLogger()->error("Failed to load model file: {0}{1}{2}", m_FilePath, loadError.empty() ? "" : ": ", loadError);
 			return;
 		}
 
-		m_Scene = scene;
-
 		// Animated models get the skinned vertex layout (bone IDs and weights) and the skinning shader, on OpenGL and Vulkan
-		m_IsAnimated = scene->mAnimations != nullptr;
+		m_IsAnimated = data.IsAnimated;
 		// m_MaterialInstance = std::make_shared<MaterialInstance>(m_BaseMaterial);
 
 		if (!m_MeshShader)
@@ -350,125 +308,46 @@ namespace H2M
 			/**** END MoravaShader the new API ****/
 		}
 
-		m_InverseTransform = glm::inverse(Math::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
+		m_InverseTransform = glm::inverse(data.Nodes[0].Matrix);
 
-		uint32_t vertexCount = 0;
-		uint32_t indexCount = 0;
+		m_StaticVertices = std::move(data.StaticVertices);
+		m_AnimatedVertices = std::move(data.AnimatedVertices);
+		m_Indices = std::move(data.Indices);
 
-		HZ_MESH_LOG("H2M::ModelH2M: The model contains {0} meshes.", scene->mNumMeshes);
+		HZ_MESH_LOG("H2M::ModelH2M: The model contains {0} meshes.", data.Meshes.size());
 
-		m_Meshes.reserve(scene->mNumMeshes);
-		for (size_t m = 0; m < scene->mNumMeshes; m++)
+		m_Meshes.reserve(data.Meshes.size());
+		size_t firstTriangle = 0;
+		for (size_t m = 0; m < data.Meshes.size(); m++)
 		{
-			aiMesh* sourceMesh = scene->mMeshes[m];
+			const ModelMeshData& sourceMesh = data.Meshes[m];
 
 			RefH2M<MeshH2M> mesh = RefH2M<MeshH2M>::Create();
-			mesh->BaseVertex = vertexCount;
-			mesh->BaseIndex = indexCount;
-			mesh->MaterialIndex = sourceMesh->mMaterialIndex;
-			mesh->IndexCount = sourceMesh->mNumFaces * 3;
-			mesh->VertexCount = sourceMesh->mNumVertices;
+			mesh->BaseVertex = sourceMesh.BaseVertex;
+			mesh->BaseIndex = sourceMesh.BaseIndex;
+			mesh->MaterialIndex = sourceMesh.MaterialIndex;
+			mesh->IndexCount = sourceMesh.IndexCount;
+			mesh->VertexCount = sourceMesh.VertexCount;
 			mesh->SourceIndex = (uint32_t)m;
-			mesh->MeshName = sourceMesh->mName.C_Str();
+			mesh->MeshName = sourceMesh.Name;
+			mesh->IsRigged = sourceMesh.IsRigged;
+			mesh->BoundingBox.Min = sourceMesh.BoundsMin;
+			mesh->BoundingBox.Max = sourceMesh.BoundsMax;
 			m_Meshes.push_back(mesh);
 
-			vertexCount += sourceMesh->mNumVertices;
-			indexCount += mesh->IndexCount;
-
-			H2M_CORE_ASSERT(sourceMesh->HasPositions(), "Meshes require positions.");
-			H2M_CORE_ASSERT(sourceMesh->HasNormals(), "Meshes require normals.");
-
-			// Vertices
-			if (m_IsAnimated)
+			// Triangle cache (animated models: the bind pose; mouse picking tests these triangles)
+			std::vector<TriangleH2M>& triangles = m_TriangleCache[(uint32_t)m];
+			triangles.reserve(sourceMesh.TriangleCount);
+			for (size_t t = firstTriangle; t < firstTriangle + sourceMesh.TriangleCount; t++)
 			{
-				auto& aabb = mesh->BoundingBox;
-				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
-				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
-				for (size_t i = 0; i < sourceMesh->mNumVertices; i++)
-				{
-					AnimatedVertex vertex;
-					vertex.Position = { sourceMesh->mVertices[i].x, sourceMesh->mVertices[i].y, sourceMesh->mVertices[i].z };
-					vertex.Normal = { sourceMesh->mNormals[i].x, sourceMesh->mNormals[i].y, sourceMesh->mNormals[i].z };
-
-					aabb.Min.x = glm::min(vertex.Position.x, aabb.Min.x);
-					aabb.Min.y = glm::min(vertex.Position.y, aabb.Min.y);
-					aabb.Min.z = glm::min(vertex.Position.z, aabb.Min.z);
-
-					aabb.Max.x = glm::max(vertex.Position.x, aabb.Max.x);
-					aabb.Max.y = glm::max(vertex.Position.y, aabb.Max.y);
-					aabb.Max.z = glm::max(vertex.Position.z, aabb.Max.z);
-
-					if (sourceMesh->HasTangentsAndBitangents())
-					{
-						vertex.Tangent = { sourceMesh->mTangents[i].x, sourceMesh->mTangents[i].y, sourceMesh->mTangents[i].z };
-						vertex.Binormal = { sourceMesh->mBitangents[i].x, sourceMesh->mBitangents[i].y, sourceMesh->mBitangents[i].z };
-					}
-
-					if (sourceMesh->HasTextureCoords(0))
-					{
-						vertex.Texcoord = { sourceMesh->mTextureCoords[0][i].x, sourceMesh->mTextureCoords[0][i].y };
-					}
-
-					m_AnimatedVertices.push_back(vertex);
-				}
-			}
-			else
-			{
-				auto& aabb = mesh->BoundingBox;
-				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
-				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
-				for (size_t i = 0; i < sourceMesh->mNumVertices; i++)
-				{
-					VertexH2M vertex;
-					vertex.Position = { sourceMesh->mVertices[i].x, sourceMesh->mVertices[i].y, sourceMesh->mVertices[i].z };
-					vertex.Normal = { sourceMesh->mNormals[i].x, sourceMesh->mNormals[i].y, sourceMesh->mNormals[i].z };
-
-					aabb.Min.x = glm::min(vertex.Position.x, aabb.Min.x);
-					aabb.Min.y = glm::min(vertex.Position.y, aabb.Min.y);
-					aabb.Min.z = glm::min(vertex.Position.z, aabb.Min.z);
-
-					aabb.Max.x = glm::max(vertex.Position.x, aabb.Max.x);
-					aabb.Max.y = glm::max(vertex.Position.y, aabb.Max.y);
-					aabb.Max.z = glm::max(vertex.Position.z, aabb.Max.z);
-
-					if (sourceMesh->HasTangentsAndBitangents())
-					{
-						vertex.Tangent = { sourceMesh->mTangents[i].x, sourceMesh->mTangents[i].y, sourceMesh->mTangents[i].z };
-						vertex.Binormal = { sourceMesh->mBitangents[i].x, sourceMesh->mBitangents[i].y, sourceMesh->mBitangents[i].z };
-					}
-
-					if (sourceMesh->HasTextureCoords(0))
-					{
-						vertex.Texcoord = { sourceMesh->mTextureCoords[0][i].x, sourceMesh->mTextureCoords[0][i].y };
-					}
-
-					m_StaticVertices.push_back(vertex);
-				}
-			}
-
-			// Indices
-			for (size_t i = 0; i < sourceMesh->mNumFaces; i++)
-			{
-				// HZ_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
-				if (sourceMesh->mFaces[i].mNumIndices != 3)
-				{
-					Log::GetLogger()->error("ModelH2M: the face contains invalid number of indices (expected: 3, detected: {0})!", sourceMesh->mFaces[i].mNumIndices);
-					continue;
-				}
-
-				Index index = { sourceMesh->mFaces[i].mIndices[0], sourceMesh->mFaces[i].mIndices[1], sourceMesh->mFaces[i].mIndices[2] };
-				m_Indices.push_back(index);
-
-				// Triangle cache
+				const Index& index = m_Indices[t];
 				if (!m_IsAnimated)
 				{
 					if (index.V1 + mesh->BaseVertex < m_StaticVertices.size() &&
 						index.V2 + mesh->BaseVertex < m_StaticVertices.size() &&
 						index.V3 + mesh->BaseVertex < m_StaticVertices.size())
 					{
-						m_TriangleCache[(uint32_t)m].emplace_back(
+						triangles.emplace_back(
 							m_StaticVertices[index.V1 + mesh->BaseVertex],
 							m_StaticVertices[index.V2 + mesh->BaseVertex],
 							m_StaticVertices[index.V3 + mesh->BaseVertex]);
@@ -476,7 +355,6 @@ namespace H2M
 				}
 				else
 				{
-					// Animated models: the bind pose (mouse picking tests these triangles)
 					if (index.V1 + mesh->BaseVertex < m_AnimatedVertices.size() &&
 						index.V2 + mesh->BaseVertex < m_AnimatedVertices.size() &&
 						index.V3 + mesh->BaseVertex < m_AnimatedVertices.size())
@@ -491,21 +369,22 @@ namespace H2M
 							vertex.Texcoord = v.Texcoord;
 							return vertex;
 						};
-						m_TriangleCache[(uint32_t)m].emplace_back(
+						triangles.emplace_back(
 							toStatic(m_AnimatedVertices[index.V1 + mesh->BaseVertex]),
 							toStatic(m_AnimatedVertices[index.V2 + mesh->BaseVertex]),
 							toStatic(m_AnimatedVertices[index.V3 + mesh->BaseVertex]));
 					}
 				}
 			}
+			firstTriangle += sourceMesh.TriangleCount;
 		}
+
+		ApplyNodeTransforms(data);
 
 		// Display the list of all meshes
-		for (size_t m = 0; m < scene->mNumMeshes; m++) {
+		for (size_t m = 0; m < m_Meshes.size(); m++) {
 			HZ_MESH_LOG("-- Mesh ID {0} NodeName: '{1}'", m, m_Meshes[m]->NodeName);
 		}
-
-		TraverseNodes(scene->mRootNode);
 
 		PipelineSpecificationH2M pipelineSpecification;
 		auto shader = m_MeshShader; // MoravaShader::Create("Resources/Shaders/VulkanWeekMesh.glsl", true);
@@ -549,55 +428,12 @@ namespace H2M
 		// Bones
 		if (m_IsAnimated)
 		{
-			std::vector<uint32_t> trimmedVertices; // with more than four weights: the largest four are kept
-			for (size_t m = 0; m < scene->mNumMeshes; m++)
+			m_BoneCount = (uint32_t)data.BoneNames.size();
+			m_BoneInfo.resize(m_BoneCount);
+			for (uint32_t b = 0; b < m_BoneCount; b++)
 			{
-				aiMesh* sourceMesh = scene->mMeshes[m];
-				RefH2M<MeshH2M> mesh = m_Meshes[m];
-				mesh->IsRigged = sourceMesh->mNumBones > 0;
-
-				for (size_t i = 0; i < sourceMesh->mNumBones; i++)
-				{
-					aiBone* bone = sourceMesh->mBones[i];
-					std::string boneName(bone->mName.data);
-					int boneIndex = 0;
-
-					if (m_BoneMapping.find(boneName) == m_BoneMapping.end())
-					{
-						// Allocate an index for a new bone
-						boneIndex = m_BoneCount;
-						m_BoneCount++;
-						BoneInfo bi;
-						m_BoneInfo.push_back(bi);
-						m_BoneInfo[boneIndex].BoneOffset = Math::Mat4FromAssimpMat4(bone->mOffsetMatrix);
-						m_BoneMapping[boneName] = boneIndex;
-					}
-					else
-					{
-						HZ_MESH_LOG("Found existing bone in map");
-						boneIndex = m_BoneMapping[boneName];
-					}
-
-					for (size_t j = 0; j < bone->mNumWeights; j++)
-					{
-						int VertexID = mesh->BaseVertex + bone->mWeights[j].mVertexId;
-						float Weight = bone->mWeights[j].mWeight;
-						if (m_AnimatedVertices.size() > VertexID && !m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight)) {
-							trimmedVertices.push_back((uint32_t)VertexID);
-						}
-					}
-				}
-			}
-			if (!trimmedVertices.empty())
-			{
-				std::sort(trimmedVertices.begin(), trimmedVertices.end());
-				trimmedVertices.erase(std::unique(trimmedVertices.begin(), trimmedVertices.end()), trimmedVertices.end());
-				for (uint32_t vertex : trimmedVertices)
-				{
-					m_AnimatedVertices[vertex].NormalizeWeights();
-				}
-				Log::GetLogger()->info("ModelH2M: '{0}': {1} vertices have more than four bone weights: the largest four are kept",
-					m_FilePath, trimmedVertices.size());
+				m_BoneInfo[b].BoneOffset = data.BoneOffsets[b];
+				m_BoneMapping[data.BoneNames[b]] = b;
 			}
 
 			// The Vulkan skinning shader (HazelPBR_Anim.glsl) has room for 128 bone matrices
@@ -607,42 +443,36 @@ namespace H2M
 			}
 
 			// The skeleton and the file's clips, sampled by BoneTransform and by the animator (Animation/AnimationClip.h)
-			std::vector<glm::mat4> boneOffsets;
-			for (const BoneInfo& bone : m_BoneInfo)
+			m_Skeleton = std::make_shared<AnimationSkeleton>(data.Nodes, m_BoneMapping, data.BoneOffsets);
+			m_Clips = std::move(data.Clips);
+			for (const AnimationClip& clip : m_Clips)
 			{
-				boneOffsets.push_back(bone.BoneOffset);
-			}
-			m_Skeleton = std::make_shared<AnimationSkeleton>(scene, m_BoneMapping, boneOffsets);
-			for (uint32_t a = 0; a < scene->mNumAnimations; a++)
-			{
-				m_Clips.emplace_back(scene->mAnimations[a], a);
-				m_ClipBindings.push_back(AnimationBinding::Bind(*m_Skeleton, m_Clips.back()));
+				m_ClipBindings.push_back(AnimationBinding::Bind(*m_Skeleton, clip));
 			}
 		}
 
 		/**** BEGIN Materials ****/
 
 		// Materials
-		if (scene->HasMaterials())
+		if (!data.Materials.empty())
 		{
 			HZ_MESH_LOG("---- Materials - {0} ----", m_FilePath);
 
 			m_MeshShader->Bind();
 
-			m_Textures.resize(scene->mNumMaterials);
-			m_Materials.resize(scene->mNumMaterials);
+			m_Textures.resize(data.Materials.size());
+			m_Materials.resize(data.Materials.size());
 #if defined(GRAPHICS_API_VULKAN)
-			m_MaterialDescriptors.resize(scene->mNumMaterials); // TODO: to be removed from ModelH2M
+			m_MaterialDescriptors.resize(data.Materials.size()); // TODO: to be removed from ModelH2M
 #endif
 
 			RefH2M<Texture2D_H2M> whiteTexture = RendererH2M::GetWhiteTexture();
 
-			for (uint32_t i = 0; i < scene->mNumMaterials; i++)
+			for (uint32_t i = 0; i < (uint32_t)data.Materials.size(); i++)
 			{
-				auto aiMaterial = scene->mMaterials[i];
-				auto aiMaterialName = aiMaterial->GetName();
+				const ModelMaterialData& sourceMaterial = data.Materials[i];
 
-				auto mi = MaterialH2M::Create(m_MeshShader, aiMaterialName.data);
+				auto mi = MaterialH2M::Create(m_MeshShader, sourceMaterial.Name);
 				// auto mi = HazelMaterial::Create(m_BaseMaterial, aiMaterialName.data);
 				// auto mi = RefH2M<MaterialInstanceH2M>::Create(m_BaseMaterial, aiMaterialName.data);
 				m_Materials[i] = mi;
@@ -662,39 +492,21 @@ namespace H2M
 #endif
 				/**** END to be removed from ModelH2M ****/
 
-				HZ_MESH_LOG("  {0} (Index = {1})", aiMaterialName.data, i);
-				aiString aiTexPath;
-				uint32_t textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
-				HZ_MESH_LOG("    TextureCount = {0}", textureCount);
+				HZ_MESH_LOG("  {0} (Index = {1})", sourceMaterial.Name, i);
 
-				glm::vec3 albedoColor(0.8f);
-				aiColor3D aiColor;
-				// aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor);
-				if (aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor) == AI_SUCCESS)
-				{
-					albedoColor = { aiColor.r, aiColor.g, aiColor.b };
-				}
+				const glm::vec3 diffuseColor = sourceMaterial.DiffuseColor; // black when the file has none
+				const glm::vec3 albedoColor = sourceMaterial.HasDiffuseColor ? diffuseColor : glm::vec3(0.8f);
 
 				m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", albedoColor);
 				mi->Set("u_MaterialUniforms.AlbedoColor", albedoColor);
 
-				float shininess, metalness;
-				// aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
-				if (aiMaterial->Get(AI_MATKEY_SHININESS, shininess) != aiReturn_SUCCESS)
-				{
-					shininess = 80.0f; // Default value
-				}
-
-				// aiMaterial->Get(AI_MATKEY_REFLECTIVITY, metalness);
-				if (aiMaterial->Get(AI_MATKEY_REFLECTIVITY, metalness) != aiReturn_SUCCESS)
-				{
-					metalness = 0.0f;
-				}
+				const float shininess = sourceMaterial.HasShininess ? sourceMaterial.Shininess : 80.0f; // Default value
+				float metalness = sourceMaterial.HasReflectivity ? sourceMaterial.Reflectivity : 0.0f;
 
 				// float roughness = 1.0f - shininess * 0.01f;
 				// roughness *= roughness;
 				float roughness = 1.0f - glm::sqrt(shininess / 100.0f);
-				HZ_MESH_LOG("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
+				HZ_MESH_LOG("    COLOR = {0}, {1}, {2}", diffuseColor.r, diffuseColor.g, diffuseColor.b);
 				HZ_MESH_LOG("    ROUGHNESS = {0}", roughness);
 				HZ_MESH_LOG("    METALNESS = {0}", metalness);
 
@@ -703,9 +515,8 @@ namespace H2M
 				if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 				{
 					// PBR formats (glTF) store the values directly
-					float factor;
-					if (aiMaterial->Get(AI_MATKEY_METALLIC_FACTOR, factor) == AI_SUCCESS) metalness = factor;
-					if (aiMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, factor) == AI_SUCCESS) roughness = factor;
+					if (sourceMaterial.HasMetallicFactor) metalness = sourceMaterial.MetallicFactor;
+					if (sourceMaterial.HasRoughnessFactor) roughness = sourceMaterial.RoughnessFactor;
 				}
 				mi->Set("u_MaterialUniforms.Roughness", roughness);
 				mi->Set("u_MaterialUniforms.Metalness", metalness);
@@ -719,13 +530,13 @@ namespace H2M
 				RefH2M<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], meshPtr);
 				// END the material data section
 
-				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
+				bool hasAlbedoMap = !sourceMaterial.AlbedoMap.empty();
 				bool fallback = !hasAlbedoMap;
 
 				if (hasAlbedoMap)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+					std::string texturePath = ResolveTexturePath(m_FilePath, sourceMaterial.AlbedoMap);
 					HZ_MESH_LOG("    Albedo map path = '{0}'", texturePath);
 
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
@@ -763,8 +574,8 @@ namespace H2M
 						Log::GetLogger()->error("Could not load texture: {0}", texturePath);
 
 						// Fallback to albedo color
-						m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
-						mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b }); // redundant
+						m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", diffuseColor);
+						mi->Set("u_MaterialUniforms.AlbedoColor", diffuseColor); // redundant
 
 						HZ_MESH_LOG("Mesh has no Albedo map.");
 
@@ -773,8 +584,8 @@ namespace H2M
 				}
 				else
 				{
-					m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
-					mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b }); // redundant
+					m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", diffuseColor);
+					mi->Set("u_MaterialUniforms.AlbedoColor", diffuseColor); // redundant
 					HZ_MESH_LOG("    No albedo map");
 				}
 
@@ -799,13 +610,13 @@ namespace H2M
 				m_MeshShader->SetFloat("u_MaterialUniforms.NormalTexToggle", 0.0f);
 				mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f); // redundant
 
-				bool hasNormalMap = aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS;
+				bool hasNormalMap = !sourceMaterial.NormalMap.empty();
 				fallback = !hasNormalMap;
 
 				if (hasNormalMap)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+					std::string texturePath = ResolveTexturePath(m_FilePath, sourceMaterial.NormalMap);
 					HZ_MESH_LOG("    Normal map path = '{0}'", texturePath);
 
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
@@ -869,19 +680,20 @@ namespace H2M
 				// m_MeshShader->SetFloat("u_MaterialUniforms.Roughness", 1.0f);
 				// m_MeshShader->SetFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
 
-				bool hasRoughnessMap = aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS;
+				std::string roughnessMap = sourceMaterial.ShininessMap;
 				// PBR formats (glTF: the metallicRoughness map, roughness in G) - Vulkan only, the OpenGL shader reads roughness from R
-				if (!hasRoughnessMap && RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
+				if (roughnessMap.empty() && RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 				{
-					hasRoughnessMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &aiTexPath) == AI_SUCCESS;
+					roughnessMap = sourceMaterial.DiffuseRoughnessMap;
 				}
+				const bool hasRoughnessMap = !roughnessMap.empty();
 				fallback = !hasRoughnessMap;
 				std::string roughnessTexturePath;
 
 				if (hasRoughnessMap)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+					std::string texturePath = ResolveTexturePath(m_FilePath, roughnessMap);
 					// HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 					HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 					roughnessTexturePath = texturePath;
@@ -940,12 +752,12 @@ namespace H2M
 					}
 				}
 
-#if 0
-				// Metalness map (or is it??)
-				if (aiMaterial->Get("$raw.ReflectionFactor|file", aiPTI_String, 0, aiTexPath) == AI_SUCCESS)
+				bool metalnessTextureFound = false;
+				if (!sourceMaterial.ReflectionFactorMap.empty())
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+					std::string texturePath = ResolveTexturePath(m_FilePath, sourceMaterial.ReflectionFactorMap);
+					HZ_MESH_LOG("    Metalness map path = '{0}'", texturePath);
 
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
@@ -957,136 +769,36 @@ namespace H2M
 						texture = LoadBaseTexture();
 					}
 
-					if (texture->Loaded())
+					if (texture && texture->Loaded()) // null when the file is missing or failed to load
 					{
-						HZ_MESH_LOG("    Metalness map path = '{0}'", texturePath);
-						m_MeshShader->SetInt("u_MetalnessTexture", texture->GetID());
-						m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
-					}
-					else
-					{
-						Log::GetLogger()->error("Could not load texture: {0}", texturePath);
-					}
-				}
-				else
-				{
-					HZ_MESH_LOG("    No metalness texture");
-					m_MeshShader->SetFloat("u_MaterialUniforms.Metalness", metalness);
-				}
-#endif
+						metalnessTextureFound = true;
 
-				bool metalnessTextureFound = false;
-				for (uint32_t p = 0; p < aiMaterial->mNumProperties; p++)
-				{
-					auto prop = aiMaterial->mProperties[p];
+						m_Textures.push_back(texture);
+						mi->Set("u_MetalnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_MetalnessTexture')!
+						// mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
 
-#if DEBUG_PRINT_ALL_PROPS
-					HZ_MESH_LOG("Material Property:");
-					HZ_MESH_LOG("  Name = {0}", prop->mKey.data);
-					// HZ_MESH_LOG("  Type = {0}", prop->mType);
-					// HZ_MESH_LOG("  Size = {0}", prop->mDataLength);
-					float data = *(float*)prop->mData;
-					HZ_MESH_LOG("  Value = {0}", data);
-
-					switch (prop->mSemantic)
-					{
-					case aiTextureType_NONE:
-						HZ_MESH_LOG("  Semantic = aiTextureType_NONE");
-						break;
-					case aiTextureType_DIFFUSE:
-						HZ_MESH_LOG("  Semantic = aiTextureType_DIFFUSE");
-						break;
-					case aiTextureType_SPECULAR:
-						HZ_MESH_LOG("  Semantic = aiTextureType_SPECULAR");
-						break;
-					case aiTextureType_AMBIENT:
-						HZ_MESH_LOG("  Semantic = aiTextureType_AMBIENT");
-						break;
-					case aiTextureType_EMISSIVE:
-						HZ_MESH_LOG("  Semantic = aiTextureType_EMISSIVE");
-						break;
-					case aiTextureType_HEIGHT:
-						HZ_MESH_LOG("  Semantic = aiTextureType_HEIGHT");
-						break;
-					case aiTextureType_NORMALS:
-						HZ_MESH_LOG("  Semantic = aiTextureType_NORMALS");
-						break;
-					case aiTextureType_SHININESS:
-						HZ_MESH_LOG("  Semantic = aiTextureType_SHININESS");
-						break;
-					case aiTextureType_OPACITY:
-						HZ_MESH_LOG("  Semantic = aiTextureType_OPACITY");
-						break;
-					case aiTextureType_DISPLACEMENT:
-						HZ_MESH_LOG("  Semantic = aiTextureType_DISPLACEMENT");
-						break;
-					case aiTextureType_LIGHTMAP:
-						HZ_MESH_LOG("  Semantic = aiTextureType_LIGHTMAP");
-						break;
-					case aiTextureType_REFLECTION:
-						HZ_MESH_LOG("  Semantic = aiTextureType_REFLECTION");
-						break;
-					case aiTextureType_UNKNOWN:
-						HZ_MESH_LOG("  Semantic = aiTextureType_UNKNOWN");
-						break;
-					}
-#endif
-
-					if (prop->mType == aiPTI_String)
-					{
-						uint32_t strLength = *(uint32_t*)prop->mData;
-						std::string str(prop->mData + 4, strLength);
-
-						std::string key = prop->mKey.data;
-						if (key == "$raw.ReflectionFactor|file")
+						if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 						{
-							// TODO: Temp - this should be handled by Hazel's filesystem
-							std::string texturePath = ResolveTexturePath(m_FilePath, str);
-							HZ_MESH_LOG("    Metalness map path = '{0}'", texturePath);
-
-							RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
-							try {
-								// texture = Texture2D_H2M::Create(texturePath, false);
-								texture = ResourceManager::LoadTexture2D_H2M(texturePath, false);
-							}
-							catch (...) {
-								Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
-								texture = LoadBaseTexture();
-							}
-
-							if (texture && texture->Loaded()) // null when the file is missing or failed to load
-							{
-								metalnessTextureFound = true;
-
-								m_Textures.push_back(texture);
-								mi->Set("u_MetalnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_MetalnessTexture')!
-								// mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
-
-								if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
-								{
-									AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", texture); // TODO: to be removed from ModelH2M
-								}
-								else
-								{
-									m_MeshShader->SetInt("u_MetalnessTexture", texture->GetID());
-									mi->Set("u_MetalnessTexture", texture->GetID()); // redundant
-								}
-
-								m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
-								mi->Set("u_MaterialUniforms.MetalnessTexToggle", 1.0f); // redundant
-								MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterialRef);
-							}
-							break;
+							AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", texture); // TODO: to be removed from ModelH2M
 						}
+						else
+						{
+							m_MeshShader->SetInt("u_MetalnessTexture", texture->GetID());
+							mi->Set("u_MetalnessTexture", texture->GetID()); // redundant
+						}
+
+						m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
+						mi->Set("u_MaterialUniforms.MetalnessTexToggle", 1.0f); // redundant
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterialRef);
 					}
 				}
 
 				// PBR formats (glTF: the metallicRoughness map, metalness in B) - Vulkan only, the OpenGL shader reads metalness from R
 				std::string metalnessTexturePath;
 				if (!metalnessTextureFound && RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan &&
-					aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &aiTexPath) == AI_SUCCESS)
+					!sourceMaterial.MetalnessMap.empty())
 				{
-					metalnessTexturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+					metalnessTexturePath = ResolveTexturePath(m_FilePath, sourceMaterial.MetalnessMap);
 					HZ_MESH_LOG("    Metalness map path = '{0}'", metalnessTexturePath);
 
 					RefH2M<Texture2D_H2M> texture = LoadMaterialMap(metalnessTexturePath, false);
@@ -1139,9 +851,9 @@ namespace H2M
 
 					// Emissive map: color data (sRGB)
 					RefH2M<Texture2D_H2M> emissiveTexture;
-					if (aiMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &aiTexPath) == AI_SUCCESS)
+					if (!sourceMaterial.EmissiveMap.empty())
 					{
-						std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+						std::string texturePath = ResolveTexturePath(m_FilePath, sourceMaterial.EmissiveMap);
 						HZ_MESH_LOG("    Emissive map path = '{0}'", texturePath);
 						emissiveTexture = LoadMaterialMap(texturePath, true);
 					}
@@ -1149,9 +861,9 @@ namespace H2M
 					{
 						// glTF: the map is multiplied by emissiveFactor
 						float intensity = 1.0f;
-						aiColor3D emissiveColor;
-						if (aiMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor) == AI_SUCCESS)
+						if (sourceMaterial.HasEmissiveColor)
 						{
+							const glm::vec3& emissiveColor = sourceMaterial.EmissiveColor;
 							intensity = glm::max(emissiveColor.r, glm::max(emissiveColor.g, emissiveColor.b));
 						}
 						m_Textures.push_back(emissiveTexture);
@@ -1168,10 +880,9 @@ namespace H2M
 
 					// Ambient occlusion map: linear data. glTF's occlusionTexture arrives as LIGHTMAP
 					RefH2M<Texture2D_H2M> aoTexture;
-					if (aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aiTexPath) == AI_SUCCESS ||
-						aiMaterial->GetTexture(aiTextureType_LIGHTMAP, 0, &aiTexPath) == AI_SUCCESS)
+					if (!sourceMaterial.AmbientOcclusionMap.empty())
 					{
-						std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+						std::string texturePath = ResolveTexturePath(m_FilePath, sourceMaterial.AmbientOcclusionMap);
 						HZ_MESH_LOG("    AO map path = '{0}'", texturePath);
 						aoTexture = LoadMaterialMap(texturePath, false);
 					}
@@ -1285,7 +996,11 @@ namespace H2M
 		}
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
-		Log::GetLogger()->info("Model '{0}': {1} meshes, {2} vertices, {3} triangles", m_FilePath, m_Meshes.size(), totalVertices, m_Indices.size());
+		m_Nodes = std::move(data.Nodes);
+		m_NodeMeshes = std::move(data.NodeMeshes);
+
+		Log::GetLogger()->info("Model '{0}': {1} meshes, {2} vertices, {3} triangles ({4} in {5:.1f} ms)", m_FilePath, m_Meshes.size(), totalVertices, m_Indices.size(),
+			loadInfo.FromCache ? "cooked file read" : "imported and cooked", loadInfo.Milliseconds);
 
 		HZ_MESH_LOG("H2M::ModelH2M: Total vertices: {0}", totalVertices);
 		HZ_MESH_LOG("H2M::ModelH2M: Total indices: {0}", m_Indices.size());
@@ -1374,12 +1089,12 @@ namespace H2M
 
 	bool ModelH2M::HasAnimations() const
 	{
-		return m_Scene && m_Scene->mAnimations && m_Scene->mNumAnimations > 0;
+		return !GetClips().empty();
 	}
 
 	uint32_t ModelH2M::GetAnimationCount() const
 	{
-		return HasAnimations() ? m_Scene->mNumAnimations : 0;
+		return (uint32_t)GetClips().size();
 	}
 
 	std::string ModelH2M::GetAnimationName(uint32_t index) const
@@ -1388,8 +1103,7 @@ namespace H2M
 		{
 			return std::string();
 		}
-		std::string name = m_Scene->mAnimations[index]->mName.C_Str();
-		return name.empty() ? "Animation " + std::to_string(index) : name;
+		return GetClips()[index].GetName();
 	}
 
 	void ModelH2M::SetAnimationIndex(uint32_t index)
@@ -1403,7 +1117,7 @@ namespace H2M
 
 	float ModelH2M::GetAnimationDuration() const
 	{
-		return m_AnimationIndex < GetAnimationCount() ? (float)m_Scene->mAnimations[m_AnimationIndex]->mDuration : 0.0f;
+		return m_AnimationIndex < GetAnimationCount() ? GetClips()[m_AnimationIndex].GetDuration() * GetClips()[m_AnimationIndex].GetTicksPerSecond() : 0.0f;
 	}
 
 	float ModelH2M::GetAnimationTicksPerSecond() const
@@ -1412,8 +1126,7 @@ namespace H2M
 		{
 			return 25.0f;
 		}
-		double ticksPerSecond = m_Scene->mAnimations[m_AnimationIndex]->mTicksPerSecond;
-		return ticksPerSecond != 0.0 ? (float)ticksPerSecond : 25.0f;
+		return GetClips()[m_AnimationIndex].GetTicksPerSecond();
 	}
 
 	void ModelH2M::OnUpdate(TimestepH2M ts, bool debug)
@@ -1425,11 +1138,10 @@ namespace H2M
 		// m_IsAnimated can be switched on in the UI; only animate models that actually have animations
 		if (m_IsAnimated && HasAnimations())
 		{
-			if (m_AnimationIndex >= m_Scene->mNumAnimations)
+			if (m_AnimationIndex >= GetAnimationCount())
 			{
 				m_AnimationIndex = 0;
 			}
-			const aiAnimation* animation = m_Scene->mAnimations[m_AnimationIndex];
 
 			if (m_AnimationPlaying)
 			{
@@ -1437,9 +1149,10 @@ namespace H2M
 
 				float ticksPerSecond = GetAnimationTicksPerSecond() * m_TimeMultiplier;
 				m_AnimationTime += ts * ticksPerSecond;
-				if (animation->mDuration > 0.0)
+				const float duration = GetAnimationDuration();
+				if (duration > 0.0f)
 				{
-					m_AnimationTime = fmod(m_AnimationTime, (float)animation->mDuration);
+					m_AnimationTime = fmod(m_AnimationTime, duration);
 				}
 			}
 
@@ -1453,31 +1166,18 @@ namespace H2M
 		}
 	}
 
-	static std::string LevelToSpaces(uint32_t level)
+	void ModelH2M::ApplyNodeTransforms(const ModelData& data)
 	{
-		std::string result = "";
-		for (uint32_t i = 0; i < level; i++)
-			result += "--";
-		return result;
-	}
-
-	void ModelH2M::TraverseNodes(aiNode* node, const glm::mat4& parentTransform, uint32_t level)
-	{
-		glm::mat4 transform = parentTransform * Math::Mat4FromAssimpMat4(node->mTransformation);
-		for (uint32_t i = 0; i < node->mNumMeshes; i++)
+		std::vector<glm::mat4> world(data.Nodes.size());
+		for (size_t n = 0; n < data.Nodes.size(); n++)
 		{
-			uint32_t meshIndex = node->mMeshes[i];
-			RefH2M<MeshH2M> mesh = m_Meshes[meshIndex];
-			mesh->NodeName = node->mName.C_Str();
-			mesh->MeshName = m_Scene->mMeshes[meshIndex]->mName.C_Str();
-			mesh->Transform = transform;
-		}
-
-		HZ_MESH_LOG("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
-
-		for (uint32_t i = 0; i < node->mNumChildren; i++)
-		{
-			TraverseNodes(node->mChildren[i], transform, level + 1);
+			const AnimationSkeleton::SourceNode& node = data.Nodes[n];
+			world[n] = node.Parent >= 0 ? world[node.Parent] * node.Matrix : node.Matrix;
+			for (uint32_t meshIndex : data.NodeMeshes[n])
+			{
+				m_Meshes[meshIndex]->NodeName = node.Name;
+				m_Meshes[meshIndex]->Transform = world[n];
+			}
 		}
 	}
 

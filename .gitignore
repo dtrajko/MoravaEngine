@@ -393,6 +393,7 @@ vendor/PhysX
 Resources/Shaders/cached
 # What the engine makes from fonts and other files, made again when missing (the game UI's font atlases)
 Resources/Cache/Fonts/
+Resources/Cache/Cooked/
 Projects/*/Library/
 
 # Tools/Testing: logs and screenshots of the test scripts

@@ -46,6 +46,8 @@ namespace AssetRegistry
 	// The ID of a file. Zero: it has none (not an asset's type, doesn't exist, no sidecar in the player, or outside the
 	// project and the engine). A file moved since it was opened still has its ID by its old path.
 	AssetID GetID(const std::string& path);
+	// The same, but a file that has no sidecar yet doesn't get one: loading a file doesn't make it something saved refers to
+	AssetID FindID(const std::string& path);
 	// Where an asset is now, as the engine keeps paths. Empty: not known, or the file is gone
 	std::string FindPath(AssetID id);
 

@@ -33,6 +33,7 @@
 
 
 #include "Animation/AnimationSelfTest.h"
+#include "Assets/ModelCook.h"
 #include "UI/DebugOverlay.h"
 #include "UI/UIFont.h"
 #include "UI/UILayout.h"
@@ -1827,6 +1828,7 @@ void EnvMapVulkanRenderer::Init()
 	EnvMapVulkanScene::SelfTest();
 	EnvMapVulkanPrefab::SelfTest();
 	AnimationSelfTest::Run();
+	ModelCook::SelfTest();
 
 	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 	H2M::RenderPassSpecificationH2M renderPassSpec;

@@ -12,6 +12,7 @@
 #endif
 #include "H2M/Renderer/PipelineH2M.h"
 #include "H2M/Renderer/IndexBufferH2M.h"
+#include "H2M/Renderer/ModelVerticesH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 
 #include "Core/Log.h"
@@ -29,90 +30,12 @@
 #include <string>
 #include <vector>
 
-struct aiNode;
-struct aiAnimation;
-struct aiNodeAnim;
-struct aiScene;
-
-namespace Assimp {
-	class Importer;
-}
+struct ModelData;
 
 namespace H2M
 {
 
-	struct VertexH2M
-	{
-		glm::vec3 Position;
-		glm::vec3 Normal;
-		glm::vec3 Tangent;
-		glm::vec3 Binormal;
-		glm::vec2 Texcoord;
-
-		bool operator==(const VertexH2M& other) const
-		{
-			return Position == other.Position && Normal == other.Normal && Texcoord == other.Texcoord;
-		}
-	};
-
-	struct AnimatedVertex
-	{
-		glm::vec3 Position;
-		glm::vec3 Normal;
-		glm::vec3 Tangent;
-		glm::vec3 Binormal;
-		glm::vec2 Texcoord;
-
-		uint32_t IDs[4] = { 0, 0,0, 0 };
-		float Weights[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
-
-		// The four largest weights are kept (the skinning shaders read four): false when a weight was left out, after which
-		// NormalizeWeights makes the kept ones add up to 1 again
-		bool AddBoneData(uint32_t BoneID, float Weight)
-		{
-			size_t smallest = 0;
-			for (size_t i = 0; i < 4; i++)
-			{
-				if (Weights[i] == 0.0)
-				{
-					IDs[i] = BoneID;
-					Weights[i] = Weight;
-					return true;
-				}
-				if (Weights[i] < Weights[smallest])
-				{
-					smallest = i;
-				}
-			}
-			if (Weight > Weights[smallest])
-			{
-				IDs[smallest] = BoneID;
-				Weights[smallest] = Weight;
-			}
-			return false;
-		}
-
-		void NormalizeWeights()
-		{
-			const float sum = Weights[0] + Weights[1] + Weights[2] + Weights[3];
-			if (sum > 0.0f)
-			{
-				for (float& weight : Weights)
-				{
-					weight /= sum;
-				}
-			}
-		}
-	};
-
 	static const int NumAttributes = 5;
-
-	struct Index
-	{
-		uint32_t V1, V2, V3;
-	};
-
-	static_assert(sizeof(Index) == 3 * sizeof(uint32_t));
 
 	struct BoneInfo
 	{
@@ -189,7 +112,7 @@ namespace H2M
 		bool IsRigged = false;
 	};
 
-	// A model: a loaded model file (an aiScene), made of one or more meshes (GetMeshes), with its materials, skeleton and animations.
+	// A model: a loaded model file (ModelData: imported or cooked), made of one or more meshes (GetMeshes), with its materials, skeleton and animations.
 	// LoadShared reads a file once. Every entity then has its own small model, with its own list of meshes, their transforms and
 	// its animation state; the vertex and index buffers, triangles, materials, skeleton and clips are those of the file's one model.
 	class ModelH2M : public Mesh
@@ -324,15 +247,15 @@ namespace H2M
 
 		// The bone matrices of the played clip at time (in ticks; the bind pose when the model isn't animated)
 		void BoneTransform(float time);
-		void TraverseNodes(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
+		void ApplyNodeTransforms(const ModelData& data);
 
-		void ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
+		void ImGuiNodeHierarchy(uint32_t node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 
 		void SetupDefaultBaseMaterial();
 		RefH2M<Texture2D_H2M> LoadBaseTexture();
 
 	private:
-		RefH2M<ModelH2M> m_FileModel; // set by LoadShared: keeps the shared model, and the aiScene in m_Scene, alive
+		RefH2M<ModelH2M> m_FileModel; // set by LoadShared: keeps the shared model alive
 
 		RefH2M<PipelineH2M> m_Pipeline;
 		RefH2M<VertexBufferH2M> m_VertexBuffer;
@@ -345,9 +268,11 @@ namespace H2M
 		// Materials
 		RefH2M<MoravaShader> m_MeshShader;
 
-		std::unique_ptr<Assimp::Importer> m_Importer;
-
 		glm::mat4 m_InverseTransform;
+
+		// The file's node tree, for the Mesh Hierarchy panel
+		std::vector<AnimationSkeleton::SourceNode> m_Nodes;
+		std::vector<std::vector<uint32_t>> m_NodeMeshes;
 
 		uint32_t m_BoneCount = 0;
 		std::vector<BoneInfo> m_BoneInfo;

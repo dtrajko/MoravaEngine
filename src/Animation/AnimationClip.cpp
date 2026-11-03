@@ -1,11 +1,7 @@
 #include "AnimationClip.h"
 
+#include "Assets/ModelCook.h"
 #include "Core/Log.h"
-#include "Core/Math.h"
-
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>
@@ -40,33 +36,28 @@ static AnimationTransform Decompose(const glm::mat4& matrix)
 
 // ---- AnimationSkeleton
 
-AnimationSkeleton::AnimationSkeleton(const aiScene* scene, const std::unordered_map<std::string, uint32_t>& boneMapping, const std::vector<glm::mat4>& boneOffsets)
+AnimationSkeleton::AnimationSkeleton(const std::vector<SourceNode>& nodes, const std::unordered_map<std::string, uint32_t>& boneMapping, const std::vector<glm::mat4>& boneOffsets)
 	: m_BoneOffsets(boneOffsets)
 {
-	if (!scene || !scene->mRootNode)
+	if (nodes.empty())
 	{
 		return;
 	}
-	m_InverseRoot = glm::inverse(Math::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
+	m_InverseRoot = glm::inverse(nodes[0].Matrix);
 
-	std::function<void(const aiNode*, int)> add = [&](const aiNode* node, int parent)
+	m_Nodes.reserve(nodes.size());
+	for (const SourceNode& source : nodes)
 	{
 		Node entry;
-		entry.Name = node->mName.C_Str();
-		entry.Parent = parent;
-		entry.BindMatrix = Math::Mat4FromAssimpMat4(node->mTransformation);
+		entry.Name = source.Name;
+		entry.Parent = source.Parent;
+		entry.BindMatrix = source.Matrix;
 		entry.Bind = Decompose(entry.BindMatrix);
 		auto bone = boneMapping.find(entry.Name);
 		entry.Bone = bone != boneMapping.end() && bone->second < boneOffsets.size() ? (int)bone->second : -1;
-		const int index = (int)m_Nodes.size();
-		m_NodeByName.emplace(entry.Name, index); // the first node of a name (names are unique in a rig)
+		m_NodeByName.emplace(entry.Name, (int)m_Nodes.size()); // the first node of a name (names are unique in a rig)
 		m_Nodes.push_back(std::move(entry));
-		for (uint32_t i = 0; i < node->mNumChildren; i++)
-		{
-			add(node->mChildren[i], index);
-		}
-	};
-	add(scene->mRootNode, -1);
+	}
 }
 
 int AnimationSkeleton::FindNode(const std::string& name) const
@@ -99,46 +90,6 @@ void AnimationSkeleton::ComputeBoneTransforms(const AnimationPose& pose, std::ve
 		{
 			boneTransforms[node.Bone] = m_InverseRoot * world[i] * m_BoneOffsets[node.Bone];
 		}
-	}
-}
-
-// ---- AnimationClip
-
-AnimationClip::AnimationClip(const aiAnimation* animation, uint32_t index)
-{
-	m_Name = animation->mName.C_Str();
-	if (m_Name.empty())
-	{
-		m_Name = "Animation " + std::to_string(index);
-	}
-	const double ticksPerSecond = animation->mTicksPerSecond != 0.0 ? animation->mTicksPerSecond : 25.0;
-	m_Duration = (float)(animation->mDuration / ticksPerSecond);
-
-	m_Channels.reserve(animation->mNumChannels);
-	for (uint32_t c = 0; c < animation->mNumChannels; c++)
-	{
-		const aiNodeAnim* source = animation->mChannels[c];
-		Channel channel;
-		channel.Node = source->mNodeName.C_Str();
-		for (uint32_t k = 0; k < source->mNumPositionKeys; k++)
-		{
-			const aiVectorKey& key = source->mPositionKeys[k];
-			channel.PositionTimes.push_back((float)(key.mTime / ticksPerSecond));
-			channel.Positions.emplace_back(key.mValue.x, key.mValue.y, key.mValue.z);
-		}
-		for (uint32_t k = 0; k < source->mNumRotationKeys; k++)
-		{
-			const aiQuatKey& key = source->mRotationKeys[k];
-			channel.RotationTimes.push_back((float)(key.mTime / ticksPerSecond));
-			channel.Rotations.push_back(glm::normalize(glm::quat(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z)));
-		}
-		for (uint32_t k = 0; k < source->mNumScalingKeys; k++)
-		{
-			const aiVectorKey& key = source->mScalingKeys[k];
-			channel.ScaleTimes.push_back((float)(key.mTime / ticksPerSecond));
-			channel.Scales.emplace_back(key.mValue.x, key.mValue.y, key.mValue.z);
-		}
-		m_Channels.push_back(std::move(channel));
 	}
 }
 
@@ -332,24 +283,20 @@ namespace AnimationClipLibrary
 		}
 
 		auto clips = std::make_shared<std::vector<AnimationClip>>();
-		Assimp::Importer importer;
-		// The nodes as the model's import has them (no flag of ModelH2M's changes the node tree): only the clips are kept
-		const bool exists = std::filesystem::exists(std::filesystem::u8path(path), error);
-		const aiScene* scene = exists ? importer.ReadFile(path, aiProcess_ValidateDataStructure) : nullptr;
-		if (!scene)
+		ModelData data;
+		ModelCook::LoadInfo info;
+		std::string readError;
+		if (!ModelCook::Load(path, data, info, readError))
 		{
-			Log::GetLogger()->error("Animation: '{0}' {1}", path, exists ? std::string("could not be read: ") + importer.GetErrorString() : "doesn't exist");
+			Log::GetLogger()->error("Animation: '{0}' could not be read: {1}", path, readError);
 		}
-		else if (scene->mNumAnimations == 0)
+		else if (data.Clips.empty())
 		{
 			Log::GetLogger()->error("Animation: '{0}' has no animations", path);
 		}
 		else
 		{
-			for (uint32_t a = 0; a < scene->mNumAnimations; a++)
-			{
-				clips->emplace_back(scene->mAnimations[a], a);
-			}
+			*clips = std::move(data.Clips);
 			Log::GetLogger()->info("Animation: {0} clip(s) from '{1}'", clips->size(), path);
 		}
 		s_Files[key] = clips;
