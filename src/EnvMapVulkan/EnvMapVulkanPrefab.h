@@ -39,6 +39,8 @@ namespace EnvMapVulkanPrefab
 	uint64_t HashText(const std::string& text);
 	// The hash of the instance's content as a prefab would have it (GetPrefabText, without a name)
 	uint64_t GetInstanceHash(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID root);
+	// The same as it was made before assets had IDs, to check the hashes in an older scene
+	uint64_t GetInstanceHashBeforeAssetIDs(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID root);
 	// The hash of a prefab file's text; false when it can't be read
 	bool GetFileHash(const std::string& file, uint64_t& hash);
 

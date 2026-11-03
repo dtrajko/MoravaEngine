@@ -4,6 +4,7 @@ Material:
   Name: DefaultMaterial
   Source:
     File: Models/Terrain/terrain_heightmap.obj
+    FileID: 7162719589252611238
     Index: 0
   AlbedoColor: [0.6, 0.6, 0.6]
   Metalness: 0

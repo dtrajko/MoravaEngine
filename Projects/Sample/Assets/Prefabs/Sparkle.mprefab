@@ -11,6 +11,7 @@ Entities:
       Scale: [0.08, 0.08, 0.08]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Script:
       Class: Sample.Sparkle
   - ID: 2

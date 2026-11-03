@@ -12,13 +12,17 @@ Material:
   Maps:
     Albedo:
       File: Textures/PBR/grass/albedo.png
+      FileID: 3464533739063577718
       Enabled: true
     Normal:
       File: Textures/PBR/grass/normal.png
+      FileID: 14656660938462860401
       Enabled: true
     Roughness:
       File: Textures/PBR/grass/roughness.png
+      FileID: 14698190697611040805
       Enabled: true
     AmbientOcclusion:
       File: Textures/PBR/grass/ao.png
+      FileID: 9927320096362571680
       Enabled: true

@@ -4,6 +4,7 @@ Material:
   Name: TerrainMaterial
   Source:
     File: Models/Terrain/terrain_heightmap.obj
+    FileID: 7162719589252611238
     Index: 1
   AlbedoColor: [1, 1, 1]
   Metalness: 0
@@ -15,4 +16,5 @@ Material:
   Maps:
     Albedo:
       File: Models/Terrain/terrain_color.png
+      FileID: 6317150682295965778
       Enabled: true

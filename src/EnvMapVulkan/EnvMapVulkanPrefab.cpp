@@ -7,6 +7,7 @@
 
 #include "Core/Log.h"
 
+#include "Project/AssetRegistry.h"
 #include "Project/Project.h"
 
 #include <algorithm>
@@ -69,6 +70,14 @@ namespace EnvMapVulkanPrefab
 
 	uint64_t GetInstanceHash(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID root)
 	{
+		// By its assets' IDs, not their paths: moving a file changes no instance
+		AssetReference::ScopedTextMode mode(AssetReference::TextMode::Stable);
+		return HashText(GetPrefabText(scene, root, std::string()));
+	}
+
+	uint64_t GetInstanceHashBeforeAssetIDs(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID root)
+	{
+		AssetReference::ScopedTextMode mode(AssetReference::TextMode::Legacy);
 		return HashText(GetPrefabText(scene, root, std::string()));
 	}
 

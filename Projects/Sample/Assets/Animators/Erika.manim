@@ -8,12 +8,12 @@ Animator:
     - {Name: Use, Type: Trigger}
   States:
     - Name: Idle
-      Clip: {File: Models/Erika_Archer/idle.dae, Name: ""}
+      Clip: {File: Models/Erika_Archer/idle.dae, FileID: 2412253120716878500, Name: ""}
       Speed: 1
       Loop: true
       InPlace: true
     - Name: Walk
-      Clip: {File: Models/Erika_Archer/walking.dae, Name: ""}
+      Clip: {File: Models/Erika_Archer/walking.dae, FileID: 16858971527497294766, Name: ""}
       Speed: 0.595
       SpeedParameter: Speed
       Loop: true
@@ -22,7 +22,7 @@ Animator:
         - {Name: Footstep, Time: 0.34}
         - {Name: Footstep, Time: 0.83}
     - Name: Run
-      Clip: {File: Models/Erika_Archer/running.dae, Name: ""}
+      Clip: {File: Models/Erika_Archer/running.dae, FileID: 18441426209858603180, Name: ""}
       Speed: 0.265
       SpeedParameter: Speed
       Loop: true
@@ -31,7 +31,7 @@ Animator:
         - {Name: Footstep, Time: 0.36}
         - {Name: Footstep, Time: 0.86}
     - Name: RunJump
-      Clip: {File: Models/Erika_Archer/Jump_01.dae, Name: ""}
+      Clip: {File: Models/Erika_Archer/Jump_01.dae, FileID: 13065313754934983259, Name: ""}
       Speed: 1
       Loop: false
       InPlace: true

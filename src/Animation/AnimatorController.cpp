@@ -2,6 +2,7 @@
 
 #include "Core/Log.h"
 
+#include "Project/AssetRegistry.h"
 #include "Project/Project.h"
 
 #include <yaml-cpp/yaml.h>
@@ -155,7 +156,7 @@ std::string AnimatorController::ToText() const
 		out << YAML::BeginMap;
 		out << YAML::Key << "Name" << YAML::Value << state.Name;
 		out << YAML::Key << "Clip" << YAML::Value << YAML::Flow << YAML::BeginMap;
-		out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(state.ClipFile);
+		AssetReference::Write(out, "File", state.ClipFile);
 		out << YAML::Key << "Name" << YAML::Value << state.ClipName;
 		out << YAML::EndMap;
 		out << YAML::Key << "Speed" << YAML::Value << state.Speed;
@@ -317,8 +318,7 @@ bool AnimatorController::FromText(const std::string& text, const std::string& fi
 				}
 				if (const YAML::Node clip = node["Clip"]; clip && clip.IsMap())
 				{
-					const std::string file = clip["File"].as<std::string>("");
-					state.ClipFile = file.empty() ? std::string() : ProjectPaths::Resolve(file);
+					state.ClipFile = AssetReference::Read(clip, "File");
 					state.ClipName = clip["Name"].as<std::string>("");
 				}
 				state.Speed = node["Speed"].as<float>(state.Speed);

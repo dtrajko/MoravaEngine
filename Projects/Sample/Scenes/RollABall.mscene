@@ -78,6 +78,7 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      FileID: 2763703905192543074
       Rotation: 4
       Exposure: 1
       AutoExposure: true
@@ -142,6 +143,7 @@ Entities:
       Scale: [10.5, 0.5, 10.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -173,6 +175,7 @@ Entities:
       Scale: [10.5, 0.75, 0.25]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -204,6 +207,7 @@ Entities:
       Scale: [10.5, 0.75, 0.25]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -235,6 +239,7 @@ Entities:
       Scale: [0.25, 0.75, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -266,6 +271,7 @@ Entities:
       Scale: [0.25, 0.75, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -297,6 +303,7 @@ Entities:
       Scale: [0.5, 0.5, 0.5]
     Model:
       File: Models/Primitives/sphere.obj
+      FileID: 13014230014195210173
     Collider:
       Shape: Sphere
       Offset: [0, 0, 0]
@@ -318,7 +325,7 @@ Entities:
       Class: Sample.BallController
       Fields:
         Camera: {Entity: 7310000000000000001}
-        SparklePrefab: {Prefab: Assets/Prefabs/Sparkle.mprefab}
+        SparklePrefab: {Prefab: Assets/Prefabs/Sparkle.mprefab, PrefabID: 17877850850927617984}
         ScoreText: {Entity: 7310000000000000303}
         MessageText: {Entity: 7310000000000000304}
   - ID: 7310000000000000003
@@ -344,6 +351,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -357,6 +365,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -366,7 +375,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000112
     Name: Cube
     Parent: 7310000000000000111
@@ -390,6 +399,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -403,6 +413,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -412,7 +423,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000114
     Name: Cube
     Parent: 7310000000000000113
@@ -436,6 +447,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -449,6 +461,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -458,7 +471,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000116
     Name: Cube
     Parent: 7310000000000000115
@@ -482,6 +495,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -495,6 +509,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -504,7 +519,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000118
     Name: Cube
     Parent: 7310000000000000117
@@ -528,6 +543,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -541,6 +557,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -550,7 +567,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000120
     Name: Cube
     Parent: 7310000000000000119
@@ -574,6 +591,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -587,6 +605,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -596,7 +615,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000122
     Name: Cube
     Parent: 7310000000000000121
@@ -620,6 +639,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -633,6 +653,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -642,7 +663,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000124
     Name: Cube
     Parent: 7310000000000000123
@@ -666,6 +687,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -679,6 +701,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -688,7 +711,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000126
     Name: Cube
     Parent: 7310000000000000125
@@ -712,6 +735,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -725,6 +749,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -734,7 +759,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000128
     Name: Cube
     Parent: 7310000000000000127
@@ -758,6 +783,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -771,6 +797,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -780,7 +807,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000130
     Name: Cube
     Parent: 7310000000000000129
@@ -804,6 +831,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -817,6 +845,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -826,7 +855,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000132
     Name: Cube
     Parent: 7310000000000000131
@@ -850,6 +879,7 @@ Entities:
       Scale: [0.3, 0.3, 0.3]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -863,6 +893,7 @@ Entities:
       Class: Sample.Pickup
     AudioSource:
       Clip: Assets/Audio/Hum.wav
+      ClipID: 17968021273585545996
       Bus: Effects
       Volume: 0.35
       Pitch: 1
@@ -872,7 +903,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
-    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, FileID: 1089379334424371160, PrefabHash: 9332412129181152913, InstanceHash: 16695373972651798016, HashVersion: 2}
   - ID: 7310000000000000134
     Name: Cube
     Parent: 7310000000000000133
@@ -895,6 +926,7 @@ Entities:
       Scale: [1, 1, 1]
     AudioSource:
       Clip: Assets/Audio/Music.wav
+      ClipID: 13914811652133185307
       Bus: Music
       Volume: 0.6
       Pitch: 1
@@ -946,7 +978,6 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.3], AnchorMax: [0.5, 0.3], Pivot: [0.5, 0.5], Position: [0, 0], Size: [1200, 220], Visible: false}
-    UIImage: {Texture: "", Color: [0.02, 0.03, 0.06, 0.6]}
     UIText:
       Text: You win!
       Font: ""
@@ -956,6 +987,7 @@ Entities:
       VerticalAlign: Middle
       Wrap: true
       LineSpacing: 1.1
+    UIImage: {Texture: "", Color: [0.02, 0.03, 0.06, 0.6]}
   - ID: 7310000000000000310
     Name: Pause Menu
     Parent: 0
@@ -963,7 +995,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 10}
     Script:
       Class: Sample.PauseMenu
       Fields:
@@ -971,6 +1002,7 @@ Entities:
         ResumeButton: {Entity: 7310000000000000313}
         RestartButton: {Entity: 7310000000000000315}
         Title: {Entity: 7310000000000000312}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 10}
   - ID: 7310000000000000311
     Name: Pause Panel
     Parent: 7310000000000000310

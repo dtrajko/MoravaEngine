@@ -1,6 +1,10 @@
 Scene:
   Version: 1
   Name: Main
+EditorCamera:
+  Translation: [0, 8, 9]
+  Rotation: [30, 0, 0]
+  FieldOfView: 45
 RenderSettings:
   Shadows:
     Distance: 40
@@ -55,7 +59,10 @@ Entities:
       Rotation: [30, 0, 0]
       Scale: [1, 1, 1]
     Camera:
+      Primary: true
       FieldOfView: 45
+      NearClip: 0.01
+      FarClip: 1000
   - ID: 16040318626583559303
     Name: Environment
     Parent: 0
@@ -65,6 +72,7 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      FileID: 2763703905192543074
       Rotation: 4
       Exposure: 1
       AutoExposure: true
@@ -94,6 +102,7 @@ Entities:
       Scale: [10, 1, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -125,6 +134,7 @@ Entities:
       Scale: [9.999993, 0.9999972, 7.9999247]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -156,6 +166,7 @@ Entities:
       Scale: [10, 0.9999972, 1.9998641]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -187,6 +198,7 @@ Entities:
       Scale: [9.999842, 0.99993837, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -218,6 +230,7 @@ Entities:
       Scale: [9.999682, 0.9999284, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -249,6 +262,7 @@ Entities:
       Scale: [9.999993, 0.9999972, 9.999189]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -280,6 +294,7 @@ Entities:
       Scale: [10, 1, 10]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -311,6 +326,7 @@ Entities:
       Scale: [0.75, 0.75, 0.75]
     Model:
       File: Models/Primitives/sphere.obj
+      FileID: 13014230014195210173
     Collider:
       Shape: Box
       Offset: [0, 0, 0]
@@ -355,6 +371,7 @@ Entities:
       Scale: [0.5, 0.5, 0.5]
     Model:
       File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
     Collider:
       Shape: Box
       Offset: [0, 0, 0]

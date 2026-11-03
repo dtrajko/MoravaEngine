@@ -257,11 +257,35 @@ namespace H2M
 		return RefH2M<ModelH2M>::Create(shared->second.Model, filepath);
 	}
 
+	static int s_FramesUntilRelease = 0;
+
 	void ModelH2M::ReleaseUnusedShared()
 	{
+		s_FramesUntilRelease = 8;
+	}
+
+	void ModelH2M::OnFrame()
+	{
+		if (s_FramesUntilRelease == 0 || --s_FramesUntilRelease > 0)
+		{
+			return;
+		}
+		size_t released = 0;
 		for (auto it = s_SharedModels.begin(); it != s_SharedModels.end();)
 		{
-			it = it->second.Model->GetRefCount() == 1 ? s_SharedModels.erase(it) : std::next(it);
+			if (it->second.Model->GetRefCount() == 1)
+			{
+				it = s_SharedModels.erase(it);
+				released++;
+			}
+			else
+			{
+				++it;
+			}
+		}
+		if (released > 0)
+		{
+			Log::GetLogger()->info("Models: {0} file(s) no scene uses any more were released, {1} kept", released, s_SharedModels.size());
 		}
 	}
 

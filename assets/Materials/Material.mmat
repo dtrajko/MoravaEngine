@@ -4,6 +4,7 @@ Material:
   Name: Material
   Source:
     File: Models/Primitives/cube.obj
+    FileID: 14090977682447350047
     Index: 1
   AlbedoColor: [0.8, 0.8, 0.8]
   Metalness: 0

@@ -18,13 +18,17 @@ Material:
   Maps:
     Normal:
       File: Models/Cerberus/Textures/Cerberus_N.tga
+      FileID: 12099833642723894827
       Enabled: true
     Metalness:
       File: Models/Cerberus/Textures/Cerberus_M.png
+      FileID: 12001574021847378243
       Enabled: true
     Roughness:
       File: Models/Cerberus/Textures/Cerberus_R.png
+      FileID: 7675791305610119468
       Enabled: false
     AmbientOcclusion:
       File: Models/Cerberus/Textures/Cerberus_AO.png
+      FileID: 9700566342093073467
       Enabled: true

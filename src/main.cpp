@@ -3,6 +3,7 @@
 #include "EditorApplication.h"
 
 #include "H2M/Core/LogH2M.h"
+#include "Project/AssetRegistry.h"
 #if defined(GRAPHICS_API_VULKAN)
 #include "Editor/Editor.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
@@ -30,6 +31,7 @@ int main(int argc, char** argv)
 #if defined(GRAPHICS_API_VULKAN)
 	Editor::InstallConsole(); // the editor (src/Editor) is in Vulkan builds only
 #endif
+	AssetRegistry::SetWritable(true); // the editor makes the sidecars of assets; a game only reads them
 	H2M::LogH2M::Init(); // H2M_ERROR / H2M_CORE_ERROR and failed H2M asserts log through these loggers
 
 	if (!Application::IsWorkingDirectoryValid())

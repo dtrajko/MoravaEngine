@@ -4,6 +4,7 @@ Material:
   Name: jeep_army.jpg
   Source:
     File: Models/OGLdev/jeep/jeep.obj
+    FileID: 18217879955756803570
     Index: 1
   AlbedoColor: [0.8, 0.8, 0.8]
   Metalness: 0
@@ -15,4 +16,5 @@ Material:
   Maps:
     Albedo:
       File: Textures/OGLdev/jeep/jeep_army.jpg
+      FileID: 2977278592900432939
       Enabled: true

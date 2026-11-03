@@ -21,4 +21,5 @@ Material:
   Maps:
     Albedo:
       File: Models/OGLdev/BobLamp/round_grill.tga
+      FileID: 12945302041030275179
       Enabled: true

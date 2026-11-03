@@ -203,8 +203,9 @@ namespace H2M
 		// A model of its own on the file's shared one, which is read now unless it is in memory and the file hasn't changed.
 		// Without geometry (no such file, or nothing in it) when the file can't be used: it isn't kept then.
 		static RefH2M<ModelH2M> LoadShared(const std::string& filepath);
-		// Forgets the files no model uses any more. Their resources go, so the GPU must be idle.
-		static void ReleaseUnusedShared();
+		// Forgets the files no model uses any more.
+		static void ReleaseUnusedShared(); // a few frames from now: the renderer still holds the last frame's models
+		static void OnFrame();
 		static void ReleaseAllShared(); // when the renderer shuts down
 
 		virtual void Create() override;
