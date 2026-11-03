@@ -10,9 +10,6 @@
 #include <vector>
 
 
-struct aiAnimation;
-struct aiScene;
-
 /**
  * Skeletal animation apart from the model that shows it (docs/engine/Game_Engine_Runtime_Guide.html, 6.4): a clip is
  * sampled at a time into a pose, two poses are blended, and a pose becomes the bone matrices the skinning shaders read.
@@ -53,8 +50,16 @@ public:
 		int Bone = -1;                         // the bone matrix it gives, -1: none
 	};
 
+	// A node as the model file has it. Each parent comes before its children; the first node is the root
+	struct SourceNode
+	{
+		std::string Name;
+		int Parent = -1;
+		glm::mat4 Matrix = glm::mat4(1.0f);
+	};
+
 	// boneMapping: bone name to bone index; boneOffsets: each bone's offset (mesh space to bone space)
-	AnimationSkeleton(const aiScene* scene, const std::unordered_map<std::string, uint32_t>& boneMapping, const std::vector<glm::mat4>& boneOffsets);
+	AnimationSkeleton(const std::vector<SourceNode>& nodes, const std::unordered_map<std::string, uint32_t>& boneMapping, const std::vector<glm::mat4>& boneOffsets);
 
 	const std::vector<Node>& GetNodes() const { return m_Nodes; }
 	int FindNode(const std::string& name) const;
@@ -85,21 +90,22 @@ public:
 	};
 
 	AnimationClip() = default;
-	// The file's ticks become seconds (a file without a tick rate: 25 per second, as Assimp's)
-	explicit AnimationClip(const aiAnimation* animation, uint32_t index);
 
 	const std::string& GetName() const { return m_Name; }
 	float GetDuration() const { return m_Duration; } // seconds
+	float GetTicksPerSecond() const { return m_TicksPerSecond; } // the file's: ModelH2M's times are in ticks
 	const std::vector<Channel>& GetChannels() const { return m_Channels; }
 
-	// For tests: a clip made in code
+	// To make a clip: the import, a cooked file, tests
 	void SetName(const std::string& name) { m_Name = name; }
 	void SetDuration(float duration) { m_Duration = duration; }
+	void SetTicksPerSecond(float ticksPerSecond) { m_TicksPerSecond = ticksPerSecond; }
 	std::vector<Channel>& GetChannels() { return m_Channels; }
 
 private:
 	std::string m_Name;
 	float m_Duration = 0.0f;
+	float m_TicksPerSecond = 25.0f;
 	std::vector<Channel> m_Channels;
 };
 

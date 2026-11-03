@@ -383,8 +383,11 @@ namespace H2M
 		// Mesh Hierarchy
 		if(ImGui::TreeNode(imguiName))
 		{
-			auto rootNode = mesh->GetSceneAssimp()->mRootNode;
-			MeshNodeHierarchy(mesh, rootNode, glm::mat4(1.0f), 0);
+			// A ModelH2M has no aiScene: its nodes are in the Mesh Hierarchy panel
+			if (mesh->GetSceneAssimp())
+			{
+				MeshNodeHierarchy(mesh, mesh->GetSceneAssimp()->mRootNode, glm::mat4(1.0f), 0);
+			}
 			ImGui::TreePop();
 		}
 	}

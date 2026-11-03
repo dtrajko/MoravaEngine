@@ -2,7 +2,9 @@
 // current: files moved in Explorer or by Git are seen when the editor gets the focus back.
 
 
+#include "Assets/ModelCook.h"
 #include "Core/Application.h"
+#include "Core/Log.h"
 #include "Project/AssetRegistry.h"
 #include "Project/Project.h"
 
@@ -71,6 +73,27 @@ void OnImGuiRenderAssetsPanel()
 	const std::vector<AssetRegistry::Record>& records = AssetRegistry::GetRecords();
 	ImGui::SameLine();
 	ImGui::Text("%d assets, last scan %.1f ms", (int)records.size(), AssetRegistry::GetLastScanMilliseconds());
+
+	// The cook cache: read when the panel opens and after a load, not each frame
+	static ModelCook::CacheContents s_Cooked;
+	static bool s_CookedKnown = false;
+	static uint32_t s_LoadsSeen = 0;
+	const ModelCook::Stats& cookStats = ModelCook::GetStats();
+	if (!s_CookedKnown || s_LoadsSeen != cookStats.Read + cookStats.Imported)
+	{
+		s_Cooked = ModelCook::GetCacheContents();
+		s_LoadsSeen = cookStats.Read + cookStats.Imported;
+		s_CookedKnown = true;
+	}
+	if (ImGui::Button("Clear Cook Cache"))
+	{
+		const uint32_t removed = ModelCook::ClearCache();
+		Log::GetLogger()->info("Assets: {0} cooked file(s) removed", removed);
+		s_CookedKnown = false;
+	}
+	ImGui::SameLine();
+	ImGui::Text("Cooked models: %u files, %.1f MB in %s", s_Cooked.Files, s_Cooked.Bytes / (1024.0 * 1024.0), s_Cooked.Folder.c_str());
+	ImGui::Text("This session: %u read (%.0f ms), %u imported and cooked (%.0f ms)", cookStats.Read, cookStats.ReadMilliseconds, cookStats.Imported, cookStats.ImportMilliseconds);
 
 	ShowFileList("Sidecars without a file", "The file was moved without its .meta, or deleted. What refers to its ID then only has the old path.",
 		AssetRegistry::GetOrphanedSidecars());
