@@ -50,7 +50,7 @@
 namespace H2M
 {
 
-#define MESH_DEBUG_LOG 1
+#define MESH_DEBUG_LOG 0 // 1: every step of a model's load, material by material (thousands of lines for a large scene)
 #if MESH_DEBUG_LOG
 	#define HZ_MESH_LOG(...) MORAVA_CORE_TRACE(__VA_ARGS__)
 #else
@@ -175,7 +175,7 @@ namespace H2M
 	{
 		LogStream::Initialize();
 
-		Log::GetLogger()->info("H2M::ModelH2M: Loading model: {0}", m_FilePath.c_str());
+		HZ_MESH_LOG("H2M::ModelH2M: Loading model: {0}", m_FilePath.c_str());
 
 		m_Importer = std::make_unique<Assimp::Importer>();
 
@@ -213,12 +213,21 @@ namespace H2M
 			}
 			else if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
 			{
+				// A static model has nothing of its own in its shader, and every static model shares the one in the library. A
+				// skinned one gets its own: the uniform buffer of its bone matrices belongs to the shader (set 2)
+				if (!m_IsAnimated)
+				{
+					m_MeshShader = RefH2M<MoravaShader>(RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static"));
+				}
+				else
+				{
 				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
 				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
 				moravaShaderSpecificationHazelVulkan.HazelShaderPath = m_IsAnimated ? RESOURCE_SHADERS_DIR "/HazelPBR_Anim.glsl" : RESOURCE_SHADERS_DIR "/HazelPBR_Static.glsl";
 				moravaShaderSpecificationHazelVulkan.ForceCompile = false; // the shader cache is recompiled when the source is newer
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
+				}
 			}
 			else if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::DX11)
 			{
@@ -237,7 +246,7 @@ namespace H2M
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;
 
-		Log::GetLogger()->info("H2M::ModelH2M: The model contains {0} meshes.", scene->mNumMeshes);
+		HZ_MESH_LOG("H2M::ModelH2M: The model contains {0} meshes.", scene->mNumMeshes);
 
 		m_Meshes.reserve(scene->mNumMeshes);
 		for (size_t m = 0; m < scene->mNumMeshes; m++)
@@ -383,7 +392,7 @@ namespace H2M
 
 		// Display the list of all meshes
 		for (size_t m = 0; m < scene->mNumMeshes; m++) {
-			Log::GetLogger()->info("-- Mesh ID {0} NodeName: '{1}'", m, m_Meshes[m]->NodeName);
+			HZ_MESH_LOG("-- Mesh ID {0} NodeName: '{1}'", m, m_Meshes[m]->NodeName);
 		}
 
 		TraverseNodes(scene->mRootNode);
@@ -455,7 +464,7 @@ namespace H2M
 					}
 					else
 					{
-						Log::GetLogger()->info("Found existing bone in map");
+						HZ_MESH_LOG("Found existing bone in map");
 						boneIndex = m_BoneMapping[boneName];
 					}
 
@@ -506,7 +515,7 @@ namespace H2M
 		// Materials
 		if (scene->HasMaterials())
 		{
-			Log::GetLogger()->info("---- Materials - {0} ----", m_FilePath);
+			HZ_MESH_LOG("---- Materials - {0} ----", m_FilePath);
 
 			m_MeshShader->Bind();
 
@@ -543,7 +552,7 @@ namespace H2M
 #endif
 				/**** END to be removed from ModelH2M ****/
 
-				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
+				HZ_MESH_LOG("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;
 				uint32_t textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
 				HZ_MESH_LOG("    TextureCount = {0}", textureCount);
@@ -656,7 +665,7 @@ namespace H2M
 				{
 					m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
 					mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b }); // redundant
-					Log::GetLogger()->info("    No albedo map");
+					HZ_MESH_LOG("    No albedo map");
 				}
 
 				if (fallback)
@@ -731,7 +740,7 @@ namespace H2M
 				if (fallback)
 				{
 					// HZ_MESH_LOG("    No normal map");
-					Log::GetLogger()->info("    No normal map");
+					HZ_MESH_LOG("    No normal map");
 
 					// Vulkan binds the texture to its sampler; OpenGL sets the sampler uniform to the texture unit (the Vulkan
 					// material has no such uniform: setting it logged an error per mesh)
@@ -809,7 +818,7 @@ namespace H2M
 
 				if (fallback)
 				{
-					Log::GetLogger()->info("    No roughness map");
+					HZ_MESH_LOG("    No roughness map");
 
 					m_MeshShader->SetFloat("u_MaterialUniforms.Roughness", roughness);
 
@@ -851,7 +860,7 @@ namespace H2M
 				}
 				else
 				{
-					Log::GetLogger()->info("    No metalness texture");
+					HZ_MESH_LOG("    No metalness texture");
 					m_MeshShader->SetFloat("u_MaterialUniforms.Metalness", metalness);
 				}
 #endif
@@ -984,7 +993,7 @@ namespace H2M
 
 				if (!metalnessTextureFound)
 				{
-					Log::GetLogger()->info("    No metalness map");
+					HZ_MESH_LOG("    No metalness map");
 					// Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
 
 					m_MeshShader->SetFloat("u_MaterialUniforms.Metalness", metalness);
@@ -1105,7 +1114,7 @@ namespace H2M
 		}
 #endif
 
-		Log::GetLogger()->info("H2M::ModelH2M: Creating a Vertex Buffer...");
+		HZ_MESH_LOG("H2M::ModelH2M: Creating a Vertex Buffer...");
 
 		if (m_IsAnimated)
 		{
@@ -1134,14 +1143,13 @@ namespace H2M
 			};
 		}
 
-		Log::GetLogger()->info("H2M::ModelH2M: Creating an Index Buffer...");
+		HZ_MESH_LOG("H2M::ModelH2M: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBufferH2M::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
 		/**** BEGIN Create pipeline ****/
+		// Only for OpenGL. In Vulkan the renderer's pipelines draw every model
+		if (RendererAPI_H2M::Current() != RendererAPITypeH2M::Vulkan)
 		{
-			// Temporary and only for OpenGL.
-			// In Vulkan, the Pipeline is created in VulkanRenderer
-			Log::GetLogger()->info("H2M::ModelH2M: Creating a Pipeline...");
 
 			pipelineSpecification.Layout = m_VertexBufferLayout;
 
@@ -1183,9 +1191,10 @@ namespace H2M
 		}
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
+		Log::GetLogger()->info("Model '{0}': {1} meshes, {2} vertices, {3} triangles", m_FilePath, m_Meshes.size(), totalVertices, m_Indices.size());
 
-		Log::GetLogger()->info("H2M::ModelH2M: Total vertices: {0}", totalVertices);
-		Log::GetLogger()->info("H2M::ModelH2M: Total indices: {0}", m_Indices.size());
+		HZ_MESH_LOG("H2M::ModelH2M: Total vertices: {0}", totalVertices);
+		HZ_MESH_LOG("H2M::ModelH2M: Total indices: {0}", m_Indices.size());
 	}
 
 	ModelH2M::~ModelH2M()
