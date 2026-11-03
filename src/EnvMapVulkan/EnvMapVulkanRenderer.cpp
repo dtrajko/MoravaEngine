@@ -2073,6 +2073,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	EnvMapVulkanMaterialLibrary::Clear();
 	s_SubmittedModels.clear();
 	s_GlassDraws.clear();
+	H2M::ModelH2M::ReleaseAllShared();
 
 	s_Framebuffer = {};
 	s_CompositeFramebuffer = {};

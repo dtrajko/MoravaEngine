@@ -91,7 +91,7 @@ struct TransformComponent
 struct ModelComponent
 {
 	std::string FilePath;
-	H2M::RefH2M<H2M::ModelH2M> Model; // the loaded model (each model entity has its own, so its parts can be edited)
+	H2M::RefH2M<H2M::ModelH2M> Model; // each model entity has its own, so its parts can be edited; the file's geometry is shared (ModelH2M::LoadShared)
 };
 
 // A part of a model: one of its meshes. Its TransformComponent is the part's place in the model (relative to the model
