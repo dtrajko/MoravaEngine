@@ -444,7 +444,9 @@ void EnvMapVulkanRayTracing::Submit(const H2M::RefH2M<H2M::ModelH2M>& modelRef, 
 		}
 		else if (material->IsGlass())
 		{
-			instance.Mask = MaskGlass | (material->GetGlassValue(EnvMapVulkanMaterial::GlassCastShadows) >= 0.5f ? MaskGlassShadow : 0u);
+			const EnvMapVulkanMaterial::GlassShadowMode shadow = material->GetGlassShadowMode();
+			instance.Mask = MaskGlass | (shadow == EnvMapVulkanMaterial::GlassShadowMode::Full ? MaskGlassShadow : 0u) |
+				(shadow == EnvMapVulkanMaterial::GlassShadowMode::Tinted ? MaskGlassTinted : 0u);
 		}
 		else
 		{

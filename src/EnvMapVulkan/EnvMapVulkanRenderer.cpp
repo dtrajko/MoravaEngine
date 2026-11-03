@@ -389,6 +389,15 @@ static EnvMapVulkanShadowPipeline s_ShadowPipelineAnimCutout;
 // shadowed point light (only when the GPU supports cube map arrays)
 static EnvMapVulkanShadowMap s_SpotShadowMaps;
 static EnvMapVulkanShadowMap s_PointShadowMaps;
+// Tinted glass beside those maps, and beside the probes' map of the sun (see EnvMapVulkanGlassShadowMap)
+static EnvMapVulkanGlassShadowMap s_ShadowGlass;
+static EnvMapVulkanGlassShadowMap s_SpotGlass;
+static EnvMapVulkanGlassShadowMap s_PointGlass;
+static EnvMapVulkanGlassShadowMap s_ProbeSunGlass;
+static VkRenderPass s_GlassShadowRenderPass = VK_NULL_HANDLE;
+static EnvMapVulkanShadowPipeline s_GlassTransmittancePipeline; // ShadowTransmittance.glsl, on the PBR pipeline's layout
+static bool s_FrameHasTintedGlass = false; // a submitted model has tinted glass this frame (ComputeShadowCasterBounds)
+static bool s_TintedGlassSeen = false;     // since then the maps are full size: they cost memory only in the scenes that use them
 
 // World bounds of each submitted model (same order as s_SubmittedModels), for the shadow passes: the cascades are fitted around all
 // of them, and a spot or point light draws only the models within its range. Computed once per frame.
@@ -466,6 +475,7 @@ static void GetShadowSlotsPerLight(std::vector<int>& pointSlots, std::vector<int
 static std::array<EnvMapVulkanShadowCascade, ShadowCascadeCount> s_ShadowCascades; // this frame's, see RecordShadowPasses
 static bool s_ShadowsRendered = false; // the shadow map holds this frame's cascades
 static void WriteShadowMapDescriptor();
+static void CreateGlassShadowMaps();
 static float s_EnvMapRotation = 0.0f; // degrees, applied to the PBR environment lookups (as in SceneHazelEnvMap)
 static uint32_t s_EnvironmentVersion = 0; // changes whenever the environment's cube maps get new contents (CreateEnvironmentMap)
 
@@ -1527,9 +1537,44 @@ static void CreateShadowMap(uint32_t resolution, bool writeDescriptor)
 	}
 	if (writeDescriptor)
 	{
+		CreateGlassShadowMaps();
 		WriteShadowMapDescriptor();
 	}
 	Log::GetLogger()->info("Shadow map: {0} cascades of {1} x {1}", ShadowCascadeCount, resolution);
+}
+
+// The glass maps beside the shadow maps (their framebuffers use the shadow maps' layers: recreated with them). Nothing in
+// flight may still use the old ones. The probes' set is written here; set 0 by WriteShadowMapDescriptor.
+static void CreateGlassShadowMaps()
+{
+	if (s_GlassShadowRenderPass == VK_NULL_HANDLE)
+	{
+		s_GlassShadowRenderPass = EnvMapVulkanGlassShadowMap::CreateRenderPass();
+		const H2M::VertexBufferLayoutH2M staticLayout = {
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
+			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+		};
+		s_GlassTransmittancePipeline.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowTransmittance").As<H2M::VulkanShaderH2M>(), staticLayout, { 0, 1, 4 },
+			s_GlassShadowRenderPass, s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout(), true);
+	}
+	const std::pair<EnvMapVulkanGlassShadowMap*, const EnvMapVulkanShadowMap*> maps[] = {
+		{ &s_ShadowGlass, &s_ShadowMap }, { &s_SpotGlass, &s_SpotShadowMaps }, { &s_PointGlass, &s_PointShadowMaps }, { &s_ProbeSunGlass, &s_ProbeSunShadowMap } };
+	for (const auto& [glass, casters] : maps)
+	{
+		if (casters->IsValid())
+		{
+			glass->Create(*casters, s_GlassShadowRenderPass, s_TintedGlassSeen);
+		}
+	}
+	if (s_ProbeSunShadowMap.IsValid())
+	{
+		s_Probes.SetCaptureSunShadowMap({ s_ProbeSunShadowMap.GetCompareSampler(), s_ProbeSunShadowMap.GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL },
+			{ s_ProbeSunShadowMap.GetCompareSampler(), s_ProbeSunGlass.GetNearestGlass().GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL },
+			{ s_ProbeSunGlass.GetSampler(), s_ProbeSunGlass.GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
+	}
 }
 
 // The spot and point light shadow maps. Point lights need cube map arrays (the imageCubeArray device feature): without
@@ -1921,8 +1966,6 @@ void EnvMapVulkanRenderer::Init()
 		}
 		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 
-		WriteShadowMapDescriptor();
-
 		// binding 17: the material buffer
 		s_MaterialBuffer.Create();
 		WriteMaterialBufferDescriptor();
@@ -1932,7 +1975,9 @@ void EnvMapVulkanRenderer::Init()
 		WriteProbeDescriptors();
 		// The probes' own shadow map of the sun, in the capture's descriptor set
 		s_ProbeSunShadowMap.Create(ProbeSunShadowResolution, 1);
-		s_Probes.SetCaptureSunShadowMap({ s_ProbeSunShadowMap.GetCompareSampler(), s_ProbeSunShadowMap.GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
+		// The glass maps beside all the shadow maps, and bindings 6, 8, 9 and 22 to 27 of set 0
+		CreateGlassShadowMaps();
+		WriteShadowMapDescriptor();
 
 		// binding 15: the ambient occlusion image (the water's reflection pass has none: a white texel)
 		WriteAmbientOcclusionDescriptor();
@@ -1984,6 +2029,16 @@ void EnvMapVulkanRenderer::SetEnvironmentMapFile(const std::string& filepath)
 
 void EnvMapVulkanRenderer::Shutdown()
 {
+	s_GlassTransmittancePipeline.Destroy();
+	s_ShadowGlass.Destroy();
+	s_SpotGlass.Destroy();
+	s_PointGlass.Destroy();
+	s_ProbeSunGlass.Destroy();
+	if (s_GlassShadowRenderPass != VK_NULL_HANDLE)
+	{
+		vkDestroyRenderPass(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), s_GlassShadowRenderPass, nullptr);
+		s_GlassShadowRenderPass = VK_NULL_HANDLE;
+	}
 	s_ShadowPipelineAnimCutout.Destroy();
 	s_ShadowPipelineCutout.Destroy();
 	s_ShadowPipelineAnim.Destroy();
@@ -2187,6 +2242,8 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 	}
 }
 
+static constexpr float GlassShadowFrostSpread = 3.0f; // fully frosted glass: the filter of a tinted shadow's edge is this much wider, plus 1
+
 // The Shadows uniform buffer of the PBR shaders (set 0, binding 7, std140). Written right after the cascades are computed
 // (see RecordShadowPasses), still before the frame is submitted, so the shaders use this frame's cascades.
 static void WriteShadowUniforms()
@@ -2208,8 +2265,9 @@ static void WriteShadowUniforms()
 		glm::vec4 LocalShadowParams; // normal bias, softness, 1 / spot resolution, 1 / point resolution
 		glm::vec4 ShadowDebug;       // Shadows Only: x = 1 sun, 2 point, 3 spot, 4 light off (0: normal view); y = index in the packed lights;
 		                             // z = debug view: 1 the direct light only, 2 the indirect light only, 3 diffuse surface shading
+		glm::vec4 GlassShadowParams; // x = 1: tinted glass is drawn this frame; y = how far frost spreads a shadow's edge
 	};
-	static_assert(sizeof(ShadowsUB) == 688, "std140 layout mismatch with the Shadows block of the PBR shaders");
+	static_assert(sizeof(ShadowsUB) == 704, "std140 layout mismatch with the Shadows block of the PBR shaders");
 	static_assert(MaxShadowedSpotLights == 4 && MaxShadowedPointLights == 4, "the Shadows block of the PBR shaders has 4 slots of each");
 
 	ShadowsUB ub = {};
@@ -2276,6 +2334,12 @@ static void WriteShadowUniforms()
 	{
 		ub.ShadowDebug.z = 7.0f; // the reflection image, likewise
 	}
+	if (s_ViewOptions.DebugView == DebugViewShadowTransmittance)
+	{
+		ub.ShadowDebug.z = 8.0f;
+	}
+	// Tinted glass: its maps are drawn this frame (they are full size from the frame after it was first seen)
+	ub.GlassShadowParams = glm::vec4(s_FrameHasTintedGlass && s_ShadowGlass.IsFullSize() ? 1.0f : 0.0f, GlassShadowFrostSpread, 0.0f, 0.0f);
 	ub.LocalShadowParams = glm::vec4(s_RenderSettings.LocalShadows.NormalBias, s_RenderSettings.LocalShadows.Softness,
 		s_SpotShadowMaps.IsValid() ? 1.0f / (float)s_SpotShadowMaps.GetResolution() : 0.0f,
 		s_PointShadowMaps.IsValid() ? 1.0f / (float)s_PointShadowMaps.GetResolution() : 0.0f);
@@ -2286,28 +2350,40 @@ static void WriteShadowUniforms()
 	shader->UnmapUniformBuffer(7, H2M::VulkanShaderH2M::FrameDescriptorSet);
 }
 
-// The sun's shadow map in the per-frame set of the PBR shaders (set 0, binding 6): all cascades, with the comparison
-// sampler. Written at startup and whenever the shadow map is recreated (resolution change).
+// The shadow maps in the per-frame set of the PBR shaders (set 0): all cascades, with the comparison sampler, and the
+// glass beside them. Written at startup and whenever a map is recreated (resolution change, the first tinted glass).
 static void WriteShadowMapDescriptor()
 {
 	H2M::RefH2M<H2M::VulkanShaderH2M> shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
 	// The sun's cascades, the spot light maps and the point light cubes (bindings 6, 8, 9)
 	const EnvMapVulkanShadowMap* maps[3] = { &s_ShadowMap, &s_SpotShadowMaps, &s_PointShadowMaps };
+	const EnvMapVulkanGlassShadowMap* glass[3] = { &s_ShadowGlass, &s_SpotGlass, &s_PointGlass };
 	const char* names[3] = { "u_ShadowMap", "u_SpotShadowMaps", "u_PointShadowMaps" };
-	std::array<VkDescriptorImageInfo, 3> imageInfos;
+	const char* glassDepthNames[3] = { "u_ShadowGlassDepth", "u_SpotGlassDepth", "u_PointGlassDepth" };
+	const char* transmittanceNames[3] = { "u_ShadowTransmittance", "u_SpotTransmittance", "u_PointTransmittance" };
+	std::array<VkDescriptorImageInfo, 9> imageInfos;
 	std::vector<VkWriteDescriptorSet> writes;
+	const auto addWrite = [&](const char* name, const VkDescriptorImageInfo& info, size_t slot)
+	{
+		imageInfos[slot] = info;
+		VkWriteDescriptorSet write = *shader->GetDescriptorSet(name, H2M::VulkanShaderH2M::FrameDescriptorSet);
+		write.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pImageInfo = &imageInfos[slot];
+		writes.push_back(write);
+	};
 	for (int i = 0; i < 3; i++)
 	{
 		if (!maps[i]->IsValid())
 		{
 			continue;
 		}
-		imageInfos[i] = { maps[i]->GetCompareSampler(), maps[i]->GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-		VkWriteDescriptorSet write = *shader->GetDescriptorSet(names[i], H2M::VulkanShaderH2M::FrameDescriptorSet);
-		write.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
-		write.descriptorCount = 1;
-		write.pImageInfo = &imageInfos[i];
-		writes.push_back(write);
+		addWrite(names[i], { maps[i]->GetCompareSampler(), maps[i]->GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, i * 3);
+		if (glass[i]->IsValid())
+		{
+			addWrite(glassDepthNames[i], { maps[i]->GetCompareSampler(), glass[i]->GetNearestGlass().GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, i * 3 + 1);
+			addWrite(transmittanceNames[i], { glass[i]->GetSampler(), glass[i]->GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }, i * 3 + 2);
+		}
 	}
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 }
@@ -2342,13 +2418,22 @@ static bool IsBoxOutsideFrustum(const glm::vec4 planes[6], const glm::vec3& cent
 	return false;
 }
 
+static bool s_TintedGlassWanted = false; // seen this frame: the maps grow before the next frame is recorded
 static void ComputeShadowCasterBounds(glm::vec3& totalMin, glm::vec3& totalMax)
 {
 	totalMin = glm::vec3(std::numeric_limits<float>::max());
 	totalMax = glm::vec3(-std::numeric_limits<float>::max());
 	s_ShadowCasterBounds.clear();
+	s_FrameHasTintedGlass = false;
 	for (const SubmittedModel& submitted : s_SubmittedModels)
 	{
+		if (!submitted.Model->IsSkinned()) // on a skinned model glass is drawn as opaque
+		{
+			for (const H2M::RefH2M<EnvMapVulkanMaterial>& material : submitted.Materials)
+			{
+				s_FrameHasTintedGlass = s_FrameHasTintedGlass || (material->IsGlass() && material->GetGlassShadowMode() == EnvMapVulkanMaterial::GlassShadowMode::Tinted);
+			}
+		}
 		glm::vec3 modelMin(std::numeric_limits<float>::max());
 		glm::vec3 modelMax(-std::numeric_limits<float>::max());
 		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : submitted.Model->GetMeshes())
@@ -2369,6 +2454,7 @@ static void ComputeShadowCasterBounds(glm::vec3& totalMin, glm::vec3& totalMax)
 	}
 	s_ShadowCasterBoundsMin = totalMin;
 	s_ShadowCasterBoundsMax = totalMax;
+	s_TintedGlassWanted = s_TintedGlassWanted || s_FrameHasTintedGlass;
 }
 
 // Starts a depth-only pass into one layer of a shadow map (cleared to the far plane)
@@ -2446,9 +2532,9 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 		for (size_t s = 0; s < meshes.size(); s++)
 		{
 			const H2M::RefH2M<H2M::MeshH2M>& mesh = meshes[s];
-			// Glass lets the light through, unless its material says it casts a shadow (as an opaque mesh would)
-			if (!skinned && s < materials.size() && materials[s]->IsGlass() &&
-				materials[s]->GetGlassValue(EnvMapVulkanMaterial::GlassCastShadows) < 0.5f)
+			// Glass lets the light through (tinted glass has passes of its own: RecordGlassShadowLayer), unless its material
+			// says it casts a full shadow (as an opaque mesh would)
+			if (!skinned && s < materials.size() && materials[s]->IsGlass() && materials[s]->GetGlassShadowMode() != EnvMapVulkanMaterial::GlassShadowMode::Full)
 			{
 				continue;
 			}
@@ -2496,6 +2582,119 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 	return drawn;
 }
 
+// Draws the tinted glass into the current pass of a glass map: its nearest depth, or its transmittance (light: towards the
+// light, w = 0, or its position, w = 1). Culled as DrawShadowCasters does.
+static void DrawTintedGlass(VkCommandBuffer commandBuffer, const glm::mat4& viewProjection, const glm::vec4& light, bool transmittance,
+	const glm::vec3* lightCenter, float lightRadius)
+{
+	glm::vec4 planes[6];
+	GetFrustumPlanes(viewProjection, planes);
+	const EnvMapVulkanShadowPipeline& pipeline = transmittance ? s_GlassTransmittancePipeline : s_ShadowPipeline;
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+	if (transmittance)
+	{
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
+			&s_Data.FrameDescriptorSet.DescriptorSets[0], 0, nullptr);
+	}
+	for (size_t m = 0; m < s_SubmittedModels.size(); m++)
+	{
+		H2M::RefH2M<H2M::ModelH2M> model = s_SubmittedModels[m].Model;
+		if (model->IsSkinned())
+		{
+			continue; // its glass is drawn as opaque
+		}
+		const auto& [boundsMin, boundsMax] = s_ShadowCasterBounds[m];
+		if (lightCenter && glm::length(glm::clamp(*lightCenter, boundsMin, boundsMax) - *lightCenter) > lightRadius)
+		{
+			continue;
+		}
+		if (s_ViewOptions.FrustumCulling && IsBoxOutsideFrustum(planes, (boundsMin + boundsMax) * 0.5f, (boundsMax - boundsMin) * 0.5f))
+		{
+			continue;
+		}
+		const auto& meshes = model->GetMeshes();
+		const auto& materials = s_SubmittedModels[m].Materials;
+		bool buffersBound = false;
+		for (size_t s = 0; s < meshes.size() && s < materials.size(); s++)
+		{
+			H2M::RefH2M<EnvMapVulkanMaterial> material = materials[s];
+			if (!material->IsGlass() || material->GetGlassShadowMode() != EnvMapVulkanMaterial::GlassShadowMode::Tinted)
+			{
+				continue;
+			}
+			const VkDescriptorSet materialSet = transmittance ? material->GetDescriptorSet() : VK_NULL_HANDLE;
+			if (transmittance && materialSet == VK_NULL_HANDLE)
+			{
+				continue;
+			}
+			if (!buffersBound)
+			{
+				VkBuffer vertexBuffer = model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+				VkDeviceSize offset = 0;
+				vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
+				vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(model->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+				buffersBound = true;
+			}
+			const H2M::RefH2M<H2M::MeshH2M>& mesh = meshes[s];
+			const glm::mat4 meshTransform = EnvMapVulkanSceneData::GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform);
+			if (transmittance)
+			{
+				struct GlassPush
+				{
+					glm::vec4 Light;
+					float MaterialIndex;
+					float AlbedoMap;
+				} glass = { glm::inverse(meshTransform) * light, material->Get<float>("u_MaterialUniforms.MaterialIndex"), material->Get<float>("u_MaterialUniforms.AlbedoTexToggle") };
+				const glm::mat4 lightTransform = viewProjection * meshTransform;
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, H2M::VulkanShaderH2M::MaterialDescriptorSet, 1, &materialSet, 0, nullptr);
+				vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(lightTransform), &lightTransform);
+				vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glass), &glass);
+			}
+			else
+			{
+				const glm::mat4 matrices[2] = { viewProjection, meshTransform };
+				vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
+			}
+			vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
+			EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
+		}
+	}
+}
+
+// One layer of a glass map, after the layer of the shadow map beside it: two render passes, only in a frame with tinted glass
+static void RecordGlassShadowLayer(VkCommandBuffer commandBuffer, const EnvMapVulkanGlassShadowMap& map, uint32_t layer, const glm::mat4& viewProjection,
+	const glm::vec4& light, float depthBias, float slopeBias, const glm::vec3* lightCenter = nullptr, float lightRadius = 0.0f)
+{
+	if (!s_FrameHasTintedGlass || !map.IsFullSize() || !s_GlassTransmittancePipeline.Pipeline)
+	{
+		return;
+	}
+	// The nearest glass, with the same bias as the casters: a pane doesn't tint itself
+	BeginShadowPass(commandBuffer, map.GetNearestGlass(), layer, depthBias, slopeBias);
+	DrawTintedGlass(commandBuffer, viewProjection, light, false, lightCenter, lightRadius);
+	vkCmdEndRenderPass(commandBuffer);
+
+	const uint32_t resolution = map.GetResolution();
+	VkClearValue clearValue = {};
+	clearValue.color = { { 1.0f, 1.0f, 1.0f, 0.0f } };
+	VkRenderPassBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	beginInfo.renderPass = map.GetRenderPass();
+	beginInfo.framebuffer = map.GetFramebuffer(layer);
+	beginInfo.renderArea.extent = { resolution, resolution };
+	beginInfo.clearValueCount = 1;
+	beginInfo.pClearValues = &clearValue;
+	vkCmdBeginRenderPass(commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	EnvMapVulkanProfiler::CountRenderPass(resolution, resolution);
+	VkViewport viewport = { 0.0f, 0.0f, (float)resolution, (float)resolution, 0.0f, 1.0f };
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+	VkRect2D scissor = { { 0, 0 }, { resolution, resolution } };
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+	vkCmdSetDepthBias(commandBuffer, 0.0f, 0.0f, 0.0f);
+	DrawTintedGlass(commandBuffer, viewProjection, light, true, lightCenter, lightRadius);
+	vkCmdEndRenderPass(commandBuffer);
+}
+
 // The shadow map cascades of the sun (see EnvMapVulkanShadows.h), recorded at the start of the frame, before the geometry
 // pass that samples them. Every submitted model casts; the grid and the skybox don't.
 static void RecordShadowPasses(VkCommandBuffer commandBuffer, const glm::vec3& boundsMin, const glm::vec3& boundsMax)
@@ -2540,6 +2739,8 @@ static void RecordShadowPasses(VkCommandBuffer commandBuffer, const glm::vec3& b
 		BeginShadowPass(commandBuffer, s_ShadowMap, cascade, s_RenderSettings.Shadows.DepthBias, s_RenderSettings.Shadows.SlopeBias);
 		DrawShadowCasters(commandBuffer, s_ShadowCascades[cascade].ViewProjection);
 		vkCmdEndRenderPass(commandBuffer);
+		RecordGlassShadowLayer(commandBuffer, s_ShadowGlass, cascade, s_ShadowCascades[cascade].ViewProjection, glm::vec4(s_Lights.Sun.GetDirection(), 0.0f),
+			s_RenderSettings.Shadows.DepthBias, s_RenderSettings.Shadows.SlopeBias);
 	}
 	s_ShadowsRendered = true;
 	WriteShadowUniforms();
@@ -2569,6 +2770,8 @@ static void RecordLocalShadowPasses(VkCommandBuffer commandBuffer)
 			BeginShadowPass(commandBuffer, s_SpotShadowMaps, slot, settings.DepthBias, settings.SlopeBias);
 			slots.ModelsDrawn += DrawShadowCasters(commandBuffer, slots.SpotViewProjection[slot], &light.Position, light.Range);
 			vkCmdEndRenderPass(commandBuffer);
+			RecordGlassShadowLayer(commandBuffer, s_SpotGlass, slot, slots.SpotViewProjection[slot], glm::vec4(light.Position, 1.0f), settings.DepthBias, settings.SlopeBias,
+				&light.Position, light.Range);
 		}
 	}
 
@@ -2587,6 +2790,8 @@ static void RecordLocalShadowPasses(VkCommandBuffer commandBuffer)
 				BeginShadowPass(commandBuffer, s_PointShadowMaps, slot * 6 + face, settings.DepthBias, settings.SlopeBias);
 				slots.ModelsDrawn += DrawShadowCasters(commandBuffer, slots.PointFaceViewProjection[slot][face], &light.Position, light.Range);
 				vkCmdEndRenderPass(commandBuffer);
+				RecordGlassShadowLayer(commandBuffer, s_PointGlass, slot * 6 + face, slots.PointFaceViewProjection[slot][face], glm::vec4(light.Position, 1.0f), settings.DepthBias,
+					settings.SlopeBias, &light.Position, light.Range);
 			}
 		}
 	}
@@ -2733,6 +2938,7 @@ static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 		BeginShadowPass(commandBuffer, s_ProbeSunShadowMap, 0, s_RenderSettings.Shadows.DepthBias, s_RenderSettings.Shadows.SlopeBias);
 		DrawShadowCasters(commandBuffer, sunViewProjection);
 		vkCmdEndRenderPass(commandBuffer);
+		RecordGlassShadowLayer(commandBuffer, s_ProbeSunGlass, 0, sunViewProjection, glm::vec4(towardsSun, 0.0f), s_RenderSettings.Shadows.DepthBias, s_RenderSettings.Shadows.SlopeBias);
 	}
 	s_Probes.SetCaptureSun(sunViewProjection, sunShadows, sunTexelWorldSize, ProbeSunShadowResolution, s_RenderSettings.Shadows.NormalBias);
 
@@ -4388,7 +4594,17 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
 		CreateLocalShadowMaps();
+		CreateGlassShadowMaps();
 		WriteShadowMapDescriptor();
+	}
+	// The first tinted glass: the glass maps grow from a texel per layer to the shadow maps' size, once
+	if (s_TintedGlassWanted && !s_TintedGlassSeen)
+	{
+		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+		s_TintedGlassSeen = true;
+		CreateGlassShadowMaps();
+		WriteShadowMapDescriptor();
+		Log::GetLogger()->info("Tinted glass: its shadow maps are in use");
 	}
 
 	// The environment map the scene asks for (the panel, a file dropped, a scene opened) is loaded here, before any command
@@ -5042,6 +5258,26 @@ bool EnvMapVulkanRenderer::AreShadowsRendered()
 const EnvMapVulkanShadowCascade& EnvMapVulkanRenderer::GetShadowCascade(uint32_t cascade)
 {
 	return s_ShadowCascades[glm::min(cascade, ShadowCascadeCount - 1)];
+}
+
+uint64_t EnvMapVulkanRenderer::GetShadowTransmittanceImage(uint32_t cascade)
+{
+	static std::array<uint64_t, ShadowCascadeCount> s_TextureIDs = {};
+	static uint32_t s_TexturesGeneration = 0; // the glass map the IDs were registered for
+	if (!s_ShadowGlass.IsFullSize() || cascade >= ShadowCascadeCount)
+	{
+		return 0;
+	}
+	if (s_TexturesGeneration != s_ShadowGlass.GetGeneration())
+	{
+		for (uint32_t i = 0; i < ShadowCascadeCount; i++)
+		{
+			H2M::VulkanUIImagesH2M::Remove(s_TextureIDs[i]);
+			s_TextureIDs[i] = H2M::VulkanUIImagesH2M::Add(s_ShadowGlass.GetSampler(), s_ShadowGlass.GetDisplayView(i), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+		s_TexturesGeneration = s_ShadowGlass.GetGeneration();
+	}
+	return s_FrameHasTintedGlass ? s_TextureIDs[cascade] : 0;
 }
 
 uint64_t EnvMapVulkanRenderer::GetShadowCascadeImage(uint32_t cascade)

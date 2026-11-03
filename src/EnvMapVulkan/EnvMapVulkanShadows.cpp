@@ -358,6 +358,192 @@ void EnvMapVulkanShadowMap::Destroy()
 	m_Framebuffers.clear();
 }
 
+VkRenderPass EnvMapVulkanGlassShadowMap::CreateRenderPass()
+{
+	std::array<VkAttachmentDescription, 2> attachments = {};
+	// The transmittance: cleared to white (no frost), left ready for the shaders to sample
+	attachments[0].format = Format;
+	attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
+	attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachments[0].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	attachments[0].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	// The casters' depth, drawn just before this pass: only tested
+	attachments[1].format = EnvMapVulkanShadowMap::Format;
+	attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
+	attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachments[1].initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	attachments[1].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+	VkAttachmentReference depthReference = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL };
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorReference;
+	subpass.pDepthStencilAttachment = &depthReference;
+
+	std::array<VkSubpassDependency, 2> dependencies = {};
+	// The casters' depth written, and the previous frame's shaders done reading the transmittance
+	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[0].dstSubpass = 0;
+	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[0].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT;
+	dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	// The colors written before the shaders read them
+	dependencies[1].srcSubpass = 0;
+	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = (uint32_t)attachments.size();
+	renderPassInfo.pAttachments = attachments.data();
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = (uint32_t)dependencies.size();
+	renderPassInfo.pDependencies = dependencies.data();
+	VkRenderPass renderPass = VK_NULL_HANDLE;
+	VK_CHECK_RESULT_H2M(vkCreateRenderPass(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), &renderPassInfo, nullptr, &renderPass));
+	return renderPass;
+}
+
+void EnvMapVulkanGlassShadowMap::Create(const EnvMapVulkanShadowMap& casters, VkRenderPass renderPass, bool fullSize)
+{
+	Destroy();
+
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	const uint32_t layerCount = casters.GetLayerCount();
+	const bool cubeArray = casters.IsCubeArray();
+	m_FullSize = fullSize;
+	m_Resolution = fullSize ? casters.GetResolution() : 1;
+	m_RenderPass = renderPass;
+	m_Generation++;
+	m_NearestGlass.Create(m_Resolution, layerCount, cubeArray);
+
+	VkImageCreateInfo imageInfo = {};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.flags = cubeArray ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.format = Format;
+	imageInfo.extent = { m_Resolution, m_Resolution, 1 };
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = layerCount;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	H2M::VulkanAllocatorH2M allocator(std::string("GlassShadowMap"));
+	m_Allocation = allocator.AllocateImage(imageInfo, VMA_MEMORY_USAGE_GPU_ONLY, m_Image);
+
+	VkImageViewCreateInfo viewInfo = {};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = m_Image;
+	viewInfo.viewType = cubeArray ? VK_IMAGE_VIEW_TYPE_CUBE_ARRAY : VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+	viewInfo.format = Format;
+	viewInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, layerCount };
+	VK_CHECK_RESULT_H2M(vkCreateImageView(device, &viewInfo, nullptr, &m_ArrayView));
+	m_LayerViews.assign(layerCount, VK_NULL_HANDLE);
+	m_DisplayViews.assign(layerCount, VK_NULL_HANDLE);
+	for (uint32_t i = 0; i < layerCount; i++)
+	{
+		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		viewInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, i, 1 };
+		VK_CHECK_RESULT_H2M(vkCreateImageView(device, &viewInfo, nullptr, &m_LayerViews[i]));
+		viewInfo.components = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_ONE };
+		VK_CHECK_RESULT_H2M(vkCreateImageView(device, &viewInfo, nullptr, &m_DisplayViews[i]));
+		viewInfo.components = {};
+	}
+
+	// The single texels are never drawn: the shaders don't read them, they only fill the descriptor sets
+	if (fullSize)
+	{
+		m_Framebuffers.assign(layerCount, VK_NULL_HANDLE);
+		for (uint32_t i = 0; i < layerCount; i++)
+		{
+			const std::array<VkImageView, 2> views = { m_LayerViews[i], casters.GetLayerView(i) };
+			VkFramebufferCreateInfo framebufferInfo = {};
+			framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+			framebufferInfo.renderPass = renderPass;
+			framebufferInfo.attachmentCount = (uint32_t)views.size();
+			framebufferInfo.pAttachments = views.data();
+			framebufferInfo.width = m_Resolution;
+			framebufferInfo.height = m_Resolution;
+			framebufferInfo.layers = 1;
+			VK_CHECK_RESULT_H2M(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_Framebuffers[i]));
+		}
+	}
+
+	VkSamplerCreateInfo samplerInfo = {};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_LINEAR;
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerInfo.addressModeU = samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerInfo.maxLod = 0.0f;
+	m_Sampler = H2M::VulkanShaderH2M::GetSampler(samplerInfo); // shared: not destroyed here
+
+	// In the sampling layout from the start, as the shadow maps
+	H2M::RefH2M<H2M::VulkanDeviceH2M> vulkanDevice = H2M::VulkanContextH2M::GetCurrentDevice();
+	VkCommandBuffer commandBuffer = vulkanDevice->GetCommandBuffer(true);
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = m_Image;
+	barrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, layerCount };
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	vulkanDevice->FlushCommandBuffer(commandBuffer);
+}
+
+void EnvMapVulkanGlassShadowMap::Destroy()
+{
+	if (!IsValid())
+	{
+		return;
+	}
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	for (VkFramebuffer framebuffer : m_Framebuffers)
+	{
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	}
+	for (VkImageView view : m_LayerViews)
+	{
+		vkDestroyImageView(device, view, nullptr);
+	}
+	for (VkImageView view : m_DisplayViews)
+	{
+		vkDestroyImageView(device, view, nullptr);
+	}
+	vkDestroyImageView(device, m_ArrayView, nullptr);
+	H2M::VulkanAllocatorH2M allocator(std::string("GlassShadowMap"));
+	allocator.DestroyImage(m_Image, m_Allocation);
+	m_NearestGlass.Destroy();
+	m_Framebuffers.clear();
+	m_LayerViews.clear();
+	m_DisplayViews.clear();
+	m_ArrayView = VK_NULL_HANDLE;
+	m_Image = VK_NULL_HANDLE;
+	m_Allocation = nullptr;
+	m_Sampler = VK_NULL_HANDLE;
+	m_RenderPass = VK_NULL_HANDLE;
+	m_FullSize = false;
+	m_Resolution = 0;
+}
+
 static VkFormat ToVulkanFormat(H2M::ShaderDataTypeH2M type)
 {
 	switch (type)
@@ -375,7 +561,7 @@ static VkFormat ToVulkanFormat(H2M::ShaderDataTypeH2M type)
 }
 
 void EnvMapVulkanShadowPipeline::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader, const H2M::VertexBufferLayoutH2M& vertexLayout,
-	const std::vector<uint32_t>& usedLocations, VkRenderPass renderPass, VkPipelineLayout layout)
+	const std::vector<uint32_t>& usedLocations, VkRenderPass renderPass, VkPipelineLayout layout, bool transmittance)
 {
 	Destroy();
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
@@ -443,11 +629,23 @@ void EnvMapVulkanShadowPipeline::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader
 	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
 	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencil.depthTestEnable = VK_TRUE;
-	depthStencil.depthWriteEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = transmittance ? VK_FALSE : VK_TRUE;
 	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 
+	// The transmittance's colors multiply what is there (two panes dim the light twice); alpha keeps the most frosted
+	VkPipelineColorBlendAttachmentState multiply = {};
+	multiply.blendEnable = VK_TRUE;
+	multiply.srcColorBlendFactor = VK_BLEND_FACTOR_DST_COLOR;
+	multiply.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+	multiply.colorBlendOp = VK_BLEND_OP_ADD;
+	multiply.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	multiply.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	multiply.alphaBlendOp = VK_BLEND_OP_MAX;
+	multiply.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	VkPipelineColorBlendStateCreateInfo colorBlend = {};
-	colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO; // no color attachments
+	colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO; // no color attachments in the depth passes
+	colorBlend.attachmentCount = transmittance ? 1 : 0;
+	colorBlend.pAttachments = &multiply;
 
 	std::array<VkDynamicState, 3> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR, VK_DYNAMIC_STATE_DEPTH_BIAS };
 	VkPipelineDynamicStateCreateInfo dynamicState = {};

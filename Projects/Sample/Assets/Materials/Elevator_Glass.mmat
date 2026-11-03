@@ -14,8 +14,8 @@ Material:
   FlipHorizontally: false
   Glass:
     IOR: 1.5
-    Thickness: 0.2
-    CastShadows: 1
+    Thickness: 0.1
+    CastShadows: 2
     Solid: 0
   Maps:
     {}

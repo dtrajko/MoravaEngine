@@ -965,18 +965,24 @@ void EnvMapVulkanProbes::WriteSphereDescriptor()
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
 }
 
-void EnvMapVulkanProbes::SetCaptureSunShadowMap(const VkDescriptorImageInfo& shadowMap)
+void EnvMapVulkanProbes::SetCaptureSunShadowMap(const VkDescriptorImageInfo& shadowMap, const VkDescriptorImageInfo& glassDepth, const VkDescriptorImageInfo& transmittance)
 {
 	if (!m_CaptureSupported)
 	{
 		return;
 	}
 	H2M::RefH2M<H2M::VulkanShaderH2M> captureShader = H2M::RendererH2M::GetShaderLibrary()->Get("ProbeCapture_Static").As<H2M::VulkanShaderH2M>();
-	VkWriteDescriptorSet write = *captureShader->GetDescriptorSet("u_CaptureSunShadowMap", CaptureDescriptorSet);
-	write.dstSet = m_CaptureSet.DescriptorSets[0];
-	write.descriptorCount = 1;
-	write.pImageInfo = &shadowMap;
-	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+	const char* names[3] = { "u_CaptureSunShadowMap", "u_CaptureGlassDepth", "u_CaptureTransmittance" };
+	const VkDescriptorImageInfo* infos[3] = { &shadowMap, &glassDepth, &transmittance };
+	std::array<VkWriteDescriptorSet, 3> writes;
+	for (size_t i = 0; i < writes.size(); i++)
+	{
+		writes[i] = *captureShader->GetDescriptorSet(names[i], CaptureDescriptorSet);
+		writes[i].dstSet = m_CaptureSet.DescriptorSets[0];
+		writes[i].descriptorCount = 1;
+		writes[i].pImageInfo = infos[i];
+	}
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 }
 
 void EnvMapVulkanProbes::SetCaptureSun(const glm::mat4& viewProjection, bool drawn, float texelWorldSize, uint32_t resolution, float normalBias)

@@ -17,8 +17,8 @@
 //     grazing angles): so glass shows what is really behind it, other glass included;
 //   - a ray that hits nothing gets the environment's light, and the path ends. It also ends after Max Bounces, or
 //     earlier by chance when it carries little light any more (the paths that go on count more: the average stays right).
-// Not followed: light through glass to a surface (a shadow ray stops at glass that casts a shadow and ignores glass
-// that doesn't, as the shadow maps do), and the water (it isn't in the acceleration structures).
+// Not followed: light bent by glass on its way to a surface (a shadow ray stops at glass with a full shadow, passes tinted
+// glass taking its color, and ignores glass without a shadow, as the shadow maps do), and the water (it isn't in the acceleration structures).
 // Sets: 0 the per-frame set's contents (lights, environment), 1 the image the samples are averaged in, 3 the ray tracing
 // set.
 #type compute

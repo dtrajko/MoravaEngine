@@ -219,17 +219,17 @@ Entities:
     Water:
       WaveDirection: 30
       WaveSpeed: 0.5
-      WaveStrength: 0.3
+      WaveStrength: 0.2
       WaveScale1: 7
       WaveScale2: 2.5
       SwellHeight: 0.36
       SwellLength: 12.4
       SwellSteepness: 0.385
       Wireframe: false
-      ScatterColor: [0.012, 0.045, 0.055]
+      ScatterColor: [0.03, 0.28, 0.45]
       Roughness: 0.06
       ReflectionStrength: 1
-      Transmittance: [0.55, 0.85, 0.88]
+      Transmittance: [0.3, 0.72, 0.92]
       Clarity: 4
       RefractionStrength: 1
       EdgeSoftness: 0.3

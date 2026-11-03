@@ -146,6 +146,53 @@ private:
 };
 
 /**
+ * Tinted glass beside a shadow map (a material with Cast Shadows = Tinted), with as many layers:
+ * - the nearest glass: an EnvMapVulkanShadowMap of its own, drawn as the casters are. A surface in front of it isn't tinted.
+ * - the transmittance: RGBA8, white where nothing is in the way. rgb: what passes through, multiplied surface by surface,
+ *   tested against the casters' depth (glass behind an opaque mesh doesn't count); a: the most frosted surface.
+ * Until a scene has tinted glass both are a single texel per layer: they cost memory only in the scenes that use them.
+ * Between passes they are in VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, like the shadow maps.
+ */
+class EnvMapVulkanGlassShadowMap
+{
+public:
+	// The render pass of the transmittance (one color attachment, the casters' depth read only). One for all maps.
+	static VkRenderPass CreateRenderPass();
+
+	// casters: the shadow map it is beside; the framebuffers use its layers, so it is recreated whenever they are.
+	// fullSize: false for the single texels. Nothing in flight may still use the old ones.
+	void Create(const EnvMapVulkanShadowMap& casters, VkRenderPass renderPass, bool fullSize);
+	void Destroy();
+
+	bool IsValid() const { return m_Image != VK_NULL_HANDLE; }
+	bool IsFullSize() const { return m_FullSize; }
+	uint32_t GetGeneration() const { return m_Generation; }
+	uint32_t GetResolution() const { return m_Resolution; }
+	const EnvMapVulkanShadowMap& GetNearestGlass() const { return m_NearestGlass; }
+	VkRenderPass GetRenderPass() const { return m_RenderPass; }
+	VkFramebuffer GetFramebuffer(uint32_t layer) const { return m_Framebuffers[layer]; }
+	VkImageView GetArrayView() const { return m_ArrayView; }
+	VkImageView GetDisplayView(uint32_t layer) const { return m_DisplayViews[layer]; } // one layer, shown without its alpha
+	VkSampler GetSampler() const { return m_Sampler; }
+
+	static constexpr VkFormat Format = VK_FORMAT_R8G8B8A8_UNORM;
+
+private:
+	EnvMapVulkanShadowMap m_NearestGlass;
+	bool m_FullSize = false;
+	uint32_t m_Resolution = 0;
+	uint32_t m_Generation = 0;
+	VkImage m_Image = VK_NULL_HANDLE;
+	VmaAllocation m_Allocation = nullptr;
+	VkImageView m_ArrayView = VK_NULL_HANDLE;
+	std::vector<VkImageView> m_LayerViews;
+	std::vector<VkImageView> m_DisplayViews;
+	VkRenderPass m_RenderPass = VK_NULL_HANDLE; // not owned
+	std::vector<VkFramebuffer> m_Framebuffers;
+	VkSampler m_Sampler = VK_NULL_HANDLE;
+};
+
+/**
  * A depth-only pipeline for the shadow pass (ShadowDepth.glsl, ShadowDepth_Anim.glsl), built directly for the shadow map's
  * render pass. No culling (thin and open models cast shadows too); depth bias is dynamic (vkCmdSetDepthBias), so the
  * settings apply immediately.
@@ -159,8 +206,9 @@ struct EnvMapVulkanShadowPipeline
 	// usedLocations: the vertex attributes the shader reads (only these are described, the others are skipped).
 	// layout: another pipeline's layout to draw with (the cutout variants: the PBR pipelines', so a mesh's material sets
 	// bind as in the scene pass); it must outlive this pipeline. None: one made from the shader.
+	// transmittance: for the render pass of EnvMapVulkanGlassShadowMap: colors multiply, the depth is only tested.
 	void Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader, const H2M::VertexBufferLayoutH2M& vertexLayout, const std::vector<uint32_t>& usedLocations,
-		VkRenderPass renderPass, VkPipelineLayout layout = VK_NULL_HANDLE);
+		VkRenderPass renderPass, VkPipelineLayout layout = VK_NULL_HANDLE, bool transmittance = false);
 	void Destroy();
 };
 

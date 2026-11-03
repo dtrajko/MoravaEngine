@@ -8,27 +8,59 @@
 #ifndef SHADE_SURFACE_RAY_TRACED_GLSLH
 #define SHADE_SURFACE_RAY_TRACED_GLSLH
 
-float RayTracedSunShadow(vec3 position, vec3 geometryNormal);
-float RayTracedLightShadow(vec3 position, vec3 geometryNormal, vec3 L, float distance);
+vec3 RayTracedSunShadow(vec3 position, vec3 geometryNormal);
+vec3 RayTracedLightShadow(vec3 position, vec3 geometryNormal, vec3 L, float distance);
 #define SHADE_SURFACE_SUN_SHADOW RayTracedSunShadow
 #define SHADE_SURFACE_LIGHT_SHADOW RayTracedLightShadow
 #define SHADE_SURFACE_PROBES_ALWAYS
 #include "ShadeSurface.glslh"
+#include "GlassShadow.glslh"
 
 // Farther than anything in a scene: the sun's shadow ray goes this far
 const float RayTracedSunDistance = 10000.0;
 
-// 1 when nothing stands between the point and the light, 0 in its shadow
-float RayTracedLightShadow(vec3 position, vec3 geometryNormal, vec3 L, float distance)
+// What tinted glass leaves of a light on the way to it: the surfaces that face the light, as the transmittance maps count
+// them (a ray towards the light meets those from behind). At most a few, the nearest first: the search stops after that.
+const int RayTracedGlassSteps = 6;
+vec3 RayThroughTintedGlass(vec3 origin, vec3 L, float distance)
 {
-	return TraceShadowRay(RayOriginOffSurface(position, geometryNormal), L, 0.0, distance, RayMaskShadowCasters) ? 0.0 : 1.0;
+	vec3 light = vec3(1.0);
+	float tMin = 0.0;
+	for (int i = 0; i < RayTracedGlassSteps; i++)
+	{
+		RayHit hit = TraceRay(origin, L, tMin, distance, RayMaskGlassTinted);
+		if (!hit.Hit)
+		{
+			break;
+		}
+		tMin = hit.T + 0.001;
+		if (!hit.FrontFace)
+		{
+			RaySurface surface = GetRaySurface(hit);
+			RayMaterial material = GetRayMaterial(surface, 1.0);
+			GPUMaterial entry = u_RayTracingMaterials[surface.MaterialIndex];
+			light *= GlassShadowTransmittance(material.Albedo, entry.IOR, entry.Thickness, entry.Roughness, abs(dot(surface.GeometricNormal, L)));
+		}
+	}
+	return light;
 }
 
-float RayTracedSunShadow(vec3 position, vec3 geometryNormal)
+// White when nothing stands between the point and the light, black in its shadow, tinted behind glass
+vec3 RayTracedLightShadow(vec3 position, vec3 geometryNormal, vec3 L, float distance)
+{
+	vec3 origin = RayOriginOffSurface(position, geometryNormal);
+	if (TraceShadowRay(origin, L, 0.0, distance, RayMaskShadowCasters))
+	{
+		return vec3(0.0);
+	}
+	return u_GlassShadowParams.x > 0.5 ? RayThroughTintedGlass(origin, L, distance) : vec3(1.0);
+}
+
+vec3 RayTracedSunShadow(vec3 position, vec3 geometryNormal)
 {
 	if (!(RAY_TRACED_SUN_SHADOWS))
 	{
-		return 1.0;
+		return vec3(1.0);
 	}
 	return RayTracedLightShadow(position, geometryNormal, u_Sun.Direction, RayTracedSunDistance);
 }

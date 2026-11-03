@@ -102,12 +102,29 @@ layout (std140, set = 0, binding = 7) uniform Shadows
 	                                    // 1 the direct light only, 2 the indirect light only, 3 diffuse surface shading
 	                                    // (ShadeSurfaceDiffuse from the material buffer), 4 the probes' irradiance only,
 	                                    // 5 how much of the environment's reflection the probes let through, 6 the ambient
-	                                    // occlusion image, 7 the ray-traced reflection image; 0: all of it
+	                                    // occlusion image, 7 the ray-traced reflection image, 8 the color the sun's light
+	                                    // has at the surface, through glass; 0: all of it
+	vec4 u_GlassShadowParams;           // offset 688: x = 1 when the maps of tinted glass are drawn this frame (and the shadow
+	                                    // rays pass through tinted glass); y = how far frost spreads a shadow's edge
 };
 layout (set = 0, binding = 8) uniform texture2DArray u_SpotShadowMaps;  // a layer per shadowed spot light
 #define u_SpotShadowMaps sampler2DArrayShadow(u_SpotShadowMaps, s_ShadowCompare)
 layout (set = 0, binding = 9) uniform textureCubeArray u_PointShadowMaps; // a cube per shadowed point light
 #define u_PointShadowMaps samplerCubeArrayShadow(u_PointShadowMaps, s_ShadowCompare)
+// Tinted glass (EnvMapVulkanGlassShadowMap), beside each shadow map above: the depth of the glass nearest to the light
+// (a surface in front of it isn't tinted) and what passes through (rgb: the color of the light, a: frost)
+layout (set = 0, binding = 22) uniform texture2DArray u_ShadowGlassDepth;
+#define u_ShadowGlassDepth sampler2DArrayShadow(u_ShadowGlassDepth, s_ShadowCompare)
+layout (set = 0, binding = 23) uniform texture2DArray u_ShadowTransmittance;
+#define u_ShadowTransmittance sampler2DArray(u_ShadowTransmittance, s_LinearClamp)
+layout (set = 0, binding = 24) uniform texture2DArray u_SpotGlassDepth;
+#define u_SpotGlassDepth sampler2DArrayShadow(u_SpotGlassDepth, s_ShadowCompare)
+layout (set = 0, binding = 25) uniform texture2DArray u_SpotTransmittance;
+#define u_SpotTransmittance sampler2DArray(u_SpotTransmittance, s_LinearClamp)
+layout (set = 0, binding = 26) uniform textureCubeArray u_PointGlassDepth;
+#define u_PointGlassDepth samplerCubeArrayShadow(u_PointGlassDepth, s_ShadowCompare)
+layout (set = 0, binding = 27) uniform textureCubeArray u_PointTransmittance;
+#define u_PointTransmittance samplerCubeArray(u_PointTransmittance, s_LinearClamp)
 // The light the waves focus under the water (WaterCaustics.glsl): 1 = the light of a flat surface
 layout (set = 0, binding = 10) uniform texture2D u_CausticsMap;
 #define u_CausticsMap sampler2D(u_CausticsMap, s_LinearClamp)

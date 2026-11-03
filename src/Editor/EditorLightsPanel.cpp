@@ -70,6 +70,12 @@ static void DrawShadowMapCascades()
 	ImGui::TextDisabled("Up to %.1f units from the camera, %.1f mm per texel", cascade.SplitDistance, cascade.TexelWorldSize * 1000.0f);
 	const float size = glm::max(ImGui::GetContentRegionAvail().x, 16.0f);
 	ImGui::Image(EnvMapVulkanRenderer::GetShadowCascadeImage((uint32_t)s_ShadowMapShownCascade), ImVec2(size, size));
+	// The light through tinted glass in the same cascade: white where nothing is in the way
+	if (const ImTextureID transmittance = EnvMapVulkanRenderer::GetShadowTransmittanceImage((uint32_t)s_ShadowMapShownCascade))
+	{
+		ImGui::TextDisabled("Light through tinted glass");
+		ImGui::Image(transmittance, ImVec2(size, size));
+	}
 }
 
 // An azimuth drag without limits (as Env Map Rotation): it can be dragged endlessly in both directions and wraps around

@@ -1,6 +1,6 @@
 // A material of the Material Library as plain values: an entry of the material buffer (EnvMapVulkanMaterialBuffer), which
 // is u_Materials in the per-frame set (Include/FrameSet.glslh) and u_RayTracingMaterials in the ray tracing set
-// (Include/RayTracing.glslh). 80 bytes, std430: must match EnvMapVulkanMaterialBuffer::GPUMaterial.
+// (Include/RayTracing.glslh). 96 bytes, std430: must match EnvMapVulkanMaterialBuffer::GPUMaterial.
 #ifndef GPU_MATERIAL_GLSLH
 #define GPU_MATERIAL_GLSLH
 
@@ -22,6 +22,10 @@ struct GPUMaterial
 	float EmissiveIntensity; // multiplies the emissive map
 	float IOR;               // glass: its index of refraction (a ray that passes through it: the path tracer)
 	float Cutoff;            // cutout: the albedo map's alpha below which there is no surface (GPUMaterialFlagCutout)
+	float Thickness;         // glass: meters the light travels inside it (a tinted shadow, Include/GlassShadow.glslh)
+	float GlassShadow;       // glass: its Cast Shadows (rays and passes choose by their masks; here it marks a change)
+	float Padding1;
+	float Padding2;
 };
 
 const uint GPUMaterialNoMap = 0xFFFFFFFFu;

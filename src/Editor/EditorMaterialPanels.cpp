@@ -697,14 +697,19 @@ void OnImGuiRenderMaterialEditor()
 		}
 		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassThickness), inherited);
 		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassCastShadows));
-		bool shadows = castShadows > 0.5f;
-		if (ImGui::Checkbox("Cast Shadows", &shadows))
+		// The list's order, not the numbers in the file (None 0, Full 1, Tinted 2: materials saved before Tinted keep what they had)
+		int shadows = castShadows > 1.5f ? 1 : castShadows > 0.5f ? 2 : 0;
+		if (ImGui::Combo("Cast Shadows", &shadows, "None\0Tinted\0Full\0"))
 		{
-			castShadows = shadows ? 1.0f : 0.0f;
+			castShadows = shadows == 1 ? 2.0f : shadows == 2 ? 1.0f : 0.0f;
 		}
 		if (ImGui::IsItemHovered())
 		{
-			ImGui::SetTooltip("Off: the light passes through (no shadow). On: a full shadow, as an opaque mesh casts");
+			ImGui::SetTooltip("None: the light passes as if the glass weren't there.\n"
+				"Tinted: the light passes with the glass's color: a shadow lighter than an opaque mesh's, stronger with\n"
+				"Thickness, softer and a little darker with Roughness. The side facing the light counts (a pane seen\n"
+				"from behind by the light tints nothing, as it isn't drawn from there). Static meshes.\n"
+				"Full: a full shadow, as an opaque mesh casts.");
 		}
 		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassCastShadows), inherited);
 		ImGui::Unindent();

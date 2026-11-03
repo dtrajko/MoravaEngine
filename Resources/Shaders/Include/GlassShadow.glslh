@@ -1,0 +1,18 @@
+// How much of a light passes through a glass surface (a material with Cast Shadows = Tinted): the light's color is
+// multiplied by this. One copy for the transmittance maps (ShadowTransmittance.glsl) and the shadow rays
+// (Include/ShadeSurfaceRayTraced.glslh).
+#ifndef GLASS_SHADOW_GLSLH
+#define GLASS_SHADOW_GLSLH
+
+// tint: the albedo color or map. thickness: meters. cosAngle: between the surface's normal and the light.
+// The tint gets stronger with the thickness; what the surface reflects (Fresnel) doesn't pass; frost dims it a little.
+vec3 GlassShadowTransmittance(vec3 tint, float ior, float thickness, float roughness, float cosAngle)
+{
+	float f0 = (ior - 1.0) / (ior + 1.0);
+	f0 *= f0;
+	float fresnel = f0 + (1.0 - f0) * pow(1.0 - clamp(cosAngle, 0.0, 1.0), 5.0);
+	vec3 tinted = pow(clamp(tint, vec3(0.0), vec3(1.0)), vec3(1.0 + max(thickness, 0.0)));
+	return tinted * (1.0 - fresnel) * (1.0 - 0.3 * clamp(roughness, 0.0, 1.0));
+}
+
+#endif
