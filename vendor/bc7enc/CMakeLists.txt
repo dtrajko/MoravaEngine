@@ -1,0 +1,22 @@
+# The engine's own build of the encoders (not the repo's, which builds its command-line tool)
+#
+# Optimized in every configuration: in a Debug build an encoder without optimization takes minutes per texture. These flags
+# are this folder's, and only plain functions on bytes cross into the engine (the runtime library stays the configuration's)
+if(MSVC)
+    foreach(flag /RTC1 /Od /Ob0)
+        string(REPLACE "${flag}" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+    endforeach()
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " /O2 /Ob2")
+else()
+    string(REPLACE "-O0" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+    string(APPEND CMAKE_CXX_FLAGS_DEBUG " -O2")
+endif()
+
+add_library(bc7enc STATIC bc7enc.cpp bc7decomp.cpp rgbcx.cpp)
+target_include_directories(bc7enc SYSTEM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(bc7enc PUBLIC RGBCX_USE_SMALLER_TABLES=1)
+if(MSVC)
+    target_compile_options(bc7enc PRIVATE /w)
+else()
+    target_compile_options(bc7enc PRIVATE -w)
+endif()

@@ -54,6 +54,7 @@ void main()
 #version 450 core
 
 #include "Include/PBRCommon.glslh"
+#include "Include/NormalMap.glslh"
 
 layout (location = 10) flat in mat4 v_ViewProjection;
 
@@ -92,7 +93,7 @@ void main()
 	vec3 N = normalize(Input.Normal);
 	if (u_Glass.NormalTexToggle > 0.5)
 	{
-		N = normalize(Input.WorldNormals * normalize(2.0 * texture(u_NormalTexture, texCoord).rgb - 1.0));
+		N = normalize(Input.WorldNormals * DecodeNormalMap(texture(u_NormalTexture, texCoord).rg));
 	}
 	vec3 V = normalize(u_CameraPosition - Input.WorldPosition);
 	if (dot(N, V) < 0.0)

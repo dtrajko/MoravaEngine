@@ -28,6 +28,11 @@ namespace H2M
 
 		SRGB,
 
+		// Cooked textures: blocks of 4 x 4 pixels (Assets/TextureCook)
+		BC7,
+		BC7_SRGB,
+		BC5,
+
 		DEPTH32F,
 		DEPTH24STENCIL8,
 

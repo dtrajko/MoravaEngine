@@ -980,7 +980,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 			if (std::filesystem::exists(mapFile))
 			{
 				// Through the texture cache: an image already loaded in this slot's color space is shared
-				texture = ResourceManager::LoadTexture2D_H2M(mapFile, EnvMapVulkanMaterial::IsColorMap(slot));
+				texture = ResourceManager::LoadMaterialMap(mapFile, EnvMapVulkanMaterial::GetMapKind(slot));
 			}
 			if (!texture || !texture->Loaded())
 			{

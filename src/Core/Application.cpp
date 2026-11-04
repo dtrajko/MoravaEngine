@@ -442,6 +442,7 @@ void Application::OnShutdown()
 	if (m_Scene != nullptr) delete m_Scene;
 	delete m_Renderer;
 	MaterialLibrary::Cleanup();
+	TextureCook::Shutdown(); // stops cooking: a file not finished isn't written
 	ResourceManager::Shutdown();
 
 	// The renderer's resources are released here, while main still runs: kept until the static variables are

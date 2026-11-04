@@ -83,27 +83,27 @@ void MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType textureType
     switch (textureType)
     {
     case MaterialTextureType::Albedo:
-        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2D_H2M(texturePath, true);
+        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Color);
         envMapMaterial->GetAlbedoInput().UseTexture = true;
         break;
     case MaterialTextureType::Normal:
-        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadTexture2D_H2M(texturePath, false);
+        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Normal);
         envMapMaterial->GetNormalInput().UseTexture = true;
         break;
     case MaterialTextureType::Metalness:
-        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadTexture2D_H2M(texturePath, false);
+        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Data);
         envMapMaterial->GetMetalnessInput().UseTexture = true;
         break;
     case MaterialTextureType::Roughness:
-        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadTexture2D_H2M(texturePath, false);
+        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Data);
         envMapMaterial->GetRoughnessInput().UseTexture = true;
         break;
     case MaterialTextureType::AO:
-        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadTexture2D_H2M(texturePath, false);
+        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Data);
         envMapMaterial->GetAOInput().UseTexture = true;
         break;
     case MaterialTextureType::Emissive:
-        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadTexture2D_H2M(texturePath, false);
+        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Data);
         envMapMaterial->GetEmissiveInput().UseTexture = true;
         break;
     }

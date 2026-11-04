@@ -3,10 +3,15 @@
 
 #if defined(GRAPHICS_API_VULKAN)
 #include "EnvMapVulkan/EnvMapVulkanRenderTexture.h" // compiled only with Vulkan (its folder)
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
 #endif
+#include "H2M/Renderer/RendererAPI_H2M.h"
 #include "Texture/TextureLoader.h"
 
 #include <algorithm>
+#include <cctype>
+#include <chrono>
 #include <filesystem>
 
 
@@ -397,6 +402,54 @@ H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadTexture2D_H2M(std::string f
         Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}', {1}]", key.Path, sRGB ? "sRGB" : "linear");
     }
     return texture;
+}
+
+H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadMaterialMap(const std::string& filePath, TextureCook::MapKind kind)
+{
+    const bool sRGB = kind == TextureCook::MapKind::Color;
+#if defined(GRAPHICS_API_VULKAN)
+    std::string extension = std::filesystem::u8path(filePath).extension().u8string();
+    std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+    const bool isImage = extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".tga" || extension == ".bmp";
+
+    // Not on a GPU without these formats (they are optional in Vulkan): such a machine goes on with the source images
+    if (isImage && H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan &&
+        H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetFeatures().textureCompressionBC)
+    {
+        const TextureCacheKey key = { NormalizeTexturePath(filePath), sRGB, (int)kind };
+        auto entry = s_HazelTextures2D.find(key);
+        if (entry != s_HazelTextures2D.end())
+        {
+            return entry->second;
+        }
+
+        TextureCook::CookedTexture cooked;
+        double milliseconds = 0.0;
+        if (TextureCook::Read(filePath, kind, cooked, milliseconds))
+        {
+            const auto start = std::chrono::steady_clock::now();
+            H2M::RefH2M<H2M::Texture2D_H2M> texture = H2M::RefH2M<H2M::VulkanTexture2D_H2M>::Create(filePath, cooked);
+            const double upload = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+            s_HazelTextures2D.insert(std::make_pair(key, texture));
+            Log::GetLogger()->info("ResourceManager: A cooked texture read [key: '{0}', {1} x {2}, read {3:.1f} ms, upload {4:.1f} ms]", key.Path, cooked.Width, cooked.Height, milliseconds, upload);
+            return texture;
+        }
+
+        const bool alreadyLoaded = s_HazelTextures2D.count({ key.Path, sRGB }) > 0;
+        const auto start = std::chrono::steady_clock::now();
+        H2M::RefH2M<H2M::Texture2D_H2M> texture = LoadTexture2D_H2M(filePath, sRGB);
+        if (texture && texture->Loaded())
+        {
+            if (!alreadyLoaded)
+            {
+                TextureCook::AddSourceLoad(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count());
+            }
+            TextureCook::Request(filePath, kind);
+        }
+        return texture;
+    }
+#endif
+    return LoadTexture2D_H2M(filePath, sRGB);
 }
 
 uint32_t ResourceManager::PurgeUnusedTextures2D()

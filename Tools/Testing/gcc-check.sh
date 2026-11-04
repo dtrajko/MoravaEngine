@@ -21,7 +21,7 @@ includes=(
 	-I$VENDOR_DIR/VulkanMemoryAllocator -I$VENDOR_DIR/Optick/src -I$VENDOR_DIR/farbot -I$VENDOR_DIR/choc
 	-I$VENDOR_DIR/cross-platform/glfw/include -I$VENDOR_DIR/cross-platform/miniaudio -I$VENDOR_DIR/cross-platform/JoltPhysics
 	-I$VENDOR_DIR/cross-platform/yaml-cpp/include -I$VENDOR_DIR/cross-platform/assimp/include -Ibuild/assimp/include
-	-I$VENDOR_DIR/cross-platform/ImGuizmo/src
+	-I$VENDOR_DIR/cross-platform/ImGuizmo/src -I$VENDOR_DIR/bc7enc
 )
 # nethost.h (C# scripting): from the Windows .NET SDK's app host pack, whichever version is installed
 nethost=$(ls -d "/mnt/c/Program Files/dotnet/packs/Microsoft.NETCore.App.Host.win-x64/"*/runtimes/win-x64/native 2>/dev/null | tail -1)

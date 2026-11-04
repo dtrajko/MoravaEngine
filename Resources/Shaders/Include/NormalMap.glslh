@@ -1,0 +1,12 @@
+// A tangent-space normal from a normal map's red and green. A cooked normal map is BC5, which has only those two channels,
+// and a normal has unit length, so blue follows from them. It works for a source image as well: same formula for both
+#ifndef NORMAL_MAP_GLSLH
+#define NORMAL_MAP_GLSLH
+
+vec3 DecodeNormalMap(vec2 redGreen)
+{
+	vec2 xy = 2.0 * redGreen - 1.0;
+	return normalize(vec3(xy, sqrt(max(1.0 - dot(xy, xy), 0.0))));
+}
+
+#endif

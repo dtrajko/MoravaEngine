@@ -194,8 +194,15 @@ glm::vec4 EnvMapVulkanMaterialBuffer::GetAverageColor(const H2M::RefH2M<H2M::Tex
 		return cached->second;
 	}
 
-	// The pixels the texture was created from (kept by the texture): 8 bits or a float per channel, 4 channels
+	// A cooked texture has no pixels here: its average was made when it was cooked
 	glm::vec4 average(1.0f);
+	if (texture->GetCookedAverageColor(average))
+	{
+		m_AverageColors[key] = average;
+		return average;
+	}
+
+	// The pixels the texture was created from (kept by the texture): 8 bits or a float per channel, 4 channels
 	const H2M::BufferH2M pixels = texture->GetWriteableBuffer();
 	const uint32_t width = texture->GetWidth(), height = texture->GetHeight();
 	const uint64_t pixelCount = (uint64_t)width * height;

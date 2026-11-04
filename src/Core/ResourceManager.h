@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Assets/TextureCook.h"
 #include "H2M/Renderer/TextureH2M.h"
 
 #include "Material/Material.h"
@@ -32,6 +33,8 @@ public:
 	// and linear (raw data, e.g. roughness) are different GPU formats, so one file can be cached as both. A render texture
 	// file (.mrtex, EnvMapVulkanRenderTexture) gives its texture, whose format is its own.
 	static H2M::RefH2M<H2M::Texture2D_H2M> LoadTexture2D_H2M(std::string filePath, bool sRGB);
+	// A material map: its cooked file when there is one, otherwise the image, with a cook requested for the next time
+	static H2M::RefH2M<H2M::Texture2D_H2M> LoadMaterialMap(const std::string& filePath, TextureCook::MapKind kind);
 	// Removes the cached textures nobody else uses any more (only the cache holds them), which frees their GPU memory.
 	// The GPU must not be using them: call it when the device is idle. Returns the number of textures released.
 	static uint32_t PurgeUnusedTextures2D();
@@ -59,7 +62,8 @@ private:
 	{
 		std::string Path;
 		bool SRGB;
-		bool operator<(const TextureCacheKey& other) const { return std::tie(Path, SRGB) < std::tie(other.Path, other.SRGB); }
+		int CookedKind = -1; // a cooked texture: its use (TextureCook::MapKind), which decides its format; -1 from the source image
+		bool operator<(const TextureCacheKey& other) const { return std::tie(Path, SRGB, CookedKind) < std::tie(other.Path, other.SRGB, other.CookedKind); }
 	};
 	static std::string NormalizeTexturePath(const std::string& filePath);
 

@@ -247,6 +247,7 @@ endif()
 add_optional(${VENDOR_CROSS_PLATFORM_DIR}/nativefiledialog-extended nfd)
 # FreeType 2.11 asks for CMake 2.8.12, which CMake 4 no longer accepts: taken as 3.5 for its folder alone
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+add_optional(${VENDOR_DIR}/bc7enc bc7enc) # cooked textures: the engine's own build file, in vendor/bc7enc
 add_optional(${VENDOR_DIR}/msdf-atlas-gen/msdfgen/freetype freetype)
 unset(CMAKE_POLICY_VERSION_MINIMUM)
 if(NOT TARGET freetype)
@@ -608,6 +609,7 @@ target_link_libraries(MoravaCore PUBLIC
 
     miniaudio
     msdf
+    bc7enc
 )
 
 if(TARGET spirv-cross-core)

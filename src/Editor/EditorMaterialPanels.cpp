@@ -18,6 +18,7 @@
 #include "ImGui/ImGuiWrapper.h"
 #include "Scene/Scene.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
+#include "Project/AssetRegistry.h"
 #include "Project/Project.h"
 
 #include "imgui.h"
@@ -122,7 +123,7 @@ void ApplyMaterialTexture(const PendingMaterialTexture& request)
 	}
 
 	// Through the texture cache: an image already loaded (by a model or another material) in this slot's color space is shared
-	H2M::RefH2M<H2M::Texture2D_H2M> texture = ResourceManager::LoadTexture2D_H2M(request.FilePath, EnvMapVulkanMaterial::IsColorMap(request.Slot));
+	H2M::RefH2M<H2M::Texture2D_H2M> texture = ResourceManager::LoadMaterialMap(request.FilePath, EnvMapVulkanMaterial::GetMapKind(request.Slot));
 	if (!texture || !texture->Loaded())
 	{
 		Log::GetLogger()->error("Map '{0}' could not be loaded.", request.FilePath);
@@ -803,7 +804,10 @@ void OnImGuiRenderMaterialEditor()
 			const char* colorSpace = EnvMapVulkanMaterial::IsColorMap(i) ? "sRGB (color data)" : "linear (raw data)";
 			if (map)
 			{
-				ImGui::SetTooltip("%s\n%s", map->GetPath().c_str(), colorSpace);
+				const H2M::ImageFormatH2M format = map->GetFormat();
+				const char* cooked = format == H2M::ImageFormatH2M::BC5 ? "cooked: BC5, red and green" :
+					format == H2M::ImageFormatH2M::BC7 || format == H2M::ImageFormatH2M::BC7_SRGB ? "cooked: BC7" : "not cooked: from the source image";
+				ImGui::SetTooltip("%s\n%s\n%u x %u, %s", map->GetPath().c_str(), colorSpace, map->GetWidth(), map->GetHeight(), cooked);
 			}
 			else
 			{
@@ -847,6 +851,30 @@ void OnImGuiRenderMaterialEditor()
 				}
 				ImGui::SameLine();
 				ImGui::TextDisabled("%s", std::filesystem::path(map->GetPath()).filename().string().c_str());
+
+				// The sidecar's setting: read once per file, not each frame
+				static std::unordered_map<std::string, bool> s_CompressionOff;
+				const std::string mapPath = map->GetPath();
+				if (!EnvMapVulkanRenderTexture::IsRenderTextureFile(mapPath))
+				{
+					auto known = s_CompressionOff.find(mapPath);
+					if (known == s_CompressionOff.end())
+					{
+						known = s_CompressionOff.emplace(mapPath, TextureCook::IsCompressionOff(mapPath)).first;
+					}
+					bool compress = !known->second;
+					if (ImGui::Checkbox("Compress", &compress))
+					{
+						AssetRegistry::GetID(mapPath); // a file that has no sidecar yet gets one: this setting is kept there
+						TextureCook::SetCompressionOff(mapPath, !compress);
+						known->second = !compress;
+						Log::GetLogger()->info("'{0}': compression {1}, from the next time it loads", mapPath, compress ? "on" : "off");
+					}
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Cook this image to BC7 or BC5, which takes a quarter or less of the GPU memory.\nOff: the source image's pixels, kept exact, for what shows the blocks (pixel art).\nKept in the image's .meta file, for the next time the map loads.");
+					}
+				}
 			}
 		}
 		ImGui::EndGroup();
