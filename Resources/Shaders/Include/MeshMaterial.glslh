@@ -5,6 +5,7 @@
 #define MESH_MATERIAL_GLSLH
 
 #include "MaterialMaps.glslh"
+#include "NormalMap.glslh"
 #include "FrameSet.glslh" // u_Materials: the flags (flip, display), the cutoff
 
 layout (push_constant) uniform Material
@@ -75,7 +76,7 @@ vec3 MaterialNormal(vec2 texCoord, vec3 vertexNormal, mat3 worldNormals)
 	vec3 normal = normalize(vertexNormal);
 	if (u_MaterialUniforms.NormalTexToggle > 0.5)
 	{
-		normal = normalize(2.0 * texture(u_NormalTexture, texCoord).rgb - 1.0);
+		normal = DecodeNormalMap(texture(u_NormalTexture, texCoord).rg);
 		if (MaterialFlipsHorizontally())
 		{
 			normal.x = -normal.x; // the map is read mirrored: its slopes along u turn the other way

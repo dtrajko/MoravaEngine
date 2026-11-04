@@ -61,7 +61,7 @@ namespace H2M
 	// glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& matrix) moved to Math class
 
 	// Loads a material map for the Vulkan-only maps below; returns an empty reference if the file is missing or fails to load
-	static RefH2M<Texture2D_H2M> LoadMaterialMap(const std::string& texturePath, bool srgb)
+	static RefH2M<Texture2D_H2M> LoadMaterialMap(const std::string& texturePath, TextureCook::MapKind kind)
 	{
 		if (!std::filesystem::exists(texturePath))
 		{
@@ -70,7 +70,7 @@ namespace H2M
 		}
 		try
 		{
-			RefH2M<Texture2D_H2M> texture = ResourceManager::LoadTexture2D_H2M(texturePath, srgb);
+			RefH2M<Texture2D_H2M> texture = ResourceManager::LoadMaterialMap(texturePath, kind);
 			return texture && texture->Loaded() ? texture : RefH2M<Texture2D_H2M>();
 		}
 		catch (...)
@@ -542,7 +542,7 @@ namespace H2M
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
 						// texture = Texture2D_H2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2D_H2M(texturePath, true);
+						texture = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Color);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
@@ -622,7 +622,7 @@ namespace H2M
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
 						// texture = Texture2D_H2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2D_H2M(texturePath, false);
+						texture = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Normal);
 						m_Textures.push_back(texture);
 					}
 					catch (...) {
@@ -701,7 +701,7 @@ namespace H2M
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
 						// texture = Texture2D_H2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2D_H2M(texturePath, false);
+						texture = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Data);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ROUGHNESS map failed to load. Loading the default texture placeholder instead.");
@@ -762,7 +762,7 @@ namespace H2M
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
 						// texture = Texture2D_H2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2D_H2M(texturePath, false);
+						texture = ResourceManager::LoadMaterialMap(texturePath, TextureCook::MapKind::Data);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
@@ -801,7 +801,7 @@ namespace H2M
 					metalnessTexturePath = ResolveTexturePath(m_FilePath, sourceMaterial.MetalnessMap);
 					HZ_MESH_LOG("    Metalness map path = '{0}'", metalnessTexturePath);
 
-					RefH2M<Texture2D_H2M> texture = LoadMaterialMap(metalnessTexturePath, false);
+					RefH2M<Texture2D_H2M> texture = LoadMaterialMap(metalnessTexturePath, TextureCook::MapKind::Data);
 					if (texture)
 					{
 						metalnessTextureFound = true;
@@ -855,7 +855,7 @@ namespace H2M
 					{
 						std::string texturePath = ResolveTexturePath(m_FilePath, sourceMaterial.EmissiveMap);
 						HZ_MESH_LOG("    Emissive map path = '{0}'", texturePath);
-						emissiveTexture = LoadMaterialMap(texturePath, true);
+						emissiveTexture = LoadMaterialMap(texturePath, TextureCook::MapKind::Color);
 					}
 					if (emissiveTexture)
 					{
@@ -884,7 +884,7 @@ namespace H2M
 					{
 						std::string texturePath = ResolveTexturePath(m_FilePath, sourceMaterial.AmbientOcclusionMap);
 						HZ_MESH_LOG("    AO map path = '{0}'", texturePath);
-						aoTexture = LoadMaterialMap(texturePath, false);
+						aoTexture = LoadMaterialMap(texturePath, TextureCook::MapKind::Data);
 					}
 					if (aoTexture)
 					{

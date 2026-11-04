@@ -21,6 +21,7 @@
 #extension GL_EXT_nonuniform_qualifier : require
 
 #include "GPUMaterial.glslh"
+#include "NormalMap.glslh"
 
 // Which meshes a ray can hit (the mask of TraceRay): the groups an instance is in. Must match EnvMapVulkanRayTracing.
 const uint RayMaskOpaqueStatic = 0x01u;  // opaque meshes of the models that stand still
@@ -236,7 +237,7 @@ RayMaterial GetRayMaterial(RaySurface surface, float footprint)
 	material.Normal = normalize(surface.Normal);
 	if (entry.NormalMapIndex != GPUMaterialNoMap)
 	{
-		vec3 mapNormal = normalize(2.0 * SampleRayTexture(entry.NormalMapIndex, texCoord, coverage).rgb - 1.0);
+		vec3 mapNormal = DecodeNormalMap(SampleRayTexture(entry.NormalMapIndex, texCoord, coverage).rg);
 		if ((entry.Flags & GPUMaterialFlagFlipHorizontally) != 0u)
 		{
 			mapNormal.x = -mapNormal.x; // as MaterialNormal

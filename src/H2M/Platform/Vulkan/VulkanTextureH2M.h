@@ -13,6 +13,8 @@
 #include "VulkanImageH2M.h"
 
 
+namespace TextureCook { struct CookedTexture; }
+
 namespace H2M
 {
 
@@ -23,6 +25,8 @@ namespace H2M
 		VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TextureWrapH2M wrap = TextureWrapH2M::Clamp);
 		VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrapH2M wrap = TextureWrapH2M::Clamp);
 		VulkanTexture2D_H2M(const std::string& path, TexturePropertiesH2M properties = TexturePropertiesH2M());
+		// A cooked texture: compressed blocks with all their mips (Assets/TextureCook); path is its source file
+		VulkanTexture2D_H2M(const std::string& path, const TextureCook::CookedTexture& cooked);
 		virtual ~VulkanTexture2D_H2M();
 
 		void Invalidate();
@@ -49,6 +53,8 @@ namespace H2M
 
 		void GenerateMips();
 
+		bool GetCookedAverageColor(glm::vec4& average) const override;
+
 		virtual uint64_t GetHash() const override { return (uint64_t)m_Image; }
 
 		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
@@ -70,6 +76,7 @@ namespace H2M
 
 	private:
 		bool LoadImageH2M(const std::string& path);
+		void CreateSamplerAndView(VkFormat format, uint32_t mipCount);
 
 	private:
 		std::string m_Path;
@@ -87,6 +94,9 @@ namespace H2M
 		RefH2M<Image2D_H2M> m_Image;
 
 		ImageFormatH2M m_Format = ImageFormatH2M::None;
+		// A cooked texture: its own number of levels (a full chain; made from pixels, a chain by the shorter side), and no pixels
+		uint32_t m_CookedMipCount = 0;
+		glm::vec4 m_CookedAverage = glm::vec4(1.0f);
 
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
 		uint64_t m_UIImageID = 0; // see GetImTextureID

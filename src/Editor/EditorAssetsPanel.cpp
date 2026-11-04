@@ -3,6 +3,7 @@
 
 
 #include "Assets/ModelCook.h"
+#include "Assets/TextureCook.h"
 #include "Core/Application.h"
 #include "Core/Log.h"
 #include "Project/AssetRegistry.h"
@@ -87,13 +88,35 @@ void OnImGuiRenderAssetsPanel()
 	}
 	if (ImGui::Button("Clear Cook Cache"))
 	{
-		const uint32_t removed = ModelCook::ClearCache();
+		const uint32_t removed = ModelCook::ClearCache() + TextureCook::ClearCache();
 		Log::GetLogger()->info("Assets: {0} cooked file(s) removed", removed);
 		s_CookedKnown = false;
 	}
 	ImGui::SameLine();
 	ImGui::Text("Cooked models: %u files, %.1f MB in %s", s_Cooked.Files, s_Cooked.Bytes / (1024.0 * 1024.0), s_Cooked.Folder.c_str());
 	ImGui::Text("This session: %u read (%.0f ms), %u imported and cooked (%.0f ms)", cookStats.Read, cookStats.ReadMilliseconds, cookStats.Imported, cookStats.ImportMilliseconds);
+
+	// The textures: the folder is counted when a cook finishes or the cache was cleared, not each frame
+	const TextureCook::Stats textureStats = TextureCook::GetStats();
+	static uint32_t s_TextureFiles = 0;
+	static uint64_t s_TextureBytes = 0;
+	static uint32_t s_TexturesSeen = UINT32_MAX;
+	if (!s_CookedKnown || s_TexturesSeen != textureStats.Cooked)
+	{
+		TextureCook::CountCachedFiles(s_TextureFiles, s_TextureBytes);
+		s_TexturesSeen = textureStats.Cooked;
+	}
+	ImGui::Text("Cooked textures: %u files, %.1f MB", s_TextureFiles, s_TextureBytes / (1024.0 * 1024.0));
+	ImGui::Text("This session: %u read (%.0f ms), %u from their images (%.0f ms), %u cooked (%.0f s), %u failed", textureStats.Read, textureStats.ReadMilliseconds,
+		textureStats.FromSource, textureStats.SourceMilliseconds, textureStats.Cooked, textureStats.CookSeconds, textureStats.Failed);
+	if (textureStats.Waiting > 0)
+	{
+		ImGui::Text("Cooking %u: %s", textureStats.Waiting, textureStats.Cooking.c_str());
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Used from their images until cooked; read from the cache the next time they load");
+		}
+	}
 
 	ShowFileList("Sidecars without a file", "The file was moved without its .meta, or deleted. What refers to its ID then only has the old path.",
 		AssetRegistry::GetOrphanedSidecars());

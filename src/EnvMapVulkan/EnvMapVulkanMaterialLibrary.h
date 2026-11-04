@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Assets/TextureCook.h"
 #include "H2M/Core/RefH2M.h"
 #include "Core/EnginePaths.h"
 #include "H2M/Platform/Vulkan/VulkanMaterialH2M.h"
@@ -27,6 +28,10 @@ public:
 	static const char* GetMapTextureName(uint32_t slot); // "u_AlbedoTexture"...
 	static const char* GetMapToggleName(uint32_t slot);  // "u_MaterialUniforms.AlbedoTexToggle"...
 	static bool IsColorMap(uint32_t slot) { return slot == Albedo || slot == Emissive; } // sRGB data; the others are linear
+	static TextureCook::MapKind GetMapKind(uint32_t slot)
+	{
+		return IsColorMap(slot) ? TextureCook::MapKind::Color : slot == Normal ? TextureCook::MapKind::Normal : TextureCook::MapKind::Data;
+	}
 
 	EnvMapVulkanMaterial(const std::string& name);
 

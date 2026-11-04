@@ -1,17 +1,14 @@
 #include "ModelCook.h"
 
+#include "CookFiles.h"
 #include "ModelImport.h"
 
-#include "Core/EnginePaths.h"
 #include "Core/Log.h"
-#include "Project/AssetRegistry.h"
-#include "Project/Project.h"
 
 #include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <filesystem>
-#include <fstream>
 #include <system_error>
 #include <type_traits>
 
@@ -20,6 +17,10 @@ namespace fs = std::filesystem;
 
 namespace ModelCook
 {
+	using CookFiles::GetFileState;
+	using CookFiles::HashBytes;
+	using CookFiles::ReadWholeFile;
+
 	static const char Magic[4] = { 'M', 'M', 'S', 'H' };
 	// Raise it when the file's layout, the import's flags or what the import does changes: older files are cooked again
 	static constexpr uint32_t CookerVersion = 1;
@@ -35,26 +36,6 @@ namespace ModelCook
 	};
 
 	// ---- Bytes
-
-	static uint64_t HashBytes(const uint8_t* bytes, size_t size)
-	{
-		// FNV-1a on eight bytes at a time, with a shift for the high bits to reach the low ones: fast enough in a Debug build
-		static constexpr uint64_t Prime = 0x100000001b3ull;
-		uint64_t hash = 0xcbf29ce484222325ull ^ size;
-		size_t i = 0;
-		for (; i + 8 <= size; i += 8)
-		{
-			uint64_t word;
-			memcpy(&word, bytes + i, 8);
-			hash = (hash ^ word) * Prime;
-			hash ^= hash >> 29;
-		}
-		for (; i < size; i++)
-		{
-			hash = (hash ^ bytes[i]) * Prime;
-		}
-		return hash;
-	}
 
 	class Writer
 	{
@@ -423,67 +404,6 @@ namespace ModelCook
 
 	// ---- Files
 
-	static bool ReadWholeFile(const fs::path& path, std::vector<uint8_t>& bytes)
-	{
-		std::ifstream file(path, std::ios::binary | std::ios::ate);
-		if (!file)
-		{
-			return false;
-		}
-		const std::streamoff size = file.tellg();
-		if (size < 0)
-		{
-			return false;
-		}
-		bytes.resize((size_t)size);
-		file.seekg(0);
-		return size == 0 || (bool)file.read(reinterpret_cast<char*>(bytes.data()), size);
-	}
-
-	static std::string GetCacheFolder()
-	{
-		if (const Project* project = Project::GetOpen())
-		{
-			return project->GetDirectory() + "/Library/Cooked";
-		}
-		return RESOURCES_DIR "/Cache/Cooked";
-	}
-
-	// By the asset's ID, so that a moved file keeps it; a file without one (an engine file nothing saved refers to) by its path
-	static fs::path GetCookedPath(const std::string& path)
-	{
-		const AssetID id = AssetRegistry::FindID(path);
-		std::string name;
-		if (id != 0)
-		{
-			name = std::to_string(id);
-		}
-		else
-		{
-			std::error_code error;
-			const std::string file = fs::weakly_canonical(fs::u8path(path), error).generic_u8string();
-			name = "path_" + std::to_string(HashBytes(reinterpret_cast<const uint8_t*>(file.data()), file.size()));
-		}
-		return fs::u8path(GetCacheFolder()) / fs::u8path(name + ".mmesh");
-	}
-
-	static bool GetFileState(const fs::path& path, uint64_t& size, int64_t& writeTime)
-	{
-		std::error_code error;
-		size = fs::file_size(path, error);
-		if (error)
-		{
-			return false;
-		}
-		const fs::file_time_type time = fs::last_write_time(path, error);
-		if (error)
-		{
-			return false;
-		}
-		writeTime = (int64_t)time.time_since_epoch().count();
-		return true;
-	}
-
 	static bool DescribeSource(const fs::path& file, const fs::path& folder, SourceFile& source)
 	{
 		std::vector<uint8_t> bytes;
@@ -525,28 +445,10 @@ namespace ModelCook
 
 	static void WriteCookedFile(const fs::path& path, const ModelData& data, const std::vector<SourceFile>& sources)
 	{
-		std::error_code error;
-		fs::create_directories(path.parent_path(), error);
 		const std::vector<uint8_t> bytes = MakeFile(data, sources);
-
-		// Under another name first: a run cut short leaves no half a file under the real one
-		fs::path temporary = path;
-		temporary += ".tmp";
-		bool written = false;
-		{
-			std::ofstream file(temporary, std::ios::binary | std::ios::trunc);
-			file.write(reinterpret_cast<const char*>(bytes.data()), (std::streamsize)bytes.size());
-			written = file.good();
-		}
-		if (written)
-		{
-			fs::rename(temporary, path, error);
-			written = !error;
-		}
-		if (!written)
+		if (!CookFiles::WriteFileSafely(path, bytes.data(), bytes.size()))
 		{
 			Log::GetLogger()->warn("Cooked model '{0}' could not be written", path.generic_u8string());
-			fs::remove(temporary, error);
 		}
 	}
 
@@ -588,7 +490,7 @@ namespace ModelCook
 		const fs::path model = fs::absolute(file, fileError).lexically_normal();
 		const fs::path folder = model.parent_path();
 
-		const fs::path cooked = GetCookedPath(path);
+		const fs::path cooked = fs::u8path(CookFiles::GetCacheFolder()) / fs::u8path(CookFiles::GetCookedName(path) + ".mmesh");
 		data = ModelData();
 		if (ReadCookedFile(cooked, folder, data))
 		{
@@ -641,41 +543,14 @@ namespace ModelCook
 	CacheContents GetCacheContents()
 	{
 		CacheContents contents;
-		contents.Folder = GetCacheFolder();
-		std::error_code error;
-		for (fs::directory_iterator it(fs::u8path(contents.Folder), error), end; !error && it != end; it.increment(error))
-		{
-			std::error_code sizeError;
-			if (it->path().extension() == ".mmesh" && it->is_regular_file(sizeError))
-			{
-				contents.Files++;
-				contents.Bytes += it->file_size(sizeError);
-			}
-		}
+		contents.Folder = CookFiles::GetCacheFolder();
+		CookFiles::CountFiles(".mmesh", contents.Files, contents.Bytes);
 		return contents;
 	}
 
 	uint32_t ClearCache()
 	{
-		std::error_code error;
-		std::vector<fs::path> files;
-		for (fs::directory_iterator it(fs::u8path(GetCacheFolder()), error), end; !error && it != end; it.increment(error))
-		{
-			if (it->path().extension() == ".mmesh")
-			{
-				files.push_back(it->path());
-			}
-		}
-		uint32_t removed = 0;
-		for (const fs::path& file : files)
-		{
-			std::error_code removeError;
-			if (fs::remove(file, removeError))
-			{
-				removed++;
-			}
-		}
-		return removed;
+		return CookFiles::RemoveFiles(".mmesh");
 	}
 
 	// ---- Self-test

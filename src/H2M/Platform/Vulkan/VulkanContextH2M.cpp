@@ -159,6 +159,8 @@ namespace H2M
 		enabledFeatures.pipelineStatisticsQuery = supportedFeatures.pipelineStatisticsQuery;
 		// Cube map arrays (samplerCubeArrayShadow): the point light shadow maps of SceneEnvMapVulkan, when the GPU has them
 		enabledFeatures.imageCubeArray = supportedFeatures.imageCubeArray;
+		// Cooked textures (Assets/TextureCook); without it material maps load from their source files
+		enabledFeatures.textureCompressionBC = supportedFeatures.textureCompressionBC;
 		MORAVA_CORE_INFO("Vulkan device features: wideLines {0}, pipelineStatisticsQuery {1}, imageCubeArray {2}",
 			enabledFeatures.wideLines ? "enabled" : "not supported", enabledFeatures.pipelineStatisticsQuery ? "enabled" : "not supported",
 			enabledFeatures.imageCubeArray ? "enabled" : "not supported");

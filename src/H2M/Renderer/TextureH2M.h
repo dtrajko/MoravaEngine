@@ -15,6 +15,8 @@
 #include "H2M/Renderer/ImageH2M.h"
 #include "H2M/Renderer/RendererTypesH2M.h"
 
+#include <glm/glm.hpp>
+
 
 
 namespace H2M
@@ -86,6 +88,9 @@ namespace H2M
 		virtual std::string GetPath() const = 0;
 		// The file a texture made from pixels stands for (a render texture's .mrtex): what materials save and look it up by
 		virtual void SetPath(const std::string& /*path*/) {}
+
+		// A cooked texture keeps no pixels: the average of its source's, made when it was cooked. False: read the pixels
+		virtual bool GetCookedAverageColor(glm::vec4& /*average*/) const { return false; }
 
 		virtual TextureTypeH2M GetType() const override { return TextureTypeH2M::Texture2D; }
 

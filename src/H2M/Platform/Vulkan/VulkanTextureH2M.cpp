@@ -12,6 +12,8 @@
 #include "VulkanRendererH2M.h"
 #include "VulkanUIImagesH2M.h"
 
+#include "Assets/TextureCook.h"
+
 #include "stb_image.h"
 
 
@@ -29,6 +31,9 @@ namespace H2M {
 				// case ImageFormatH2M::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
 				case ImageFormatH2M::RGBA16F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 				case ImageFormatH2M::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
+				case ImageFormatH2M::BC7: return VK_FORMAT_BC7_UNORM_BLOCK;
+				case ImageFormatH2M::BC7_SRGB: return VK_FORMAT_BC7_SRGB_BLOCK;
+				case ImageFormatH2M::BC5: return VK_FORMAT_BC5_UNORM_BLOCK;
 				default: break;
 			}
 			Log::GetLogger()->error("TextureFormatToVkFormat: ImageFormatH2M '{0}' not supported!", static_cast<int>(format));
@@ -303,6 +308,108 @@ namespace H2M {
 		H2M_CORE_ASSERT(false);
 	}
 
+	VulkanTexture2D_H2M::VulkanTexture2D_H2M(const std::string& path, const TextureCook::CookedTexture& cooked)
+		: m_Path(path)
+	{
+		switch (cooked.Format)
+		{
+			case TextureCook::BlockFormat::BC7:      m_Format = ImageFormatH2M::BC7; break;
+			case TextureCook::BlockFormat::BC7_SRGB: m_Format = ImageFormatH2M::BC7_SRGB; break;
+			case TextureCook::BlockFormat::BC5:      m_Format = ImageFormatH2M::BC5; break;
+		}
+		m_Width = cooked.Width;
+		m_Height = cooked.Height;
+		m_Channels = cooked.Format == TextureCook::BlockFormat::BC5 ? 2 : 4;
+		m_CookedMipCount = (uint32_t)cooked.Levels.size();
+		m_CookedAverage = cooked.Average;
+
+		auto device = VulkanContextH2M::GetCurrentDevice();
+		auto vulkanDevice = device->GetVulkanDevice();
+		const VkFormat format = Utils::TextureFormatToVkFormat(m_Format);
+		VulkanAllocatorH2M allocator(std::string("Texture2D"));
+
+		VkBufferCreateInfo bufferCreateInfo{};
+		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferCreateInfo.size = cooked.Bytes.size();
+		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		VkBuffer stagingBuffer;
+		VkDeviceMemory stagingMemory;
+		VK_CHECK_RESULT_H2M(vkCreateBuffer(vulkanDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+		VkMemoryRequirements memoryRequirements = {};
+		vkGetBufferMemoryRequirements(vulkanDevice, stagingBuffer, &memoryRequirements);
+		allocator.Allocate(memoryRequirements, &stagingMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		VK_CHECK_RESULT_H2M(vkBindBufferMemory(vulkanDevice, stagingBuffer, stagingMemory, 0));
+		uint8_t* destData;
+		VK_CHECK_RESULT_H2M(vkMapMemory(vulkanDevice, stagingMemory, 0, memoryRequirements.size, 0, (void**)&destData));
+		memcpy(destData, cooked.Bytes.data(), cooked.Bytes.size());
+		vkUnmapMemory(vulkanDevice, stagingMemory);
+
+		VkImageCreateInfo imageCreateInfo{};
+		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
+		imageCreateInfo.format = format;
+		imageCreateInfo.mipLevels = m_CookedMipCount;
+		imageCreateInfo.arrayLayers = 1;
+		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		imageCreateInfo.extent = { m_Width, m_Height, 1 };
+		imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+		VK_CHECK_RESULT_H2M(vkCreateImage(vulkanDevice, &imageCreateInfo, nullptr, &m_VkImage));
+		vkGetImageMemoryRequirements(vulkanDevice, m_VkImage, &memoryRequirements);
+		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		VK_CHECK_RESULT_H2M(vkBindImageMemory(vulkanDevice, m_VkImage, m_DeviceMemory, 0));
+
+		std::vector<VkBufferImageCopy> regions(m_CookedMipCount);
+		for (uint32_t i = 0; i < m_CookedMipCount; i++)
+		{
+			const TextureCook::CookedLevel& level = cooked.Levels[i];
+			regions[i] = {};
+			regions[i].bufferOffset = level.Offset;
+			regions[i].imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			regions[i].imageSubresource.mipLevel = i;
+			regions[i].imageSubresource.layerCount = 1;
+			regions[i].imageExtent = { level.Width, level.Height, 1 };
+		}
+
+		VkImageSubresourceRange allLevels = {};
+		allLevels.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		allLevels.levelCount = m_CookedMipCount;
+		allLevels.layerCount = 1;
+
+		VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
+		Utils::InsertImageMemoryBarrier(copyCmd, m_VkImage,
+			0, VK_ACCESS_TRANSFER_WRITE_BIT,
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+			allLevels);
+		vkCmdCopyBufferToImage(copyCmd, stagingBuffer, m_VkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, (uint32_t)regions.size(), regions.data());
+		Utils::InsertImageMemoryBarrier(copyCmd, m_VkImage,
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+			allLevels);
+		device->FlushCommandBuffer(copyCmd);
+
+		vkFreeMemory(vulkanDevice, stagingMemory, nullptr);
+		vkDestroyBuffer(vulkanDevice, stagingBuffer, nullptr);
+
+		CreateSamplerAndView(format, m_CookedMipCount);
+		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	}
+
+	bool VulkanTexture2D_H2M::GetCookedAverageColor(glm::vec4& average) const
+	{
+		if (m_CookedMipCount == 0)
+		{
+			return false;
+		}
+		average = m_CookedAverage;
+		return true;
+	}
+
 	VulkanTexture2D_H2M::~VulkanTexture2D_H2M()
 	{
 		// Ref<VulkanTexture2D_H2M> instance = this;
@@ -465,6 +572,18 @@ namespace H2M {
 		vkFreeMemory(vulkanDevice, stagingMemory, nullptr);
 		vkDestroyBuffer(vulkanDevice, stagingBuffer, nullptr);
 
+		CreateSamplerAndView(format, mipCount);
+
+		GenerateMips();
+
+		// Store current layout for later reuse
+		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	}
+
+	void VulkanTexture2D_H2M::CreateSamplerAndView(VkFormat format, uint32_t mipCount)
+	{
+		auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// CREATE TEXTURE SAMPLER
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -519,11 +638,6 @@ namespace H2M {
 		view.subresourceRange.levelCount = mipCount;
 		view.image = m_VkImage;
 		VK_CHECK_RESULT_H2M(vkCreateImageView(vulkanDevice, &view, nullptr, &m_DescriptorImageInfo.imageView));
-
-		GenerateMips();
-
-		// Store current layout for later reuse
-		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
 	void VulkanTexture2D_H2M::Bind(uint32_t slot) const
@@ -565,7 +679,7 @@ namespace H2M {
 	uint32_t VulkanTexture2D_H2M::GetMipLevelCount() const
 	{
 		// return Utils::MipCount(m_Width, m_Height);
-		return Utils::CalculateMipCount(m_Width, m_Height);
+		return m_CookedMipCount > 0 ? m_CookedMipCount : Utils::CalculateMipCount(m_Width, m_Height);
 	}
 
 	std::pair<uint32_t, uint32_t> VulkanTexture2D_H2M::GetMipSize(uint32_t mip) const
