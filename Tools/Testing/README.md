@@ -27,6 +27,8 @@ window, read what its log says, and compile files with GCC as the Linux CI build
   .\build\Debug\MoravaEngine.exe --build-pack D:\Workspace\Temp\Sample\Sample.mproject
   .\Run-Engine.ps1 -Extra "--pack D:\Workspace\Temp\Sample\Build\Game.mpak"
   ```
+- **Keep test logs on C:.** The engine flushes each log line, and on disk D: each took about 30 ms when measured (2026-11-05): a
+  game logging to D: took over two minutes to start, against 2.6 s with its log on C:.
 - **Use a windowed project.** The sample project (`Projects/Sample`) starts fullscreen and takes over the screen. Copy it
   to a test folder (for example `D:\Workspace\Temp\Sample`), set `Fullscreen: false` (and `VSync: false` to measure
   without waiting for the display) in its `.mproject`, and run that copy.
@@ -96,6 +98,8 @@ What `-Extra` can pass (both executables read them; `src/Core/Application.cpp` h
 | `--no-texture-compression` | Material maps as on a GPU without BC formats: from their images, or decoded from a pack's cooked maps |
 | `--pack <file>` | The player runs the game in this pack (`Game.mpak` here or beside the executable is found without it) |
 | `--build-pack <file.mproject>`, `--pack-output <folder>` | The editor builds the project's pack and exits, without a window (not through `-Extra`: run it directly) |
+| `--build-game <file.mproject>`, `--build-output <folder>` | The editor builds the project's game to ship and exits, without a window (File > Build Game runs the same; not through `-Extra`) |
+| `--validation` | A shipped game with Vulkan's validation layer, which it otherwise doesn't load |
 | `--select <name>` | Selects the entity of that name (to capture the selection outline or the gizmo) |
 | `--save-scene` | The editor saves the open scene when it closes (a scene opened and saved unattended) |
 

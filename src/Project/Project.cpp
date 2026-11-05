@@ -50,7 +50,33 @@ std::string Project::GetScriptProjectPath() const
 
 std::string Project::GetWindowTitle() const
 {
-	return Window.Title.empty() ? Name : Window.Title;
+	return Window.Title.empty() ? GetProductName() : Window.Title;
+}
+
+std::string Project::GetProductName() const
+{
+	return Build.ProductName.empty() ? Name : Build.ProductName;
+}
+
+std::string Project::GetIconPath() const
+{
+	return Build.Icon.empty() ? std::string() : (std::filesystem::path(GetDirectory()) / std::filesystem::u8path(Build.Icon)).lexically_normal().generic_u8string();
+}
+
+std::vector<std::string> Project::GetBuildScenes() const
+{
+	std::vector<std::string> scenes;
+	for (const ProjectBuildScene& scene : Build.Scenes)
+	{
+		YAML::Node node;
+		node["File"] = scene.File;
+		if (scene.ID != 0)
+		{
+			node["FileID"] = scene.ID;
+		}
+		scenes.push_back(ProjectPaths::Normalize(AssetReference::Read(node, "File")));
+	}
+	return scenes;
 }
 
 bool Project::Load(const std::string& filepath, Project& project, std::string& error)
@@ -113,6 +139,7 @@ bool Project::FromYaml(const YAML::Node& root, const std::string& filepath, Proj
 	project.InputMapFile = node["InputMap"].as<std::string>(""); // projects made before input actions have none
 	project.ScriptAssembly = node["ScriptAssembly"].as<std::string>(""); // the game's C# scripts (none before Phase 4)
 	project.ScriptProject = node["ScriptProject"].as<std::string>("");
+	project.Shipped = node["Shipped"].as<bool>(false);
 	if (project.ScriptProject.empty() && !project.ScriptAssembly.empty())
 	{
 		// Projects made before 4.7: the .csproj in its Scripts folder, when there is one
@@ -165,6 +192,20 @@ bool Project::FromYaml(const YAML::Node& root, const std::string& filepath, Proj
 			project.Volumes.Buses[i] = audio[GetAudioBusName((AudioBus)i)].as<float>(project.Volumes.Buses[i]);
 		}
 	}
+	if (YAML::Node build = node["Build"]; build && build.IsMap())
+	{
+		project.Build.ProductName = build["ProductName"].as<std::string>("");
+		project.Build.Company = build["Company"].as<std::string>("");
+		project.Build.Version = build["Version"].as<std::string>(project.Build.Version);
+		project.Build.Icon = build["Icon"].as<std::string>("");
+		if (YAML::Node scenes = build["Scenes"]; scenes && scenes.IsSequence())
+		{
+			for (const YAML::Node& scene : scenes)
+			{
+				project.Build.Scenes.push_back({ scene["File"].as<std::string>(""), scene["FileID"].as<uint64_t>(0) });
+			}
+		}
+	}
 	return true;
 }
 
@@ -207,6 +248,20 @@ bool Project::Save(std::string& error) const
 	{
 		out << YAML::Key << GetAudioBusName((AudioBus)i) << YAML::Value << Volumes.Buses[i];
 	}
+	out << YAML::EndMap;
+	out << YAML::Key << "Build" << YAML::Value << YAML::BeginMap;
+	out << YAML::Key << "ProductName" << YAML::Value << Build.ProductName;
+	out << YAML::Key << "Company" << YAML::Value << Build.Company;
+	out << YAML::Key << "Version" << YAML::Value << Build.Version;
+	out << YAML::Key << "Icon" << YAML::Value << Build.Icon;
+	out << YAML::Key << "Scenes" << YAML::Value << YAML::BeginSeq;
+	for (const std::string& scene : GetBuildScenes())
+	{
+		out << YAML::Flow << YAML::BeginMap;
+		AssetReference::Write(out, "File", scene);
+		out << YAML::EndMap;
+	}
+	out << YAML::EndSeq;
 	out << YAML::EndMap;
 	out << YAML::EndMap;
 	out << YAML::EndMap;

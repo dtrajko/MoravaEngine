@@ -43,7 +43,7 @@ static bool InputWindowSize(const char* label, uint32_t& value)
 }
 
 // The project's scenes (in its Scenes folder and below), sorted, as kept paths: looked for again once a second
-static const std::vector<std::string>& GetProjectScenes(const Project& project)
+const std::vector<std::string>& GetProjectScenes(const Project& project)
 {
 	static std::vector<std::string> scenes;
 	static std::string folder;

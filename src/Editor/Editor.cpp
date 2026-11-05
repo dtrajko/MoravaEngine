@@ -193,6 +193,7 @@ void Editor::OnImGuiRender()
 				OnImGuiRenderMaterialEditor();
 				OnImGuiRenderRendererStats();
 				OnImGuiRenderProjectPanel();
+	OnImGuiRenderBuildGamePanel();
 				OnImGuiRenderInputPanel();
 				OnImGuiRenderPhysicsPanel();
 				OnImGuiRenderAudioPanel();
@@ -243,6 +244,7 @@ void Editor::OnImGuiRender()
 						RequestCloseProject();
 					}
 					ImGui::MenuItem("Project Settings", nullptr, &s_ShowProjectPanel);
+					ImGui::MenuItem("Build Game...", nullptr, &s_ShowBuildGamePanel, Project::GetOpen() != nullptr);
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("View"))
@@ -346,6 +348,7 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 	// The scripts built when one was saved (or asked for), then a newer build loaded while the game doesn't run (after a
 	// Stop in this frame, at once)
 	UpdateScriptBuild();
+	UpdateBuildGame();
 	UpdateScriptReload();
 	UpdateAssetRegistry();
 	UpdateVisualStudio();
@@ -555,6 +558,7 @@ void Editor::Init()
 void Editor::Shutdown()
 {
 	ShutdownScriptBuild();
+	ShutdownBuildGame();
 	EnvMapVulkanRenderer::WaitIdle();
 	ShutdownPlayMode();
 	if (Application::Get()->GetCommandLine().SaveScene)

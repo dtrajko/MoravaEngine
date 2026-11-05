@@ -24,19 +24,22 @@ int main(int argc, char** argv)
 	Log::Init();
 	H2M::LogH2M::Init(); // H2M_ERROR / H2M_CORE_ERROR and failed H2M asserts log through these loggers
 
-	// The game's pack: named, or Game.mpak here or beside the executable when nothing else is named
+	// The game's pack: named, or when nothing else is named Game.mpak beside the executable, or else in the current folder. A
+	// game beside its pack works in its own folder, so a shortcut or another folder it is started from doesn't matter
 	const ApplicationCommandLine commandLine = ApplicationCommandLine::Parse(argc, argv);
 	std::string packPath = commandLine.PackPath;
-	if (packPath.empty() && commandLine.ProjectPath.empty() && commandLine.ScenePath.empty())
+	if (packPath.empty() && commandLine.ProjectPath.empty())
 	{
 		std::error_code error;
-		for (const std::filesystem::path& candidate : { std::filesystem::path(AssetFiles::DefaultPackName), Process::GetExecutablePath().parent_path() / AssetFiles::DefaultPackName })
+		const std::filesystem::path folder = Process::GetExecutablePath().parent_path();
+		if (std::filesystem::is_regular_file(folder / AssetFiles::DefaultPackName, error))
 		{
-			if (std::filesystem::is_regular_file(candidate, error))
-			{
-				packPath = candidate.u8string();
-				break;
-			}
+			packPath = (folder / AssetFiles::DefaultPackName).u8string();
+			std::filesystem::current_path(folder, error);
+		}
+		else if (commandLine.ScenePath.empty() && std::filesystem::is_regular_file(AssetFiles::DefaultPackName, error))
+		{
+			packPath = AssetFiles::DefaultPackName;
 		}
 	}
 	if (!packPath.empty())

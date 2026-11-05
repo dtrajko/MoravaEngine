@@ -286,8 +286,8 @@ endforeach()
 # The editor (src/Editor) edits the scene of SceneEnvMapVulkan (EnvMapVulkanScene), and the player (src/Player) runs it:
 # so far only in Vulkan builds
 if(NOT "VULKAN" IN_LIST MORAVA_GRAPHICS_APIS)
-    list(FILTER SRC EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder)\\.")
-    list(FILTER HEADERS EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder)\\.")
+    list(FILTER SRC EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder|GameBuilder)\\.")
+    list(FILTER HEADERS EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder|GameBuilder)\\.")
 endif()
 
 # And the shared classes only the OpenGL scenes use (the older Morava scenes and what they are made of)
@@ -324,7 +324,7 @@ set(MORAVA_EDITOR_SOURCES
     "^EditorApplication\\."
     "^Editor/"
     "^Editor_Legacy/"
-    "^Assets/(ModelImport|ShaderCompile|PackBuilder)\\."  # what makes cooked files: a player only reads them
+    "^Assets/(ModelImport|ShaderCompile|PackBuilder|GameBuilder)\\."  # what makes cooked files and games: a player only reads them
     "^EnvMap/EnvMap(SceneRenderer|SharedData)\\." # the OpenGL editor of SCENE_HAZEL_ENV_MAP (its materials are the core's)
     "^HazelVulkan/"
     "^ImGui/"
@@ -714,6 +714,15 @@ if(MORAVA_MONO)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${MONO_DIR}/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/mono-2.0-sgen.dll"
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
+endif()
+
+# The license notices a game ships with, beside the player: Build Game copies them with it (11.5)
+if(TARGET MoravaPlayer AND MORAVA_SCRIPTING)
+    add_custom_command(TARGET MoravaPlayer POST_BUILD
+        COMMAND ${CMAKE_COMMAND} "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}" "-DDOTNET_DIR=${MORAVA_DOTNET_INSTALL}"
+            "-DOUTPUT=$<TARGET_FILE_DIR:MoravaPlayer>/THIRD_PARTY_NOTICES.txt" -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ThirdPartyNotices.cmake"
+        VERBATIM
     )
 endif()
 

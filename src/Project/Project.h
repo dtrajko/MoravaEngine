@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 
 namespace YAML { class Node; }
@@ -16,6 +17,23 @@ struct ProjectWindow
 	bool Fullscreen = false; // the primary monitor, at its resolution
 	bool VSync = true;
 	std::string Title;       // empty: the project's name
+};
+
+// A scene a game ships, as saved: its path and its ID (AssetReference)
+struct ProjectBuildScene
+{
+	std::string File;
+	uint64_t ID = 0;
+};
+
+// What File > Build Game makes of the project (Phase 11)
+struct ProjectBuild
+{
+	std::string ProductName;               // empty: the project's name
+	std::string Company;
+	std::string Version = "1.0.0";         // up to four numbers
+	std::string Icon;                      // a square image, relative to the project folder (empty: none)
+	std::vector<ProjectBuildScene> Scenes; // the scenes it ships (empty: all the project's); the start scene always
 };
 
 /**
@@ -33,6 +51,7 @@ struct ProjectWindow
  *     Window: { Width: 1600, Height: 900, Fullscreen: false, VSync: true, Title: Roll a Ball }
  *     Physics: { Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, ...] }
  *     Audio: { Master: 1, Music: 0.8, Effects: 1, UI: 1 }
+ *     Build: { ProductName: Roll a Ball, Company: Morava Games, Version: 1.0.0, Icon: Assets/Icon.png, Scenes: [{File: Scenes/Main.mscene, FileID: 123}] }
  *
  * One project is open at a time (GetOpen): the paths in scene and material files resolve against it (ProjectPaths).
  */
@@ -53,6 +72,8 @@ struct Project
 	ProjectWindow Window;
 	PhysicsCollisionMatrix Collisions; // the physics layers that collide (written as the pairs that do)
 	AudioVolumes Volumes;              // the master's and the buses' (the Audio panel's mixer)
+	ProjectBuild Build;
+	bool Shipped = false;              // the project in a pack made by Build Game: a product, not work in progress. Never in a .mproject
 
 	std::string FilePath; // the .mproject file, absolute (not written in it)
 
@@ -63,8 +84,12 @@ struct Project
 	std::string GetInputMapPath() const; // empty: the project has none (the game gets InputMap::Default)
 	std::string GetScriptAssemblyPath() const; // empty: the project has no scripts
 	std::string GetScriptProjectPath() const;  // empty: the project has no scripts to build
-	// The window's title: Window.Title, or the name
+	// The window's title: Window.Title, or the product's name
 	std::string GetWindowTitle() const;
+	std::string GetProductName() const; // Build.ProductName, or the name
+	std::string GetIconPath() const;    // empty: the project has no icon
+	// The scenes of Build.Scenes as kept paths, found by their IDs. Asks the open project and the registry: this project must be open
+	std::vector<std::string> GetBuildScenes() const;
 
 	// Reads a project file. False (error explains) when it can't be read
 	static bool Load(const std::string& filepath, Project& project, std::string& error);

@@ -18,6 +18,13 @@
  */
 namespace PackBuilder
 {
+	struct Options
+	{
+		std::string OutputFolder;     // empty: <Project>/Build
+		std::string ScriptsFolder;    // where the game's script assembly is, when it isn't where the project says (empty: there)
+		bool Shipping = false;        // Build Game: of the project's scenes, the start scene, those its Build settings list and those they name; and the pack's project says it is shipped
+	};
+
 	// The program's exit code: 0 when the pack was written, 1 otherwise (each reason is logged, and no pack is written)
-	int Run(const std::string& projectFile, const std::string& outputFolder);
+	int Run(const std::string& projectFile, const Options& options);
 }

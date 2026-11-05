@@ -5,6 +5,7 @@
 // writes the assembly, which hot reload (EditorScriptReload.cpp) loads.
 
 
+#include "Assets/GameBuilder.h"
 #include "Project/Project.h"
 #include "Scripting/ScriptHost.h"
 
@@ -48,34 +49,6 @@ static fs::file_time_type s_NewestScript;
 static Clock::time_point s_NextCheck;
 static Clock::time_point s_ChangedAt;
 static bool s_ChangeSeen = false;
-
-// The .NET SDK's dotnet: on the PATH, in DOTNET_ROOT, else the one the engine was built with
-static std::string FindDotNet()
-{
-	std::string dotnet = Process::FindOnPath("dotnet");
-	if (!dotnet.empty())
-	{
-		return dotnet;
-	}
-	if (const char* root = std::getenv("DOTNET_ROOT"))
-	{
-		std::error_code error;
-#if defined(_WIN32)
-		const fs::path candidate = fs::u8path(root) / "dotnet.exe";
-#else
-		const fs::path candidate = fs::u8path(root) / "dotnet";
-#endif
-		if (fs::is_regular_file(candidate, error))
-		{
-			return candidate.u8string();
-		}
-	}
-#if defined(MORAVA_DOTNET_SDK_EXE)
-	return MORAVA_DOTNET_SDK_EXE;
-#else
-	return std::string();
-#endif
-}
 
 std::string GetScriptProjectPath()
 {
@@ -276,7 +249,7 @@ static bool StartBuild()
 		ShowNotification("The script project doesn't exist: the log says where it was looked for", true);
 		return false;
 	}
-	const std::string dotnet = FindDotNet();
+	const std::string dotnet = GameBuilder::FindDotNet();
 	if (dotnet.empty())
 	{
 		Log::GetLogger()->error("Scripts: no dotnet to build them with: install the .NET 10 SDK (https://dotnet.microsoft.com/download)");

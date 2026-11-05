@@ -5,6 +5,8 @@
  */
 
 #include "VulkanContextH2M.h"
+#include "Core/Application.h"
+#include "Project/Project.h"
 
 #include "VulkanH2M.h"
 
@@ -56,6 +58,12 @@ namespace H2M
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// The surface extensions of this platform (Win32, X11, Wayland, Metal), as GLFW creates the surface
 		uint32_t glfwExtensionCount = 0;
+		// A shipped game doesn't validate: a customer's machine with the Vulkan SDK would load the layer otherwise
+		if (Project::GetOpen() && Project::GetOpen()->Shipped && !Application::Get()->GetCommandLine().Validation)
+		{
+			s_Validation = false;
+		}
+
 		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 		std::vector<const char*> instanceExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 		if (s_Validation)

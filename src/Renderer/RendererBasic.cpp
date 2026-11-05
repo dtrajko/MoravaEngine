@@ -1,4 +1,5 @@
 #include "Renderer/RendererBasic.h"
+#include "Project/Project.h"
 
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
@@ -82,7 +83,10 @@ void RendererBasic::AppendRendererInfo(WindowSpecification& windowSpecification)
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		return;
 	}
-	windowSpecification.Title += std::string(" [OS: ") + Application::GetOSName() + ", Renderer: " + rendererName + "]";
+	if (!Project::GetOpen() || !Project::GetOpen()->Shipped)
+	{
+		windowSpecification.Title += std::string(" [OS: ") + Application::GetOSName() + ", Renderer: " + rendererName + "]";
+	}
 }
 
 void RendererBasic::InitDebug()
