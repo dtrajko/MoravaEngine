@@ -98,6 +98,18 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		{
 			commandLine.PackOutputFolder = argv[++i];
 		}
+		else if (option == "--validation")
+		{
+			commandLine.Validation = true;
+		}
+		else if (option == "--build-game" && hasValue)
+		{
+			commandLine.BuildGameProject = argv[++i];
+		}
+		else if (option == "--build-output" && hasValue)
+		{
+			commandLine.BuildGameOutput = argv[++i];
+		}
 		else if (option == "--scene" && hasValue)
 		{
 			commandLine.ScenePath = argv[++i];

@@ -74,12 +74,32 @@ namespace PackBuilder
 	class Builder
 	{
 	public:
-		bool CollectFiles(const Project& project)
+		bool CollectFiles(const Project& project, bool shipping)
 		{
 			for (const char* file : s_EngineFiles)
 			{
 				AddFile(file, "the renderer");
 			}
+
+			// The scenes the game ships: the project's other scenes stay out, unless one of these names them
+			std::set<std::string> shippedScenes;
+			const bool filterScenes = shipping && !project.Build.Scenes.empty();
+			if (filterScenes)
+			{
+				for (const std::string& scene : project.GetBuildScenes())
+				{
+					if (AssetFiles::Exists(scene))
+					{
+						shippedScenes.insert(ProjectPaths::ToStored(scene));
+					}
+					else
+					{
+						Fail("The project's Build settings list the scene '" + scene + "', which doesn't exist");
+					}
+				}
+				shippedScenes.insert(project.StartScene);
+			}
+
 			// The project's own folders: scripts may name any of these. An image nothing refers to stays as it is
 			std::vector<std::string> unreferencedImages;
 			std::vector<std::string> folders = { project.GetAssetFolder(), project.GetScenesFolder() };
@@ -99,6 +119,10 @@ namespace PackBuilder
 						continue;
 					}
 					const std::string file = it->path().generic_u8string();
+					if (filterScenes && GetExtension(file) == ".mscene" && shippedScenes.count(ProjectPaths::ToStored(file)) == 0)
+					{
+						continue;
+					}
 					if (TextureCook::IsCookable(file))
 					{
 						unreferencedImages.push_back(file);
@@ -153,7 +177,7 @@ namespace PackBuilder
 			return m_Errors.empty();
 		}
 
-		bool Write(const Project& project, const fs::path& folder)
+		bool Write(const Project& project, const fs::path& folder, bool shipping)
 		{
 			std::error_code fileError;
 			const fs::path file = folder / AssetFiles::DefaultPackName;
@@ -164,7 +188,7 @@ namespace PackBuilder
 			{
 				std::ofstream out(temporary, std::ios::binary | std::ios::trunc);
 				AssetPack::Writer writer(out);
-				ok = out.good() && WriteEntries(project, writer);
+				ok = out.good() && WriteEntries(project, writer, shipping);
 				ok = writer.Finish() && ok;
 				m_StoredBytes = writer.GetStoredBytes();
 				m_OriginalBytes = writer.GetOriginalBytes();
@@ -185,7 +209,7 @@ namespace PackBuilder
 			return ok;
 		}
 
-		bool CopyScripts(const Project& project, const fs::path& folder)
+		bool CopyScripts(const Project& project, const std::string& scriptsFolder, const fs::path& folder)
 		{
 			const std::string assembly = project.GetScriptAssemblyPath();
 			if (assembly.empty())
@@ -193,10 +217,10 @@ namespace PackBuilder
 				return true;
 			}
 			std::error_code error;
-			const fs::path source = fs::u8path(assembly);
+			const fs::path source = scriptsFolder.empty() ? fs::u8path(assembly) : fs::u8path(scriptsFolder) / fs::u8path(assembly).filename();
 			if (!fs::exists(source, error))
 			{
-				Fail("The script assembly '" + assembly + "' doesn't exist: build the project's scripts first");
+				Fail("The script assembly '" + source.generic_u8string() + "' doesn't exist: build the project's scripts first");
 				return false;
 			}
 			// With what it references, beside it. Not the debug symbols, and not what describes running it alone
@@ -404,7 +428,7 @@ namespace PackBuilder
 			m_Entries++;
 		}
 
-		bool WriteEntries(const Project& project, AssetPack::Writer& writer)
+		bool WriteEntries(const Project& project, AssetPack::Writer& writer, bool shipping)
 		{
 			// The project as the pack's game has it: its assembly beside the pack, and nothing to build
 			YAML::Node root = YAML::LoadFile(project.FilePath);
@@ -413,6 +437,10 @@ namespace PackBuilder
 				root["Project"]["ScriptAssembly"] = fs::u8path(project.ScriptAssembly).filename().u8string();
 			}
 			root["Project"].remove("ScriptProject");
+			if (shipping)
+			{
+				root["Project"]["Shipped"] = true;
+			}
 			YAML::Emitter emitter;
 			emitter << root;
 			const std::string projectText = emitter.c_str();
@@ -483,7 +511,7 @@ namespace PackBuilder
 		uint64_t m_StoredBytes = 0, m_OriginalBytes = 0;
 	};
 
-	int Run(const std::string& projectFile, const std::string& outputFolder)
+	int Run(const std::string& projectFile, const Options& options)
 	{
 		const auto start = std::chrono::steady_clock::now();
 		Project project;
@@ -494,14 +522,14 @@ namespace PackBuilder
 			return 1;
 		}
 		Project::SetOpen(project);
-		const fs::path folder = fs::u8path(outputFolder.empty() ? project.GetDirectory() + "/" + Project::BuildFolder : outputFolder);
+		const fs::path folder = fs::u8path(options.OutputFolder.empty() ? project.GetDirectory() + "/" + Project::BuildFolder : options.OutputFolder);
 		Log::GetLogger()->info("Pack: building project '{0}' into '{1}'", project.Name, folder.generic_u8string());
 
 		std::error_code folderError;
 		fs::create_directories(folder, folderError);
 
 		Builder builder;
-		const bool ok = builder.CollectFiles(project) && builder.CookMaps() && builder.CopyScripts(project, folder) && builder.Write(project, folder);
+		const bool ok = builder.CollectFiles(project, options.Shipping) && builder.CookMaps() && builder.CopyScripts(project, options.ScriptsFolder, folder) && builder.Write(project, folder, options.Shipping);
 		if (!ok)
 		{
 			builder.LogErrors();

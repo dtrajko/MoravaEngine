@@ -38,6 +38,9 @@ struct ApplicationCommandLine
 	std::string PackPath;          // --pack <file>: the player runs the game in this pack (without options it looks for Game.mpak)
 	std::string BuildPackProject;  // --build-pack <file>: the editor builds this project's pack and exits, without a window
 	std::string PackOutputFolder;  // --pack-output <folder>: where --build-pack writes (default: the project's Build folder)
+	bool Validation = false;       // --validation: a shipped game with Vulkan's validation layer, when the machine has it (CI's check of a built game)
+	std::string BuildGameProject;  // --build-game <file>: the editor builds this project's game and exits, without a window
+	std::string BuildGameOutput;   // --build-output <folder>: where --build-game writes (default: <Project>/Build/<platform>)
 	std::string ScenePath;         // --scene <file>: a scene to open at startup (SceneEnvMapVulkan: an .mscene file)
 	float ExitAfterSeconds = 0.0f; // --exit-after <seconds>: closes the window after this time in the main loop (0: never)
 	int DebugView = 0;             // --debug-view <number>: the debug view at startup (SceneEnvMapVulkan: the entry of the

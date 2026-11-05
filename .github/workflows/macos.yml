@@ -274,6 +274,38 @@ jobs:
             exit 1
           fi
 
+      # Build Game (Phase 11): the sample built into a folder of its own, and run from another folder with the SDK's variable
+      # gone: it finds its pack and its private .NET beside itself. Validation on (a shipped game has it off) so CI still checks it
+      - name: Build and run the game
+        if: matrix.player-smoke-test
+        env:
+          VK_LOADER_DEBUG: error,warn
+        run: |
+          set -o pipefail
+          GAME="$RUNNER_TEMP/Coin Collector"
+          build/MoravaEngine --build-game $SAMPLE_PROJECT_DIR/Sample.mproject --build-output "$GAME" 2>&1 | tee build-game.log
+          ls -la "$GAME"
+          otool -L "$GAME/Coin_Collector"
+          test -s "$GAME/THIRD_PARTY_NOTICES.txt" || { echo "::error::The game has no license notices"; exit 1; }
+          if grep -aq "Scenes/Physics.mscene" "$GAME/Game.mpak"; then
+            echo "::error::A scene the project's Build settings don't list went into the game"
+            exit 1
+          fi
+          OUT="$PWD/game-smoke-test.log"
+          (cd / && env -u DOTNET_ROOT gtimeout 600 "$GAME/Coin_Collector" --validation --exit-after 15 2>&1 | tee "$OUT")
+          if grep -q VulkanDebugCallback "$OUT"; then
+            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
+            exit 1
+          fi
+          if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read|could not be opened|Script error:" "$OUT"; then
+            echo "::error::Something of the built game could not be found, loaded or run"
+            exit 1
+          fi
+          if ! grep -q "Playing scene 'MainMenu'" "$OUT" || ! grep -q "C#: Options: " "$OUT" || ! grep -q "C# scripting: .NET .*Coin Collector/dotnet" "$OUT"; then
+            echo "::error::The built game didn't start its main menu, with its scripts on its own .NET (see the log)"
+            exit 1
+          fi
+
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)
         uses: actions/upload-artifact@v7.0.2
@@ -285,6 +317,8 @@ jobs:
             animator-smoke-test.log
             erika-smoke-test.log
             collector-smoke-test.log
+            build-game.log
+            game-smoke-test.log
           if-no-files-found: ignore
 
       - name: Build log

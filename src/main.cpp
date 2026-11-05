@@ -7,6 +7,7 @@
 #include "H2M/Core/LogH2M.h"
 #include "Project/AssetRegistry.h"
 #if defined(GRAPHICS_API_VULKAN)
+#include "Assets/GameBuilder.h"
 #include "Assets/PackBuilder.h"
 #include "Assets/ShaderCompile.h"
 #include "Assets/TextureCook.h"
@@ -52,7 +53,16 @@ int main(int argc, char** argv)
 	const ApplicationCommandLine options = ApplicationCommandLine::Parse(argc, argv);
 	if (!options.BuildPackProject.empty())
 	{
-		const int exitCode = PackBuilder::Run(options.BuildPackProject, options.PackOutputFolder);
+		PackBuilder::Options packOptions;
+		packOptions.OutputFolder = options.PackOutputFolder;
+		const int exitCode = PackBuilder::Run(options.BuildPackProject, packOptions);
+		TextureCook::Shutdown();
+		return exitCode;
+	}
+	if (!options.BuildGameProject.empty())
+	{
+		spdlog::set_pattern("[%l] %v"); // File > Build Game reads each line's level
+		const int exitCode = GameBuilder::Run(options.BuildGameProject, options.BuildGameOutput);
 		TextureCook::Shutdown();
 		return exitCode;
 	}

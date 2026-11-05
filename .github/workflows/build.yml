@@ -265,6 +265,36 @@ jobs:
             exit 1
           fi
 
+      # Build Game (Phase 11): the sample built into a folder of its own, and run from another folder with the SDK's variable
+      # gone: it finds its pack and its private .NET beside itself. Validation on (a shipped game has it off) so CI still checks it
+      - name: Build and run the game
+        if: matrix.player-smoke-test
+        run: |
+          set -o pipefail
+          GAME="$RUNNER_TEMP/Coin Collector"
+          build/MoravaEngine --build-game $SAMPLE_PROJECT_DIR/Sample.mproject --build-output "$GAME" 2>&1 | tee build-game.log
+          ls -la "$GAME"
+          ldd "$GAME/Coin_Collector"
+          test -s "$GAME/THIRD_PARTY_NOTICES.txt" || { echo "::error::The game has no license notices"; exit 1; }
+          if grep -aq "Scenes/Physics.mscene" "$GAME/Game.mpak"; then
+            echo "::error::A scene the project's Build settings don't list went into the game"
+            exit 1
+          fi
+          OUT="$PWD/game-smoke-test.log"
+          (cd / && env -u DOTNET_ROOT xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 "$GAME/Coin_Collector" --validation --exit-after 15 2>&1 | tee "$OUT")
+          if grep -q VulkanDebugCallback "$OUT"; then
+            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
+            exit 1
+          fi
+          if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read|could not be opened|Script error:" "$OUT"; then
+            echo "::error::Something of the built game could not be found, loaded or run"
+            exit 1
+          fi
+          if ! grep -q "Playing scene 'MainMenu'" "$OUT" || ! grep -q "C#: Options: " "$OUT" || ! grep -q "C# scripting: .NET .*Coin Collector/dotnet" "$OUT"; then
+            echo "::error::The built game didn't start its main menu, with its scripts on its own .NET (see the log)"
+            exit 1
+          fi
+
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)
         uses: actions/upload-artifact@v7.0.2
@@ -276,6 +306,8 @@ jobs:
             animator-smoke-test.log
             erika-smoke-test.log
             collector-smoke-test.log
+            build-game.log
+            game-smoke-test.log
           if-no-files-found: ignore
 
   # One job per graphics API: each compiles only its own API's code, so a missing #if or include shows up here
@@ -338,3 +370,17 @@ jobs:
           call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat" || exit /b 1
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DMORAVA_WARNINGS_AS_ERRORS=ON -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ matrix.cmake-options }} || exit /b 1
           cmake --build build --parallel -- -k 0 || exit /b 1
+
+      # Build Game (Phase 11) on Windows: no GPU to run it on here, but the folder is made, with the icon and the version in the
+      # executable (the Linux and macOS jobs run theirs)
+      - name: Build the game
+        if: matrix.name == 'MSVC Vulkan'
+        shell: pwsh
+        run: |
+          build\MoravaEngine.exe --build-game Projects\Sample\Sample.mproject --build-output "$env:RUNNER_TEMP\Coin Collector"
+          if ($LASTEXITCODE -ne 0) { Write-Error "Build Game failed"; exit 1 }
+          $info = (Get-Item "$env:RUNNER_TEMP\Coin Collector\Coin_Collector.exe").VersionInfo
+          if ($info.ProductName -ne 'Coin Collector' -or $info.FileVersion -ne '1.0.0') { Write-Error "The executable has no version information"; exit 1 }
+          foreach ($file in 'Game.mpak', 'Sample.dll', 'nethost.dll', 'Morava.ScriptCore.dll', 'THIRD_PARTY_NOTICES.txt', 'dotnet\host\fxr') {
+            if (-not (Test-Path "$env:RUNNER_TEMP\Coin Collector\$file")) { Write-Error "The game has no $file"; exit 1 }
+          }

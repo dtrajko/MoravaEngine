@@ -671,6 +671,16 @@ void OnImGuiRenderRendererStats();
 // The open project's settings (its name, start scene, asset folder and the game's window), saved as they are edited; without
 // a project, New Project and Open Project
 void OnImGuiRenderProjectPanel();
+// The project's scenes (in its Scenes folder and below), sorted, as kept paths: looked for again once a second
+const std::vector<std::string>& GetProjectScenes(const Project& project);
+
+// ---- Build Game (EditorBuildGame.cpp, Phase 11)
+
+extern bool s_ShowBuildGamePanel;
+// The project's build settings and the button that builds the game, by the program of --build-game. UpdateBuildGame: each frame
+void OnImGuiRenderBuildGamePanel();
+void UpdateBuildGame();
+void ShutdownBuildGame(); // waits for a build in progress
 
 // ---- The Input panel (EditorInputPanel.cpp)
 
