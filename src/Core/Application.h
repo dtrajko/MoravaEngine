@@ -35,11 +35,15 @@ struct ApplicationSpecification
 struct ApplicationCommandLine
 {
 	std::string ProjectPath;       // --project <file>: a project to open at startup (a .mproject file)
+	std::string PackPath;          // --pack <file>: the player runs the game in this pack (without options it looks for Game.mpak)
+	std::string BuildPackProject;  // --build-pack <file>: the editor builds this project's pack and exits, without a window
+	std::string PackOutputFolder;  // --pack-output <folder>: where --build-pack writes (default: the project's Build folder)
 	std::string ScenePath;         // --scene <file>: a scene to open at startup (SceneEnvMapVulkan: an .mscene file)
 	float ExitAfterSeconds = 0.0f; // --exit-after <seconds>: closes the window after this time in the main loop (0: never)
 	int DebugView = 0;             // --debug-view <number>: the debug view at startup (SceneEnvMapVulkan: the entry of the
 	                               // Environment panel's Debug View list, 0 = Off)
 	bool NoRayTracing = false;     // --no-ray-tracing: Vulkan without the ray tracing extensions, as on a GPU that has none
+	bool NoTextureCompression = false; // --no-texture-compression: material maps as on a GPU without BC formats (a pack's are decoded)
 	std::string SelectName;        // --select <name>: the entity of this name is selected once the startup scene is open
 	bool Play = false;             // --play: the editor starts the game (Play) once the startup scene is open
 	bool Simulate = false;         // --simulate: the editor starts Simulate (physics only) once the startup scene is open

@@ -3,6 +3,8 @@
 
 
 #include "Assets/ModelCook.h"
+#include "Core/ResourceManager.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "Assets/TextureCook.h"
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -116,6 +118,51 @@ void OnImGuiRenderAssetsPanel()
 		{
 			ImGui::SetTooltip("Used from their images until cooked; read from the cache the next time they load");
 		}
+	}
+
+	// What is loaded now, and what uses it
+	const std::vector<H2M::ModelH2M::LoadedFile> loadedModels = H2M::ModelH2M::GetLoadedFiles();
+	const std::vector<ResourceManager::LoadedTexture> loadedTextures = ResourceManager::GetLoadedTextures();
+	uint64_t modelBytes = 0, textureBytes = 0;
+	for (const H2M::ModelH2M::LoadedFile& file : loadedModels)
+	{
+		modelBytes += file.Bytes;
+	}
+	for (const ResourceManager::LoadedTexture& texture : loadedTextures)
+	{
+		textureBytes += texture.Bytes;
+	}
+	const std::string loadedLabel = "Loaded: " + std::to_string(loadedModels.size()) + " model files, " + std::to_string((modelBytes + (1 << 19)) >> 20) + " MB; " +
+		std::to_string(loadedTextures.size()) + " textures, " + std::to_string((textureBytes + (1 << 19)) >> 20) + " MB###LoadedAssets";
+	if (ImGui::TreeNode(loadedLabel.c_str()))
+	{
+		if (ImGui::BeginTable("LoadedAssetsTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Resizable, ImVec2(0.0f, 200.0f)))
+		{
+			ImGui::TableSetupColumn("File", ImGuiTableColumnFlags_WidthStretch);
+			ImGui::TableSetupColumn("Used by", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+			ImGui::TableSetupColumn("MB", ImGuiTableColumnFlags_WidthFixed, 60.0f);
+			ImGui::TableHeadersRow();
+			auto row = [](const std::string& path, uint32_t users, uint64_t bytes)
+			{
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted(path.c_str());
+				ImGui::TableNextColumn();
+				ImGui::Text("%u", users);
+				ImGui::TableNextColumn();
+				ImGui::Text("%.1f", bytes / (1024.0 * 1024.0));
+			};
+			for (const H2M::ModelH2M::LoadedFile& file : loadedModels)
+			{
+				row(file.Path, file.Users, file.Bytes);
+			}
+			for (const ResourceManager::LoadedTexture& texture : loadedTextures)
+			{
+				row(texture.Path, texture.Users, texture.Bytes);
+			}
+			ImGui::EndTable();
+		}
+		ImGui::TreePop();
 	}
 
 	ShowFileList("Sidecars without a file", "The file was moved without its .meta, or deleted. What refers to its ID then only has the old path.",

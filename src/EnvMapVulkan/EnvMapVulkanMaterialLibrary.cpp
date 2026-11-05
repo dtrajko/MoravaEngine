@@ -1,4 +1,5 @@
 #include "EnvMapVulkanMaterialLibrary.h"
+#include "Assets/AssetFiles.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
@@ -900,12 +901,25 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 	return true;
 }
 
+bool EnvMapVulkanMaterial::FindMapKind(const std::string& key, TextureCook::MapKind& kind)
+{
+	for (uint32_t slot = 0; slot < MapCount; slot++)
+	{
+		if (key == s_MapKeys[slot])
+		{
+			kind = GetMapKind(slot);
+			return true;
+		}
+	}
+	return false;
+}
+
 H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::string& filepath)
 {
 	YAML::Node root;
 	try
 	{
-		root = YAML::LoadFile(filepath);
+		root = AssetFiles::LoadYaml(filepath);
 	}
 	catch (const std::exception& e)
 	{
@@ -977,7 +991,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 		H2M::RefH2M<H2M::Texture2D_H2M> texture;
 		if (!mapFile.empty())
 		{
-			if (std::filesystem::exists(mapFile))
+			if (AssetFiles::Exists(mapFile))
 			{
 				// Through the texture cache: an image already loaded in this slot's color space is shared
 				texture = ResourceManager::LoadMaterialMap(mapFile, EnvMapVulkanMaterial::GetMapKind(slot));
@@ -1011,7 +1025,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 		const uint64_t parentID = parentNode["ID"].as<uint64_t>(0);
 		material->m_ParentID = parentID != material->m_ID ? parentID : 0;
 		const std::string parentFile = AssetReference::Read(parentNode, "File", "ID");
-		if (material->m_ParentID != 0 && !FindByID(material->m_ParentID) && !parentFile.empty() && std::filesystem::exists(parentFile))
+		if (material->m_ParentID != 0 && !FindByID(material->m_ParentID) && !parentFile.empty() && AssetFiles::Exists(parentFile))
 		{
 			Load(parentFile); // this material is in the library already, so a loop of parents ends here
 		}

@@ -5,6 +5,7 @@
  */
 
 #include "EnvMapVulkanAntialiasing.h"
+#include "Assets/AssetFiles.h"
 #include "EnvMapVulkanRenderer.h"
 #include "Core/EnginePaths.h"
 
@@ -350,7 +351,8 @@ static float ComputeAutoExposure(H2M::RefH2M<H2M::Texture2D_H2M> equirect)
 // Loads an .hdr file as the scene environment (called at the start of a frame, see Draw)
 static void LoadEnvironmentMap(const std::string& filepath)
 {
-	if (!std::filesystem::exists(filepath) || !stbi_is_hdr(filepath.c_str()))
+	const bool isHdr = AssetFiles::IsPackMounted() ? GetAssetTypeOfFile(filepath) == AssetType::EnvironmentMap : stbi_is_hdr(filepath.c_str()) != 0;
+	if (!AssetFiles::Exists(filepath) || !isHdr)
 	{
 		Log::GetLogger()->error("Environment map '{0}' was not loaded: the file does not exist or is not an HDR image. Keeping the current one.", filepath);
 		s_FailedEnvMapFilename = filepath;
@@ -1827,8 +1829,12 @@ void EnvMapVulkanRenderer::Init()
 
 	// The scene (EnvMapVulkanScene), the prefabs and the animation code: checked once at startup
 	EnvMapVulkanScene::SelfTest();
-	EnvMapVulkanPrefab::SelfTest();
+	if (!AssetFiles::IsPackMounted()) // it writes a prefab to a temporary file and reads it back: a pack's game reads only the pack
+	{
+		EnvMapVulkanPrefab::SelfTest();
+	}
 	AnimationSelfTest::Run();
+	AssetPack::SelfTest();
 	ModelCook::SelfTest();
 	TextureCook::SelfTest();
 

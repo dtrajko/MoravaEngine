@@ -1,4 +1,5 @@
 #include "Core/ResourceManager.h"
+#include "Assets/AssetFiles.h"
 #include "Core/EnginePaths.h"
 
 #if defined(GRAPHICS_API_VULKAN)
@@ -408,12 +409,10 @@ H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadMaterialMap(const std::stri
 {
     const bool sRGB = kind == TextureCook::MapKind::Color;
 #if defined(GRAPHICS_API_VULKAN)
-    std::string extension = std::filesystem::u8path(filePath).extension().u8string();
-    std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
-    const bool isImage = extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".tga" || extension == ".bmp";
+    const bool isImage = TextureCook::IsCookable(filePath);
 
     // Not on a GPU without these formats (they are optional in Vulkan): such a machine goes on with the source images
-    if (isImage && H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan &&
+    if (isImage && H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan && !Application::Get()->GetCommandLine().NoTextureCompression &&
         H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetFeatures().textureCompressionBC)
     {
         const TextureCacheKey key = { NormalizeTexturePath(filePath), sRGB, (int)kind };
@@ -448,8 +447,50 @@ H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadMaterialMap(const std::stri
         }
         return texture;
     }
+
+    // A pack holds no source images: on such a GPU a cooked map is decoded here
+    if (isImage && AssetFiles::IsPackMounted() && H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
+    {
+        const TextureCacheKey key = { NormalizeTexturePath(filePath), sRGB, (int)kind };
+        auto entry = s_HazelTextures2D.find(key);
+        if (entry != s_HazelTextures2D.end())
+        {
+            return entry->second;
+        }
+        std::vector<uint8_t> rgba;
+        uint32_t width = 0, height = 0;
+        if (TextureCook::ReadPixels(filePath, kind, rgba, width, height))
+        {
+            H2M::RefH2M<H2M::Texture2D_H2M> texture = H2M::RefH2M<H2M::VulkanTexture2D_H2M>::Create(sRGB ? H2M::ImageFormatH2M::SRGB : H2M::ImageFormatH2M::RGBA, width, height, rgba.data());
+            s_HazelTextures2D.insert(std::make_pair(key, texture));
+            return texture;
+        }
+    }
 #endif
     return LoadTexture2D_H2M(filePath, sRGB);
+}
+
+std::vector<ResourceManager::LoadedTexture> ResourceManager::GetLoadedTextures()
+{
+    std::vector<LoadedTexture> textures;
+    for (const auto& [key, texture] : s_HazelTextures2D)
+    {
+        uint64_t bytesPerPixel = 4;
+        switch (texture->GetFormat())
+        {
+            case H2M::ImageFormatH2M::BC7:
+            case H2M::ImageFormatH2M::BC7_SRGB:
+            case H2M::ImageFormatH2M::BC5:     bytesPerPixel = 1; break;
+            case H2M::ImageFormatH2M::RGBA32F: bytesPerPixel = 16; break;
+            default: break;
+        }
+        LoadedTexture loaded;
+        loaded.Path = key.Path;
+        loaded.Users = texture->GetRefCount() - 1;
+        loaded.Bytes = (uint64_t)texture->GetWidth() * texture->GetHeight() * bytesPerPixel * 4 / 3;
+        textures.push_back(std::move(loaded));
+    }
+    return textures;
 }
 
 uint32_t ResourceManager::PurgeUnusedTextures2D()

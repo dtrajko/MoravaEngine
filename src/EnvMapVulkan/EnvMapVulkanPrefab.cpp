@@ -1,4 +1,5 @@
 #include "EnvMapVulkanPrefab.h"
+#include "Assets/AssetFiles.h"
 
 #include "EnvMapVulkanSceneLoader.h"
 #include "EnvMapVulkanSceneSerializer.h"
@@ -92,24 +93,26 @@ namespace EnvMapVulkanPrefab
 		static std::unordered_map<std::string, Cached> s_Cache;
 		const std::filesystem::path path = std::filesystem::u8path(file);
 		std::error_code error;
-		const std::filesystem::file_time_type writeTime = std::filesystem::last_write_time(path, error);
-		if (error)
+		std::filesystem::file_time_type writeTime{}; // a pack's file doesn't change
+		if (!AssetFiles::IsPackMounted())
 		{
-			return false;
+			writeTime = std::filesystem::last_write_time(path, error);
+			if (error)
+			{
+				return false;
+			}
 		}
 		if (auto it = s_Cache.find(file); it != s_Cache.end() && it->second.WriteTime == writeTime)
 		{
 			hash = it->second.Hash;
 			return true;
 		}
-		std::ifstream stream(path, std::ios::binary);
-		if (!stream)
+		std::string text;
+		if (!AssetFiles::ReadText(file, text))
 		{
 			return false;
 		}
-		std::stringstream text;
-		text << stream.rdbuf();
-		hash = HashText(text.str());
+		hash = HashText(text);
 		s_Cache[file] = { writeTime, hash };
 		return true;
 	}

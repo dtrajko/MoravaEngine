@@ -42,6 +42,13 @@ namespace TextureCook
 	bool Read(const std::string& path, MapKind kind, CookedTexture& texture, double& milliseconds);
 	// Queues the map for cooking, once; ignored when its sidecar turns compression off
 	void Request(const std::string& path, MapKind kind);
+	// Whether an image of this type can be cooked at all
+	bool IsCookable(const std::string& path);
+	// Cooks now, on all the cores, unless the cache's file is current (cooked: false). False: error says why. For a pack
+	bool CookNow(const std::string& path, MapKind kind, bool& cooked, std::string& error);
+	std::string GetCookedFile(const std::string& path, MapKind kind);
+	// A pack's cooked map as pixels: for a GPU without these formats, as a pack holds no source images
+	bool ReadPixels(const std::string& path, MapKind kind, std::vector<uint8_t>& rgba, uint32_t& width, uint32_t& height);
 	// Stops at the next row of blocks: an unfinished file is never written. Before the program ends
 	void Shutdown();
 

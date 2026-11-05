@@ -1,4 +1,5 @@
 #include "UIFont.h"
+#include "Assets/AssetFiles.h"
 #include "Core/EnginePaths.h"
 
 #include "Core/Log.h"
@@ -137,13 +138,13 @@ uint32_t UIFont::NextCodepoint(const std::string& text, size_t& index)
 bool UIFont::Load(const std::string& filePath)
 {
 	m_FilePath = filePath;
-	std::ifstream file(filePath, std::ios::binary);
-	if (!file)
+	std::vector<uint8_t> fileBytes;
+	if (!AssetFiles::Read(filePath, fileBytes))
 	{
 		Log::GetLogger()->error("UI font: can't open '{}'", filePath);
 		return false;
 	}
-	std::vector<char> bytes((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	const std::vector<char> bytes(fileBytes.begin(), fileBytes.end());
 
 	// The cache file: named by the font's contents and the atlas settings
 	char settings[128];
@@ -186,7 +187,9 @@ bool UIFont::Make(const std::string& filePath, std::vector<uint8_t>& pixels)
 		Log::GetLogger()->error("UI font: FreeType didn't start");
 		return false;
 	}
-	msdfgen::FontHandle* fontHandle = msdfgen::loadFont(freetype, filePath.c_str());
+	// From memory: the file may be in a pack. FreeType reads these bytes until destroyFont
+	std::vector<uint8_t> fontBytes;
+	msdfgen::FontHandle* fontHandle = AssetFiles::Read(filePath, fontBytes) ? msdfgen::loadFontData(freetype, fontBytes.data(), (int)fontBytes.size()) : nullptr;
 	if (!fontHandle)
 	{
 		Log::GetLogger()->error("UI font: '{}' isn't a font FreeType can read", filePath);

@@ -1,4 +1,5 @@
 #include "Project.h"
+#include "Assets/AssetFiles.h"
 
 #include "AssetRegistry.h"
 
@@ -64,6 +65,38 @@ bool Project::Load(const std::string& filepath, Project& project, std::string& e
 		error = std::string("it can't be read (") + e.what() + ")";
 		return false;
 	}
+	return FromYaml(root, filepath, project, error);
+}
+
+bool Project::LoadFromPack(Project& project, std::string& error)
+{
+	const AssetPack* pack = AssetFiles::GetPack();
+	const AssetPack::Entry* entry = pack ? pack->Find(AssetFiles::PackProjectFile, AssetPack::Kind::File) : nullptr;
+	std::vector<uint8_t> bytes;
+	if (!entry || !pack->Read(*entry, bytes, error))
+	{
+		if (error.empty())
+		{
+			error = "the pack has no project";
+		}
+		return false;
+	}
+	YAML::Node root;
+	try
+	{
+		root = YAML::Load(std::string(bytes.begin(), bytes.end()));
+	}
+	catch (const std::exception& e)
+	{
+		error = std::string("the pack's project can't be read (") + e.what() + ")";
+		return false;
+	}
+	const std::string filepath = (std::filesystem::u8path(AssetFiles::GetPackFile()).parent_path() / AssetFiles::PackProjectFile).generic_u8string();
+	return FromYaml(root, filepath, project, error);
+}
+
+bool Project::FromYaml(const YAML::Node& root, const std::string& filepath, Project& project, std::string& error)
+{
 	YAML::Node node = root["Project"];
 	if (!node || !node.IsMap())
 	{
@@ -235,7 +268,7 @@ bool Project::Create(const std::string& folder, Project& project, std::string& e
 	const std::filesystem::path gitignore = directory / ".gitignore";
 	if (!std::filesystem::exists(gitignore, fileError))
 	{
-		std::ofstream(gitignore) << "# Made by the engine from the project's files, made again when missing\nLibrary/\n";
+		std::ofstream(gitignore) << "# Made by the engine from the project's files, made again when missing\nLibrary/\nBuild/\n";
 	}
 	return project.Save(error);
 }
@@ -302,9 +335,8 @@ namespace ProjectPaths
 		{
 			return storedPath;
 		}
-		std::error_code error;
 		const std::filesystem::path inProject = std::filesystem::path(project->GetDirectory()) / storedPath;
-		return std::filesystem::exists(inProject, error) ? inProject.generic_string() : storedPath;
+		return AssetFiles::Exists(inProject.generic_string()) ? inProject.generic_string() : storedPath;
 	}
 
 	std::string Normalize(const std::string& path)

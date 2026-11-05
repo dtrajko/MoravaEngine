@@ -125,6 +125,19 @@ namespace H2M
 
 		// A model of its own on the file's shared one, which is read now unless it is in memory and the file hasn't changed.
 		// Without geometry (no such file, or nothing in it) when the file can't be used: it isn't kept then.
+		// The file of a map a model file names, as loading the model finds it (for the pack's builder), and whether a file is a model's
+		static std::string ResolveMapPath(const std::string& modelPath, const std::string& modelTexturePath);
+		static bool IsModelFilePath(const std::string& path);
+
+		// The files loaded now, for the Assets panel: the entities using each, and its geometry's size
+		struct LoadedFile
+		{
+			std::string Path;
+			uint32_t Users = 0;
+			uint64_t Bytes = 0;
+		};
+		static std::vector<LoadedFile> GetLoadedFiles();
+
 		static RefH2M<ModelH2M> LoadShared(const std::string& filepath);
 		// Forgets the files no model uses any more.
 		static void ReleaseUnusedShared(); // a few frames from now: the renderer still holds the last frame's models

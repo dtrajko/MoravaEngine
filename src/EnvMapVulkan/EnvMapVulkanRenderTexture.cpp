@@ -1,4 +1,5 @@
 #include "EnvMapVulkanRenderTexture.h"
+#include "Assets/AssetFiles.h"
 
 #include "Core/Log.h"
 
@@ -45,12 +46,11 @@ std::shared_ptr<EnvMapVulkanRenderTexture> EnvMapVulkanRenderTexture::Get(const 
 		return it->second;
 	}
 
-	std::ifstream file(std::filesystem::u8path(filepath));
-	std::stringstream text;
-	text << file.rdbuf();
+	std::string text;
+	const bool read = AssetFiles::ReadText(filepath, text);
 	RenderTextureSettings settings;
-	std::string error = file ? std::string() : "the file can't be read";
-	if (!file || !FromText(text.str(), settings, error))
+	std::string error = read ? std::string() : "the file can't be read";
+	if (!read || !FromText(text, settings, error))
 	{
 		Log::GetLogger()->error("Render texture '{0}' could not be loaded: {1}", filepath, error);
 		return nullptr; // tried again next time: the file may be written by then

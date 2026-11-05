@@ -4,8 +4,10 @@
 
 #include "PlayerApplication.h"
 
+#include "Assets/AssetFiles.h"
 #include "Core/Application.h"
 #include "Core/Log.h"
+#include "Core/Process.h"
 
 #include "H2M/Core/LogH2M.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
@@ -13,6 +15,7 @@
 
 #include "Project/Project.h"
 
+#include <filesystem>
 #include <memory>
 
 
@@ -21,7 +24,31 @@ int main(int argc, char** argv)
 	Log::Init();
 	H2M::LogH2M::Init(); // H2M_ERROR / H2M_CORE_ERROR and failed H2M asserts log through these loggers
 
-	if (!Application::IsWorkingDirectoryValid())
+	// The game's pack: named, or Game.mpak here or beside the executable when nothing else is named
+	const ApplicationCommandLine commandLine = ApplicationCommandLine::Parse(argc, argv);
+	std::string packPath = commandLine.PackPath;
+	if (packPath.empty() && commandLine.ProjectPath.empty() && commandLine.ScenePath.empty())
+	{
+		std::error_code error;
+		for (const std::filesystem::path& candidate : { std::filesystem::path(AssetFiles::DefaultPackName), Process::GetExecutablePath().parent_path() / AssetFiles::DefaultPackName })
+		{
+			if (std::filesystem::is_regular_file(candidate, error))
+			{
+				packPath = candidate.u8string();
+				break;
+			}
+		}
+	}
+	if (!packPath.empty())
+	{
+		std::string error;
+		if (!AssetFiles::MountPack(packPath, error))
+		{
+			Log::GetLogger()->error("Pack '{0}' could not be opened: {1}", packPath, error);
+			return 1;
+		}
+	}
+	else if (!Application::IsWorkingDirectoryValid())
 	{
 		return 1;
 	}
@@ -40,11 +67,11 @@ int main(int argc, char** argv)
 	WindowSpecification window("Morava Player", 1280, 720);
 	window.VSync = false;
 	const std::string& projectPath = Application::Get()->GetCommandLine().ProjectPath;
-	if (!projectPath.empty())
+	if (AssetFiles::IsPackMounted() || !projectPath.empty())
 	{
 		Project project;
 		std::string error;
-		if (!Project::Load(projectPath, project, error))
+		if (!(AssetFiles::IsPackMounted() ? Project::LoadFromPack(project, error) : Project::Load(projectPath, project, error)))
 		{
 			Log::GetLogger()->error("Project '{0}' could not be opened: {1}", projectPath, error);
 			return 1;

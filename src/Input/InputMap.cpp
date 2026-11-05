@@ -1,4 +1,5 @@
 #include "InputMap.h"
+#include "Assets/AssetFiles.h"
 
 #include "Core/Log.h"
 
@@ -280,7 +281,7 @@ bool InputMap::Load(const std::string& filepath, InputMap& map, std::string& err
 	YAML::Node root;
 	try
 	{
-		root = YAML::LoadFile(filepath);
+		root = AssetFiles::LoadYaml(filepath);
 	}
 	catch (const std::exception& e)
 	{

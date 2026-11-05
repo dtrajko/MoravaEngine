@@ -1,4 +1,5 @@
 #include "EnvMapVulkanSceneLoader.h"
+#include "Assets/AssetFiles.h"
 
 #include "EnvMapVulkanMaterialLibrary.h"
 
@@ -27,7 +28,7 @@ namespace EnvMapVulkanSceneLoader
 
 	EnvMapVulkanEntityID AddModel(EnvMapVulkanScene& scene, const std::string& filepath)
 	{
-		if (!std::filesystem::exists(filepath) || !IsModelFile(filepath))
+		if (!AssetFiles::Exists(filepath) || !IsModelFile(filepath))
 		{
 			Log::GetLogger()->error("Model '{0}' was not loaded: the file does not exist or is not a supported model file.", filepath);
 			return NoEntity;
@@ -77,7 +78,7 @@ namespace EnvMapVulkanSceneLoader
 		const std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanSceneSerializer::MaterialRef>& materialRefs)
 	{
 		ModelComponent& component = scene.Get<ModelComponent>(entity);
-		if (!std::filesystem::exists(component.FilePath) || !IsModelFile(component.FilePath))
+		if (!AssetFiles::Exists(component.FilePath) || !IsModelFile(component.FilePath))
 		{
 			Log::GetLogger()->error("Scene: model '{0}' was not found", component.FilePath);
 			return false;
@@ -160,7 +161,7 @@ namespace EnvMapVulkanSceneLoader
 			if (ref != materialRefs.end())
 			{
 				material = EnvMapVulkanMaterialLibrary::FindByID(ref->second.ID);
-				if (!material && !ref->second.File.empty() && std::filesystem::exists(ref->second.File))
+				if (!material && !ref->second.File.empty() && AssetFiles::Exists(ref->second.File))
 				{
 					material = EnvMapVulkanMaterialLibrary::Load(ref->second.File);
 				}
