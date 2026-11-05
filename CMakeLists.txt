@@ -248,6 +248,7 @@ add_optional(${VENDOR_CROSS_PLATFORM_DIR}/nativefiledialog-extended nfd)
 # FreeType 2.11 asks for CMake 2.8.12, which CMake 4 no longer accepts: taken as 3.5 for its folder alone
 set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 add_optional(${VENDOR_DIR}/bc7enc bc7enc) # cooked textures: the engine's own build file, in vendor/bc7enc
+add_optional(${VENDOR_DIR}/lz4 lz4)       # the pack file: the engine's own build file, in vendor/lz4
 add_optional(${VENDOR_DIR}/msdf-atlas-gen/msdfgen/freetype freetype)
 unset(CMAKE_POLICY_VERSION_MINIMUM)
 if(NOT TARGET freetype)
@@ -285,8 +286,8 @@ endforeach()
 # The editor (src/Editor) edits the scene of SceneEnvMapVulkan (EnvMapVulkanScene), and the player (src/Player) runs it:
 # so far only in Vulkan builds
 if(NOT "VULKAN" IN_LIST MORAVA_GRAPHICS_APIS)
-    list(FILTER SRC EXCLUDE REGEX "^(Editor|Player)/")
-    list(FILTER HEADERS EXCLUDE REGEX "^(Editor|Player)/")
+    list(FILTER SRC EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder)\\.")
+    list(FILTER HEADERS EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder)\\.")
 endif()
 
 # And the shared classes only the OpenGL scenes use (the older Morava scenes and what they are made of)
@@ -323,6 +324,7 @@ set(MORAVA_EDITOR_SOURCES
     "^EditorApplication\\."
     "^Editor/"
     "^Editor_Legacy/"
+    "^Assets/(ModelImport|ShaderCompile|PackBuilder)\\."  # what makes cooked files: a player only reads them
     "^EnvMap/EnvMap(SceneRenderer|SharedData)\\." # the OpenGL editor of SCENE_HAZEL_ENV_MAP (its materials are the core's)
     "^HazelVulkan/"
     "^ImGui/"
@@ -610,6 +612,7 @@ target_link_libraries(MoravaCore PUBLIC
     miniaudio
     msdf
     bc7enc
+    lz4
 )
 
 if(TARGET spirv-cross-core)
@@ -622,16 +625,21 @@ foreach(lib box2d yaml-cpp DirectXTex)
     endif()
 endforeach()
 
+# assimp and shaderc: the editor's (a player reads what a pack holds, 10.3), linked below. The core still sees their headers:
+# Core/Math.h and the older classes of the other graphics APIs
 if(TARGET assimp)
-    target_link_libraries(MoravaCore PUBLIC assimp)
+    set(MORAVA_ASSIMP_TARGET assimp)
 elseif(TARGET assimp::assimp)
-    target_link_libraries(MoravaCore PUBLIC assimp::assimp)
+    set(MORAVA_ASSIMP_TARGET assimp::assimp)
 else()
     message(FATAL_ERROR "Assimp target not found")
 endif()
-
+target_include_directories(MoravaCore SYSTEM PUBLIC $<TARGET_PROPERTY:${MORAVA_ASSIMP_TARGET},INTERFACE_INCLUDE_DIRECTORIES>)
+add_dependencies(MoravaCore ${MORAVA_ASSIMP_TARGET})
+set(MORAVA_EDITOR_ONLY_LIBRARIES ${MORAVA_ASSIMP_TARGET})
 if(TARGET shaderc)
-    target_link_libraries(MoravaCore PUBLIC shaderc shaderc_util)
+    target_include_directories(MoravaCore SYSTEM PRIVATE $<TARGET_PROPERTY:shaderc,INTERFACE_INCLUDE_DIRECTORIES>)
+    list(APPEND MORAVA_EDITOR_ONLY_LIBRARIES shaderc shaderc_util)
 endif()
 
 if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
@@ -659,6 +667,7 @@ target_include_directories(MoravaCore PRIVATE
 # The editor: ImGui, and what only the older scenes use (mono: C# in SceneEnvMapVulkan)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     MoravaCore
+    ${MORAVA_EDITOR_ONLY_LIBRARIES}
     imgui
     ImGuizmo
 )
@@ -673,6 +682,11 @@ endif()
 
 if(TARGET MoravaPlayer)
     target_link_libraries(MoravaPlayer PRIVATE MoravaCore)
+    # A build with another graphics API as well: the core's shaders and models of that API call them, and the graphics API's
+    # choice in the shared classes links those into the player. A Vulkan build's player has neither
+    if(NOT MORAVA_GRAPHICS_APIS STREQUAL "VULKAN")
+        target_link_libraries(MoravaPlayer PRIVATE ${MORAVA_EDITOR_ONLY_LIBRARIES})
+    endif()
 endif()
 
 # macOS: Vulkan layers name their library by file name only (Homebrew's validation layer: libVkLayer_khronos_validation.dylib),

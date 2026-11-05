@@ -7,6 +7,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "ModelH2M.h"
+#include "Assets/AssetFiles.h"
 #include "Assets/ModelCook.h"
 #include "Core/EnginePaths.h"
 
@@ -63,7 +64,7 @@ namespace H2M
 	// Loads a material map for the Vulkan-only maps below; returns an empty reference if the file is missing or fails to load
 	static RefH2M<Texture2D_H2M> LoadMaterialMap(const std::string& texturePath, TextureCook::MapKind kind)
 	{
-		if (!std::filesystem::exists(texturePath))
+		if (!AssetFiles::Exists(texturePath))
 		{
 			Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
 			return RefH2M<Texture2D_H2M>();
@@ -89,18 +90,28 @@ namespace H2M
 		std::replace(texturePath.begin(), texturePath.end(), '\\', '/');
 
 		std::filesystem::path path = std::filesystem::path(modelPath).parent_path() / texturePath;
-		if (std::filesystem::exists(path))
+		if (AssetFiles::Exists(path.string()))
 		{
 			return path.string();
 		}
 
 		std::filesystem::path fallback = std::filesystem::path(TEXTURES_DIR "/PBR") / std::filesystem::path(modelPath).stem() / std::filesystem::path(texturePath).filename();
-		if (std::filesystem::exists(fallback))
+		if (AssetFiles::Exists(fallback.string()))
 		{
 			return fallback.string();
 		}
 
 		return path.string();
+	}
+
+	std::string ModelH2M::ResolveMapPath(const std::string& modelPath, const std::string& modelTexturePath)
+	{
+		return ResolveTexturePath(modelPath, modelTexturePath);
+	}
+
+	bool ModelH2M::IsModelFilePath(const std::string& path)
+	{
+		return GetAssetTypeOfFile(path) == AssetType::Model;
 	}
 
 	ModelH2M::ModelH2M(const std::string& filename)
@@ -197,6 +208,22 @@ namespace H2M
 	};
 
 	static std::unordered_map<std::string, SharedModelFile> s_SharedModels; // by the file's canonical path
+
+	std::vector<ModelH2M::LoadedFile> ModelH2M::GetLoadedFiles()
+	{
+		std::vector<LoadedFile> files;
+		for (const auto& [path, shared] : s_SharedModels)
+		{
+			const ModelH2M& model = *shared.Model;
+			LoadedFile file;
+			file.Path = path;
+			file.Users = shared.Model->GetRefCount() - 1; // not the registry's own reference
+			file.Bytes = model.m_StaticVertices.size() * sizeof(VertexH2M) + model.m_AnimatedVertices.size() * sizeof(AnimatedVertex) + model.m_Indices.size() * sizeof(Index);
+			files.push_back(std::move(file));
+		}
+		std::sort(files.begin(), files.end(), [](const LoadedFile& a, const LoadedFile& b) { return a.Path < b.Path; });
+		return files;
+	}
 
 	RefH2M<ModelH2M> ModelH2M::LoadShared(const std::string& filepath)
 	{

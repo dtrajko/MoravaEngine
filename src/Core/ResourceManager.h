@@ -39,6 +39,15 @@ public:
 	// The GPU must not be using them: call it when the device is idle. Returns the number of textures released.
 	static uint32_t PurgeUnusedTextures2D();
 
+	// The textures loaded now, for the Assets panel: what uses each (not the cache itself), and its size with its mips
+	struct LoadedTexture
+	{
+		std::string Path;
+		uint32_t Users = 0;
+		uint64_t Bytes = 0;
+	};
+	static std::vector<LoadedTexture> GetLoadedTextures();
+
 	static void AddShader(std::string name, H2M::RefH2M<MoravaShader> shader);
 	static H2M::RefH2M<MoravaShader> GetShader(std::string name);
 

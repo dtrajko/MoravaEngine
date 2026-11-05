@@ -155,6 +155,12 @@ namespace H2M
 
 		static void ClearUniformBuffers();
 
+		// GLSL to SPIR-V: the editor gives it (Assets/ShaderCompile). A player has none: it reads what a pack or the cache holds
+		using CompileFunction = bool(*)(const std::string& source, VkShaderStageFlagBits stage, const std::string& path, std::vector<uint32_t>& spirv, std::string& error);
+		static void SetCompiler(CompileFunction compiler);
+		// A shader file's SPIR-V per stage, as a pack holds it: from the cache or compiled. Needs no device. False: error says why
+		static bool Cook(const std::string& path, std::vector<uint8_t>& bytes, std::string& error);
+
 		// The samplers shaders share: "sampler s_LinearRepeat" (or s_LinearClamp, s_NearestClamp, s_ShadowCompare; see
 		// Include/Samplers.glslh) is a binding whose sampler is fixed in the descriptor set layout (an immutable sampler),
 		// so no code writes it. Textures declared without a sampler ("texture2D u_X") are read with these. Metal (MoltenVK)
@@ -190,8 +196,9 @@ namespace H2M
 		virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
 		
 	private:
-		std::unordered_map<VkShaderStageFlagBits, std::string> PreProcess(const std::string& source);
-		void CompileOrGetVulkanBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);
+		static std::unordered_map<VkShaderStageFlagBits, std::string> PreProcess(const std::string& source);
+		static bool CompileOrGetVulkanBinary(const std::string& assetPath, const std::unordered_map<VkShaderStageFlagBits, std::string>& sources,
+			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile, std::string& error);
 
 		void LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
 		void ReflectAllShaderStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);

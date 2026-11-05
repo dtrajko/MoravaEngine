@@ -2,9 +2,14 @@
 
 #include "EditorApplication.h"
 
+#include "Assets/ModelCook.h"
+#include "Assets/ModelImport.h"
 #include "H2M/Core/LogH2M.h"
 #include "Project/AssetRegistry.h"
 #if defined(GRAPHICS_API_VULKAN)
+#include "Assets/PackBuilder.h"
+#include "Assets/ShaderCompile.h"
+#include "Assets/TextureCook.h"
 #include "Editor/Editor.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
 #endif
@@ -38,6 +43,20 @@ int main(int argc, char** argv)
 	{
 		return 1;
 	}
+
+	// What only the editor can do: a player reads what is cooked
+	ModelCook::SetImporter(&ModelImport::Import);
+#if defined(GRAPHICS_API_VULKAN)
+	ShaderCompile::Install();
+
+	const ApplicationCommandLine options = ApplicationCommandLine::Parse(argc, argv);
+	if (!options.BuildPackProject.empty())
+	{
+		const int exitCode = PackBuilder::Run(options.BuildPackProject, options.PackOutputFolder);
+		TextureCook::Shutdown();
+		return exitCode;
+	}
+#endif
 
 	SelectRendererAPI();
 

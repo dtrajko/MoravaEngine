@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 
 /**
@@ -20,8 +21,17 @@ namespace ModelCook
 		double Milliseconds = 0.0;
 	};
 
-	// False: the file doesn't exist or can't be imported (error says why). A file with only animations is fine
+	// False: the file doesn't exist or can't be imported (error says why). A file with only animations is fine. With a pack
+	// mounted the pack's cooked model is read, and nothing else
 	bool Load(const std::string& path, ModelData& data, LoadInfo& info, std::string& error);
+
+	// What turns a source file into plain data: the editor gives it (ModelImport, through assimp). A player has none: it reads
+	// what a pack or the cache holds
+	using Importer = bool(*)(const std::string& path, ModelData& data, std::vector<std::string>& files, std::string& error);
+	void SetImporter(Importer importer);
+
+	// The cache's file of a model, after a Load
+	std::string GetCookedFile(const std::string& path);
 
 	// For the Assets panel: this session's loads, and what the cache folder holds
 	struct Stats

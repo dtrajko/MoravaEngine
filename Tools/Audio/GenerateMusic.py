@@ -1,10 +1,18 @@
-"""Generates the sample project's Music.wav: fast arpeggios over Am, E7, A7, Dm, Bdim7, in the style of a neoclassical
-guitar duel. Everything is synthesized here, with no samples. Original phrasing, not a transcription of any recording.
+"""Generates the sample project's Music.wav: a bright, light adventure theme for a collecting game, in G major at 112 BPM.
+Mallets, a soft flute-like lead, warm pads, a round bass and light drums. Everything is synthesized here, with no samples,
+and the tune is original.
+
+It is made to sit under a game: the lead leaves gaps, stays out of the range where the coin and jump sounds are loudest for
+long, and nothing in it demands attention. Three sections of eight bars:
+
+    A   the theme over a light groove
+    A'  the same with a second voice and busier drums
+    B   a calmer turn to E minor with half-time drums, leading back to the top
 
 Usage: python GenerateMusic.py [output.wav]     (needs numpy; the default output is the sample project's Music.wav)
 
-The whole track is rendered in a ring: note tails, the filters and the reverb wrap from the end back to the start, so
-the file loops without a seam. The result is the same on every run (fixed random seed).
+The whole track is rendered in a ring: note tails and the reverb wrap from the end back to the start, so the file loops
+without a seam. The result is the same on every run (fixed random seed).
 """
 import os
 import sys
@@ -13,180 +21,249 @@ import wave
 import numpy as np
 
 RATE = 44100
-OVERSAMPLE = 2                  # The distortion runs at twice the rate, to keep its harmonics from folding back down.
-BPM = 90.0
-BARS = 16
+BPM = 112.0
+BARS = 24
 BEAT = 60.0 / BPM
-STEP = BEAT / 6.0               # Sextuplets: six notes to the beat.
-SECONDS = BARS * 4 * BEAT
-TARGET_RMS = 0.2                # About -14 dB, the level of the track this one replaced.
+LENGTH = int(round(BARS * 4 * BEAT * RATE))
+TARGET_RMS = 0.17               # A little under the previous track: music under a game, not over it.
 
-rng = np.random.default_rng(1986)
+rng = np.random.default_rng(2026)
 
-# MIDI note numbers. Each sweep is seven notes over two octaves, in the chord's own tones.
-SWEEPS = {
-    'Am':    [57, 60, 64, 69, 72, 76, 81],  # A C E
-    'E7':    [52, 56, 59, 62, 64, 68, 71],  # E G# B D
-    'A7':    [57, 61, 64, 67, 69, 73, 76],  # A C# E G
-    'Dm':    [50, 53, 57, 62, 65, 69, 74],  # D F A
-    'Bdim7': [59, 62, 65, 68, 71, 74, 77],  # B D F Ab
+CHORDS = {
+    'G':  [55, 59, 62],
+    'D':  [50, 54, 57],
+    'Em': [52, 55, 59],
+    'C':  [48, 52, 55],
+    'Am': [45, 48, 52],
 }
-BASS = {'Am': 33, 'E7': 40, 'A7': 33, 'Dm': 38, 'Bdim7': 35}
-# Root and fifth of the chugging rhythm guitar; Bdim7 has a flat fifth.
-POWER = {'Am': (45, 52), 'E7': (40, 47), 'A7': (45, 52), 'Dm': (50, 57), 'Bdim7': (47, 53)}
+ROOT = {'G': 31, 'D': 38, 'Em': 40, 'C': 36, 'Am': 33}  # The bass's notes.
 
-# Two chords to the bar, a chord lasting two beats. The last one, E7, leads back to Am at the top of the next section.
-SECTION = ['Am', 'Am', 'E7', 'E7', 'A7', 'A7', 'Dm', 'Dm',
-           'Bdim7', 'Bdim7', 'Am', 'Am', 'Dm', 'E7', 'Am', 'E7']
-SONG = [('low', chord) for chord in SECTION] + [('high', chord) for chord in SECTION]
+A = ['G', 'D', 'Em', 'C', 'G', 'D', 'C', 'D']
+B = ['Em', 'C', 'G', 'D', 'Em', 'C', 'Am', 'D']
+SONG = A + A + B
 
-UP_THEN_DOWN = [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1]
-DOWN_THEN_UP = [6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5]
+# The tune: (beat within the section, MIDI note, length in beats).
+THEME = [
+    (0, 71, 1), (1, 74, .5), (1.5, 79, 1.5), (3, 78, .5), (3.5, 76, .5),
+    (4, 74, 1.5), (5.5, 69, .5), (6, 71, 1),
+    (8, 67, .5), (8.5, 71, .5), (9, 76, 1.5), (10.5, 74, .5), (11, 71, 1),
+    (12, 72, 1), (13, 76, .5), (13.5, 74, .5), (14, 72, .5), (14.5, 71, .5), (15, 69, 1),
+    (16, 71, 1), (17, 74, .5), (17.5, 79, 1.5), (19, 81, .5), (19.5, 83, .5),
+    (20, 81, 1.5), (21.5, 78, .5), (22, 74, 1),
+    (24, 76, .5), (24.5, 79, .5), (25, 76, .5), (25.5, 72, .5), (26, 74, .5), (26.5, 76, .5), (27, 79, 1),
+    (28, 78, 1), (29, 81, .5), (29.5, 78, .5), (30, 74, 1.5),
+]
+BRIDGE = [
+    (0, 79, 2), (2, 78, 1), (3, 76, 1),
+    (4, 76, 2), (6, 79, 1.5),
+    (8, 74, 2), (10, 79, 1), (11, 83, 1),
+    (12, 81, 3), (15, 78, 1),
+    (16, 79, 1), (17, 83, 1), (18, 81, 1), (19, 79, 1),
+    (20, 76, 2), (22, 79, 1), (23, 76, 1),
+    (24, 72, 1), (25, 76, 1), (26, 81, 1), (27, 79, 1),
+    (28, 78, 1), (29, 81, 1), (30, 78, .5), (30.5, 74, .5), (31, 69, 1),
+]
+# The second voice of A': a third or a sixth under the tune, on the notes of G major.
+SCALE = [55, 57, 59, 60, 62, 64, 66, 67, 69, 71, 72, 74, 76, 78, 79, 81, 83]
+
+# Which notes of the chord the mallets play, per eighth note of a bar.
+ARPEGGIO = [0, 1, 2, 3, 1, 2, 3, 2]
+ARPEGGIO_CALM = [0, 2, 3, 2, 0, 2, 3, 2]
 
 
 def hz(note):
     return 440.0 * 2.0 ** ((note - 69) / 12.0)
 
 
-def add_ring(buffer, start, signal):
-    """Adds signal to the buffer starting at a time in seconds, wrapping at the end."""
-    rate_per_second = len(buffer) / SECONDS
-    index = np.arange(len(signal)) + int(round(start * rate_per_second))
-    np.add.at(buffer, index % len(buffer), signal)
+def seconds(beat):
+    return beat * BEAT
 
 
-def spectral(signal, rate, gain_of_hz):
+def add_ring(buffer, beat, signal, gain=1.0):
+    """Adds a signal to the buffer starting at a beat, wrapping at the end."""
+    index = (np.arange(len(signal)) + int(round(seconds(beat) * RATE))) % len(buffer)
+    np.add.at(buffer, index, signal * gain)
+
+
+def spectral(signal, gain_of_hz):
     """A zero-phase filter on the ring: multiplies the spectrum by gain_of_hz(frequencies)."""
     spectrum = np.fft.rfft(signal)
-    return np.fft.irfft(spectrum * gain_of_hz(np.fft.rfftfreq(len(signal), 1.0 / rate)), len(signal))
+    spectrum *= gain_of_hz(np.fft.rfftfreq(len(signal), 1.0 / RATE))
+    return np.fft.irfft(spectrum, len(signal))
 
 
-def highpass(f, cutoff, order=2):
-    return 1.0 / np.sqrt(1.0 + (cutoff / np.maximum(f, 1e-3)) ** (2 * order))
+def timeline(duration):
+    return np.arange(int(duration * RATE)) / RATE
 
 
-def lowpass(f, cutoff, order=2):
-    return 1.0 / np.sqrt(1.0 + (f / cutoff) ** (2 * order))
+def mallet(note, velocity=1.0):
+    t = timeline(0.9)
+    f = hz(note)
+    tone = np.sin(2 * np.pi * f * t) * np.exp(-t * 6.0)
+    tone += 0.5 * np.sin(2 * np.pi * f * 4.0 * t) * np.exp(-t * 22.0)  # The bar's bright, quickly gone overtone.
+    tone += 0.16 * np.sin(2 * np.pi * f * 9.2 * t) * np.exp(-t * 60.0)  # And the strike.
+    return tone * (1.0 - np.exp(-t * 900.0)) * velocity
 
 
-def bell(f, center, octaves, decibels):
-    return 10.0 ** (decibels / 20.0 * np.exp(-(np.log2(np.maximum(f, 1e-3) / center) / octaves) ** 2))
+def lead_note(note, beats, velocity=1.0):
+    duration = seconds(beats) * 0.94 + 0.16
+    t = timeline(duration)
+    f = hz(note)
+    # The vibrato comes in late, as a player's does: a short note stays straight.
+    depth = 0.0035 * np.clip((t - 0.22) / 0.25, 0.0, 1.0)
+    phase = 2 * np.pi * np.cumsum(f * (1.0 + depth * np.sin(2 * np.pi * 5.2 * t))) / RATE
+    tone = np.sin(phase) + 0.28 * np.sin(2 * phase) + 0.09 * np.sin(3 * phase) + 0.03 * np.sin(4 * phase)
+    breath = spectral(rng.standard_normal(len(t)), lambda hertz: np.exp(-((hertz - f * 2) / 900.0) ** 2))
+    tone += 0.05 * breath / np.max(np.abs(breath))
+    envelope = np.minimum(t / 0.018, 1.0) * np.minimum((duration - t) / 0.13, 1.0) * (0.78 + 0.22 * np.exp(-t * 7.0))
+    return tone * envelope * velocity
 
 
-def pluck(note, duration, rate, brightness=1.0, damping=1.0):
-    """A plucked string: harmonics with the comb of a pick position, the higher ones dying sooner, and a little stiffness."""
-    f0 = hz(note)
-    t = np.arange(int(duration * rate)) / rate
-    out = np.zeros_like(t)
-    for k in range(1, 25):
-        fk = k * f0 * np.sqrt(1.0 + 1.2e-4 * k * k)
-        if fk > 9000.0:
-            break
-        amplitude = abs(np.sin(np.pi * k * 0.17)) / k ** (1.15 / brightness)
-        out += amplitude * np.exp(-t * damping * (2.5 + 0.9 * k)) * np.sin(2.0 * np.pi * fk * t + 0.7 * k)
-    attack = np.minimum(t / 0.001, 1.0)
-    release = np.minimum((duration - t) / 0.006, 1.0)
-    return out * attack * release
+def pad_chord(chord, beats):
+    duration = seconds(beats) + 0.5
+    t = timeline(duration)
+    tone = np.zeros(len(t))
+    for note in CHORDS[chord]:
+        f = hz(note + 12)
+        for detune in (-0.0022, 0.0, 0.0022):
+            # Random phases: the same pad never adds up to the same peak.
+            phase = rng.uniform(0, 2 * np.pi, 4)
+            for harmonic, level in enumerate((1.0, 0.42, 0.16, 0.06), start=1):
+                tone += level * np.sin(2 * np.pi * f * (1.0 + detune) * harmonic * t + phase[harmonic - 1])
+    envelope = np.minimum(t / 0.3, 1.0) * np.minimum((duration - t) / 0.5, 1.0)
+    return tone * envelope
 
 
-def distort(signal, drive):
-    """An amp: tightened lows into a slightly asymmetric clipper, then a speaker cabinet."""
-    rate = RATE * OVERSAMPLE
-    tight = spectral(signal, rate, lambda f: highpass(f, 280.0) * bell(f, 1000.0, 1.2, 4.0))
-    clipped = np.tanh(drive * tight + 0.12) - np.tanh(0.12)
-    return spectral(clipped, rate, lambda f: highpass(f, 85.0) * lowpass(f, 4800.0, 3) * bell(f, 2400.0, 0.8, 4.0) * bell(f, 400.0, 0.7, -3.0))
+def bass_note(note, beats, velocity=1.0):
+    duration = seconds(beats) + 0.05
+    t = timeline(duration)
+    f = hz(note)
+    tone = np.sin(2 * np.pi * f * t) + 0.35 * np.sin(4 * np.pi * f * t) * np.exp(-t * 7.0) + 0.1 * np.sin(6 * np.pi * f * t) * np.exp(-t * 14.0)
+    envelope = np.minimum(t / 0.006, 1.0) * np.minimum((duration - t) / 0.05, 1.0) * (0.72 + 0.28 * np.exp(-t * 5.0))
+    return tone * envelope * velocity
 
 
-def decimate(signal):
-    """Back to the output rate, by cutting the spectrum off below the new Nyquist frequency."""
-    spectrum = np.fft.rfft(signal)
-    count = len(signal) // OVERSAMPLE
-    return np.fft.irfft(spectrum[:count // 2 + 1], count) / OVERSAMPLE
+def kick():
+    t = timeline(0.28)
+    phase = 2 * np.pi * np.cumsum(46.0 + 95.0 * np.exp(-t * 34.0)) / RATE
+    return np.sin(phase) * np.exp(-t * 15.0)
 
 
-def lead_guitar():
-    rate = RATE * OVERSAMPLE
-    bus = np.zeros(int(SECONDS * rate))
-    chord_length = 2 * BEAT
-    for cycle, (register, chord) in enumerate(SONG):
-        sweep = SWEEPS[chord]
-        high = register == 'high'
-        order = DOWN_THEN_UP if high else UP_THEN_DOWN
-        for i, position in enumerate(order):
-            note = sweep[position] + (12 if high else 0)
-            velocity = 0.62 + rng.uniform(-0.05, 0.05)
-            if position == 6:
-                velocity += 0.3   # The top of the sweep sings out.
-            elif i % 6 == 0:
-                velocity += 0.16  # The beat.
-            start = cycle * chord_length + i * STEP + rng.uniform(-0.0015, 0.0015)
-            add_ring(bus, start, velocity * pluck(note, STEP * 2.0, rate, brightness=1.15))
-    return decimate(distort(bus, 6.0))
+def snare():
+    t = timeline(0.2)
+    noise = spectral(rng.standard_normal(len(t)), lambda hertz: np.clip((hertz - 900.0) / 1500.0, 0.0, 1.0) * np.exp(-hertz / 9000.0))
+    noise /= np.max(np.abs(noise))
+    return 0.75 * noise * np.exp(-t * 24.0) + 0.45 * np.sin(2 * np.pi * 196.0 * t) * np.exp(-t * 30.0)
 
 
-def rhythm_guitar():
-    """Muted power chords on the eighth notes, in the second section only, to lift it."""
-    rate = RATE * OVERSAMPLE
-    bus = np.zeros(int(SECONDS * rate))
-    half = len(SONG) // 2
-    for cycle, (register, chord) in enumerate(SONG):
-        if cycle < half:
-            continue
-        for eighth in range(4):
-            start = (cycle * 2 + eighth * 0.5) * BEAT + rng.uniform(-0.002, 0.002)
-            hit = 0.9 if eighth == 0 else 0.65
-            for note in POWER[chord]:
-                add_ring(bus, start, hit * pluck(note, BEAT * 0.42, rate, damping=3.2))
-    return decimate(distort(bus, 4.0))
+def hat(open_hat=False):
+    t = timeline(0.16 if open_hat else 0.05)
+    noise = spectral(rng.standard_normal(len(t)), lambda hertz: np.clip((hertz - 6500.0) / 2500.0, 0.0, 1.0))
+    noise /= np.max(np.abs(noise))
+    return noise * np.exp(-t * (28.0 if open_hat else 95.0))
+
+
+def harmony_below(note):
+    """A third under the tune, on the scale; a note under the scale's range stays out."""
+    if note not in SCALE:
+        return None
+    index = SCALE.index(note) - 2
+    return SCALE[index] if index >= 0 else None
+
+
+def melody():
+    lead = np.zeros(LENGTH)
+    second = np.zeros(LENGTH)
+    for section_start, tune, harmonized in ((0, THEME, False), (32, THEME, True), (64, BRIDGE, False)):
+        for beat, note, length in tune:
+            # A little louder on the beat than off it, and the second time through a little fuller.
+            velocity = (1.0 if beat == int(beat) else 0.86) * (1.0 if section_start == 0 else 1.06 if harmonized else 0.9)
+            add_ring(lead, section_start + beat, lead_note(note, length, velocity))
+            if harmonized:
+                below = harmony_below(note)
+                if below is not None:
+                    add_ring(second, section_start + beat, lead_note(below, length, 0.8 * velocity))
+    return lead, second
+
+
+def mallets():
+    out = np.zeros(LENGTH)
+    for bar, chord in enumerate(SONG):
+        notes = CHORDS[chord] + [CHORDS[chord][0] + 12]
+        calm = bar >= 16
+        pattern = ARPEGGIO_CALM if calm else ARPEGGIO
+        for eighth, choice in enumerate(pattern):
+            note = notes[choice] + 12
+            accent = 1.0 if eighth % 4 == 0 else 0.84 if eighth % 2 == 0 else 0.68
+            add_ring(out, bar * 4 + eighth * 0.5, mallet(note, accent * (0.82 if calm else 1.0)))
+    return out
+
+
+def pads():
+    out = np.zeros(LENGTH)
+    for bar, chord in enumerate(SONG):
+        add_ring(out, bar * 4, pad_chord(chord, 4), 1.0 if bar >= 16 else 0.62)
+    return spectral(out, lambda hertz: np.exp(-hertz / 2600.0))
 
 
 def bass():
-    bus = np.zeros(int(SECONDS * RATE))
-    for cycle, (register, chord) in enumerate(SONG):
-        for eighth in range(4):
-            start = (cycle * 2 + eighth * 0.5) * BEAT
-            t = np.arange(int(BEAT * 0.48 * RATE)) / RATE
-            f0 = hz(BASS[chord])
-            wave_ = sum(np.sin(2.0 * np.pi * k * f0 * t) / k ** 1.4 for k in range(1, 9))
-            envelope = np.exp(-t * 3.0) * np.minimum(t / 0.003, 1.0) * np.minimum((t[-1] - t + 1e-6) / 0.008, 1.0)
-            add_ring(bus, start, (1.0 if eighth == 0 else 0.8) * wave_ * envelope)
-    return spectral(np.tanh(1.3 * bus), RATE, lambda f: lowpass(f, 900.0) * highpass(f, 35.0))
+    out = np.zeros(LENGTH)
+    for bar, chord in enumerate(SONG):
+        root = ROOT[chord]
+        start = bar * 4
+        if bar >= 16:
+            add_ring(out, start, bass_note(root, 1.9))
+            add_ring(out, start + 2.5, bass_note(root + 7, 0.9, 0.8))
+            add_ring(out, start + 3.5, bass_note(root + 12, 0.45, 0.7))
+        else:
+            add_ring(out, start, bass_note(root, 1.3))
+            add_ring(out, start + 1.5, bass_note(root, 0.45, 0.78))
+            add_ring(out, start + 2, bass_note(root + 7, 0.9, 0.9))
+            add_ring(out, start + 3, bass_note(root + 12, 0.45, 0.8))
+            add_ring(out, start + 3.5, bass_note(root + 7, 0.45, 0.7))
+    return out
 
 
 def drums():
-    bus = np.zeros(int(SECONDS * RATE))
-    kick_t = np.arange(int(0.22 * RATE)) / RATE
-    phase = 2.0 * np.pi * (52.0 * kick_t + (170.0 - 52.0) * (1.0 - np.exp(-kick_t * 38.0)) / 38.0)
-    kick = np.sin(phase) * np.exp(-kick_t * 15.0) + 0.5 * np.exp(-kick_t * 600.0) * rng.normal(0.0, 1.0, len(kick_t))
-
-    snare_t = np.arange(int(0.2 * RATE)) / RATE
-    rattle = spectral(rng.normal(0.0, 1.0, len(snare_t)), RATE, lambda f: highpass(f, 1600.0) * lowpass(f, 9000.0))
-    snare = 2.2 * rattle * np.exp(-snare_t * 20.0) + 0.7 * np.sin(2.0 * np.pi * 190.0 * snare_t) * np.exp(-snare_t * 28.0)
-
-    hat_t = np.arange(int(0.05 * RATE)) / RATE
-    hat = spectral(rng.normal(0.0, 1.0, len(hat_t)), RATE, lambda f: highpass(f, 7000.0, 3)) * np.exp(-hat_t * 110.0)
-
+    out = np.zeros(LENGTH)
+    kick_sound, snare_sound, closed, opened = kick(), snare(), hat(), hat(True)
     for bar in range(BARS):
-        origin = bar * 4 * BEAT
-        for beat in (0.0, 1.5, 2.0, 3.5):
-            add_ring(bus, origin + beat * BEAT, 0.95 * kick)
-        for beat in (1.0, 3.0):
-            add_ring(bus, origin + beat * BEAT, 0.72 * snare)
-        for eighth in range(8):
-            add_ring(bus, origin + eighth * 0.5 * BEAT, (0.5 if eighth % 2 == 0 else 0.3) * hat)
-    return bus
+        start = bar * 4
+        if bar >= 16:
+            # Half time: the bridge breathes.
+            add_ring(out, start, kick_sound)
+            add_ring(out, start + 2, snare_sound, 0.6)
+            for eighth in range(8):
+                add_ring(out, start + eighth * 0.5, closed, 0.2 if eighth % 2 else 0.3)
+        else:
+            add_ring(out, start, kick_sound)
+            add_ring(out, start + 1.5, kick_sound, 0.55)
+            add_ring(out, start + 2, kick_sound, 0.9)
+            add_ring(out, start + 1, snare_sound, 0.72)
+            add_ring(out, start + 3, snare_sound, 0.72)
+            busy = bar >= 8
+            for sixteenth in range(16 if busy else 8):
+                step = 0.25 if busy else 0.5
+                level = 0.36 if sixteenth % (4 if busy else 2) == 0 else 0.16
+                add_ring(out, start + sixteenth * step, closed, level)
+            add_ring(out, start + 3.5, opened, 0.2)
+        if bar % 8 == 7:
+            # A small fill into each section.
+            for step in (3.0, 3.25, 3.5, 3.75):
+                add_ring(out, start + step, snare_sound, 0.32 + 0.1 * (step - 3.0) * 4)
+    return out
 
 
-def reverb(signal, seconds=1.8, predelay=0.03):
-    """A large room: convolution, on the ring, with a decaying noise tail."""
-    tail = int(seconds * RATE)
-    t = np.arange(tail) / RATE
+def reverb(signal):
+    """A hall on the ring: the signal convolved with fading noise, wrapping at the end."""
+    t = np.arange(int(1.6 * RATE)) / RATE
+    tail = rng.standard_normal(len(t)) * np.exp(-t * 4.2)
+    tail[:int(0.012 * RATE)] = 0.0
     impulse = np.zeros(len(signal))
-    start = int(predelay * RATE)
-    impulse[start:start + tail] = rng.normal(0.0, 1.0, tail) * np.exp(-t * 6.9 / seconds)
-    impulse = spectral(impulse, RATE, lambda f: highpass(f, 300.0) * lowpass(f, 4500.0))
-    impulse /= np.sqrt(np.sum(impulse * impulse))
-    return np.fft.irfft(np.fft.rfft(signal) * np.fft.rfft(impulse), len(signal))
+    impulse[:len(tail)] = tail
+    wet = np.fft.irfft(np.fft.rfft(signal) * np.fft.rfft(impulse), len(signal))
+    wet = spectral(wet, lambda hertz: np.clip(hertz / 350.0, 0.0, 1.0) * np.exp(-hertz / 5000.0))
+    return wet / np.sqrt(np.mean(wet * wet))
 
 
 def unit(signal):
@@ -198,16 +275,21 @@ def main():
     default = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'Projects', 'Sample', 'Assets', 'Audio', 'Music.wav')
     path = sys.argv[1] if len(sys.argv) > 1 else default
 
-    lead = unit(lead_guitar())
-    rhythm = rhythm_guitar()
-    rhythm /= np.sqrt(np.mean(rhythm[len(rhythm) // 2:] ** 2))  # It only plays in the second half.
+    lead, second = melody()
+    lead_level = np.sqrt(np.mean(lead * lead))
+    tune = (lead + second) / lead_level
+    keys = unit(mallets())
+    warm = unit(pads())
     low = unit(bass())
     kit = unit(drums())
 
-    guitars = 1.0 * lead + 0.34 * rhythm
-    wet = reverb(guitars + 0.25 * kit)
-    mix = guitars + 0.38 * wet + 0.5 * low + 0.2 * kit  # The kit is sparse: its RMS of 1 means tall peaks.
-    mix = np.tanh(0.42 * mix)         # Gentle bus limiting: the drum peaks round off rather than clip.
+    # The pads and bass duck a little on each beat, so the groove moves without being any louder.
+    beat_position = (np.arange(LENGTH) / RATE / BEAT) % 1.0
+    duck = 1.0 - 0.22 * np.exp(-beat_position * 7.0)
+
+    wet = reverb(0.9 * tune + 0.7 * keys + 0.3 * warm + 0.12 * kit)
+    mix = 0.72 * tune + 0.5 * keys + 0.3 * warm * duck + 0.62 * low * duck + 0.28 * kit + 0.3 * wet
+    mix = np.tanh(0.38 * mix)         # Gentle bus limiting: the peaks round off rather than clip.
     mix -= np.mean(mix)
     mix *= TARGET_RMS / np.sqrt(np.mean(mix * mix))
     print('peak', round(float(np.max(np.abs(mix))), 3))
@@ -216,7 +298,7 @@ def main():
         out.setnchannels(1)
         out.setsampwidth(2)
         out.setframerate(RATE)
-        out.writeframes(np.round(mix * 32767.0).astype('<i2').tobytes())
+        out.writeframes(np.round(np.clip(mix, -1.0, 1.0) * 32767.0).astype('<i2').tobytes())
     print('wrote', os.path.normpath(path), round(len(mix) / RATE, 3), 's')
 
 

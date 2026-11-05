@@ -395,6 +395,7 @@ Resources/Shaders/cached
 Resources/Cache/Fonts/
 Resources/Cache/Cooked/
 Projects/*/Library/
+Projects/*/Build/
 
 # Tools/Testing: logs and screenshots of the test scripts
 Tools/Testing/Output/

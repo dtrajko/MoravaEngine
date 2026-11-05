@@ -7,6 +7,8 @@
 #include <string>
 
 
+namespace YAML { class Node; }
+
 // The window a project's game runs in (the player's; the editor keeps its own)
 struct ProjectWindow
 {
@@ -40,6 +42,7 @@ struct Project
 	static constexpr const char* ScenesFolder = "Scenes";       // in the project folder: new projects get it
 	static constexpr const char* MaterialsFolder = "Materials"; // in the asset folder
 	static constexpr const char* DefaultInputMap = "Settings/Input.minput";
+	static constexpr const char* BuildFolder = "Build";         // in the project folder: where a pack is built (PackBuilder)
 
 	std::string Name = "Untitled";
 	std::string StartScene;                // relative to the project folder (empty: none)
@@ -65,12 +68,16 @@ struct Project
 
 	// Reads a project file. False (error explains) when it can't be read
 	static bool Load(const std::string& filepath, Project& project, std::string& error);
+	// The project of a mounted pack: its folder is the pack's, where the game's script assembly is
+	static bool LoadFromPack(Project& project, std::string& error);
 	// Writes the project to its FilePath. False (error explains) when it can't be written
 	bool Save(std::string& error) const;
 	// A new project in a folder (made if it doesn't exist): <folder>/<folder's name>.mproject, named after the folder, with
 	// its asset and scenes folders and the default input file (InputMap::Default). False (error explains) when the folder
 	// has a project already or can't be written
 	static bool Create(const std::string& folder, Project& project, std::string& error);
+
+	static bool FromYaml(const YAML::Node& root, const std::string& filepath, Project& project, std::string& error);
 
 	// The open project (nullptr: none; the engine's own files only)
 	static Project* GetOpen();

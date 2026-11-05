@@ -1,4 +1,5 @@
 #include "AnimatorController.h"
+#include "Assets/AssetFiles.h"
 
 #include "Core/Log.h"
 
@@ -405,15 +406,13 @@ bool AnimatorController::FromText(const std::string& text, const std::string& fi
 
 bool AnimatorController::Load(const std::string& filepath, AnimatorController& controller, std::string& error)
 {
-	std::ifstream file(std::filesystem::u8path(filepath));
-	if (!file)
+	std::string text;
+	if (!AssetFiles::ReadText(filepath, text))
 	{
 		error = "it can't be opened";
 		return false;
 	}
-	std::stringstream text;
-	text << file.rdbuf();
-	return FromText(text.str(), filepath, controller, error);
+	return FromText(text, filepath, controller, error);
 }
 
 bool AnimatorController::Save(const std::string& filepath, std::string& error) const

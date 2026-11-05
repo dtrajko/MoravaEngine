@@ -16,6 +16,8 @@ using AssetID = uint64_t; // 0: none
 enum class AssetType : uint16_t { None, Model, Texture, EnvironmentMap, Sound, Font, Prefab, Material, Animator, RenderTexture, Scene };
 
 const char* GetAssetTypeName(AssetType type);
+// What a file is, by its extension. None: not an asset's type
+AssetType GetAssetTypeOfFile(const std::string& path);
 
 /**
  * Which file is which asset (docs/engine/Game_Engine_Runtime_Guide.html, 10.1). An asset has a lasting ID, kept beside it in

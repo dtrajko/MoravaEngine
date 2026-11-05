@@ -82,6 +82,22 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		{
 			commandLine.ProjectPath = argv[++i];
 		}
+		else if (option == "--no-texture-compression")
+		{
+			commandLine.NoTextureCompression = true;
+		}
+		else if (option == "--pack" && hasValue)
+		{
+			commandLine.PackPath = argv[++i];
+		}
+		else if (option == "--build-pack" && hasValue)
+		{
+			commandLine.BuildPackProject = argv[++i];
+		}
+		else if (option == "--pack-output" && hasValue)
+		{
+			commandLine.PackOutputFolder = argv[++i];
+		}
 		else if (option == "--scene" && hasValue)
 		{
 			commandLine.ScenePath = argv[++i];

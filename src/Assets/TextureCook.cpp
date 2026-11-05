@@ -1,4 +1,5 @@
 #include "TextureCook.h"
+#include "Assets/AssetFiles.h"
 
 #include "CookFiles.h"
 
@@ -632,6 +633,23 @@ namespace TextureCook
 	bool Read(const std::string& path, MapKind kind, CookedTexture& texture, double& milliseconds)
 	{
 		const auto start = std::chrono::steady_clock::now();
+		if (AssetFiles::IsPackMounted())
+		{
+			// What the pack holds is what the game was built with: there is no source to compare it with
+			std::vector<uint8_t> packed;
+			const AssetPack::Kind entryKind = kind == MapKind::Color ? AssetPack::Kind::ColorMap : kind == MapKind::Normal ? AssetPack::Kind::NormalMap : AssetPack::Kind::DataMap;
+			CookInfo packedInfo;
+			size_t packedInfoOffset = 0;
+			if (!AssetFiles::ReadCooked(path, entryKind, packed) || !ParseKtx(packed.data(), packed.size(), texture, packedInfo, packedInfoOffset))
+			{
+				return false;
+			}
+			milliseconds = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
+			std::lock_guard<std::mutex> lock(s_Mutex);
+			s_Stats.Read++;
+			s_Stats.ReadMilliseconds += milliseconds;
+			return true;
+		}
 		if (IsCompressionOff(path))
 		{
 			return false;
@@ -697,7 +715,7 @@ namespace TextureCook
 	static std::atomic<bool> s_Stop(false);
 	static bool s_SummaryLogged = false;
 
-	static void CookOne(const Job& job)
+	static bool CookOne(const Job& job, uint32_t threads)
 	{
 		const auto start = std::chrono::steady_clock::now();
 		const fs::path source = fs::u8path(job.Path);
@@ -721,16 +739,16 @@ namespace TextureCook
 			Log::GetLogger()->warn("Texture '{0}' could not be cooked: it can't be read", job.Path);
 			std::lock_guard<std::mutex> lock(s_Mutex);
 			s_Stats.Failed++;
-			return;
+			return false;
 		}
 		std::vector<uint8_t>().swap(sourceBytes);
 
 		CookedTexture texture;
-		const bool finished = EncodeImage(rgba, (uint32_t)width, (uint32_t)height, job.Kind, texture, GetEncoderThreads(), s_Stop);
+		const bool finished = EncodeImage(rgba, (uint32_t)width, (uint32_t)height, job.Kind, texture, threads, s_Stop);
 		stbi_image_free(rgba);
 		if (!finished)
 		{
-			return;
+			return false;
 		}
 
 		const std::vector<uint8_t> file = MakeKtx(texture, info);
@@ -739,7 +757,7 @@ namespace TextureCook
 			Log::GetLogger()->warn("Cooked texture '{0}' could not be written", job.Cooked.generic_u8string());
 			std::lock_guard<std::mutex> lock(s_Mutex);
 			s_Stats.Failed++;
-			return;
+			return false;
 		}
 
 		const double seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
@@ -748,6 +766,7 @@ namespace TextureCook
 		std::lock_guard<std::mutex> lock(s_Mutex);
 		s_Stats.Cooked++;
 		s_Stats.CookSeconds += seconds;
+		return true;
 	}
 
 	static void RunCookingThread()
@@ -768,7 +787,7 @@ namespace TextureCook
 			s_Stats.Cooking = job.Path;
 			lock.unlock();
 
-			CookOne(job);
+			CookOne(job, GetEncoderThreads());
 
 			lock.lock();
 			s_Stats.Cooking.clear();
@@ -782,8 +801,45 @@ namespace TextureCook
 	};
 	static ThreadStopper s_ThreadStopper;
 
+	bool IsCookable(const std::string& path)
+	{
+		std::string extension = fs::u8path(path).extension().u8string();
+		std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+		return extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".tga" || extension == ".bmp";
+	}
+
+	std::string GetCookedFile(const std::string& path, MapKind kind)
+	{
+		return GetCookedPath(path, kind).generic_u8string();
+	}
+
+	bool CookNow(const std::string& path, MapKind kind, bool& cooked, std::string& error)
+	{
+		CookedTexture existing;
+		double milliseconds = 0.0;
+		if (Read(path, kind, existing, milliseconds))
+		{
+			cooked = false;
+			return true;
+		}
+		Job job;
+		job.Path = path;
+		job.Kind = kind;
+		job.Cooked = GetCookedPath(path, kind);
+		cooked = CookOne(job, std::max(1u, std::thread::hardware_concurrency()));
+		if (!cooked)
+		{
+			error = "the image can't be read, or its cooked file can't be written";
+		}
+		return cooked;
+	}
+
 	void Request(const std::string& path, MapKind kind)
 	{
+		if (AssetFiles::IsPackMounted())
+		{
+			return;
+		}
 		if (IsCompressionOff(path))
 		{
 			return;
@@ -832,6 +888,10 @@ namespace TextureCook
 
 	bool IsCompressionOff(const std::string& path)
 	{
+		if (AssetFiles::IsPackMounted())
+		{
+			return false; // decided when the pack was built: such a map has no cooked entry
+		}
 		const fs::path sidecar = fs::u8path(path + ".meta");
 		std::error_code error;
 		if (!fs::is_regular_file(sidecar, error))
@@ -960,6 +1020,20 @@ namespace TextureCook
 				}
 			}
 		}
+	}
+
+	bool ReadPixels(const std::string& path, MapKind kind, std::vector<uint8_t>& rgba, uint32_t& width, uint32_t& height)
+	{
+		CookedTexture texture;
+		double milliseconds = 0.0;
+		if (!Read(path, kind, texture, milliseconds))
+		{
+			return false;
+		}
+		DecodeFirstLevel(texture, rgba);
+		width = texture.Width;
+		height = texture.Height;
+		return true;
 	}
 
 	bool SelfTest()

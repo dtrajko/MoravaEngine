@@ -1,4 +1,5 @@
 #include "AudioEngine.h"
+#include "Assets/AssetFiles.h"
 
 #include "Core/Log.h"
 
@@ -33,6 +34,91 @@ bool FindAudioBus(const char* name, AudioBus& bus)
 	return false;
 }
 
+// The files miniaudio opens, when a pack is mounted: a sound is read from the pack whole, and decoded or streamed from memory
+namespace
+{
+	struct PackSoundFile
+	{
+		std::vector<uint8_t> Bytes;
+		size_t Position = 0;
+	};
+
+	ma_result OpenPackSound(ma_vfs*, const char* path, ma_uint32 openMode, ma_vfs_file* file)
+	{
+		if (openMode & MA_OPEN_MODE_WRITE)
+		{
+			return MA_ACCESS_DENIED;
+		}
+		auto sound = std::make_unique<PackSoundFile>();
+		if (!AssetFiles::Read(path, sound->Bytes))
+		{
+			return MA_DOES_NOT_EXIST;
+		}
+		*file = sound.release();
+		return MA_SUCCESS;
+	}
+
+	ma_result OpenPackSoundW(ma_vfs* vfs, const wchar_t* path, ma_uint32 openMode, ma_vfs_file* file)
+	{
+		return OpenPackSound(vfs, std::filesystem::path(path).u8string().c_str(), openMode, file);
+	}
+
+	ma_result ClosePackSound(ma_vfs*, ma_vfs_file file)
+	{
+		delete static_cast<PackSoundFile*>(file);
+		return MA_SUCCESS;
+	}
+
+	ma_result ReadPackSound(ma_vfs*, ma_vfs_file file, void* destination, size_t size, size_t* bytesRead)
+	{
+		PackSoundFile& sound = *static_cast<PackSoundFile*>(file);
+		const size_t count = std::min(size, sound.Bytes.size() - sound.Position);
+		memcpy(destination, sound.Bytes.data() + sound.Position, count);
+		sound.Position += count;
+		if (bytesRead)
+		{
+			*bytesRead = count;
+		}
+		return count == 0 && size > 0 ? MA_AT_END : MA_SUCCESS;
+	}
+
+	ma_result WritePackSound(ma_vfs*, ma_vfs_file, const void*, size_t, size_t*)
+	{
+		return MA_ACCESS_DENIED;
+	}
+
+	ma_result SeekPackSound(ma_vfs*, ma_vfs_file file, ma_int64 offset, ma_seek_origin origin)
+	{
+		PackSoundFile& sound = *static_cast<PackSoundFile*>(file);
+		const ma_int64 base = origin == ma_seek_origin_start ? 0 : origin == ma_seek_origin_current ? (ma_int64)sound.Position : (ma_int64)sound.Bytes.size();
+		const ma_int64 position = base + offset;
+		if (position < 0 || position > (ma_int64)sound.Bytes.size())
+		{
+			return MA_INVALID_ARGS;
+		}
+		sound.Position = (size_t)position;
+		return MA_SUCCESS;
+	}
+
+	ma_result TellPackSound(ma_vfs*, ma_vfs_file file, ma_int64* cursor)
+	{
+		*cursor = (ma_int64)static_cast<PackSoundFile*>(file)->Position;
+		return MA_SUCCESS;
+	}
+
+	ma_result GetPackSoundInfo(ma_vfs*, ma_vfs_file file, ma_file_info* info)
+	{
+		info->sizeInBytes = static_cast<PackSoundFile*>(file)->Bytes.size();
+		return MA_SUCCESS;
+	}
+
+	ma_vfs* GetPackFileSystem()
+	{
+		static ma_vfs_callbacks s_Callbacks = { OpenPackSound, OpenPackSoundW, ClosePackSound, ReadPackSound, WritePackSound, SeekPackSound, TellPackSound, GetPackSoundInfo };
+		return &s_Callbacks;
+	}
+}
+
 namespace AudioEngine
 {
 	// The engine and what it keeps pointers to: the context (its device's backend) and the buses
@@ -59,6 +145,10 @@ namespace AudioEngine
 		}
 		ma_engine_config config = ma_engine_config_init();
 		config.pContext = &state.Context;
+		if (AssetFiles::IsPackMounted())
+		{
+			config.pResourceManagerVFS = GetPackFileSystem();
+		}
 		if (ma_engine_init(&config, &state.Engine) != MA_SUCCESS)
 		{
 			ma_context_uninit(&state.Context);

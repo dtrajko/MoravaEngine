@@ -5,6 +5,7 @@
  */
 
 #include "VulkanTextureH2M.h"
+#include "Assets/AssetFiles.h"
 #include "Core/EnginePaths.h"
 
 #include "VulkanContextH2M.h"
@@ -200,6 +201,37 @@ namespace H2M {
 	// Texture2D
 	//////////////////////////////////////////////////////////////////////////////////
 
+	// An image from the disk, or from a mounted pack's bytes
+	class ImageFile
+	{
+	public:
+		explicit ImageFile(const std::string& path)
+			: m_Path(path)
+		{
+			m_InPack = AssetFiles::IsPackMounted() && AssetFiles::Read(path, m_Bytes);
+		}
+
+		bool IsHdr() const
+		{
+			return m_InPack ? stbi_is_hdr_from_memory(m_Bytes.data(), (int)m_Bytes.size()) != 0 : stbi_is_hdr(m_Path.c_str()) != 0;
+		}
+
+		float* LoadHdr(int& width, int& height, int& channels) const
+		{
+			return m_InPack ? stbi_loadf_from_memory(m_Bytes.data(), (int)m_Bytes.size(), &width, &height, &channels, 4) : stbi_loadf(m_Path.c_str(), &width, &height, &channels, 4);
+		}
+
+		stbi_uc* Load(int& width, int& height, int& channels) const
+		{
+			return m_InPack ? stbi_load_from_memory(m_Bytes.data(), (int)m_Bytes.size(), &width, &height, &channels, 4) : stbi_load(m_Path.c_str(), &width, &height, &channels, 4);
+		}
+
+	private:
+		std::string m_Path;
+		std::vector<uint8_t> m_Bytes;
+		bool m_InPack = false;
+	};
+
 	VulkanTexture2D_H2M::VulkanTexture2D_H2M(const std::string& path, TexturePropertiesH2M properties)
 		: m_Path(path), m_Properties(properties)
 	{
@@ -233,19 +265,20 @@ namespace H2M {
 	{
 		int width, height, channels;
 
-		if (stbi_is_hdr(path.c_str()))
+		const ImageFile image(path);
+		if (image.IsHdr())
 		{
 			// Keep the full dynamic range (stbi_load would clamp to 8 bits); equirectangular maps are not flipped.
 			// The flip flag is global stb state, so it is set explicitly here (the LDR branch below turns it on).
 			stbi_set_flip_vertically_on_load(0);
-			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Data = (byte*)image.LoadHdr(width, height, channels);
 			m_ImageData.Size = width * height * 4 * sizeof(float);
 			m_Format = ImageFormatH2M::RGBA32F;
 		}
 		else
 		{
 			stbi_set_flip_vertically_on_load(1);
-			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Data = image.Load(width, height, channels);
 			m_ImageData.Size = width * height * 4;
 			// Color textures (e.g. albedo) are sRGB encoded: an sRGB format makes the GPU convert them to linear when sampled
 			m_Format = srgb ? ImageFormatH2M::SRGB : ImageFormatH2M::RGBA;
@@ -440,16 +473,17 @@ namespace H2M {
 	{
 		int width, height, channels;
 
-		if (stbi_is_hdr(path.c_str()))
+		const ImageFile image(path);
+		if (image.IsHdr())
 		{
-			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Data = (byte*)image.LoadHdr(width, height, channels);
 			m_ImageData.Size = width * height * 4 * sizeof(float);
 			m_Format = ImageFormatH2M::RGBA32F;
 		}
 		else
 		{
 			//stbi_set_flip_vertically_on_load(1);
-			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Data = image.Load(width, height, channels);
 			m_ImageData.Size = width * height * 4;
 			m_Format = ImageFormatH2M::RGBA;
 		}

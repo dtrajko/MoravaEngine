@@ -1,4 +1,5 @@
 #include "ScriptBindings.h"
+#include "Assets/AssetFiles.h"
 
 #include "ScriptHost.h"
 #include "ScriptRuntime.h"
@@ -363,8 +364,7 @@ static std::string FindProjectFile(const std::string& path, const char* extensio
 		stored += extension;
 	}
 	const std::string resolved = ProjectPaths::Resolve(stored.generic_u8string());
-	std::error_code error;
-	return std::filesystem::is_regular_file(std::filesystem::u8path(resolved), error) ? ProjectPaths::Normalize(resolved) : std::string();
+	return AssetFiles::Exists(resolved) ? ProjectPaths::Normalize(resolved) : std::string();
 }
 
 static uint64_t SceneInstantiate(const char16_t* text, int length, const glm::vec3* position, const ScriptQuat* rotation, uint64_t parent)

@@ -1,4 +1,5 @@
 #include "EnvMapVulkanSceneSerializer.h"
+#include "Assets/AssetFiles.h"
 
 #include "EnvMapVulkanMaterialLibrary.h"
 
@@ -867,7 +868,7 @@ namespace EnvMapVulkanSceneSerializer
 	{
 		try
 		{
-			const YAML::Node camera = YAML::LoadFile(filepath)["EditorCamera"];
+			const YAML::Node camera = AssetFiles::LoadYaml(filepath)["EditorCamera"];
 			if (!camera || !camera.IsMap())
 			{
 				return false;
@@ -889,7 +890,7 @@ namespace EnvMapVulkanSceneSerializer
 		YAML::Node root;
 		try
 		{
-			root = YAML::LoadFile(filepath);
+			root = AssetFiles::LoadYaml(filepath);
 		}
 		catch (const std::exception& e)
 		{
@@ -948,7 +949,7 @@ namespace EnvMapVulkanSceneSerializer
 		YAML::Node root;
 		try
 		{
-			root = YAML::LoadFile(filepath);
+			root = AssetFiles::LoadYaml(filepath);
 		}
 		catch (const std::exception& e)
 		{

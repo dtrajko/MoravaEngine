@@ -33,6 +33,9 @@ public:
 		return IsColorMap(slot) ? TextureCook::MapKind::Color : slot == Normal ? TextureCook::MapKind::Normal : TextureCook::MapKind::Data;
 	}
 
+	// The use of a map by its key in a material file ("Albedo"). False: not a map's key
+	static bool FindMapKind(const std::string& key, TextureCook::MapKind& kind);
+
 	EnvMapVulkanMaterial(const std::string& name);
 
 	const std::string& GetName() const { return m_Name; }

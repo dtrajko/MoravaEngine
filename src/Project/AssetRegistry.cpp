@@ -1,5 +1,7 @@
 #include "AssetRegistry.h"
 
+#include "Assets/AssetFiles.h"
+
 #include "Project.h"
 
 #include "Core/Log.h"
@@ -284,6 +286,20 @@ namespace AssetRegistry
 		s_Absolute.clear();
 		s_Scanned = true;
 
+		// A pack's table is all there is: the disk isn't walked
+		if (const AssetPack* pack = AssetFiles::GetPack())
+		{
+			for (const AssetPack::Entry& entry : pack->GetEntries())
+			{
+				if (entry.ID != 0 && s_ByID.find(entry.ID) == s_ByID.end())
+				{
+					AddRecord(GetAbsolute(ProjectPaths::Resolve(entry.Path)), entry.ID, entry.Type);
+				}
+			}
+			s_LastScan = std::chrono::steady_clock::now();
+			return;
+		}
+
 		// The project's first: its files win over a copy elsewhere
 		std::vector<std::string> projectFiles, engineFiles;
 		if (const Project* project = Project::GetOpen())
@@ -363,7 +379,7 @@ namespace AssetRegistry
 		}
 		std::error_code error;
 		const AssetType type = GetTypeOfFile(fs::u8path(file));
-		if (type == AssetType::None || !fs::is_regular_file(fs::u8path(file), error))
+		if (type == AssetType::None || AssetFiles::IsPackMounted() || !fs::is_regular_file(fs::u8path(file), error))
 		{
 			return 0;
 		}
@@ -401,8 +417,7 @@ namespace AssetRegistry
 			if (auto found = s_ByID.find(id); found != s_ByID.end())
 			{
 				Record& record = s_Records[found->second];
-				std::error_code error;
-				if (fs::is_regular_file(fs::u8path(record.File), error))
+				if (AssetFiles::Exists(record.File))
 				{
 					if (record.MemoryPath.empty())
 					{
@@ -497,4 +512,9 @@ namespace AssetReference
 		}
 		return ProjectPaths::Resolve(node[key].as<std::string>(""));
 	}
+}
+
+AssetType GetAssetTypeOfFile(const std::string& path)
+{
+	return AssetRegistry::GetTypeOfFile(fs::u8path(path));
 }

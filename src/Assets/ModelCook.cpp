@@ -1,7 +1,7 @@
 #include "ModelCook.h"
+#include "Assets/AssetFiles.h"
 
 #include "CookFiles.h"
-#include "ModelImport.h"
 
 #include "Core/Log.h"
 
@@ -475,10 +475,45 @@ namespace ModelCook
 
 	// ---- Loading
 
+	static Importer s_Importer = nullptr;
+
+	void SetImporter(Importer importer)
+	{
+		s_Importer = importer;
+	}
+
+	std::string GetCookedFile(const std::string& path)
+	{
+		return (fs::u8path(CookFiles::GetCacheFolder()) / fs::u8path(CookFiles::GetCookedName(path) + ".mmesh")).generic_u8string();
+	}
+
 	bool Load(const std::string& path, ModelData& data, LoadInfo& info, std::string& error)
 	{
 		const auto start = std::chrono::steady_clock::now();
 		auto elapsed = [&]() { return std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count(); };
+
+		if (AssetFiles::IsPackMounted())
+		{
+			std::vector<uint8_t> bytes;
+			if (!AssetFiles::ReadCooked(path, AssetPack::Kind::Model, bytes))
+			{
+				error = "it isn't in the pack";
+				return false;
+			}
+			Reader in(bytes.data(), bytes.size());
+			std::vector<SourceFile> sources;
+			data = ModelData();
+			if (!ReadHeader(in, sources) || !ReadData(in, data))
+			{
+				error = "its entry in the pack is of an older cooker or damaged: build the pack again";
+				return false;
+			}
+			info.FromCache = true;
+			info.Milliseconds = elapsed();
+			s_Stats.Read++;
+			s_Stats.ReadMilliseconds += info.Milliseconds;
+			return true;
+		}
 
 		std::error_code fileError;
 		const fs::path file = fs::u8path(path);
@@ -501,8 +536,13 @@ namespace ModelCook
 			return true;
 		}
 
+		if (!s_Importer)
+		{
+			error = "it isn't cooked (or changed since), and a player doesn't import models: build a pack, or open the project in the editor";
+			return false;
+		}
 		std::vector<std::string> opened;
-		if (!ModelImport::Import(path, data, opened, error))
+		if (!s_Importer(path, data, opened, error))
 		{
 			return false;
 		}

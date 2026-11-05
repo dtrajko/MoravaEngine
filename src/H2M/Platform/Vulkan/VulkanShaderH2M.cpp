@@ -11,9 +11,9 @@
 #include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 
+#include "Assets/AssetFiles.h"
 #include "Core/Log.h"
 
-#include <shaderc/shaderc.hpp>
 #include <spirv_glsl.hpp>
 
 #include <algorithm>
@@ -42,38 +42,6 @@ namespace H2M
 		text = buffer.str();
 		return true;
 	}
-
-	// #include "file" in shaders: the path is relative to the file that includes it (e.g. "Include/PBR_FrameSet.glslh")
-	class ShaderIncluderH2M : public shaderc::CompileOptions::IncluderInterface
-	{
-		struct IncludeData
-		{
-			std::string Name;
-			std::string Content;
-		};
-
-	public:
-		shaderc_include_result* GetInclude(const char* requestedSource, shaderc_include_type type, const char* requestingSource, size_t includeDepth) override
-		{
-			std::filesystem::path path = std::filesystem::path(requestingSource).parent_path() / requestedSource;
-			IncludeData* data = new IncludeData();
-			if (ReadTextFile(path, data->Content))
-			{
-				data->Name = path.lexically_normal().generic_string();
-			}
-			else
-			{
-				data->Content = "cannot open include file '" + path.generic_string() + "'"; // an empty name reports the content as the error
-			}
-			return new shaderc_include_result{ data->Name.c_str(), data->Name.size(), data->Content.c_str(), data->Content.size(), data };
-		}
-
-		void ReleaseInclude(shaderc_include_result* result) override
-		{
-			delete static_cast<IncludeData*>(result->user_data);
-			delete result;
-		}
-	};
 
 	// The files a shader includes, directly or through other includes (so editing one recompiles the shaders using it)
 	static void CollectShaderIncludes(const std::filesystem::path& file, std::set<std::filesystem::path>& includes)
@@ -259,6 +227,8 @@ namespace H2M
 	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShaderH2M::s_AlbedoTexture;
 	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShaderH2M::s_NormalTexture;
 
+	static bool ReadCookedShader(const std::vector<uint8_t>& bytes, std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& stages);
+
 	VulkanShaderH2M::VulkanShaderH2M(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
 	{
@@ -300,10 +270,28 @@ namespace H2M
 		// });
 		{
 			// Vertex and Fragment for now
-			std::string source = ReadShaderFromFile(m_AssetPath);
-			m_ShaderSource = PreProcess(source);
 			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-			CompileOrGetVulkanBinary(shaderData, forceCompile);
+			std::string error;
+			bool ok = false;
+			if (AssetFiles::IsPackMounted())
+			{
+				std::vector<uint8_t> bytes;
+				ok = AssetFiles::ReadCooked(m_AssetPath, AssetPack::Kind::Shader, bytes) && ReadCookedShader(bytes, shaderData);
+				error = "it isn't in the pack, or its entry is damaged";
+			}
+			else
+			{
+				std::string source = ReadShaderFromFile(m_AssetPath);
+				m_ShaderSource = PreProcess(source);
+				ok = CompileOrGetVulkanBinary(m_AssetPath, m_ShaderSource, shaderData, forceCompile, error);
+			}
+			if (!ok)
+			{
+				Log::GetLogger()->error("Shader '{0}' could not be loaded: {1}", m_AssetPath, error);
+				H2M_CORE_ERROR(error);
+				H2M_CORE_ASSERT(false);
+				return;
+			}
 			LoadAndCreateShaders(shaderData);
 			ReflectAllShaderStages(shaderData);
 			CreateDescriptors();
@@ -1047,33 +1035,25 @@ namespace H2M
 		return "";
 	}
 
-	static shaderc_shader_kind VkShaderStageToShaderC(VkShaderStageFlagBits stage)
+	static VulkanShaderH2M::CompileFunction s_Compiler = nullptr;
+
+	void VulkanShaderH2M::SetCompiler(CompileFunction compiler)
 	{
-		switch (stage)
-		{
-		case VK_SHADER_STAGE_VERTEX_BIT:   return shaderc_vertex_shader;
-		case VK_SHADER_STAGE_FRAGMENT_BIT: return shaderc_fragment_shader;
-		case VK_SHADER_STAGE_COMPUTE_BIT:  return shaderc_compute_shader;
-		default: break;
-		}
-		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", static_cast<int>(stage));
-		H2M_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
-		return (shaderc_shader_kind)-1;
+		s_Compiler = compiler;
 	}
 
-	void VulkanShaderH2M::CompileOrGetVulkanBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile)
+	bool VulkanShaderH2M::CompileOrGetVulkanBinary(const std::string& assetPath, const std::unordered_map<VkShaderStageFlagBits, std::string>& sources,
+		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile, std::string& error)
 	{
-		for (auto [stage, source] : m_ShaderSource)
+		for (const auto& [stage, source] : sources)
 		{
 			auto extension = VkShaderStageCachedFileExtension(stage);
+			const std::filesystem::path p = assetPath;
+			const std::filesystem::path path = p.parent_path() / "cached" / (p.filename().string() + extension);
+			const std::string cachedFilePath = path.string();
 
 			if (!forceCompile)
 			{
-				// Retrieve shader code from cache, if available
-				std::filesystem::path p = m_AssetPath;
-				auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
-				std::string cachedFilePath = path.string();
-
 				// Ignore a cached binary that is older than its .glsl source or a file it includes, so shader edits take effect
 				std::error_code sourceTimeError, cacheTimeError;
 				auto sourceTime = std::filesystem::last_write_time(p, sourceTimeError);
@@ -1108,59 +1088,101 @@ namespace H2M
 
 			if (outputBinary[stage].size() == 0)
 			{
-				// TODO: Do we need to init a compiler for each stage?
-				shaderc::Compiler compiler;
-				shaderc::CompileOptions options;
-				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-				options.SetIncluder(std::make_unique<ShaderIncluderH2M>());
-
-				const bool optimize = false;
-				if (optimize)
+				if (!s_Compiler)
 				{
-					options.SetOptimizationLevel(shaderc_optimization_level_performance);
+					error = "the shader cache has no current '" + cachedFilePath + "', and a player doesn't compile shaders (build a pack, or run the editor once)";
+					return false;
 				}
-
-				if (m_ShaderSource.find(stage) == m_ShaderSource.end()) return;
-
-				// Compile shader
+				if (!s_Compiler(source, stage, assetPath, outputBinary[stage], error))
 				{
-					auto& shaderSource = m_ShaderSource.at(stage); // e.g. VK_SHADER_STAGE_VERTEX_BIT
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, VkShaderStageToShaderC(stage), m_AssetPath.c_str(), options);
-
-					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-					{
-						H2M_CORE_ERROR(module.GetErrorMessage());
-						H2M_CORE_ASSERT(false);
-					}
-
-					const uint8_t* begin = (const uint8_t*)module.cbegin();
-					const uint8_t* end = (const uint8_t*)module.cend();
-					const ptrdiff_t size = end - begin;
-
-					outputBinary[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+					return false;
 				}
 
 				// Cache compiled shader
+				std::error_code folderError; // the cache folder is in .gitignore: a fresh clone has none
+				std::filesystem::create_directories(path.parent_path(), folderError);
+				FILE* f = fopen(cachedFilePath.c_str(), "wb");
+				if (f)
 				{
-					std::filesystem::path p = m_AssetPath;
-					auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
-					std::string cachedFilePath = path.string();
-
-					std::error_code folderError; // the cache folder is in .gitignore: a fresh clone has none
-					std::filesystem::create_directories(path.parent_path(), folderError);
-					FILE* f = fopen(cachedFilePath.c_str(), "wb");
-					if (f)
-					{
-						fwrite(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f);
-						fclose(f);
-					}
-					else
-					{
-						Log::GetLogger()->warn("Shader cache file '{0}' can't be written; the shader is compiled again next time", cachedFilePath);
-					}
+					fwrite(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f);
+					fclose(f);
+				}
+				else
+				{
+					Log::GetLogger()->warn("Shader cache file '{0}' can't be written; the shader is compiled again next time", cachedFilePath);
 				}
 			}
 		}
+		return true;
+	}
+
+	// A pack's shader entry: the number of stages, then per stage its flag, its number of words and the words
+	bool VulkanShaderH2M::Cook(const std::string& path, std::vector<uint8_t>& bytes, std::string& error)
+	{
+		std::string source;
+		if (!ReadTextFile(path, source))
+		{
+			error = "it can't be read";
+			return false;
+		}
+		const std::unordered_map<VkShaderStageFlagBits, std::string> sources = PreProcess(source);
+		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> stages;
+		if (!CompileOrGetVulkanBinary(path, sources, stages, false, error))
+		{
+			return false;
+		}
+
+		const std::map<VkShaderStageFlagBits, std::vector<uint32_t>> ordered(stages.begin(), stages.end()); // the same shader makes the same bytes
+		bytes.clear();
+		auto append = [&bytes](const void* data, size_t size)
+		{
+			const uint8_t* first = static_cast<const uint8_t*>(data);
+			bytes.insert(bytes.end(), first, first + size);
+		};
+		const uint32_t stageCount = (uint32_t)ordered.size();
+		append(&stageCount, sizeof(stageCount));
+		for (const auto& [stage, words] : ordered)
+		{
+			const uint32_t header[2] = { (uint32_t)stage, (uint32_t)words.size() };
+			append(header, sizeof(header));
+			append(words.data(), words.size() * sizeof(uint32_t));
+		}
+		return true;
+	}
+
+	static bool ReadCookedShader(const std::vector<uint8_t>& bytes, std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& stages)
+	{
+		size_t position = 0;
+		auto take = [&](void* data, size_t size)
+		{
+			if (bytes.size() - position < size)
+			{
+				return false;
+			}
+			memcpy(data, bytes.data() + position, size);
+			position += size;
+			return true;
+		};
+		uint32_t stageCount = 0;
+		if (!take(&stageCount, sizeof(stageCount)))
+		{
+			return false;
+		}
+		for (uint32_t i = 0; i < stageCount; i++)
+		{
+			uint32_t header[2] = {};
+			if (!take(header, sizeof(header)) || header[1] > bytes.size() / sizeof(uint32_t))
+			{
+				return false;
+			}
+			std::vector<uint32_t>& words = stages[(VkShaderStageFlagBits)header[0]];
+			words.resize(header[1]);
+			if (!take(words.data(), words.size() * sizeof(uint32_t)))
+			{
+				return false;
+			}
+		}
+		return stageCount > 0;
 	}
 
 	static VkShaderStageFlagBits ShaderTypeFromString(const std::string& type)
