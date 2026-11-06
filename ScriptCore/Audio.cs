@@ -38,7 +38,7 @@ namespace Morava
                 return Interop.Game->Audio_PlayOneShot(chars, clip.Length, &position, (int)bus, volume, pitch, minDistance) != 0;
         }
 
-        /// <summary>The volume everything goes through, 0 to 1. For this game: the next one starts with the project's.</summary>
+        /// <summary>The volume everything goes through, 0 to 1: the player's choice (a Settings menu), kept for the next runs too.</summary>
         public static float MasterVolume
         {
             get => GetVolumes()[0];
@@ -48,7 +48,7 @@ namespace Morava
         /// <summary>A bus's volume, 0 to 1.</summary>
         public static float GetBusVolume(AudioBus bus) => GetVolumes()[1 + (int)bus];
 
-        /// <summary>Sets a bus's volume, 0 to 1, for this game: music softer in a menu, effects off.</summary>
+        /// <summary>Sets a bus's volume, 0 to 1: the player's choice (a Settings menu's slider), kept for the next runs too (the settings file). A sound that fades sets its AudioSource's volume, not its bus's.</summary>
         public static void SetBusVolume(AudioBus bus, float volume)
         {
             float[] volumes = GetVolumes();

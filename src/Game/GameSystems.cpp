@@ -28,6 +28,7 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 	if (!scene)
 	{
 		m_Settings.Close(); // the game is over: what changed is saved
+		m_SaveData.Close();
 	}
 }
 
@@ -35,6 +36,56 @@ GameSystems::~GameSystems()
 {
 	ScriptBindings::SetContext(nullptr);
 	m_Settings.Close();
+	m_SaveData.Close();
+}
+
+void GameSystems::OpenSettings(const std::string& settingsFile, const std::string& saveDataFile)
+{
+	m_Settings.Open(settingsFile);
+	m_SaveData.Open(saveDataFile);
+}
+
+bool GameSystems::TakeResolutionRequest(PlayerResolution& resolution)
+{
+	if (!m_ScriptContext.ResolutionRequested)
+	{
+		return false;
+	}
+	resolution = m_ScriptContext.ResolutionRequest;
+	m_ScriptContext.ResolutionRequested = false;
+	return true;
+}
+
+bool GameSystems::TakeVSyncRequest(bool& vsync)
+{
+	if (!m_ScriptContext.VSyncRequested)
+	{
+		return false;
+	}
+	vsync = m_ScriptContext.VSyncRequest;
+	m_ScriptContext.VSyncRequested = false;
+	return true;
+}
+
+bool GameSystems::TakeQualityRequest(QualityTier& tier)
+{
+	if (!m_ScriptContext.QualityRequested)
+	{
+		return false;
+	}
+	tier = m_ScriptContext.QualityRequest;
+	m_ScriptContext.QualityRequested = false;
+	return true;
+}
+
+void GameSystems::SetDisplayState(const std::vector<PlayerResolution>& resolutions, PlayerResolution resolution, bool vsync, QualityTier tier,
+	bool rayTracing)
+{
+	m_ScriptContext.Resolutions = resolutions;
+	m_ScriptContext.Resolution = resolution;
+	m_ScriptContext.VSync = vsync;
+	m_ScriptContext.Quality = tier;
+	m_ScriptContext.RayTracingSupported = rayTracing;
 }
 
 void GameSystems::Restart()
@@ -93,6 +144,13 @@ void GameSystems::Start(bool keepClock)
 	m_ScriptContext = ScriptContext();
 	m_ScriptContext.SceneName = std::move(previous.SceneName);
 	m_ScriptContext.ScenePath = std::move(previous.ScenePath);
+	// The owner's view of the window and the quality: OnCreate may ask for them before the next frame says it again
+	m_ScriptContext.Fullscreen = previous.Fullscreen;
+	m_ScriptContext.Resolutions = std::move(previous.Resolutions);
+	m_ScriptContext.Resolution = previous.Resolution;
+	m_ScriptContext.VSync = previous.VSync;
+	m_ScriptContext.Quality = previous.Quality;
+	m_ScriptContext.RayTracingSupported = previous.RayTracingSupported;
 	if (keepClock)
 	{
 		m_ScriptContext.Time = previous.Time;
@@ -111,6 +169,8 @@ void GameSystems::Start(bool keepClock)
 	m_ScriptContext.Input = m_Input;
 	m_ScriptContext.UI = &m_UI;
 	m_ScriptContext.Settings = &m_Settings;
+	m_ScriptContext.SaveData = &m_SaveData;
+	m_ScriptContext.ProjectInputMap = &m_ProjectInputMap;
 	m_ScriptContext.FixedDeltaTime = GameLoop::FixedStep;
 	ScriptBindings::Bind();
 	ScriptBindings::SetContext(m_Scene ? &m_ScriptContext : nullptr);
@@ -147,7 +207,18 @@ void GameSystems::Start(bool keepClock)
 		{
 			if (!keepClock)
 			{
-				AudioEngine::SetVolumes(project ? project->Volumes : AudioVolumes()); // a loaded scene keeps the game's (Audio.SetBusVolume)
+				// The project's volumes with the player's in place (a loaded scene keeps the game's: Audio.SetBusVolume), and the
+				// project's bindings with the player's
+				const PlayerSettings& player = m_Settings.GetPlayer();
+				AudioEngine::SetVolumes(player.ApplyVolumes(project ? project->Volumes : AudioVolumes()));
+				m_ProjectInputMap = m_Input->GetMap();
+				if (!player.Bindings.empty())
+				{
+					InputMap map = m_ProjectInputMap;
+					player.ApplyBindings(map);
+					m_Input->SetMap(map);
+					Log::GetLogger()->info("Input: the player's bindings of {0} action(s)", player.Bindings.size());
+				}
 			}
 			m_Audio.Start(*m_Scene);
 			m_UI.Start(*m_Scene, m_Input->GetMap());
@@ -158,6 +229,13 @@ void GameSystems::Start(bool keepClock)
 
 uint32_t GameSystems::UpdateUIPointer(const UIPointer& pointer, const glm::vec2& viewSize)
 {
+	if (m_Input && m_Input->IsRebinding())
+	{
+		// A rebind listens: a click is the binding (or what gives up), not a button's
+		UIPointer still = pointer;
+		still.Buttons = 0;
+		return m_UI.UpdatePointer(still, viewSize);
+	}
 	return m_UI.UpdatePointer(pointer, viewSize);
 }
 
@@ -318,6 +396,16 @@ void GameSystems::Update(float frameTime, float unscaledFrameTime, float alpha)
 	{
 		m_Animation.Update(frameTime); // Simulate: the animators in their entry states, as nothing sets their parameters
 		return;
+	}
+
+	// A binding the player changed (Input.Rebind) is theirs from now on: all of its action's bindings are remembered
+	std::string rebound;
+	if (m_Input->TakeRebound(rebound))
+	{
+		if (const InputAction* action = m_Input->GetMap().Find(rebound))
+		{
+			m_Settings.EditPlayer().Bindings[rebound] = action->Bindings;
+		}
 	}
 
 	// The input test: Look turns it (Look is a rate: the mouse's pixels per second, times the frame time)

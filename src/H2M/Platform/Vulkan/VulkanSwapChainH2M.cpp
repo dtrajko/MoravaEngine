@@ -546,6 +546,17 @@ namespace H2M
 		VK_CHECK_RESULT_H2M(vkAllocateCommandBuffers(m_Device->GetVulkanDevice(), &commandBufferAllocateInfo, m_DrawCommandBuffers.data()));
 	}
 
+	void VulkanSwapChainH2M::SetVSync(bool vsync)
+	{
+		if (vsync == m_VSync || !m_SwapChain)
+		{
+			m_VSync = vsync;
+			return;
+		}
+		m_VSync = vsync;
+		OnResize(m_Width, m_Height);
+	}
+
 	void VulkanSwapChainH2M::OnResize(uint32_t width, uint32_t height)
 	{
 		MORAVA_CORE_WARN("VulkanContextH2M::OnResize");

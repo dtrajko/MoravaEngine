@@ -3,6 +3,8 @@
 #include "Audio/AudioBus.h"
 #include "Physics/PhysicsCollisionMatrix.h"
 
+#include "Renderer/QualityTier.h"
+
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -10,7 +12,8 @@
 
 namespace YAML { class Node; }
 
-// The window a project's game runs in (the player's; the editor keeps its own)
+// The window a project's game runs in (the player's; the editor keeps its own). Fullscreen and VSync until the player
+// chooses (PlayerSettings)
 struct ProjectWindow
 {
 	uint32_t Width = 1280, Height = 720;
@@ -34,6 +37,8 @@ struct ProjectBuild
 	std::string Version = "1.0.0";         // up to four numbers
 	std::string Icon;                      // a square image, relative to the project folder (empty: none)
 	std::vector<ProjectBuildScene> Scenes; // the scenes it ships (empty: all the project's); the start scene always
+	// The quality tier until the player chooses one (11.4); Auto: the GPU's (ChooseQualityTier)
+	QualityTier DefaultQuality = QualityTier::Auto;
 };
 
 /**
@@ -51,7 +56,8 @@ struct ProjectBuild
  *     Window: { Width: 1600, Height: 900, Fullscreen: false, VSync: true, Title: Roll a Ball }
  *     Physics: { Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, ...] }
  *     Audio: { Master: 1, Music: 0.8, Effects: 1, UI: 1 }
- *     Build: { ProductName: Roll a Ball, Company: Morava Games, Version: 1.0.0, Icon: Assets/Icon.png, Scenes: [{File: Scenes/Main.mscene, FileID: 123}] }
+ *     Build: { ProductName: Roll a Ball, Company: Morava Games, Version: 1.0.0, Icon: Assets/Icon.png, DefaultQuality: Auto,
+ *              Scenes: [{File: Scenes/Main.mscene, FileID: 123}] }
  *
  * One project is open at a time (GetOpen): the paths in scene and material files resolve against it (ProjectPaths).
  */

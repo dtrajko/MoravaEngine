@@ -153,11 +153,11 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -90], Size: [1400, 160], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -100], Size: [1400, 180], Visible: true}
     UIText:
       Text: ""
       Font: ""
-      Size: 52
+      Size: 46
       Color: [1, 1, 1, 1]
       Align: Center
       VerticalAlign: Middle

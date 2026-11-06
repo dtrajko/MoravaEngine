@@ -819,6 +819,10 @@ static void AudioSetVolumes(const float* in)
 		volumes.Buses[i] = std::max(in[1 + i], 0.0f);
 	}
 	AudioEngine::SetVolumes(volumes);
+	if (s_Context && s_Context->Settings)
+	{
+		s_Context->Settings->EditPlayer().SetVolumes(volumes); // the player's choice (a Settings menu's slider), kept
+	}
 }
 
 // ---- Camera (6.3)
@@ -1191,17 +1195,230 @@ static int32_t ApplicationGetFullscreen()
 	return s_Context && s_Context->Fullscreen ? 1 : 0;
 }
 
+static GameSettings* GetSettings()
+{
+	return s_Context ? s_Context->Settings : nullptr;
+}
+
 static void ApplicationSetFullscreen(int32_t fullscreen)
 {
 	if (s_Context)
 	{
 		s_Context->FullscreenRequest = fullscreen != 0 ? 1 : 0;
 	}
+	if (GameSettings* settings = GetSettings())
+	{
+		settings->EditPlayer().Fullscreen = fullscreen != 0;
+	}
 }
 
-static GameSettings* GetSettings()
+// ---- The player's settings (11.4)
+
+static int32_t ApplicationGetResolutions(uint32_t* out, int capacity)
 {
-	return s_Context ? s_Context->Settings : nullptr;
+	if (!s_Context)
+	{
+		return 0;
+	}
+	const std::vector<PlayerResolution>& resolutions = s_Context->Resolutions;
+	for (int i = 0; i < capacity && i < (int)resolutions.size(); i++)
+	{
+		out[i * 2] = resolutions[i].Width;
+		out[i * 2 + 1] = resolutions[i].Height;
+	}
+	return (int32_t)resolutions.size();
+}
+
+static void ApplicationGetResolution(uint32_t* out)
+{
+	const PlayerResolution resolution = s_Context ? s_Context->Resolution : PlayerResolution();
+	out[0] = resolution.Width;
+	out[1] = resolution.Height;
+}
+
+static void ApplicationSetResolution(uint32_t width, uint32_t height)
+{
+	if (!s_Context || width == 0 || height == 0)
+	{
+		return;
+	}
+	s_Context->ResolutionRequested = true;
+	s_Context->ResolutionRequest = PlayerResolution{ width, height };
+	if (GameSettings* settings = GetSettings())
+	{
+		settings->EditPlayer().Resolution = PlayerResolution{ width, height };
+	}
+}
+
+static int32_t ApplicationGetVSync()
+{
+	return s_Context && s_Context->VSync ? 1 : 0;
+}
+
+static void ApplicationSetVSync(int32_t vsync)
+{
+	if (!s_Context)
+	{
+		return;
+	}
+	s_Context->VSyncRequested = true;
+	s_Context->VSyncRequest = vsync != 0;
+	if (GameSettings* settings = GetSettings())
+	{
+		settings->EditPlayer().VSync = vsync != 0;
+	}
+}
+
+static int32_t QualityGetLevel()
+{
+	return (int32_t)(s_Context ? s_Context->Quality : QualityTier::High);
+}
+
+static void QualitySetLevel(int32_t level)
+{
+	if (!s_Context || level < (int32_t)QualityTier::Auto || level > (int32_t)QualityTier::Ultra)
+	{
+		return;
+	}
+	const QualityTier tier = (QualityTier)level;
+	s_Context->QualityRequested = true;
+	s_Context->QualityRequest = tier;
+	if (GameSettings* settings = GetSettings())
+	{
+		PlayerSettings& player = settings->EditPlayer();
+		if (tier == QualityTier::Auto)
+		{
+			player.Quality.reset();
+		}
+		else
+		{
+			player.Quality = tier;
+		}
+	}
+}
+
+static int32_t QualityIsAutomatic()
+{
+	const GameSettings* settings = GetSettings();
+	return !settings || !settings->GetPlayer().Quality ? 1 : 0;
+}
+
+static int32_t QualityIsRayTracingSupported()
+{
+	return s_Context && s_Context->RayTracingSupported ? 1 : 0;
+}
+
+static const InputAction* FindInputAction(const char16_t* name, int length)
+{
+	return s_Context && s_Context->Input ? s_Context->Input->GetMap().Find(ToUtf8(name, length)) : nullptr;
+}
+
+static int32_t InputGetBindingCount(const char16_t* name, int length)
+{
+	const InputAction* action = FindInputAction(name, length);
+	return action ? (int32_t)action->Bindings.size() : -1;
+}
+
+static int32_t InputGetBinding(const char16_t* name, int length, int32_t binding, int32_t part, int32_t* device, char16_t* buffer, int capacity)
+{
+	const InputAction* action = FindInputAction(name, length);
+	if (!action || binding < 0 || binding >= (int32_t)action->Bindings.size() || part < 0 || part > (int32_t)InputBindingPart::Right)
+	{
+		return -2;
+	}
+	const InputBinding& found = action->Bindings[binding];
+	if (part != (int32_t)InputBindingPart::Whole && found.Source != InputBindingSource::Composite)
+	{
+		return -2; // only a composite has parts
+	}
+	*device = (int32_t)InputMap::GetDevice(found);
+	return CopyString(InputMap::DescribeBinding(found, (InputBindingPart)part), buffer, capacity);
+}
+
+static int32_t InputRebind(const char16_t* name, int length, int32_t binding, int32_t part)
+{
+	if (!s_Context || !s_Context->Input || part < 0 || part > (int32_t)InputBindingPart::Right)
+	{
+		return 0;
+	}
+	return s_Context->Input->StartRebind(ToUtf8(name, length), binding, (InputBindingPart)part) ? 1 : 0;
+}
+
+static int32_t InputGetRebindState()
+{
+	return (int32_t)(s_Context && s_Context->Input ? s_Context->Input->GetRebindState() : InputRebindState::None);
+}
+
+static void InputCancelRebind()
+{
+	if (s_Context && s_Context->Input)
+	{
+		s_Context->Input->CancelRebind();
+	}
+}
+
+static void InputResetBindings()
+{
+	if (!s_Context || !s_Context->Input || !s_Context->ProjectInputMap)
+	{
+		return;
+	}
+	s_Context->Input->SetMap(*s_Context->ProjectInputMap);
+	if (GameSettings* settings = GetSettings())
+	{
+		settings->EditPlayer().Bindings.clear();
+	}
+	Log::GetLogger()->info("Input.ResetBindings: the project's bindings again");
+}
+
+static GameSettings* GetSaveData()
+{
+	return s_Context ? s_Context->SaveData : nullptr;
+}
+
+static int32_t SaveDataGet(const char16_t* key, int keyLength, char16_t* buffer, int capacity)
+{
+	const GameSettings* data = GetSaveData();
+	std::string value;
+	if (!data || !data->Get(ToUtf8(key, keyLength), value))
+	{
+		return -2;
+	}
+	return CopyString(value, buffer, capacity);
+}
+
+static void SaveDataSet(const char16_t* key, int keyLength, const char16_t* value, int valueLength)
+{
+	if (GameSettings* data = GetSaveData())
+	{
+		data->Set(ToUtf8(key, keyLength), ToUtf8(value, valueLength));
+	}
+}
+
+static int32_t SaveDataRemove(const char16_t* key, int keyLength)
+{
+	GameSettings* data = GetSaveData();
+	return data && data->Remove(ToUtf8(key, keyLength)) ? 1 : 0;
+}
+
+static void SaveDataRemoveAll()
+{
+	if (GameSettings* data = GetSaveData())
+	{
+		data->RemoveAll();
+	}
+}
+
+static int32_t SaveDataSave()
+{
+	GameSettings* data = GetSaveData();
+	return !data || data->Save() ? 1 : 0;
+}
+
+static int32_t SaveDataGetFile(char16_t* buffer, int capacity)
+{
+	const GameSettings* data = GetSaveData();
+	return CopyString(data ? data->GetFile() : std::string(), buffer, capacity);
 }
 
 static int32_t SettingsGet(const char16_t* key, int keyLength, char16_t* buffer, int capacity)
@@ -1335,6 +1552,27 @@ namespace ScriptBindings
 		api.UISlider_Set = UISliderSet;
 		api.Application_GetFullscreen = ApplicationGetFullscreen;
 		api.Application_SetFullscreen = ApplicationSetFullscreen;
+		api.Application_GetResolutions = ApplicationGetResolutions;
+		api.Application_GetResolution = ApplicationGetResolution;
+		api.Application_SetResolution = ApplicationSetResolution;
+		api.Application_GetVSync = ApplicationGetVSync;
+		api.Application_SetVSync = ApplicationSetVSync;
+		api.Quality_GetLevel = QualityGetLevel;
+		api.Quality_SetLevel = QualitySetLevel;
+		api.Quality_IsAutomatic = QualityIsAutomatic;
+		api.Quality_IsRayTracingSupported = QualityIsRayTracingSupported;
+		api.Input_GetBindingCount = InputGetBindingCount;
+		api.Input_GetBinding = InputGetBinding;
+		api.Input_Rebind = InputRebind;
+		api.Input_GetRebindState = InputGetRebindState;
+		api.Input_CancelRebind = InputCancelRebind;
+		api.Input_ResetBindings = InputResetBindings;
+		api.SaveData_Get = SaveDataGet;
+		api.SaveData_Set = SaveDataSet;
+		api.SaveData_Remove = SaveDataRemove;
+		api.SaveData_RemoveAll = SaveDataRemoveAll;
+		api.SaveData_Save = SaveDataSave;
+		api.SaveData_GetFile = SaveDataGetFile;
 	}
 
 	void SetContext(ScriptContext* context)

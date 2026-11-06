@@ -14,6 +14,7 @@
 #include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkanProfiler.h"
+#include "EnvMapVulkanQuality.h"
 #include "EnvMapVulkanRenderSettings.h"
 #include "EnvMapVulkanGlass.h"
 #include "EnvMapVulkanGBuffer.h"
@@ -114,8 +115,9 @@ static EnvMapVulkanAntialiasing::Target s_AntialiasingTarget;
 static EnvMapVulkanAntialiasing::TemporalFrame s_TemporalFrame; // TAA, this frame's (UpdateFrameUniforms)
 
 // How the scene is drawn: shadows, ray tracing, reflections, ambient occlusion, bloom (see EnvMapVulkanRenderSettings).
-// This frame's copy of the scene owner's settings.
+// This frame's copy of the scene owner's settings, as the quality tier draws them (EnvMapVulkanQuality).
 static EnvMapVulkanRenderSettings s_RenderSettings;
+static QualityTier s_QualityTier = QualityTier::High;
 
 // Bloom (Resources/Shaders/BloomPass.glsl), with the settings of SceneHazelEnvMap's "Bloom Settings" panel
 static const uint32_t s_BloomLevelCount = 6; // level i is 1/2^(i+1) of the viewport size
@@ -758,6 +760,13 @@ static EnvMapVulkanEntityID s_ProbeVolumeEntity = NoEntity; // the scene's probe
 static void ExtractProbeVolume()
 {
 	s_ProbeVolumeEntity = EnvMapVulkanSceneData::ReadProbeVolume(*s_Scene, s_ProbeVolumeSettings);
+	// The quality tier's share of the updates (the probes follow a change sooner or later, the same in the end)
+	const float scale = s_RenderSettings.ProbeUpdateScale;
+	if (scale != 1.0f)
+	{
+		s_ProbeVolumeSettings.ProbesPerFrame = std::max(1, (int)std::lround(s_ProbeVolumeSettings.ProbesPerFrame * scale));
+		s_ProbeVolumeSettings.TracedProbesPerFrame = std::max(1, (int)std::lround(s_ProbeVolumeSettings.TracedProbesPerFrame * scale));
+	}
 }
 
 // Toward the sun for the water (the light that gets into it, the caustics): pointing down while the sun is off
@@ -4572,7 +4581,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		RecordEmptyFrame(); // no scene yet (see SetScene)
 		return;
 	}
-	s_RenderSettings = s_OwnerRenderSettings ? *s_OwnerRenderSettings : EnvMapVulkanRenderSettings();
+	s_RenderSettings = EnvMapVulkanQuality::Apply(s_QualityTier, s_OwnerRenderSettings ? *s_OwnerRenderSettings : EnvMapVulkanRenderSettings());
 	s_ViewOptions = s_OwnerViewOptions ? *s_OwnerViewOptions : EnvMapVulkanViewOptions();
 
 	// This frame's environment, lights, water and probe volume, from the scene (see ExtractEnvironment, ExtractLights,
@@ -5249,7 +5258,28 @@ bool EnvMapVulkanRenderer::IsRayTracingSupported()
 
 bool EnvMapVulkanRenderer::IsRayTracingActive()
 {
-	return (s_OwnerRenderSettings ? s_OwnerRenderSettings->RayTracing : s_RenderSettings.RayTracing) && EnvMapVulkanRayTracing::IsSupported();
+	const bool wanted = s_OwnerRenderSettings ? EnvMapVulkanQuality::Apply(s_QualityTier, *s_OwnerRenderSettings).RayTracing : s_RenderSettings.RayTracing;
+	return wanted && EnvMapVulkanRayTracing::IsSupported();
+}
+
+void EnvMapVulkanRenderer::SetQualityTier(QualityTier tier)
+{
+	s_QualityTier = tier == QualityTier::Auto ? QualityTier::High : tier;
+}
+
+QualityTier EnvMapVulkanRenderer::GetQualityTier()
+{
+	return s_QualityTier;
+}
+
+QualityGPU EnvMapVulkanRenderer::GetQualityGPU()
+{
+	QualityGPU gpu;
+	gpu.RayTracing = EnvMapVulkanRayTracing::IsSupported();
+	const VkPhysicalDeviceProperties& properties = H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
+	// A Mac's GPU is in its processor, but made for games as a graphics card is
+	gpu.Discrete = properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU || properties.vendorID == 0x106B;
+	return gpu;
 }
 
 bool EnvMapVulkanRenderer::AreShadowsRendered()

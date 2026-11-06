@@ -162,6 +162,103 @@ bool InputMap::BindsKey(int key) const
 	return false;
 }
 
+// A name of the input files as a player reads it: "LeftShift" is "Left Shift", "Keypad0" "Keypad 0"
+static std::string Spaced(const char* name)
+{
+	std::string text;
+	for (size_t i = 0; name && name[i]; i++)
+	{
+		const char c = name[i];
+		const char previous = i > 0 ? name[i - 1] : 0;
+		const bool upper = c >= 'A' && c <= 'Z', digit = c >= '0' && c <= '9';
+		const bool previousLower = previous >= 'a' && previous <= 'z';
+		if (i > 0 && previousLower && (upper || digit))
+		{
+			text += ' ';
+		}
+		text += c;
+	}
+	return text;
+}
+
+int* InputMap::GetCompositeKey(InputBinding& binding, InputBindingPart part)
+{
+	if (binding.Source != InputBindingSource::Composite)
+	{
+		return nullptr;
+	}
+	switch (part)
+	{
+		case InputBindingPart::Up:    return &binding.Up;
+		case InputBindingPart::Down:  return &binding.Down;
+		case InputBindingPart::Left:  return &binding.Left;
+		case InputBindingPart::Right: return &binding.Right;
+		case InputBindingPart::Whole: break;
+	}
+	return nullptr;
+}
+
+std::string InputMap::DescribeBinding(const InputBinding& binding, InputBindingPart part)
+{
+	switch (binding.Source)
+	{
+		case InputBindingSource::Key:
+			return Spaced(GetKeyName(binding.Code));
+		case InputBindingSource::Composite:
+		{
+			if (part != InputBindingPart::Whole)
+			{
+				InputBinding copy = binding;
+				const int key = *GetCompositeKey(copy, part);
+				return key >= 0 ? Spaced(GetKeyName(key)) : std::string();
+			}
+			std::string text;
+			for (int key : { binding.Up, binding.Down, binding.Left, binding.Right })
+			{
+				if (key >= 0)
+				{
+					text += (text.empty() ? "" : ", ") + Spaced(GetKeyName(key));
+				}
+			}
+			return text;
+		}
+		case InputBindingSource::MouseButton:
+		{
+			const char* name = FindName(s_MouseNames, binding.Code);
+			return std::string("Mouse ") + (name ? name : "?");
+		}
+		case InputBindingSource::MouseDelta:
+			return "Mouse";
+		case InputBindingSource::MouseWheel:
+			return "Mouse Wheel";
+		case InputBindingSource::GamepadButton:
+			return "Gamepad " + Spaced(FindName(s_GamepadButtonNames, binding.Code));
+		case InputBindingSource::GamepadAxis:
+			return "Gamepad " + Spaced(FindName(s_GamepadAxisNames, binding.Code));
+		case InputBindingSource::GamepadStick:
+			return "Gamepad " + Spaced(FindName(s_GamepadStickNames, binding.Code));
+		case InputBindingSource::GamepadDPad:
+			return "Gamepad D-Pad";
+	}
+	return "?";
+}
+
+InputDevice InputMap::GetDevice(const InputBinding& binding)
+{
+	switch (binding.Source)
+	{
+		case InputBindingSource::Key:
+		case InputBindingSource::Composite:
+			return InputDevice::Keyboard;
+		case InputBindingSource::MouseButton:
+		case InputBindingSource::MouseDelta:
+		case InputBindingSource::MouseWheel:
+			return InputDevice::Mouse;
+		default:
+			return InputDevice::Gamepad;
+	}
+}
+
 // ---- Reading and writing
 
 // A key of a composite: -1 when the node doesn't name one; false when it names a key that doesn't exist
@@ -181,8 +278,7 @@ static bool ReadCompositeKey(const YAML::Node& node, const char* field, int& key
 	return true;
 }
 
-// One binding from its node. False (error explains) when it isn't one
-static bool ReadBinding(const YAML::Node& node, InputBinding& binding, std::string& error)
+bool InputMap::ReadBinding(const YAML::Node& node, InputBinding& binding, std::string& error)
 {
 	if (!node.IsMap())
 	{
@@ -344,7 +440,7 @@ bool InputMap::Load(const std::string& filepath, InputMap& map, std::string& err
 }
 
 // A binding as its node: the names it was read with, or the names of its codes
-static void WriteBinding(YAML::Emitter& out, const InputBinding& binding)
+void InputMap::WriteBinding(YAML::Emitter& out, const InputBinding& binding)
 {
 	out << YAML::Flow << YAML::BeginMap;
 	switch (binding.Source)

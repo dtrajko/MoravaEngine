@@ -24,6 +24,7 @@
 
 #include "Audio/AudioEngine.h"
 
+#include "EnvMapVulkan/EnvMapVulkanQuality.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneLoader.h"
@@ -142,6 +143,21 @@ static std::string SerializeScene()
 	return EnvMapVulkanSceneSerializer::Serialize(s_Scene, s_SceneName, s_RenderSettings);
 }
 
+// The quality tier the Viewport is drawn with while the game runs (Quality.Level, the player's choice; Auto: the GPU's)
+static void SetPlayQuality(QualityTier tier)
+{
+	const QualityTier drawn = tier == QualityTier::Auto ? ChooseQualityTier(EnvMapVulkanRenderer::GetQualityGPU()) : tier;
+	EnvMapVulkanRenderer::SetQualityTier(drawn);
+	Log::GetLogger()->info("Play: quality {0}{1}: {2}", GetQualityTierName(drawn), tier == QualityTier::Auto ? " (chosen for this GPU)" : "",
+		EnvMapVulkanQuality::Describe(drawn));
+}
+
+// The scripts' view of the display in the editor's Play: no fullscreen sizes (the game is in a panel), no VSync
+static void UpdatePlayDisplayState()
+{
+	s_GameSystems.SetDisplayState({}, PlayerResolution(), false, EnvMapVulkanRenderer::GetQualityTier(), EnvMapVulkanRenderer::IsRayTracingSupported());
+}
+
 static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 {
 	ClearConsoleIfAskedOnPlay();
@@ -179,8 +195,14 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 	{
 		// The project's input file is read at each Play: an edit of it counts at the next Play
 		s_GameInput.SetMap(GameSystems::LoadInputMap());
-		// The game's settings (the C# Settings class) in the project's Library folder: an installed game keeps its own
-		s_GameSystems.OpenSettings(Project::GetOpen() ? GameSettings::GetEditorFile(*Project::GetOpen()) : std::string());
+		// The game's settings and save data in the project's Library folder: an installed game keeps its own. The quality
+		// tier the player chose (or the project's default) draws the Viewport while the game runs: a settings menu's choice
+		// can be seen, and the scene as made comes back at Stop
+		const Project* project = Project::GetOpen();
+		s_GameSystems.OpenSettings(project ? GameSettings::GetEditorFile(*project, GameSettings::SettingsFile) : std::string(),
+			project ? GameSettings::GetEditorFile(*project, GameSettings::SaveDataFile) : std::string());
+		SetPlayQuality(s_GameSystems.GetSettings().GetPlayer().Quality.value_or(project ? project->Build.DefaultQuality : QualityTier::Auto));
+		UpdatePlayDisplayState();
 		s_GameSystems.Begin(&s_Scene, &s_GameInput);
 		s_FocusViewport = true;
 		PlaceGameCamera(camera);
@@ -268,6 +290,22 @@ static void ProcessSceneLoad()
 		Log::GetLogger()->info("Application.Fullscreen = {0}: the editor's Play is in the Viewport panel (in the player, the window {1})",
 			fullscreen ? "true" : "false", fullscreen ? "fills its monitor" : "leaves fullscreen");
 	}
+	PlayerResolution resolution;
+	if (s_GameSystems.TakeResolutionRequest(resolution))
+	{
+		Log::GetLogger()->info("Application.Resolution = {0} x {1}: kept as the player's choice (in the player, fullscreen's size)",
+			resolution.Width, resolution.Height);
+	}
+	bool vsync = false;
+	if (s_GameSystems.TakeVSyncRequest(vsync))
+	{
+		Log::GetLogger()->info("Application.VSync = {0}: kept as the player's choice (the editor runs without VSync)", vsync ? "true" : "false");
+	}
+	QualityTier tier = QualityTier::Auto;
+	if (s_GameSystems.TakeQualityRequest(tier))
+	{
+		SetPlayQuality(tier);
+	}
 	if (s_GameSystems.TakeQuit())
 	{
 		s_PlayRequest = PlayRequest::Stop;
@@ -285,6 +323,7 @@ static void StopPlay()
 	s_GameInput.Reset(s_GameWindow ? s_GameWindow : Application::Get()->GetWindow()->GetHandle());
 	s_GameSystems.Begin(nullptr, nullptr);
 	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+	EnvMapVulkanRenderer::SetQualityTier(QualityTier::High); // the scene as it was made
 
 	// A map the game (or a panel) changed: the edited scene's comes back with its sun as it is, not turned to the map's sun
 	const EnvironmentComponent* playedEnvironment = s_Scene.TryGet<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
@@ -422,6 +461,7 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 		pointer.Buttons = gameInput ? InputSystem::ReadMouseButtons(window) : 0u;
 		s_GameInput.SetBlockedMouseButtons(s_GameSystems.UpdateUIPointer(pointer, s_GameViewSize));
 		s_GameInput.Update(window, gameInput, frameTime);
+		UpdatePlayDisplayState();
 		s_GameLoop.Frame(frameTime, &s_GameSystems);
 		ProcessSceneLoad();
 		PlaceGameCamera(camera); // where the game put the camera entity

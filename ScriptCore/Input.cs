@@ -55,6 +55,100 @@ namespace Morava
         /// shouldn't turn a camera.
         /// </summary>
         public static bool MouseCaptured => (Interop.Game->Input_GetCursorState() & 2) != 0;
+
+        /// <summary>How many bindings an action has (the input file's, or the player's once rebound).</summary>
+        public static int GetBindingCount(string action)
+        {
+            int count;
+            fixed (char* chars = action) count = Interop.Game->Input_GetBindingCount(chars, action.Length);
+            if (count < 0)
+                throw new ArgumentException($"The input map has no action '{action}'");
+            return count;
+        }
+
+        /// <summary>
+        /// A binding as the player reads it: "Space", "Left Shift", "Mouse Left", "Gamepad A"; a composite's keys
+        /// ("W, S, A, D"), or one of them (part). Empty when the composite has no key there.
+        /// </summary>
+        public static string GetBindingText(string action, int binding, BindingPart part = BindingPart.Whole) =>
+            GetBinding(action, binding, part, out _);
+
+        /// <summary>Which device a binding is for: a Controls screen's keyboard and gamepad columns.</summary>
+        public static InputDevice GetBindingDevice(string action, int binding)
+        {
+            GetBinding(action, binding, BindingPart.Whole, out InputDevice device);
+            return device;
+        }
+
+        /// <summary>
+        /// The next key, mouse button or gamepad button pressed replaces the binding (a composite's key: part): a keyboard
+        /// binding takes a key or a mouse button, a gamepad binding a gamepad button. Escape or the gamepad's Back gives
+        /// up. Until then the actions read released (RebindState says where it is). The player's bindings are kept for the
+        /// next runs too. False: a binding nothing can be pressed for (a stick, the mouse's motion), or no such binding.
+        /// </summary>
+        public static bool Rebind(string action, int binding, BindingPart part = BindingPart.Whole)
+        {
+            fixed (char* chars = action) return Interop.Game->Input_Rebind(chars, action.Length, binding, (int)part) != 0;
+        }
+
+        /// <summary>Where the last Rebind is.</summary>
+        public static RebindState RebindState => (RebindState)Interop.Game->Input_GetRebindState();
+
+        /// <summary>Gives up a Rebind that is still listening (a Back button clicked).</summary>
+        public static void CancelRebind() => Interop.Game->Input_CancelRebind();
+
+        /// <summary>The input file's bindings again, for every action: the player's are forgotten.</summary>
+        public static void ResetBindings() => Interop.Game->Input_ResetBindings();
+
+        static string GetBinding(string action, int binding, BindingPart part, out InputDevice device)
+        {
+            char* buffer = stackalloc char[256];
+            int length, kind = 0;
+            fixed (char* chars = action) length = Interop.Game->Input_GetBinding(chars, action.Length, binding, (int)part, &kind, buffer, 256);
+            if (length == -2)
+                throw new ArgumentException($"The action '{action}' has no binding {binding}" + (part != BindingPart.Whole ? $" with a {part} key" : ""));
+            device = (InputDevice)kind;
+            return length >= 0 ? new string(buffer, 0, length) : "?";
+        }
+    }
+
+    /// <summary>A binding, or one key of a composite (WASD's W is Up).</summary>
+    public enum BindingPart
+    {
+        /// <summary>The whole binding (a key, a button; a composite's keys together).</summary>
+        Whole = 0,
+        /// <summary>A composite's Up key (WASD's W).</summary>
+        Up = 1,
+        /// <summary>A composite's Down key (WASD's S).</summary>
+        Down = 2,
+        /// <summary>A composite's Left key (WASD's A; an Axis1D's Negative).</summary>
+        Left = 3,
+        /// <summary>A composite's Right key (WASD's D; an Axis1D's Positive).</summary>
+        Right = 4,
+    }
+
+    /// <summary>What a binding is for.</summary>
+    public enum InputDevice
+    {
+        /// <summary>A key, or keys (a composite).</summary>
+        Keyboard = 0,
+        /// <summary>A mouse button, the mouse's motion or its wheel.</summary>
+        Mouse = 1,
+        /// <summary>A gamepad's button, axis or stick.</summary>
+        Gamepad = 2,
+    }
+
+    /// <summary>Where a rebind is (Input.Rebind).</summary>
+    public enum RebindState
+    {
+        /// <summary>None was started.</summary>
+        None = 0,
+        /// <summary>Waiting for a press.</summary>
+        Listening = 1,
+        /// <summary>The binding changed.</summary>
+        Done = 2,
+        /// <summary>Given up: Escape, the gamepad's Back, or CancelRebind.</summary>
+        Cancelled = 3,
     }
 
     /// <summary>An input action's state (Input.GetAction).</summary>

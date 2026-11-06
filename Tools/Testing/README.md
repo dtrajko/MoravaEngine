@@ -32,6 +32,10 @@ window, read what its log says, and compile files with GCC as the Linux CI build
 - **Use a windowed project.** The sample project (`Projects/Sample`) starts fullscreen and takes over the screen. Copy it
   to a test folder (for example `D:\Workspace\Temp\Sample`), set `Fullscreen: false` (and `VSync: false` to measure
   without waiting for the display) in its `.mproject`, and run that copy.
+- **The player remembers.** A game keeps the player's settings and save data in the user's folder
+  (`%APPDATA%\<Company>\<Product>\Settings.yaml` and `SaveData.yaml`; the editor's Play uses the project's `Library`
+  folder): a test copy that shares the product name of a game installed here shares its files. Give the copy its own
+  `ProductName` in its `.mproject`, and delete the files to start from the project's settings again.
 - **PowerShell scripts** are not signed. If PowerShell refuses to run them, start them with
   `powershell -ExecutionPolicy Bypass -File .\Run-Engine.ps1 ...`.
 
@@ -102,6 +106,7 @@ What `-Extra` can pass (both executables read them; `src/Core/Application.cpp` h
 | `--validation` | A shipped game with Vulkan's validation layer, which it otherwise doesn't load |
 | `--verbose` | A shipped game logs everything (its log starts at the info level) |
 | `--crash-test <kind>` | The player crashes, to check what is left behind: `start` (before its window), `abort`, `terminate`, `overflow`, `frame` (in its first frame) |
+| `--quality <tier>` | The player draws with this quality tier (`Low`, `Medium`, `High`, `Ultra`; `Auto`: the GPU's), whatever the player chose; the choice in the settings file stays |
 | `--select <name>` | Selects the entity of that name (to capture the selection outline or the gizmo) |
 | `--save-scene` | The editor saves the open scene when it closes (a scene opened and saved unattended) |
 

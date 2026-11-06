@@ -13,8 +13,10 @@
 #include "Input/InputSystem.h"
 
 #include <string>
+#include <vector>
 
 
+struct GLFWmonitor;
 struct GLFWwindow;
 
 
@@ -26,6 +28,10 @@ struct GLFWwindow;
  * game binds it (it may have a pause menu there), first gives a captured mouse back (a click in the window captures it
  * again), then leaves fullscreen. F3 shows and hides the debug overlay (7.4), whatever the game binds. Alt+F4 closes the game. A scene a script loads (Scene.Load, 6.2)
  * replaces the scene's content at the end of the frame, and the game goes on in it.
+ *
+ * The player's settings (11.4, PlayerSettings) are in the user's folder: the window opens as they say (PlayerMain), the
+ * quality tier, the volumes and the bindings are put in place at the start, and what the game's settings menu changes is
+ * put in place after the frame and kept (fullscreen by the keys too).
  */
 class PlayerLayer : public H2M::LayerH2M
 {
@@ -51,6 +57,14 @@ private:
 	// F3, and the overlay's numbers to the renderer
 	void UpdateDebugOverlay(GLFWwindow* window);
 
+	// The player's settings (11.4): the quality tier at the start (--quality, the player's choice, the project's default, the
+	// GPU's), and what the game asked for in the frame (the window, the quality), put in place after it
+	void StartQuality();
+	void SetQuality(QualityTier tier, const char* why);
+	void ApplyPlayerRequests(GLFWwindow* window);
+	// The scripts' view of the display: the monitor's fullscreen sizes, fullscreen's, VSync, the tier
+	void UpdateDisplayState(GLFWwindow* window);
+
 	EnvMapVulkanScene m_Scene;
 	std::string m_ScenePath; // the scene's file: Scene.Reload opens it again
 	std::string m_SceneName;
@@ -62,4 +76,7 @@ private:
 	bool m_Playing = false; // the scene is open
 	bool m_EnterDown = false, m_F11Down = false, m_EscapeDown = false, m_F3Down = false; // last frame's, for the keys' presses
 	bool m_DebugOverlay = false;
+	PlayerResolution m_FullscreenResolution; // the player's choice (0 x 0: the monitor's own)
+	std::vector<PlayerResolution> m_Resolutions;
+	GLFWmonitor* m_ResolutionsMonitor = nullptr; // the monitor m_Resolutions are of
 };

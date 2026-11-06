@@ -1,3 +1,5 @@
+using Morava;
+
 namespace Sample
 {
     /// <summary>
@@ -41,6 +43,34 @@ namespace Sample
             Levels = 0;
             Falls = 0;
         }
+
+        // The best finished run, kept between the game's runs (SaveData): the most coins, then the shortest time
+        const string BestCoinsKey = "BestCoins";
+        const string BestSecondsKey = "BestSeconds";
+        const string RunsKey = "FinishedRuns";
+
+        /// <summary>
+        /// The run is over (the end screen): counted, and kept as the best when it is (saved at once: the player may close
+        /// the game from here). True when it is the best so far.
+        /// </summary>
+        public static bool FinishRun()
+        {
+            SaveData.SetInt(RunsKey, SaveData.GetInt(RunsKey) + 1);
+            bool best = !SaveData.Has(BestCoinsKey) || Coins > SaveData.GetInt(BestCoinsKey) ||
+                (Coins == SaveData.GetInt(BestCoinsKey) && Seconds < SaveData.GetFloat(BestSecondsKey, float.MaxValue));
+            if (best)
+            {
+                SaveData.SetInt(BestCoinsKey, Coins);
+                SaveData.SetFloat(BestSecondsKey, (float)Seconds);
+            }
+            SaveData.Save();
+            Log.Info($"Run {SaveData.GetInt(RunsKey)} finished{(best ? ": the best so far" : "")} ({SaveData.File})");
+            return best;
+        }
+
+        /// <summary>"Best: 42 coins in 3:07" (empty before the first finished run).</summary>
+        public static string BestText() => SaveData.Has(BestCoinsKey) ?
+            $"Best: {SaveData.GetInt(BestCoinsKey)} coins in {FormatTime(SaveData.GetFloat(BestSecondsKey))} ({SaveData.GetInt(RunsKey)} {(SaveData.GetInt(RunsKey) == 1 ? "run" : "runs")})" : "";
 
         /// <summary>Minutes and seconds: 1:07.</summary>
         public static string FormatTime(double seconds)

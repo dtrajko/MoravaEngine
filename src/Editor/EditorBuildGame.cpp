@@ -244,6 +244,27 @@ void OnImGuiRenderBuildGamePanel()
 			save = true;
 		}
 	}
+	// The quality until the player chooses one in the game (Quality.Level)
+	const QualityTier tiers[] = { QualityTier::Auto, QualityTier::Low, QualityTier::Medium, QualityTier::High, QualityTier::Ultra };
+	if (ImGui::BeginCombo("Default Quality", GetQualityTierName(project->Build.DefaultQuality)))
+	{
+		for (QualityTier tier : tiers)
+		{
+			if (ImGui::Selectable(GetQualityTierName(tier), tier == project->Build.DefaultQuality))
+			{
+				project->Build.DefaultQuality = tier;
+				save = true;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The quality tier the game starts with, until the player chooses one in its settings menu.\n"
+			"Auto: the GPU's (High on a graphics card with ray tracing, Medium on one without, Low on a GPU in the processor).\n"
+			"High is the scenes as they are made here; Ultra asks more of the GPU, Medium and Low less.\n"
+			"The editor's Play shows the player's choice (or this) while the game runs.");
+	}
 	ImGui::PopItemWidth();
 
 	save |= ShowBuildScenes(*project);

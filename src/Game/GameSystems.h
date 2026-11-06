@@ -36,8 +36,8 @@ class InputSystem;
  * goes): TakeSceneLoad says what was asked for, the owner opens it into the same scene and calls Restart. Application.Quit
  * (Milestone 2) is the owner's too: TakeQuit says it was asked for (the player closes, the editor stops Play).
  *
- * The game's settings (GameSettings, the C# Settings class): the owner opens their file before Begin; they stay while
- * scenes load, and are saved when the game is over (Begin(nullptr, nullptr)).
+ * The game's settings and save data (GameSettings: the player's settings, the C# Settings and SaveData classes): the owner
+ * opens their files before Begin; they stay while scenes load, and are saved when the game is over (Begin(nullptr, nullptr)).
  */
 class GameSystems : public GameLoopSystems
 {
@@ -65,9 +65,22 @@ public:
 	void SetFullscreenState(bool fullscreen) { m_ScriptContext.Fullscreen = fullscreen; }
 	bool TakeFullscreenRequest(bool& fullscreen);
 
-	// The file of the game's settings (GameSettings::GetUserFile, GetEditorFile; empty: for this run only), before Begin
-	void OpenSettings(const std::string& file) { m_Settings.Open(file); }
+	// The files of the game's settings and save data (GameSettings::GetUserFile, GetEditorFile; empty: for this run only),
+	// before Begin. The player's settings in them are put in place by Begin (the volumes, the bindings: the input's map
+	// then is the project's with them) and by the owner (the window, the quality: TakePlayerRequests)
+	void OpenSettings(const std::string& settingsFile, const std::string& saveDataFile);
 	const GameSettings& GetSettings() const { return m_Settings; }
+	GameSettings& EditSettings() { return m_Settings; }
+	const GameSettings& GetSaveData() const { return m_SaveData; }
+
+	// What a script asked of the owner in the frame (Application.Resolution, Application.VSync, Quality.Level), true once
+	// each. The choices are in the player's settings already
+	bool TakeResolutionRequest(PlayerResolution& resolution);
+	bool TakeVSyncRequest(bool& vsync);
+	bool TakeQualityRequest(QualityTier& tier);
+	// The owner's view of what the scripts read (Application.Resolutions, Application.Resolution, Application.VSync,
+	// Quality.Level), each frame before the game loop
+	void SetDisplayState(const std::vector<PlayerResolution>& resolutions, PlayerResolution resolution, bool vsync, QualityTier tier, bool rayTracing);
 
 	// The mouse over the game's view (view: its size in pixels), each frame before the input is sampled: the mouse buttons
 	// the game's UI holds, for InputSystem::SetBlockedMouseButtons (0 without a game, or in Simulate)
@@ -104,5 +117,7 @@ private:
 	SceneAudio m_Audio;
 	SceneAnimation m_Animation;
 	SceneUI m_UI;
-	GameSettings m_Settings;
+	InputMap m_ProjectInputMap; // the input's map as the owner gave it, without the player's bindings (Input.ResetBindings)
+	GameSettings m_Settings{ GameSettings::SettingsSection };
+	GameSettings m_SaveData{ GameSettings::SaveDataSection };
 };
