@@ -10,6 +10,7 @@
 #include "H2M/Core/AssertH2M.h"
 
 #include "Core/Log.h"
+#include "Renderer/VulkanSupport.h"
 
 // VK_KHR_portability_subset (MoltenVK) is a provisional extension: its types are only in vulkan_beta.h
 #include <vulkan/vulkan_beta.h>
@@ -85,25 +86,10 @@ namespace H2M
 		std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
 		VK_CHECK_RESULT_H2M(vkEnumeratePhysicalDevices(vkInstance, &gpuCount, physicalDevices.data()));
 
-		VkPhysicalDevice selectedPhysicalDevice = nullptr;
-		for (VkPhysicalDevice physicalDevice : physicalDevices)
-		{
-			vkGetPhysicalDeviceProperties(physicalDevice, &m_Properties);
-			if (m_Properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
-			{
-				selectedPhysicalDevice = physicalDevice;
-				break;
-			}
-		}
-
-		if (!selectedPhysicalDevice)
-		{
-			Log::GetLogger()->trace("Could not find discrete GPU.");
-			selectedPhysicalDevice = physicalDevices.back();
-		}
-
+		VkPhysicalDevice selectedPhysicalDevice = VulkanSupport::ChooseDevice(physicalDevices);
 		H2M_CORE_ASSERT(selectedPhysicalDevice, "Could not find any physical devices!");
 		m_PhysicalDevice = selectedPhysicalDevice;
+		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
 
 		// Device info
 		MORAVA_CORE_TRACE("=======================================");

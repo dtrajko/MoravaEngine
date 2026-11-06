@@ -58,6 +58,31 @@ std::string GameSettings::GetUserFile(const Project& project)
 	return folder.empty() ? std::string() : (fs::u8path(folder) / fs::u8path(ToFolderName(project.Name)) / FileName).generic_u8string();
 }
 
+std::string GameSettings::GetUserDataFolder(const Project& project)
+{
+	std::string folder;
+#if defined(_WIN32)
+	const wchar_t* localAppData = _wgetenv(L"LOCALAPPDATA");
+	folder = localAppData && *localAppData ? fs::path(localAppData).u8string() : std::string();
+#elif defined(__APPLE__)
+	folder = GetUserSettingsFolder();
+#else
+	const char* data = std::getenv("XDG_DATA_HOME");
+	const char* home = std::getenv("HOME");
+	folder = data && *data ? std::string(data) : (home && *home ? (fs::u8path(home) / ".local/share").u8string() : std::string());
+#endif
+	if (folder.empty())
+	{
+		return folder;
+	}
+	fs::path path = fs::u8path(folder);
+	if (!project.Build.Company.empty())
+	{
+		path /= fs::u8path(ToFolderName(project.Build.Company));
+	}
+	return (path / fs::u8path(ToFolderName(project.GetProductName()))).generic_u8string();
+}
+
 std::string GameSettings::GetEditorFile(const Project& project)
 {
 	return (fs::u8path(project.GetDirectory()) / "Library" / FileName).generic_u8string();

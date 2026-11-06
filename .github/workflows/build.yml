@@ -295,6 +295,17 @@ jobs:
             exit 1
           fi
 
+          # 11.4: the log in the user's folder, and a forced crash that says so there
+          USER_FOLDER="$HOME/.local/share/Morava Games/Coin Collector"
+          grep -q "Playing scene 'MainMenu'" "$USER_FOLDER/Player.log" || { echo "::error::The game's log isn't in the user's folder"; exit 1; }
+          test -n "$(ls "$USER_FOLDER"/FontCache/*.mfontcache)" || { echo "::error::The game's font cache isn't in the user's folder"; exit 1; }
+          test ! -e "$GAME/Library" || { echo "::error::The game wrote into its own folder"; exit 1; }
+          if (cd / && timeout 60 "$GAME/Coin_Collector" --exit-after 15 --crash-test start); then
+            echo "::error::--crash-test didn't crash"
+            exit 1
+          fi
+          grep -q "The game crashed" "$USER_FOLDER/Player.log" || { echo "::error::A crash left no line in the log"; exit 1; }
+
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)
         uses: actions/upload-artifact@v7.0.2
@@ -384,3 +395,12 @@ jobs:
           foreach ($file in 'Game.mpak', 'Sample.dll', 'nethost.dll', 'Morava.ScriptCore.dll', 'THIRD_PARTY_NOTICES.txt', 'dotnet\host\fxr') {
             if (-not (Test-Path "$env:RUNNER_TEMP\Coin Collector\$file")) { Write-Error "The game has no $file"; exit 1 }
           }
+          # 11.4: no console window; a crash (before any window: no GPU here) leaves a dump and a line in the log, in the user's folder
+          $exe = "$env:RUNNER_TEMP\Coin Collector\Coin_Collector.exe"
+          $bytes = [IO.File]::ReadAllBytes($exe)
+          if ([BitConverter]::ToUInt16($bytes, [BitConverter]::ToInt32($bytes, 0x3C) + 24 + 68) -ne 2) { Write-Error "The game would open a console window"; exit 1 }
+          $crash = Start-Process -FilePath $exe -ArgumentList '--exit-after', '15', '--crash-test', 'start' -PassThru -Wait
+          if ($crash.ExitCode -eq 0) { Write-Error "--crash-test didn't crash"; exit 1 }
+          $userFolder = "$env:LOCALAPPDATA\Morava Games\Coin Collector"
+          if (-not (Test-Path "$userFolder\Crash_1.0.0_*.dmp")) { Write-Error "A crash left no dump"; exit 1 }
+          if (-not (Select-String -Path "$userFolder\Player.log" -Pattern 'The game crashed' -Quiet)) { Write-Error "A crash left no line in the log"; exit 1 }

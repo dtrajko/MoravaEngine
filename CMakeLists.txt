@@ -682,6 +682,12 @@ endif()
 
 if(TARGET MoravaPlayer)
     target_link_libraries(MoravaPlayer PRIVATE MoravaCore)
+    # Vulkan's loader comes with the graphics driver. Delay-loaded, so a machine without it gets the player's own message
+    # (VulkanSupport::Check) instead of Windows' about a missing DLL. DbgHelp writes the crash dumps
+    if(MSVC)
+        target_link_libraries(MoravaPlayer PRIVATE delayimp dbghelp)
+        target_link_options(MoravaPlayer PRIVATE /DELAYLOAD:vulkan-1.dll)
+    endif()
     # A build with another graphics API as well: the core's shaders and models of that API call them, and the graphics API's
     # choice in the shared classes links those into the player. A Vulkan build's player has neither
     if(NOT MORAVA_GRAPHICS_APIS STREQUAL "VULKAN")

@@ -306,6 +306,17 @@ jobs:
             exit 1
           fi
 
+          # 11.4: the log in the user's folder, and a forced crash that says so there
+          USER_FOLDER="$HOME/Library/Application Support/Morava Games/Coin Collector"
+          grep -q "Playing scene 'MainMenu'" "$USER_FOLDER/Player.log" || { echo "::error::The game's log isn't in the user's folder"; exit 1; }
+          test -n "$(ls "$USER_FOLDER"/FontCache/*.mfontcache)" || { echo "::error::The game's font cache isn't in the user's folder"; exit 1; }
+          test ! -e "$GAME/Library" || { echo "::error::The game wrote into its own folder"; exit 1; }
+          if (cd / && gtimeout 60 "$GAME/Coin_Collector" --exit-after 15 --crash-test start); then
+            echo "::error::--crash-test didn't crash"
+            exit 1
+          fi
+          grep -q "The game crashed" "$USER_FOLDER/Player.log" || { echo "::error::A crash left no line in the log"; exit 1; }
+
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)
         uses: actions/upload-artifact@v7.0.2

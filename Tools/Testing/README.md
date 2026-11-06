@@ -100,6 +100,8 @@ What `-Extra` can pass (both executables read them; `src/Core/Application.cpp` h
 | `--build-pack <file.mproject>`, `--pack-output <folder>` | The editor builds the project's pack and exits, without a window (not through `-Extra`: run it directly) |
 | `--build-game <file.mproject>`, `--build-output <folder>` | The editor builds the project's game to ship and exits, without a window (File > Build Game runs the same; not through `-Extra`) |
 | `--validation` | A shipped game with Vulkan's validation layer, which it otherwise doesn't load |
+| `--verbose` | A shipped game logs everything (its log starts at the info level) |
+| `--crash-test <kind>` | The player crashes, to check what is left behind: `start` (before its window), `abort`, `terminate`, `overflow`, `frame` (in its first frame) |
 | `--select <name>` | Selects the entity of that name (to capture the selection outline or the gizmo) |
 | `--save-scene` | The editor saves the open scene when it closes (a scene opened and saved unattended) |
 

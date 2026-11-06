@@ -24,6 +24,9 @@ public:
 	// <the user's settings folder>/<the project's name>/Settings.yaml: %APPDATA% on Windows, ~/Library/Application Support
 	// on macOS, $XDG_CONFIG_HOME (else ~/.config) on Linux. Empty when the folder isn't known
 	static std::string GetUserFile(const Project& project);
+	// A shipped game's log, crash dumps and caches, not worth carrying to another machine: <Company>/<Product> in %LOCALAPPDATA% on
+	// Windows, ~/Library/Application Support on macOS, $XDG_DATA_HOME (else ~/.local/share) on Linux. Empty when not known
+	static std::string GetUserDataFolder(const Project& project);
 	// <the project>/Library/Settings.yaml (the Library folder is the editor's, not in Git)
 	static std::string GetEditorFile(const Project& project);
 

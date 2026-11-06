@@ -39,6 +39,8 @@ struct ApplicationCommandLine
 	std::string BuildPackProject;  // --build-pack <file>: the editor builds this project's pack and exits, without a window
 	std::string PackOutputFolder;  // --pack-output <folder>: where --build-pack writes (default: the project's Build folder)
 	bool Validation = false;       // --validation: a shipped game with Vulkan's validation layer, when the machine has it (CI's check of a built game)
+	bool Verbose = false;          // --verbose: a shipped game logs everything, not from the info level up
+	std::string CrashTest;         // --crash-test <kind>: the player crashes, the check of crash reports: start (before its window), abort, terminate, overflow, frame (in its first frame)
 	std::string BuildGameProject;  // --build-game <file>: the editor builds this project's game and exits, without a window
 	std::string BuildGameOutput;   // --build-output <folder>: where --build-game writes (default: <Project>/Build/<platform>)
 	std::string ScenePath;         // --scene <file>: a scene to open at startup (SceneEnvMapVulkan: an .mscene file)

@@ -5,6 +5,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -37,4 +38,11 @@ namespace AssetFiles
 
 	// With a pack mounted: a cooked entry of a file. False: the pack has none of this kind (or it is damaged: logged)
 	bool ReadCooked(const std::string& path, AssetPack::Kind kind, std::vector<uint8_t>& bytes);
+
+	// With a pack mounted: the last file asked for that it doesn't have or can't read, a hint for a crash that follows. May be
+	// a file that was only tried. Empty: none
+	std::string GetLastFailedFile();
+	void NoteFailedFile(const std::string& path); // for a file the game can't go on without, found missing by who needs it
+	// Called on the reading thread when an entry of the pack is damaged, after it is logged (a shipped game stops there)
+	void SetDamagedFileHandler(const std::function<void(const std::string& file)>& handler);
 }

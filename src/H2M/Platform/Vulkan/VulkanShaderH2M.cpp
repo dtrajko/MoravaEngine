@@ -278,6 +278,10 @@ namespace H2M
 				std::vector<uint8_t> bytes;
 				ok = AssetFiles::ReadCooked(m_AssetPath, AssetPack::Kind::Shader, bytes) && ReadCookedShader(bytes, shaderData);
 				error = "it isn't in the pack, or its entry is damaged";
+				if (!ok)
+				{
+					AssetFiles::NoteFailedFile(m_AssetPath);
+				}
 			}
 			else
 			{
