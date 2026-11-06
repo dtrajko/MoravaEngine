@@ -27,6 +27,10 @@ namespace Process
 	// A program on the PATH, absolute (on Windows also name.exe, name.cmd and name.bat); empty: none
 	std::string FindOnPath(const std::string& name);
 
-	// The running executable, absolute (its folder holds Morava.ScriptCore.dll and the private dotnet/)
+	// The running executable, absolute
 	std::filesystem::path GetExecutablePath();
+
+	// The folder a game's files are in: the executable's, or in a macOS app bundle (Name.app/Contents/MacOS/Name) the bundle's
+	// Contents/Resources. The pack, the private dotnet/ and Morava.ScriptCore.dll are there
+	std::filesystem::path GetResourceFolder();
 }

@@ -222,7 +222,7 @@ static bool StartRuntime()
 {
 	const auto start = std::chrono::steady_clock::now();
 	const fs::path executable = Process::GetExecutablePath();
-	const fs::path folder = executable.parent_path();
+	const fs::path folder = Process::GetResourceFolder(); // the executable's (a macOS app's Resources)
 	const fs::path dotnetRoot = folder / "dotnet";
 	const fs::path coreDll = folder / "Morava.ScriptCore.dll";
 	const fs::path config = folder / "Morava.ScriptCore.runtimeconfig.json";
@@ -232,7 +232,7 @@ static bool StartRuntime()
 	{
 		if (!fs::exists(needed, error))
 		{
-			Log::GetLogger()->error("C# scripting is not available: '{0}' not found next to the executable (the build puts it there)",
+			Log::GetLogger()->error("C# scripting is not available: '{0}' not found next to the executable, or in a macOS app's Resources (the build puts it there)",
 				needed.u8string());
 			return false;
 		}

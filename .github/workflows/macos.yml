@@ -274,25 +274,36 @@ jobs:
             exit 1
           fi
 
-      # Build Game (Phase 11): the sample built into a folder of its own, and run from another folder with the SDK's variable
-      # gone: it finds its pack and its private .NET beside itself. Validation on (a shipped game has it off) so CI still checks it
+      # Build Game (Phase 11): the sample built as an app (11.6: Coin Collector.app with its Info.plist, icon, Vulkan loader and
+      # MoltenVK), run from another folder with the SDK's variable and the runner's MoltenVK driver file gone: it finds its pack,
+      # its private .NET and its MoltenVK inside itself. Validation on (a shipped game has it off) so CI still checks it
       - name: Build and run the game
         if: matrix.player-smoke-test
         env:
           VK_LOADER_DEBUG: error,warn
         run: |
           set -o pipefail
-          GAME="$RUNNER_TEMP/Coin Collector"
-          build/MoravaEngine --build-game $SAMPLE_PROJECT_DIR/Sample.mproject --build-output "$GAME" 2>&1 | tee build-game.log
-          ls -la "$GAME"
-          otool -L "$GAME/Coin_Collector"
+          build/MoravaEngine --build-game $SAMPLE_PROJECT_DIR/Sample.mproject --build-output "$RUNNER_TEMP/Coin Collector" 2>&1 | tee build-game.log
+          APP="$RUNNER_TEMP/Coin Collector/Coin Collector.app"
+          GAME="$APP/Contents/Resources"
+          EXE="$APP/Contents/MacOS/Coin_Collector"
+          find "$APP" -maxdepth 3 | head -40
+          otool -L "$EXE"
+          otool -L "$EXE" | grep -q '@rpath/libvulkan.1.dylib' || { echo "::error::The player doesn't take the app's Vulkan loader"; exit 1; }
+          for file in Contents/Info.plist Contents/Resources/Icon.icns Contents/Frameworks/libvulkan.1.dylib Contents/Frameworks/libMoltenVK.dylib Contents/Resources/vulkan/icd.d/MoltenVK_icd.json; do
+            test -s "$APP/$file" || { echo "::error::The app has no $file"; exit 1; }
+          done
+          plutil -lint "$APP/Contents/Info.plist"
+          codesign --verify --verbose "$EXE" || { echo "::error::The executable's ad-hoc signature isn't valid"; exit 1; }
           test -s "$GAME/THIRD_PARTY_NOTICES.txt" || { echo "::error::The game has no license notices"; exit 1; }
+          grep -q "^MoltenVK$" "$GAME/THIRD_PARTY_NOTICES.txt" || echo "::warning::The notices don't name MoltenVK"
           if grep -aq "Scenes/Physics.mscene" "$GAME/Game.mpak"; then
             echo "::error::A scene the project's Build settings don't list went into the game"
             exit 1
           fi
           OUT="$PWD/game-smoke-test.log"
-          (cd / && env -u DOTNET_ROOT gtimeout 600 "$GAME/Coin_Collector" --validation --exit-after 15 2>&1 | tee "$OUT")
+          (cd / && env -u DOTNET_ROOT -u VK_DRIVER_FILES VK_LOADER_DEBUG=error,warn,driver gtimeout 600 "$EXE" --validation --exit-after 15 2>&1 | tee "$OUT")
+          grep -q "Contents/Resources/vulkan/icd.d/MoltenVK_icd.json" "$OUT" || { echo "::error::The loader didn't find the app's MoltenVK"; exit 1; }
           if grep -q VulkanDebugCallback "$OUT"; then
             echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
             exit 1
@@ -301,7 +312,7 @@ jobs:
             echo "::error::Something of the built game could not be found, loaded or run"
             exit 1
           fi
-          if ! grep -q "Playing scene 'MainMenu'" "$OUT" || ! grep -q "C#: Options: " "$OUT" || ! grep -q "C# scripting: .NET .*Coin Collector/dotnet" "$OUT"; then
+          if ! grep -q "Playing scene 'MainMenu'" "$OUT" || ! grep -q "C#: Options: " "$OUT" || ! grep -q "C# scripting: .NET .*Coin Collector.app/Contents/Resources/dotnet" "$OUT"; then
             echo "::error::The built game didn't start its main menu, with its scripts on its own .NET (see the log)"
             exit 1
           fi
@@ -313,7 +324,7 @@ jobs:
           SETTINGS_LOG="$PWD/game-settings-test.log"
           mkdir -p "$SETTINGS_FOLDER"
           printf 'Player:\n  Quality: Low\n  Bindings:\n    Jump: [{Key: J}, {Gamepad: A}]\nSettings:\n  MouseSensitivity: 2\n' > "$SETTINGS_FOLDER/Settings.yaml"
-          (cd / && gtimeout 300 "$GAME/Coin_Collector" --exit-after 10 > "$SETTINGS_LOG" 2>&1) || true
+          (cd / && gtimeout 300 "$EXE" --exit-after 10 > "$SETTINGS_LOG" 2>&1) || true
           if ! grep -q "Quality: Low, the player's choice" "$SETTINGS_LOG" || ! grep -q "Input: the player's bindings of 1 action" "$SETTINGS_LOG" ||
              ! grep -q "C#: Options: .*mouse x2.00" "$SETTINGS_LOG"; then
             echo "::error::The player's settings weren't put in place (see game-settings-test.log)"
@@ -326,11 +337,24 @@ jobs:
           grep -q "Playing scene 'MainMenu'" "$USER_FOLDER/Player.log" || { echo "::error::The game's log isn't in the user's folder"; exit 1; }
           test -n "$(ls "$USER_FOLDER"/FontCache/*.mfontcache)" || { echo "::error::The game's font cache isn't in the user's folder"; exit 1; }
           test ! -e "$GAME/Library" || { echo "::error::The game wrote into its own folder"; exit 1; }
-          if (cd / && gtimeout 60 "$GAME/Coin_Collector" --exit-after 15 --crash-test start); then
+          if (cd / && gtimeout 60 "$EXE" --exit-after 15 --crash-test start); then
             echo "::error::--crash-test didn't crash"
             exit 1
           fi
           grep -q "The game crashed" "$USER_FOLDER/Player.log" || { echo "::error::A crash left no line in the log"; exit 1; }
+
+      # 11.2: the player template a Mac's editor builds apps with (Tools/Get-PlayerTemplates.ps1 -Platform osx-arm64)
+      - name: Player template
+        if: matrix.player-smoke-test
+        run: cmake -DBUILD_DIR=build -DOUTPUT=player-template -P cmake/PlayerTemplate.cmake
+
+      - name: Upload the player template
+        if: matrix.player-smoke-test
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: player-template-osx-arm64
+          path: player-template/
+          if-no-files-found: error
 
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)

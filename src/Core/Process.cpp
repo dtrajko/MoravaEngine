@@ -503,4 +503,18 @@ namespace Process
 	}
 
 #endif
+
+	fs::path GetResourceFolder()
+	{
+		const fs::path folder = GetExecutablePath().parent_path();
+#if defined(__APPLE__)
+		std::error_code error;
+		const fs::path resources = folder.parent_path() / "Resources";
+		if (folder.filename() == "MacOS" && folder.parent_path().filename() == "Contents" && fs::is_directory(resources, error))
+		{
+			return resources;
+		}
+#endif
+		return folder;
+	}
 }

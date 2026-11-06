@@ -44,6 +44,7 @@ struct ApplicationCommandLine
 	std::string Quality;           // --quality <tier>: the player draws with this tier (Low, Medium, High, Ultra, Auto), whatever was chosen (the player's choice is kept)
 	std::string BuildGameProject;  // --build-game <file>: the editor builds this project's game and exits, without a window
 	std::string BuildGameOutput;   // --build-output <folder>: where --build-game writes (default: <Project>/Build/<platform>)
+	std::string BuildGamePlatform; // --build-platform <name>: win-x64, linux-x64, osx-arm64 (default: the editor's own)
 	std::string ScenePath;         // --scene <file>: a scene to open at startup (SceneEnvMapVulkan: an .mscene file)
 	float ExitAfterSeconds = 0.0f; // --exit-after <seconds>: closes the window after this time in the main loop (0: never)
 	int DebugView = 0;             // --debug-view <number>: the debug view at startup (SceneEnvMapVulkan: the entry of the

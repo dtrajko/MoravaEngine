@@ -29,8 +29,9 @@ int main(int argc, char** argv)
 	Log::Init();
 	H2M::LogH2M::Init(); // H2M_ERROR / H2M_CORE_ERROR and failed H2M asserts log through these loggers
 
-	// The game's pack: named, or when nothing else is named Game.mpak beside the executable, or else in the current folder. A
-	// game beside its pack works in its own folder, so a shortcut or another folder it is started from doesn't matter
+	// The game's pack: named, or when nothing else is named Game.mpak beside the executable (in a macOS app: in its Resources),
+	// or else in the current folder. A game beside its pack works in that folder, so a shortcut or another folder it is started
+	// from doesn't matter
 	const ApplicationCommandLine commandLine = ApplicationCommandLine::Parse(argc, argv);
 	const bool startedAsGame = commandLine.PackPath.empty() && commandLine.ProjectPath.empty() && commandLine.ScenePath.empty();
 	PlayerProduct::SetMessagesShown(startedAsGame && commandLine.ExitAfterSeconds <= 0.0f);
@@ -38,7 +39,7 @@ int main(int argc, char** argv)
 	if (packPath.empty() && commandLine.ProjectPath.empty())
 	{
 		std::error_code error;
-		const std::filesystem::path folder = Process::GetExecutablePath().parent_path();
+		const std::filesystem::path folder = Process::GetResourceFolder();
 		if (std::filesystem::is_regular_file(folder / AssetFiles::DefaultPackName, error))
 		{
 			packPath = (folder / AssetFiles::DefaultPackName).u8string();
