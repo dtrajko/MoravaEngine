@@ -109,6 +109,12 @@ int main(int argc, char** argv)
 		{
 			window.FullscreenWidth = player.Resolution->Width;
 			window.FullscreenHeight = player.Resolution->Height;
+			if (!window.Fullscreen)
+			{
+				// A window of that size (PlayerLayer fits it to the monitor and centers it)
+				window.Width = player.Resolution->Width;
+				window.Height = player.Resolution->Height;
+			}
 		}
 	}
 	if (!commandLine.CrashTest.empty() && commandLine.CrashTest != "frame")

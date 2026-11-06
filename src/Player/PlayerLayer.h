@@ -12,6 +12,8 @@
 
 #include "Input/InputSystem.h"
 
+#include <glm/glm.hpp>
+
 #include <string>
 #include <vector>
 
@@ -62,8 +64,13 @@ private:
 	void StartQuality();
 	void SetQuality(QualityTier tier, const char* why);
 	void ApplyPlayerRequests(GLFWwindow* window);
-	// The scripts' view of the display: the monitor's fullscreen sizes, fullscreen's, VSync, the tier
+	// The scripts' view of the display: the sizes (fullscreen's, or in a window those that fit), the one in use, VSync, the tier
 	void UpdateDisplayState(GLFWwindow* window);
+	// A window's sizes on the monitor: the fullscreen sizes whose window, its frame included, fits in the monitor's work area
+	std::vector<PlayerResolution> GetWindowResolutions(GLFWmonitor* monitor) const;
+	// Out of fullscreen, or a new size in a window: the player's resolution (the largest that fits, no larger than it; none
+	// chosen: the project's window), centered on the monitor's work area, not maximized
+	void PlaceWindow(GLFWwindow* window);
 
 	EnvMapVulkanScene m_Scene;
 	std::string m_ScenePath; // the scene's file: Scene.Reload opens it again
@@ -76,7 +83,9 @@ private:
 	bool m_Playing = false; // the scene is open
 	bool m_EnterDown = false, m_F11Down = false, m_EscapeDown = false, m_F3Down = false; // last frame's, for the keys' presses
 	bool m_DebugOverlay = false;
-	PlayerResolution m_FullscreenResolution; // the player's choice (0 x 0: the monitor's own)
+	PlayerResolution m_Resolution; // the player's choice: fullscreen's display mode, a window's size (0 x 0: none chosen)
 	std::vector<PlayerResolution> m_Resolutions;
 	GLFWmonitor* m_ResolutionsMonitor = nullptr; // the monitor m_Resolutions are of
+	bool m_ResolutionsFullscreen = false;        // and for which: fullscreen's, or a window's
+	glm::ivec4 m_WindowFrame = glm::ivec4(8, 31, 8, 8); // the window's frame (left, top, right, bottom), as last seen in a window
 };
