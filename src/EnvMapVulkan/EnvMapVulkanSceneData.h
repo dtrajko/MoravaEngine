@@ -24,7 +24,8 @@ namespace EnvMapVulkanSceneData
 {
 	// --- Models
 
-	// The model entities, in the order of the hierarchy
+	// The model entities, in the order of the hierarchy, and the terrains (TerrainComponent: their chunks are a model too,
+	// once made: EnvMapVulkanTerrain)
 	std::vector<EnvMapVulkanEntityID> GetModels(const EnvMapVulkanScene& scene);
 	H2M::RefH2M<H2M::ModelH2M> GetModel(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID model);
 	// The part entity of a model's mesh (NoEntity: none)

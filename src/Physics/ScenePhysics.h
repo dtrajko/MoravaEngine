@@ -20,7 +20,8 @@ class ScenePhysicsContactListener;
 
 /**
  * The physics of a running game's scene (docs/engine/Game_Engine_Runtime_Guide.html, 3.3 and 3.4): a PhysicsWorld with a
- * body for every entity that has a ColliderComponent, made when the game starts and gone when it stops. The bodies'
+ * body for every entity that has a ColliderComponent, and a static height field for every terrain (TerrainComponent), made
+ * when the game starts and gone when it stops. The bodies'
  * shapes are fixed at the start, with the entities' world scale in them.
  *
  * The scene stays the place where entities are. Before each step the kinematic bodies are moved to their entities, and a
@@ -203,6 +204,8 @@ private:
 	void AddEntity(EnvMapVulkanEntityID entity, AddCounts& counts);
 	// The body of body.Entity, added to the world (false: its shape could not be made, or the world is full)
 	bool CreateBody(Body& body, const ColliderComponent& collider, const RigidBodyComponent* rigidBody);
+	// A terrain's static height field (its heights made first, when the renderer hasn't yet)
+	bool CreateTerrainBody(Body& body, TerrainComponent& terrain);
 	void CreateCharacter(Character& character, const CharacterControllerComponent& settings);
 	void SetEntityPosition(EnvMapVulkanEntityID entity, const glm::vec3& position); // the translation only
 	// The bodies and characters of entities that are gone (destroyed by the game, deleted in the editor): out of the world,

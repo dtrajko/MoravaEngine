@@ -40,7 +40,7 @@ bool Contains(const std::vector<T>& values, const T& value)
 }
 
 // What an entity is, by its components (see GetEntityKind)
-enum class EntityKind { Other, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Model, Part, Sound, UICanvas, UIElement };
+enum class EntityKind { Other, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Terrain, Model, Part, Sound, UICanvas, UIElement };
 
 // A map assigned or removed in the Material Editor (button or drag & drop), applied at the start of the next frame (see EditorPreFrame)
 struct PendingMaterialTexture
@@ -468,6 +468,14 @@ void AddWaterAtView();
 
 // The probe volume goes around where the camera looks, standing on that point's height
 void AddProbeVolumeAtView();
+
+// ---- Terrains (EditorInspectorTerrain.cpp)
+
+// A new terrain (Scene Hierarchy: Add > Terrain): around the world's origin, its flat area at height 0, selected
+void AddTerrain();
+// The Inspector's Terrain section: the shape (Randomize: a new seed), the look (the layers' materials, where they are) and
+// physics. A changed shape makes the terrain again when the edit ends (a drag let go, a number typed), not while dragging
+void TerrainControls(EnvMapVulkanEntityID entity);
 
 // ---- The scene's file (EditorDocument.cpp)
 

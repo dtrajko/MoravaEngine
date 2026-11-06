@@ -103,6 +103,30 @@ void RaycastMesh(float ndcX, float ndcY, EnvMapVulkanEntityID& hitModel, int& hi
 		glm::mat4 modelTransform = s_Scene.GetWorldTransform(m);
 		auto& meshes = model->GetMeshes();
 
+		// A terrain: the ray against its heights (its chunks have no triangle cache: a million triangles), the chunk hit
+		if (const TerrainComponent* terrain = s_Scene.TryGet<TerrainComponent>(m); terrain && terrain->Heights && !s_Scene.Has<ModelComponent>(m))
+		{
+			const glm::vec3 offset = glm::vec3(modelTransform[3]); // a terrain is only moved, not turned or scaled
+			float t;
+			if (terrain->Heights->Raycast(origin - offset, direction, nearestT == std::numeric_limits<float>::max() ? 1.0e6f : nearestT, t) && t < nearestT)
+			{
+				const glm::vec3 local = origin - offset + direction * t;
+				nearestT = t;
+				hitModel = m;
+				hitMesh = 0;
+				for (int s = 0; s < (int)meshes.size(); s++)
+				{
+					const H2M::AABB_H2M& box = meshes[s]->BoundingBox;
+					if (local.x >= box.Min.x && local.x <= box.Max.x && local.z >= box.Min.z && local.z <= box.Max.z)
+					{
+						hitMesh = s;
+						break;
+					}
+				}
+			}
+			continue;
+		}
+
 		for (int s = 0; s < (int)meshes.size(); s++)
 		{
 			// Ray in the mesh's local space; the direction is not renormalized, so t is the same distance

@@ -11,9 +11,13 @@
 
 #include "Scripting/ScriptField.h"
 
+#include "World/Terrain.h"
+
 #include <glm/glm.hpp>
 
+#include <array>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -154,6 +158,32 @@ struct WaterComponent
 struct ProbeVolumeComponent
 {
 	EnvMapVulkanProbeVolumeSettings Settings;
+};
+
+// A terrain made from a seed (World/Terrain.h, docs/engine/Game_Engine_Runtime_Guide.html): hills, valleys and a flat area
+// to start in, a square of Settings.Size meters around the entity's position. Its heights and meshes aren't saved: they are
+// made from the settings when the scene opens, and again when the shape's settings change (EnvMapVulkanTerrain::Update).
+// It is drawn in chunks, by the library materials of its three layers (sand low down, rock on steep slopes and high up,
+// grass elsewhere; none: a plain color), and physics gets a static height field of it (Friction), without a Collider.
+// Placement: the entity's translation only (not turned, not scaled: kept so by the editor).
+struct TerrainComponent
+{
+	TerrainSettings Settings;
+
+	enum Layer : uint32_t { Sand = 0, Grass, Rock, LayerCount };
+	static const char* GetLayerName(uint32_t layer);
+	// A layer's material: in the scene file by ID (and its file, for a material not loaded yet)
+	struct LayerMaterial
+	{
+		uint64_t ID = 0;
+		std::string File;
+		H2M::RefH2M<EnvMapVulkanMaterial> Material; // runtime: found by ID or loaded from File (EnvMapVulkanTerrain::Update)
+	};
+	std::array<LayerMaterial, LayerCount> Layers;
+
+	// Runtime: made from the settings, shared by the copies of the scene (Play)
+	std::shared_ptr<const TerrainHeights> Heights;
+	H2M::RefH2M<H2M::ModelH2M> Model; // the chunks
 };
 
 // A game camera (docs/engine/Game_Engine_Runtime_Guide.html, 6.3): the game is seen through the primary one (the first
@@ -521,6 +551,6 @@ struct ComponentList
 // The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
-	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
+	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, PrefabComponent,
 	UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;

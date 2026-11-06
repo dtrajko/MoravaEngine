@@ -24,6 +24,7 @@
 #include "EnvMapVulkanPathTracer.h"
 #include "EnvMapVulkanReflections.h"
 #include "EnvMapVulkanSSAO.h"
+#include "EnvMapVulkanTerrain.h"
 #include "EnvMapVulkanTextureViews.h"
 #include "EnvMapVulkanUI.h"
 #include "EnvMapVulkanWater.h"
@@ -174,6 +175,10 @@ static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnimDepthEqual;
 // with the pixels the material cuts away discarded (HazelPBR_Cutout_*.glsl), on the PBR pipelines' layouts
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineCutout;
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnimCutout;
+// A terrain's chunks (EnvMapVulkanTerrain: its three layers mixed by height and slope, HazelPBR_Terrain.glsl), on the static
+// PBR pipeline's layout: where there is no prepass, and in the scene pass (depth EQUAL)
+static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineTerrain;
+static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineTerrainDepthEqual;
 static uint64_t s_ViewportImageID = 0;                // the viewport image's ID in the user interface (GetViewportImage)
 static bool s_ViewportTextureNeedsUpdate = false;     // the viewport framebuffer was recreated (resize)
 
@@ -1723,6 +1728,18 @@ void EnvMapVulkanRenderer::Init()
 			cutoutSpecification.DebugName = skinned ? "PBR-Anim-Cutout" : "PBR-Static-Cutout";
 			(skinned ? s_MeshPipelineAnimCutout : s_MeshPipelineCutout) = H2M::PipelineH2M::Create(cutoutSpecification);
 		}
+
+		// The terrain variants: on the static pipelines' layouts
+		H2M::PipelineSpecificationH2M terrainSpecification = s_MeshPipeline->GetSpecification();
+		terrainSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Terrain");
+		terrainSpecification.LayoutFrom = s_MeshPipeline;
+		terrainSpecification.DebugName = "PBR-Terrain";
+		s_MeshPipelineTerrain = H2M::PipelineH2M::Create(terrainSpecification);
+		terrainSpecification = s_MeshPipelineDepthEqual->GetSpecification();
+		terrainSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Terrain");
+		terrainSpecification.LayoutFrom = s_MeshPipeline;
+		terrainSpecification.DebugName = "PBR-Terrain-DepthEqual";
+		s_MeshPipelineTerrainDepthEqual = H2M::PipelineH2M::Create(terrainSpecification);
 	}
 	/**** END: to be removed from VulkanRenderer ****/
 
@@ -2076,6 +2093,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	// The file's static references, released here while the device works: as statics they would be destroyed after
 	// main returns, when Vulkan (its validation layer) may already be torn down
 	s_Scene = nullptr;
+	EnvMapVulkanTerrain::Shutdown();
 	EnvMapVulkanMaterialLibrary::Clear();
 	s_SubmittedModels.clear();
 	s_GlassDraws.clear();
@@ -2116,6 +2134,8 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_MeshPipelineAnimDepthEqual = {};
 	s_MeshPipelineCutout = {};
 	s_MeshPipelineAnimCutout = {};
+	s_MeshPipelineTerrain = {};
+	s_MeshPipelineTerrainDepthEqual = {};
 	s_EnvMapCompute = EnvMapComputeResources();
 	s_Data = VulkanRendererData();
 }
@@ -2193,6 +2213,17 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 	}
 	VkPipeline boundPipeline = VK_NULL_HANDLE; // bound per mesh: by its material
 
+	// A terrain's chunks: the terrain pipelines, its layers' set and values in place of the material's (EnvMapVulkanTerrain)
+	VkDescriptorSet terrainDescriptorSet = VK_NULL_HANDLE;
+	EnvMapVulkanTerrain::Uniforms terrainUniforms;
+	const bool terrain = !skinned && EnvMapVulkanTerrain::Find(model.Raw(), terrainDescriptorSet, terrainUniforms);
+	if (terrain)
+	{
+		pipeline = pass == MeshPass::GBuffer ? s_GBuffer.GetTerrainPipeline() : pass == MeshPass::Scene ?
+			s_MeshPipelineTerrainDepthEqual.As<H2M::VulkanPipelineH2M>()->GetVulkanPipeline() : s_MeshPipelineTerrain.As<H2M::VulkanPipelineH2M>()->GetVulkanPipeline();
+		cutoutPipeline = pipeline;
+	}
+
 	// Set 0 (per frame) was bound once for all meshes in GeometryPass. It stays bound across the static and skinned
 	// pipelines: their layouts declare set 0 and the push constants identically ("compatible for set 0").
 
@@ -2212,7 +2243,7 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 	{
 		H2M::RefH2M<H2M::MeshH2M> mesh = meshes[s];
 		H2M::RefH2M<EnvMapVulkanMaterial> material = materials[s];
-		if (material->IsGlass() && !skinned)
+		if (material->IsGlass() && !skinned && !terrain)
 		{
 			continue; // drawn after the opaque meshes and the water (see RecordGlassPass)
 		}
@@ -2223,7 +2254,7 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		H2M::BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 
 		// Set 1 (per material): the texture maps of the mesh's library material
-		VkDescriptorSet materialDescriptorSet = material->GetDescriptorSet();
+		VkDescriptorSet materialDescriptorSet = terrain ? terrainDescriptorSet : material->GetDescriptorSet();
 		if (materialDescriptorSet == VK_NULL_HANDLE)
 		{
 			continue; // drawing with a missing descriptor set is undefined behavior in Vulkan
@@ -2242,7 +2273,14 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
 		glm::mat4 meshTransform = EnvMapVulkanSceneData::GetMeshTransform(model, mesh, transform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &meshTransform);
-		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
+		if (terrain)
+		{
+			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(terrainUniforms), &terrainUniforms);
+		}
+		else
+		{
+			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
+		}
 		// The prepass reads the mesh's previous transform per instance: the instance index picks it (see EnvMapVulkanGBuffer)
 		uint32_t firstInstance = pass == MeshPass::GBuffer ? firstDraw + (uint32_t)s : 0;
 		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, firstInstance);
@@ -4590,6 +4628,8 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	ExtractLights();
 	ExtractWater();
 	ExtractProbeVolume();
+	// The terrains' chunks and layers (made again when a shape's settings changed), before the models are listed below
+	EnvMapVulkanTerrain::Update(*s_Scene);
 
 	// Shadow map resolutions that differ from the settings (changed in the panel, a scene opened): the maps are recreated
 	// before any command buffer of this frame is recorded (their descriptors in set 0 can't change while a recorded frame

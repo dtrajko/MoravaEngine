@@ -294,6 +294,27 @@ namespace H2M
 			Log::GetLogger()->error("Failed to load model file: {0}{1}{2}", m_FilePath, loadError.empty() ? "" : ": ", loadError);
 			return;
 		}
+		Build(data, true);
+		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
+		Log::GetLogger()->info("Model '{0}': {1} meshes, {2} vertices, {3} triangles ({4} in {5:.1f} ms)", m_FilePath, m_Meshes.size(), totalVertices, m_Indices.size(),
+			loadInfo.FromCache ? "cooked file read" : "imported and cooked", loadInfo.Milliseconds);
+	}
+
+	ModelH2M::ModelH2M(const std::string& name, ModelData&& data)
+	{
+		m_FilePath = name;
+		m_BaseTexture = nullptr;
+		m_MeshShader = nullptr;
+		m_BaseMaterial = nullptr;
+		m_IsAnimated = false;
+		if (!data.Meshes.empty() && !data.Nodes.empty())
+		{
+			Build(data, false);
+		}
+	}
+
+	void ModelH2M::Build(ModelData& data, bool triangleCache)
+	{
 
 		// Animated models get the skinned vertex layout (bone IDs and weights) and the skinning shader, on OpenGL and Vulkan
 		m_IsAnimated = data.IsAnimated;
@@ -362,7 +383,12 @@ namespace H2M
 			mesh->BoundingBox.Max = sourceMesh.BoundsMax;
 			m_Meshes.push_back(mesh);
 
-			// Triangle cache (animated models: the bind pose; mouse picking tests these triangles)
+			// Triangle cache (animated models: the bind pose; mouse picking tests these triangles). Not for a model made in
+			// memory (a terrain: millions of triangles, tested its own way)
+			if (!triangleCache)
+			{
+				continue;
+			}
 			std::vector<TriangleH2M>& triangles = m_TriangleCache[(uint32_t)m];
 			triangles.reserve(sourceMesh.TriangleCount);
 			for (size_t t = firstTriangle; t < firstTriangle + sourceMesh.TriangleCount; t++)
@@ -1022,15 +1048,8 @@ namespace H2M
 			UpdateAllDescriptorSets();
 		}
 
-		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 		m_Nodes = std::move(data.Nodes);
 		m_NodeMeshes = std::move(data.NodeMeshes);
-
-		Log::GetLogger()->info("Model '{0}': {1} meshes, {2} vertices, {3} triangles ({4} in {5:.1f} ms)", m_FilePath, m_Meshes.size(), totalVertices, m_Indices.size(),
-			loadInfo.FromCache ? "cooked file read" : "imported and cooked", loadInfo.Milliseconds);
-
-		HZ_MESH_LOG("H2M::ModelH2M: Total vertices: {0}", totalVertices);
-		HZ_MESH_LOG("H2M::ModelH2M: Total indices: {0}", m_Indices.size());
 	}
 
 	ModelH2M::~ModelH2M()

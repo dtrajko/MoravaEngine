@@ -10,6 +10,7 @@ void main()
 
 	// Texture toggles and values come from the material (push constants, editable in the Material Editor), the same
 	// way as in the G-buffer prepass (Include/MeshMaterial.glslh)
+	MaterialSetup(Input.WorldPosition, Input.Normal);
 	vec2 texCoord = MaterialTexCoord(Input.TexCoord);
 #ifdef MATERIAL_CUTOUT
 	MaterialCutAway(texCoord); // the cutout variants (HazelPBR_Cutout_Static.glsl...): passes without the prepass's depth
@@ -21,7 +22,7 @@ void main()
 	// they are. No map: black, a screen that is off.
 	if ((MaterialFlags() & GPUMaterialFlagDisplay) != 0u)
 	{
-		vec3 picture = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
+		vec3 picture = MaterialEmissive(texCoord);
 		color = vec4(InverseTonemap(picture, u_DisplayTone.y) / max(u_DisplayTone.x, 1e-4), 1.0);
 		return;
 	}
@@ -42,7 +43,7 @@ void main()
 
 	// Ambient occlusion darkens only the indirect light; the map is linear data in R. The material's map and the
 	// screen-space occlusion (the AO image) describe the same thing at different sizes: the stronger one counts.
-	float ao = u_MaterialUniforms.AOTexToggle > 0.5 ? texture(u_AOTexture, texCoord).r : 1.0;
+	float ao = MaterialAmbientOcclusion(texCoord);
 	float screenAO = ScreenAmbientOcclusion();
 	ao = min(ao, screenAO);
 
@@ -50,7 +51,7 @@ void main()
 	vec3 indirectLight = IndirectLight(F0, Lr, ao);
 
 	// Emission is added on top of the lit surface (the map is sRGB color data, decoded by the sampler)
-	vec3 emissive = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
+	vec3 emissive = MaterialEmissive(texCoord);
 
 	// Under the water the sky's light is dimmed by the water above (the sun's is in Lighting)
 	indirectLight *= WaterSkylightAt(Input.WorldPosition);
@@ -93,7 +94,7 @@ void main()
 		// material buffer and the mesh's own normal: no texture detail, no normal map, no reflections
 		vec3 surfaceNormal = normalize(Input.Normal);
 		surfaceNormal = dot(surfaceNormal, m_Params.View) < 0.0 ? -surfaceNormal : surfaceNormal;
-		SurfacePoint surface = SurfaceFromMaterial(int(u_MaterialUniforms.MaterialIndex + 0.5), Input.WorldPosition, surfaceNormal, m_Params.View);
+		SurfacePoint surface = SurfaceFromMaterial(int(MaterialBufferIndex()), Input.WorldPosition, surfaceNormal, m_Params.View);
 		color.rgb = ShadeSurfaceDiffuse(surface, true);
 	}
 	else if (u_ShadowDebug.z > 1.5)

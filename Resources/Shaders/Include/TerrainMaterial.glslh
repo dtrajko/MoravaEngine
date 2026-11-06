@@ -1,0 +1,204 @@
+// A terrain's surface (EnvMapVulkanTerrain, World/Terrain.h): the functions of Include/MeshMaterial.glslh, from the
+// terrain's three layers instead of one material. Included by MeshMaterial.glslh when MATERIAL_TERRAIN is defined
+// (HazelPBR_Terrain.glsl, GBufferPrepass_Terrain.glsl), so the scene pass and the G-buffer prepass mix them the same way.
+//
+// Where each layer is: sand below the sand height (beaches, river beds), rock on slopes steeper than the rock slope and above
+// the rock height (cliffs, bare peaks), grass everywhere else. The borders are blurred over a few meters and broken up by a
+// little noise, so they don't run along exact contour lines.
+//
+// A layer's look is its library material's: the albedo map (or color), the normal map, the roughness and the tiling from
+// the material buffer (u_Materials), the maps from set 1. The terrain's set holds the maps in the six bindings of a
+// material's set (MaterialMaps.glslh): the sand's albedo and normal map in the first two, the grass's in the next two, the
+// rock's in the last two. A layer without a material is a plain color.
+//
+// The texture coordinates are the terrain's x and z in meters, so a material's tiling is its repeats per meter (0.25: a
+// tile of 4 m).
+#ifndef TERRAIN_MATERIAL_GLSLH
+#define TERRAIN_MATERIAL_GLSLH
+
+#include "MaterialMaps.glslh"
+#include "NormalMap.glslh"
+#include "FrameSet.glslh"
+
+// The terrain's values (EnvMapVulkanTerrain::Uniforms), where a material's are (offset 64, 64 bytes)
+layout (push_constant) uniform TerrainUniforms
+{
+	layout (offset = 64) vec3 LayerMaterial; // each layer's entry in u_Materials (sand, grass, rock); negative: none
+	float MaterialIndex;                     // what MaterialBufferIndex reports (the grass's)
+	float SandHeight;                        // world heights
+	float RockHeight;
+	float RockSlopeStart;                    // 1 - the normal's y where rock begins, and where it is all rock
+	float RockSlopeEnd;
+	float MapToggles;                        // bit 2 * layer: its albedo map, bit 2 * layer + 1: its normal map
+	float Padding0;
+	float Padding1;
+	float Padding2;
+	float Padding3;
+	float Padding4;
+	float Padding5;
+	float Padding6;
+} u_Terrain;
+
+// The layers' maps, by binding (see the top of this file)
+#define u_SandAlbedo  u_AlbedoTexture
+#define u_SandNormal  u_NormalTexture
+#define u_GrassAlbedo u_MetalnessTexture
+#define u_GrassNormal u_RoughnessTexture
+#define u_RockAlbedo  u_EmissiveTexture
+#define u_RockNormal  u_AOTexture
+
+// This pixel's layers (MaterialSetup): their weights (sand, grass, rock: they add up to 1)
+vec3 t_Weights = vec3(0.0, 1.0, 0.0);
+
+uint MaterialBufferIndex()
+{
+	return uint(u_Terrain.MaterialIndex + 0.5);
+}
+
+uint MaterialFlags()
+{
+	return 0u; // a terrain is opaque, lit, not mirrored
+}
+
+bool MaterialFlipsHorizontally()
+{
+	return false;
+}
+
+vec2 MaterialTexCoord(vec2 texCoord)
+{
+	return texCoord; // meters: each layer's tiling is applied when it is read
+}
+
+bool TerrainHasMap(uint layer, uint map)
+{
+	return (uint(u_Terrain.MapToggles + 0.5) & (1u << (layer * 2u + map))) != 0u;
+}
+
+bool TerrainHasMaterial(uint layer)
+{
+	return u_Terrain.LayerMaterial[layer] > -0.5;
+}
+
+GPUMaterial TerrainLayer(uint layer)
+{
+	return u_Materials[uint(max(u_Terrain.LayerMaterial[layer], 0.0) + 0.5)];
+}
+
+vec2 TerrainLayerCoord(uint layer, vec2 texCoord)
+{
+	float tiling = TerrainHasMaterial(layer) ? TerrainLayer(layer).Tiling : 0.25;
+	return texCoord * (tiling > 0.0 ? tiling : 1.0);
+}
+
+// A value noise of the ground (0 to 1, smooth): it breaks up the layers' borders
+float TerrainHash(vec2 p)
+{
+	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float TerrainNoise(vec2 p)
+{
+	vec2 i = floor(p), f = fract(p);
+	vec2 u = f * f * (3.0 - 2.0 * f);
+	return mix(mix(TerrainHash(i), TerrainHash(i + vec2(1.0, 0.0)), u.x), mix(TerrainHash(i + vec2(0.0, 1.0)), TerrainHash(i + vec2(1.0, 1.0)), u.x), u.y);
+}
+
+void MaterialSetup(vec3 worldPosition, vec3 vertexNormal)
+{
+	vec3 normal = normalize(vertexNormal);
+	float jitter = TerrainNoise(worldPosition.xz * 0.12) * 0.7 + TerrainNoise(worldPosition.xz * 0.5) * 0.3 - 0.5;
+	float slope = 1.0 - normal.y;
+	float rock = smoothstep(u_Terrain.RockSlopeStart, u_Terrain.RockSlopeEnd, slope + jitter * 0.04);
+	rock = max(rock, smoothstep(u_Terrain.RockHeight - 4.0, u_Terrain.RockHeight + 4.0, worldPosition.y + jitter * 8.0));
+	float sand = 1.0 - smoothstep(u_Terrain.SandHeight - 1.0, u_Terrain.SandHeight + 1.0, worldPosition.y + jitter * 2.0);
+	t_Weights = vec3((1.0 - rock) * sand, (1.0 - rock) * (1.0 - sand), rock);
+}
+
+vec3 TerrainFallbackAlbedo(uint layer)
+{
+	return layer == 0u ? vec3(0.76, 0.68, 0.50) : layer == 1u ? vec3(0.24, 0.38, 0.12) : vec3(0.42, 0.40, 0.37);
+}
+
+vec3 TerrainAlbedo(uint layer, vec2 texCoord)
+{
+	if (!TerrainHasMaterial(layer))
+	{
+		return TerrainFallbackAlbedo(layer);
+	}
+	if (TerrainHasMap(layer, 0u))
+	{
+		vec2 uv = TerrainLayerCoord(layer, texCoord);
+		return layer == 0u ? texture(u_SandAlbedo, uv).rgb : layer == 1u ? texture(u_GrassAlbedo, uv).rgb : texture(u_RockAlbedo, uv).rgb;
+	}
+	return TerrainLayer(layer).AlbedoColor.rgb;
+}
+
+vec3 MaterialAlbedo(vec2 texCoord)
+{
+	vec3 albedo = vec3(0.0);
+	for (uint layer = 0u; layer < 3u; layer++)
+	{
+		if (t_Weights[layer] > 0.001)
+		{
+			albedo += TerrainAlbedo(layer, texCoord) * t_Weights[layer];
+		}
+	}
+	return albedo;
+}
+
+float MaterialMetalness(vec2 texCoord)
+{
+	float metalness = 0.0;
+	for (uint layer = 0u; layer < 3u; layer++)
+	{
+		metalness += (TerrainHasMaterial(layer) ? TerrainLayer(layer).Metalness : 0.0) * t_Weights[layer];
+	}
+	return metalness;
+}
+
+float MaterialRoughness(vec2 texCoord)
+{
+	const vec3 fallback = vec3(0.9, 0.85, 0.75);
+	float roughness = 0.0;
+	for (uint layer = 0u; layer < 3u; layer++)
+	{
+		roughness += (TerrainHasMaterial(layer) ? TerrainLayer(layer).Roughness : fallback[layer]) * t_Weights[layer];
+	}
+	return max(roughness, 0.05);
+}
+
+// The layers' normal maps mixed in tangent space (a layer without one is flat), then into the world by the tangent frame
+vec3 MaterialNormal(vec2 texCoord, vec3 vertexNormal, mat3 worldNormals)
+{
+	vec3 tangentNormal = vec3(0.0);
+	bool anyMap = false;
+	for (uint layer = 0u; layer < 3u; layer++)
+	{
+		if (t_Weights[layer] <= 0.001)
+		{
+			continue;
+		}
+		vec3 n = vec3(0.0, 0.0, 1.0);
+		if (TerrainHasMap(layer, 1u))
+		{
+			vec2 uv = TerrainLayerCoord(layer, texCoord);
+			n = DecodeNormalMap((layer == 0u ? texture(u_SandNormal, uv) : layer == 1u ? texture(u_GrassNormal, uv) : texture(u_RockNormal, uv)).rg);
+			anyMap = true;
+		}
+		tangentNormal += n * t_Weights[layer];
+	}
+	return anyMap ? normalize(worldNormals * normalize(tangentNormal)) : normalize(vertexNormal);
+}
+
+float MaterialAmbientOcclusion(vec2 texCoord)
+{
+	return 1.0;
+}
+
+vec3 MaterialEmissive(vec2 texCoord)
+{
+	return vec3(0.0);
+}
+
+#endif

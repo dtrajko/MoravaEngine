@@ -3,6 +3,7 @@
 #include "PhysicsLayers.h"
 #include "PhysicsMath.h"
 
+#include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h" // a terrain's layer materials (TerrainComponent)
 #include "EnvMapVulkan/EnvMapVulkanScene.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
 
@@ -18,6 +19,7 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
+#include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
@@ -303,6 +305,47 @@ static JPH::RefConst<JPH::Shape> CreateShape(const EnvMapVulkanScene& scene, Env
 	return shape;
 }
 
+bool ScenePhysics::CreateTerrainBody(Body& body, TerrainComponent& terrain)
+{
+	const std::string& name = m_Scene->Get<NameComponent>(body.Entity).Name;
+	// Its heights as the renderer has them (the same settings give the same heights), or made now: a game can start before
+	// the first frame is drawn
+	if (!terrain.Heights || terrain.Heights->ShapeHash != terrain.Settings.GetShapeHash())
+	{
+		terrain.Heights = Terrain::GenerateHeights(terrain.Settings);
+	}
+	const TerrainHeights& heights = *terrain.Heights;
+	if (heights.SampleCount < 2)
+	{
+		return false;
+	}
+	// Jolt's height field: offset + scale * (x, height, z) at sample (x, z), its squares split as the chunks' are
+	const float half = heights.Size * 0.5f;
+	JPH::HeightFieldShapeSettings settings(heights.Heights.data(), JPH::Vec3(-half, 0.0f, -half), JPH::Vec3(heights.Spacing, 1.0f, heights.Spacing),
+		heights.SampleCount);
+	JPH::ShapeSettings::ShapeResult result = settings.Create();
+	if (result.HasError())
+	{
+		Log::GetLogger()->warn("Physics: the terrain '{0}' could not be made ({1}): no body", name, result.GetError().c_str());
+		return false;
+	}
+
+	// Where the entity is: a terrain isn't turned or scaled
+	const glm::vec3 position = glm::vec3(m_Scene->GetWorldTransform(body.Entity)[3]);
+	body.Motion = JPH::EMotionType::Static;
+	body.Scale = glm::vec3(1.0f);
+	JPH::BodyCreationSettings bodySettings(result.Get(), ToJolt(position), JPH::Quat::sIdentity(), JPH::EMotionType::Static, ObjectLayers::Static);
+	bodySettings.mFriction = terrain.Settings.Friction;
+	body.ID = m_World->AddBody(bodySettings);
+	if (body.ID.IsInvalid())
+	{
+		return false;
+	}
+	body.PreviousPosition = body.Position = position;
+	body.Written = m_Scene->Get<TransformComponent>(body.Entity);
+	return true;
+}
+
 bool ScenePhysics::CreateBody(Body& body, const ColliderComponent& collider, const RigidBodyComponent* rigidBody)
 {
 	const std::string& name = m_Scene->Get<NameComponent>(body.Entity).Name;
@@ -427,9 +470,16 @@ void ScenePhysics::Start(EnvMapVulkanScene& scene, const PhysicsCollisionMatrix&
 	m_World->GetSystem().SetContactListener(m_Listener.get());
 
 	AddCounts counts;
-	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, ColliderComponent&)
+	scene.Each<TerrainComponent>([&](EnvMapVulkanEntityID entity, TerrainComponent&)
 	{
 		AddEntity(entity, counts);
+	});
+	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, ColliderComponent&)
+	{
+		if (!scene.Has<TerrainComponent>(entity))
+		{
+			AddEntity(entity, counts);
+		}
 	});
 	scene.Each<RigidBodyComponent>([&](EnvMapVulkanEntityID entity, RigidBodyComponent&)
 	{
@@ -470,6 +520,21 @@ void ScenePhysics::AddEntities(const std::vector<EnvMapVulkanEntityID>& entities
 void ScenePhysics::AddEntity(EnvMapVulkanEntityID entity, AddCounts& counts)
 {
 	EnvMapVulkanScene& scene = *m_Scene;
+	// A terrain: its height field (a Collider or Rigid Body on it isn't used)
+	if (TerrainComponent* terrain = scene.TryGet<TerrainComponent>(entity))
+	{
+		Body body;
+		body.Entity = entity;
+		if (!CreateTerrainBody(body, *terrain))
+		{
+			counts.Failed++;
+			return;
+		}
+		counts.Motions[(int)JPH::EMotionType::Static]++;
+		m_BodyInfo[body.ID.GetIndexAndSequenceNumber()] = { entity, false };
+		m_Bodies.push_back(body);
+		return;
+	}
 	const ColliderComponent* collider = scene.TryGet<ColliderComponent>(entity);
 	if (const CharacterControllerComponent* settings = scene.TryGet<CharacterControllerComponent>(entity))
 	{

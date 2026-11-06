@@ -370,6 +370,15 @@ void OnImGuiRenderSceneHierarchy()
 		{
 			AddProbeVolumeAtView();
 		}
+		if (ImGui::MenuItem("Terrain"))
+		{
+			AddTerrain();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Hills, valleys and a flat area to start in, made from a seed: 1 km square around the origin,\n"
+				"its flat area at height 0. Randomize in the Inspector makes another one");
+		}
 		if (ImGui::MenuItem("Prefab..."))
 		{
 			const std::string folder = GetPrefabsFolder();
