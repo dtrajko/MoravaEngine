@@ -252,6 +252,19 @@ void TransformComponent::SetLightDirection(const glm::vec3& direction)
 	SetMatrix(matrix);
 }
 
+// TerrainComponent
+
+const char* TerrainComponent::GetLayerName(uint32_t layer)
+{
+	switch (layer)
+	{
+		case Sand:  return "Sand";
+		case Grass: return "Grass";
+		case Rock:  return "Rock";
+	}
+	return "Grass";
+}
+
 // ColliderComponent, RigidBodyComponent
 
 const char* ColliderComponent::GetShapeName(Shape shape)

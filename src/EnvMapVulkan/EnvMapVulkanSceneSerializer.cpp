@@ -508,6 +508,53 @@ namespace EnvMapVulkanSceneSerializer
 		{
 			WriteWater(out, water->Settings);
 		}
+		if (const TerrainComponent* terrain = scene.TryGet<TerrainComponent>(entity))
+		{
+			// The settings only: the heights and the chunks are made from them when the scene opens
+			const TerrainSettings& t = terrain->Settings;
+			out << YAML::Key << "Terrain" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Seed" << YAML::Value << t.Seed;
+			out << YAML::Key << "Size" << YAML::Value << t.Size;
+			out << YAML::Key << "Height" << YAML::Value << t.Height;
+			out << YAML::Key << "FeatureSize" << YAML::Value << t.FeatureSize;
+			out << YAML::Key << "Octaves" << YAML::Value << t.Octaves;
+			out << YAML::Key << "Roughness" << YAML::Value << t.Roughness;
+			out << YAML::Key << "Ridges" << YAML::Value << t.Ridges;
+			out << YAML::Key << "Valleys" << YAML::Value << t.Valleys;
+			out << YAML::Key << "RimHeight" << YAML::Value << t.RimHeight;
+			out << YAML::Key << "RimWidth" << YAML::Value << t.RimWidth;
+			WriteVec2(out, "FlatCenter", t.FlatCenter);
+			out << YAML::Key << "FlatRadius" << YAML::Value << t.FlatRadius;
+			out << YAML::Key << "FlatBlend" << YAML::Value << t.FlatBlend;
+			out << YAML::Key << "SandHeight" << YAML::Value << t.SandHeight;
+			out << YAML::Key << "RockSlope" << YAML::Value << t.RockSlope;
+			out << YAML::Key << "RockHeight" << YAML::Value << t.RockHeight;
+			out << YAML::Key << "Friction" << YAML::Value << t.Friction;
+			// Each layer's material by ID (and its file, as a part's material is written)
+			out << YAML::Key << "Layers" << YAML::Value << YAML::BeginMap;
+			for (uint32_t layer = 0; layer < TerrainComponent::LayerCount; layer++)
+			{
+				const TerrainComponent::LayerMaterial& material = terrain->Layers[layer];
+				if (material.ID == 0)
+				{
+					continue;
+				}
+				out << YAML::Key << TerrainComponent::GetLayerName(layer) << YAML::Value << YAML::BeginMap;
+				out << YAML::Key << "ID" << YAML::Value << material.ID;
+				const std::string file = material.Material ? material.Material->GetFilePath() : material.File;
+				if (AssetReference::GetTextMode() != AssetReference::TextMode::Stable && !file.empty())
+				{
+					out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(file);
+				}
+				if (material.Material)
+				{
+					out << YAML::Key << "Name" << YAML::Value << material.Material->GetName();
+				}
+				out << YAML::EndMap;
+			}
+			out << YAML::EndMap;
+			out << YAML::EndMap;
+		}
 		if (const ProbeVolumeComponent* probes = scene.TryGet<ProbeVolumeComponent>(entity))
 		{
 			// Its placement (center and size) is the entity's transform
@@ -647,6 +694,40 @@ namespace EnvMapVulkanSceneSerializer
 		{
 			WaterComponent& water = scene.Add<WaterComponent>(entity);
 			ReadWater(waterNode, water.Settings);
+		}
+		if (YAML::Node terrainNode = node["Terrain"])
+		{
+			TerrainComponent& terrain = scene.Add<TerrainComponent>(entity);
+			TerrainSettings& t = terrain.Settings;
+			Read(terrainNode, "Seed", t.Seed);
+			Read(terrainNode, "Size", t.Size);
+			Read(terrainNode, "Height", t.Height);
+			Read(terrainNode, "FeatureSize", t.FeatureSize);
+			Read(terrainNode, "Octaves", t.Octaves);
+			Read(terrainNode, "Roughness", t.Roughness);
+			Read(terrainNode, "Ridges", t.Ridges);
+			Read(terrainNode, "Valleys", t.Valleys);
+			Read(terrainNode, "RimHeight", t.RimHeight);
+			Read(terrainNode, "RimWidth", t.RimWidth);
+			ReadVec2(terrainNode["FlatCenter"], t.FlatCenter);
+			Read(terrainNode, "FlatRadius", t.FlatRadius);
+			Read(terrainNode, "FlatBlend", t.FlatBlend);
+			Read(terrainNode, "SandHeight", t.SandHeight);
+			Read(terrainNode, "RockSlope", t.RockSlope);
+			Read(terrainNode, "RockHeight", t.RockHeight);
+			Read(terrainNode, "Friction", t.Friction);
+			t.Clamp();
+			if (YAML::Node layersNode = terrainNode["Layers"])
+			{
+				for (uint32_t layer = 0; layer < TerrainComponent::LayerCount; layer++)
+				{
+					if (YAML::Node materialNode = layersNode[TerrainComponent::GetLayerName(layer)])
+					{
+						terrain.Layers[layer].ID = materialNode["ID"].as<uint64_t>(0);
+						terrain.Layers[layer].File = AssetReference::Read(materialNode, "File", "ID");
+					}
+				}
+			}
 		}
 		if (YAML::Node cameraNode = node["Camera"])
 		{

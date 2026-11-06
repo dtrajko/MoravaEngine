@@ -576,6 +576,7 @@ EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 	if (s_Scene.Has<SunComponent>(entity))         return EntityKind::Sun;
 	if (s_Scene.Has<WaterComponent>(entity))       return EntityKind::Water;
 	if (s_Scene.Has<ProbeVolumeComponent>(entity)) return EntityKind::ProbeVolume;
+	if (s_Scene.Has<TerrainComponent>(entity))     return EntityKind::Terrain;
 	if (s_Scene.Has<EnvironmentComponent>(entity)) return EntityKind::Environment;
 	if (s_Scene.Has<CameraComponent>(entity))      return EntityKind::Camera;
 	if (s_Scene.Has<AudioSourceComponent>(entity)) return EntityKind::Sound; // a sound alone (a model's is the model's)
@@ -598,6 +599,7 @@ const char* GetEntityKindName(EntityKind kind)
 		case EntityKind::PointLight:  return "Point Light";
 		case EntityKind::SpotLight:   return "Spot Light";
 		case EntityKind::Water:       return "Water";
+		case EntityKind::Terrain:     return "Terrain";
 		case EntityKind::ProbeVolume: return "Probe Volume";
 		case EntityKind::Model:       return "Model";
 		case EntityKind::Part:        return "Mesh (part of a model)";

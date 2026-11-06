@@ -78,6 +78,8 @@ public:
 	{
 		return cutout ? (skinned ? m_SkinnedCutoutPipeline : m_StaticCutoutPipeline) : (skinned ? m_SkinnedPipeline : m_StaticPipeline);
 	}
+	// For a terrain's chunks (EnvMapVulkanTerrain: its layers mixed by height and slope)
+	VkPipeline GetTerrainPipeline() const { return m_TerrainPipeline; }
 	uint32_t GetWidth() const { return m_Width; }
 	uint32_t GetHeight() const { return m_Height; }
 	// For descriptor sets that sample the G-buffer (nearest filtering, SHADER_READ_ONLY_OPTIMAL)
@@ -112,6 +114,7 @@ private:
 	VkPipeline m_SkinnedPipeline = VK_NULL_HANDLE;
 	VkPipeline m_StaticCutoutPipeline = VK_NULL_HANDLE;
 	VkPipeline m_SkinnedCutoutPipeline = VK_NULL_HANDLE;
+	VkPipeline m_TerrainPipeline = VK_NULL_HANDLE;
 	// Vertex buffer binding 1 of the prepass pipelines (instance rate): a mat4 per draw
 	VkBuffer m_PreviousTransformBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory m_PreviousTransformMemory = VK_NULL_HANDLE;

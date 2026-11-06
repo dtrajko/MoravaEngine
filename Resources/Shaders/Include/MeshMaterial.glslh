@@ -4,6 +4,11 @@
 #ifndef MESH_MATERIAL_GLSLH
 #define MESH_MATERIAL_GLSLH
 
+#ifdef MATERIAL_TERRAIN
+// A terrain's chunks (HazelPBR_Terrain.glsl, GBufferPrepass_Terrain.glsl): the same functions, from its three layers
+#include "TerrainMaterial.glslh"
+#else
+
 #include "MaterialMaps.glslh"
 #include "NormalMap.glslh"
 #include "FrameSet.glslh" // u_Materials: the flags (flip, display), the cutoff
@@ -31,9 +36,15 @@ layout (push_constant) uniform Material
 } u_MaterialUniforms;
 
 // The material's flags (GPUMaterialFlag..., Include/GPUMaterial.glslh): from the material buffer
+// The material's entry in u_Materials
+uint MaterialBufferIndex()
+{
+	return uint(u_MaterialUniforms.MaterialIndex + 0.5);
+}
+
 uint MaterialFlags()
 {
-	return u_Materials[uint(u_MaterialUniforms.MaterialIndex + 0.5)].Flags;
+	return u_Materials[MaterialBufferIndex()].Flags;
 }
 
 bool MaterialFlipsHorizontally()
@@ -70,6 +81,17 @@ float MaterialRoughness(vec2 texCoord)
 	return max(roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
 }
 
+// The ambient occlusion map (1: none), and the emission (its map times the intensity; black: none)
+float MaterialAmbientOcclusion(vec2 texCoord)
+{
+	return u_MaterialUniforms.AOTexToggle > 0.5 ? texture(u_AOTexture, texCoord).r : 1.0;
+}
+
+vec3 MaterialEmissive(vec2 texCoord)
+{
+	return u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
+}
+
 // The world-space shading normal: the vertex normal, or the normal map turned into world space by the tangent frame
 vec3 MaterialNormal(vec2 texCoord, vec3 vertexNormal, mat3 worldNormals)
 {
@@ -97,5 +119,12 @@ void MaterialCutAway(vec2 texCoord)
 	}
 }
 #endif
+
+// What a surface needs set up before the functions above (a terrain: where it is); nothing for a material
+void MaterialSetup(vec3 worldPosition, vec3 vertexNormal)
+{
+}
+
+#endif // MATERIAL_TERRAIN
 
 #endif

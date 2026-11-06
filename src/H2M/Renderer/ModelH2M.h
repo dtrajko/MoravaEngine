@@ -121,6 +121,9 @@ namespace H2M
 		ModelH2M(const std::string& filename);
 		ModelH2M(const std::string& filename, RefH2M<MoravaShader> shader, RefH2M<MaterialH2M> material, bool isAnimated);
 		ModelH2M(const RefH2M<ModelH2M>& source, const std::string& filename); // use LoadShared
+		// A model made in memory, not read from a file (a terrain's chunks): name is what the log and the panels call it.
+		// It has no triangle cache (mouse picking tests its owner's own way)
+		ModelH2M(const std::string& name, ModelData&& data);
 		virtual ~ModelH2M() override;
 
 		// A model of its own on the file's shared one, which is read now unless it is in memory and the file hasn't changed.
@@ -261,6 +264,8 @@ namespace H2M
 		// The bone matrices of the played clip at time (in ticks; the bind pose when the model isn't animated)
 		void BoneTransform(float time);
 		void ApplyNodeTransforms(const ModelData& data);
+		// The meshes, buffers and materials from the data (moved out of it), as Create reads them from a file
+		void Build(ModelData& data, bool triangleCache);
 
 		void ImGuiNodeHierarchy(uint32_t node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 

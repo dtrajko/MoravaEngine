@@ -12,7 +12,8 @@ namespace EnvMapVulkanSceneData
 {
 	static void CollectModels(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, std::vector<EnvMapVulkanEntityID>& models)
 	{
-		if (scene.Has<ModelComponent>(entity))
+		const TerrainComponent* terrain = scene.TryGet<TerrainComponent>(entity);
+		if (scene.Has<ModelComponent>(entity) || (terrain && terrain->Model))
 		{
 			models.push_back(entity);
 		}
@@ -34,8 +35,12 @@ namespace EnvMapVulkanSceneData
 
 	H2M::RefH2M<H2M::ModelH2M> GetModel(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID model)
 	{
-		const ModelComponent* component = scene.TryGet<ModelComponent>(model);
-		return component ? component->Model : H2M::RefH2M<H2M::ModelH2M>();
+		if (const ModelComponent* component = scene.TryGet<ModelComponent>(model))
+		{
+			return component->Model;
+		}
+		const TerrainComponent* terrain = scene.TryGet<TerrainComponent>(model);
+		return terrain ? terrain->Model : H2M::RefH2M<H2M::ModelH2M>();
 	}
 
 	EnvMapVulkanEntityID FindPart(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID model, int meshIndex)
@@ -55,6 +60,21 @@ namespace EnvMapVulkanSceneData
 	{
 		H2M::RefH2M<H2M::ModelH2M> modelRef = GetModel(scene, model);
 		std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> materials(modelRef ? modelRef->GetMeshes().size() : 0);
+		// A terrain's chunks: its grass layer's, for what reads a material by itself (the rays, the probes; the terrain
+		// shaders mix the three layers: EnvMapVulkanTerrain). An opaque one: a terrain is never glass or cut out
+		if (const TerrainComponent* terrain = scene.TryGet<TerrainComponent>(model); terrain && !scene.Has<ModelComponent>(model))
+		{
+			H2M::RefH2M<EnvMapVulkanMaterial> grass = terrain->Layers[TerrainComponent::Grass].Material;
+			if (grass && grass->GetSurface() != EnvMapVulkanMaterial::Surface::Opaque)
+			{
+				grass = H2M::RefH2M<EnvMapVulkanMaterial>();
+			}
+			for (auto& material : materials)
+			{
+				material = grass ? grass : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
+			}
+			return materials;
+		}
 		for (EnvMapVulkanEntityID child : scene.GetChildren(model))
 		{
 			const MeshPartComponent* part = scene.TryGet<MeshPartComponent>(child);

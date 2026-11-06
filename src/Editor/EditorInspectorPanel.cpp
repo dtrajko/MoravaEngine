@@ -1414,6 +1414,15 @@ void OnImGuiRenderInspector()
 		case EntityKind::Environment:
 			EnvironmentControls();
 			break;
+		case EntityKind::Terrain:
+			if (ImGui::Button("Delete Terrain"))
+			{
+				DeleteEntity(entity);
+				ImGui::End();
+				return;
+			}
+			TerrainControls(entity);
+			break;
 		case EntityKind::Camera:
 		{
 			if (ImGui::Button("Delete Camera"))

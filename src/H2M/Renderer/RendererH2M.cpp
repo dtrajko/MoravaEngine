@@ -151,11 +151,13 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Anim.glsl"); // skinned meshes (SceneEnvMapVulkan)
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Cutout_Static.glsl"); // SceneEnvMapVulkan: cutout materials without the prepass (the water's reflection)
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Cutout_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Terrain.glsl"); // SceneEnvMapVulkan: a terrain's layers (EnvMapVulkanTerrain)
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Glass_Static.glsl"); // SceneEnvMapVulkan: meshes with a glass material
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Static.glsl"); // SceneEnvMapVulkan: the G-buffer prepass
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Anim.glsl");   // SceneEnvMapVulkan: the G-buffer prepass (skinned)
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Cutout_Static.glsl"); // SceneEnvMapVulkan: the prepass of cutout materials
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Cutout_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Terrain.glsl"); // SceneEnvMapVulkan: the prepass of a terrain
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Water.glsl");         // SceneEnvMapVulkan: the water plane
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/WaterFog.glsl");      // SceneEnvMapVulkan: the water volume (underwater fog)
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/WaterCaustics.glsl"); // SceneEnvMapVulkan: the light the waves focus under the water

@@ -52,7 +52,7 @@ void EnvMapVulkanGBuffer::Create(H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuff
 void EnvMapVulkanGBuffer::Destroy()
 {
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
-	for (VkPipeline* pipeline : { &m_StaticPipeline, &m_SkinnedPipeline, &m_StaticCutoutPipeline, &m_SkinnedCutoutPipeline })
+	for (VkPipeline* pipeline : { &m_StaticPipeline, &m_SkinnedPipeline, &m_StaticCutoutPipeline, &m_SkinnedCutoutPipeline, &m_TerrainPipeline })
 	{
 		if (*pipeline)
 		{
@@ -382,6 +382,7 @@ void EnvMapVulkanGBuffer::CreatePipelines(H2M::RefH2M<H2M::PipelineH2M> staticMe
 	m_SkinnedPipeline = CreatePipeline("GBufferPrepass_Anim", skinnedMeshPipeline);
 	m_StaticCutoutPipeline = CreatePipeline("GBufferPrepass_Cutout_Static", staticMeshPipeline);
 	m_SkinnedCutoutPipeline = CreatePipeline("GBufferPrepass_Cutout_Anim", skinnedMeshPipeline);
+	m_TerrainPipeline = CreatePipeline("GBufferPrepass_Terrain", staticMeshPipeline);
 }
 
 VkPipeline EnvMapVulkanGBuffer::CreatePipeline(const std::string& shaderName, H2M::RefH2M<H2M::PipelineH2M> meshPipeline)
