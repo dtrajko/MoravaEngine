@@ -286,8 +286,8 @@ endforeach()
 # The editor (src/Editor) edits the scene of SceneEnvMapVulkan (EnvMapVulkanScene), and the player (src/Player) runs it:
 # so far only in Vulkan builds
 if(NOT "VULKAN" IN_LIST MORAVA_GRAPHICS_APIS)
-    list(FILTER SRC EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder|GameBuilder)\\.")
-    list(FILTER HEADERS EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder|GameBuilder)\\.")
+    list(FILTER SRC EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder|GameBuilder|GameArchive)\\.")
+    list(FILTER HEADERS EXCLUDE REGEX "^(Editor|Player)/|^Assets/(ShaderCompile|PackBuilder|GameBuilder|GameArchive)\\.")
 endif()
 
 # And the shared classes only the OpenGL scenes use (the older Morava scenes and what they are made of)
@@ -324,7 +324,7 @@ set(MORAVA_EDITOR_SOURCES
     "^EditorApplication\\."
     "^Editor/"
     "^Editor_Legacy/"
-    "^Assets/(ModelImport|ShaderCompile|PackBuilder|GameBuilder)\\."  # what makes cooked files and games: a player only reads them
+    "^Assets/(ModelImport|ShaderCompile|PackBuilder|GameBuilder|GameArchive)\\."  # what makes cooked files and games: a player only reads them
     "^EnvMap/EnvMap(SceneRenderer|SharedData)\\." # the OpenGL editor of SCENE_HAZEL_ENV_MAP (its materials are the core's)
     "^HazelVulkan/"
     "^ImGui/"
@@ -672,6 +672,20 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ImGuizmo
 )
 
+# zlib: Build Game's .tar.gz of a Linux game (Assets/GameArchive). assimp's own copy on Windows (zconf.h is made in its build
+# folder), the system's elsewhere (Linux packages, the macOS SDK)
+if(TARGET ${PROJECT_NAME} AND "VULKAN" IN_LIST MORAVA_GRAPHICS_APIS)
+    if(TARGET zlibstatic)
+        get_target_property(MORAVA_ZLIB_SOURCE_DIR zlibstatic SOURCE_DIR)
+        get_target_property(MORAVA_ZLIB_BINARY_DIR zlibstatic BINARY_DIR)
+        target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE "${MORAVA_ZLIB_SOURCE_DIR}" "${MORAVA_ZLIB_BINARY_DIR}")
+        target_link_libraries(${PROJECT_NAME} PRIVATE zlibstatic)
+    else()
+        find_package(ZLIB REQUIRED)
+        target_link_libraries(${PROJECT_NAME} PRIVATE ZLIB::ZLIB)
+    endif()
+endif()
+
 if(MORAVA_MONO)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         mono
@@ -687,6 +701,18 @@ if(TARGET MoravaPlayer)
     if(MSVC)
         target_link_libraries(MoravaPlayer PRIVATE delayimp dbghelp)
         target_link_options(MoravaPlayer PRIVATE /DELAYLOAD:vulkan-1.dll)
+        # Release keeps its symbols (MoravaPlayer.pdb, not shipped: CI keeps it beside the template), so a player's crash dump
+        # can be read. /Z7: in the object files, which ccache can keep. /DEBUG turns the linker's removal of unused code off,
+        # hence /OPT again
+        foreach(tgt MoravaCore MoravaPlayer)
+            target_compile_options(${tgt} PRIVATE $<$<CONFIG:Release>:/Z7>)
+        endforeach()
+        target_link_options(MoravaPlayer PRIVATE $<$<CONFIG:Release>:/DEBUG> $<$<CONFIG:Release>:/OPT:REF> $<$<CONFIG:Release>:/OPT:ICF>)
+    endif()
+    # Linux: a game's libraries beside its executable are found there (11.6). Today it has none of its own; the system gives
+    # libvulkan and the rest
+    if(UNIX AND NOT APPLE)
+        set_property(TARGET MoravaPlayer APPEND PROPERTY BUILD_RPATH "\$ORIGIN")
     endif()
     # A build with another graphics API as well: the core's shaders and models of that API call them, and the graphics API's
     # choice in the shared classes links those into the player. A Vulkan build's player has neither
@@ -700,9 +726,66 @@ endif()
 # the Vulkan loader (Homebrew's lib folder, or the Vulkan SDK's), so that folder joins the search paths
 if(APPLE AND Vulkan_LIBRARY)
     get_filename_component(MORAVA_VULKAN_LIBRARY_DIR "${Vulkan_LIBRARY}" DIRECTORY)
+    # The player first looks in a macOS app's Frameworks (11.6): a game carries its Vulkan loader
+    if(TARGET MoravaPlayer)
+        set_property(TARGET MoravaPlayer APPEND PROPERTY BUILD_RPATH "@executable_path/../Frameworks")
+    endif()
     foreach(tgt ${PROJECT_NAME} MoravaPlayer)
         if(TARGET ${tgt})
             set_property(TARGET ${tgt} APPEND PROPERTY BUILD_RPATH "${MORAVA_VULKAN_LIBRARY_DIR}")
+        endif()
+    endforeach()
+endif()
+
+# macOS player template (11.6): a game is an app that brings Vulkan with it. Beside the player: Frameworks/ with the Vulkan
+# loader and MoltenVK, and vulkan/icd.d/MoltenVK_icd.json naming MoltenVK from an app's Resources/vulkan/icd.d, where the loader
+# looks. The player names the loader @rpath/libvulkan.1.dylib (Homebrew's names its own file), so the app's copy is found first.
+# install_name_tool breaks a signature: the changed files are signed again, ad hoc, which Apple Silicon needs to run them
+if(APPLE AND TARGET MoravaPlayer AND Vulkan_LIBRARY)
+    get_filename_component(MORAVA_VULKAN_LOADER_FILE "${Vulkan_LIBRARY}" REALPATH)
+    execute_process(COMMAND otool -D "${MORAVA_VULKAN_LOADER_FILE}" OUTPUT_VARIABLE MORAVA_VULKAN_LOADER_ID OUTPUT_STRIP_TRAILING_WHITESPACE)
+    string(REGEX REPLACE "^[^\n]*\n" "" MORAVA_VULKAN_LOADER_ID "${MORAVA_VULKAN_LOADER_ID}")
+    find_library(MORAVA_MOLTENVK_LIBRARY MoltenVK HINTS "${MORAVA_VULKAN_LIBRARY_DIR}" /opt/homebrew/lib /usr/local/lib)
+    if(MORAVA_MOLTENVK_LIBRARY)
+        get_filename_component(MORAVA_MOLTENVK_FILE "${MORAVA_MOLTENVK_LIBRARY}" REALPATH)
+        get_filename_component(MORAVA_MOLTENVK_DIR "${MORAVA_MOLTENVK_LIBRARY}" DIRECTORY)
+        find_file(MORAVA_MOLTENVK_ICD MoltenVK_icd.json HINTS "${MORAVA_MOLTENVK_DIR}/../etc/vulkan/icd.d" "${MORAVA_MOLTENVK_DIR}/../share/vulkan/icd.d" NO_DEFAULT_PATH)
+    endif()
+    if(NOT MORAVA_MOLTENVK_LIBRARY OR NOT MORAVA_MOLTENVK_ICD)
+        message(WARNING "MoltenVK or its MoltenVK_icd.json not found: the player template can't make a macOS app (brew install molten-vk)")
+    else()
+        file(READ "${MORAVA_MOLTENVK_ICD}" MORAVA_MOLTENVK_ICD_TEXT)
+        string(REGEX REPLACE "\"library_path\"[ \t]*:[ \t]*\"[^\"]*\"" "\"library_path\": \"../../../Frameworks/libMoltenVK.dylib\""
+            MORAVA_MOLTENVK_ICD_TEXT "${MORAVA_MOLTENVK_ICD_TEXT}")
+        file(WRITE "${CMAKE_BINARY_DIR}/MoltenVK_icd.json" "${MORAVA_MOLTENVK_ICD_TEXT}")
+        set(MORAVA_FRAMEWORKS "$<TARGET_FILE_DIR:MoravaPlayer>/Frameworks")
+        add_custom_command(TARGET MoravaPlayer POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${MORAVA_FRAMEWORKS}" "$<TARGET_FILE_DIR:MoravaPlayer>/vulkan/icd.d"
+            COMMAND ${CMAKE_COMMAND} -E copy "${MORAVA_VULKAN_LOADER_FILE}" "${MORAVA_FRAMEWORKS}/libvulkan.1.dylib"
+            COMMAND ${CMAKE_COMMAND} -E copy "${MORAVA_MOLTENVK_FILE}" "${MORAVA_FRAMEWORKS}/libMoltenVK.dylib"
+            COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_BINARY_DIR}/MoltenVK_icd.json" "$<TARGET_FILE_DIR:MoravaPlayer>/vulkan/icd.d/MoltenVK_icd.json"
+            COMMAND chmod u+w "${MORAVA_FRAMEWORKS}/libvulkan.1.dylib" "${MORAVA_FRAMEWORKS}/libMoltenVK.dylib"
+            COMMAND install_name_tool -id @rpath/libvulkan.1.dylib "${MORAVA_FRAMEWORKS}/libvulkan.1.dylib"
+            COMMAND install_name_tool -id @rpath/libMoltenVK.dylib "${MORAVA_FRAMEWORKS}/libMoltenVK.dylib"
+            COMMAND install_name_tool -change "${MORAVA_VULKAN_LOADER_ID}" @rpath/libvulkan.1.dylib "$<TARGET_FILE:MoravaPlayer>"
+            COMMAND codesign --force --sign - "${MORAVA_FRAMEWORKS}/libvulkan.1.dylib" "${MORAVA_FRAMEWORKS}/libMoltenVK.dylib" "$<TARGET_FILE:MoravaPlayer>"
+            COMMENT "MoravaPlayer: the Vulkan loader and MoltenVK beside it, for a macOS app"
+            VERBATIM
+        )
+    endif()
+
+    # Their license notices go with the game: the files Homebrew keeps with each (11.5)
+    foreach(entry "Vulkan Loader|${MORAVA_VULKAN_LOADER_FILE}" "MoltenVK|${MORAVA_MOLTENVK_FILE}")
+        string(REPLACE "|" ";" parts "${entry}")
+        list(GET parts 0 name)
+        list(GET parts 1 file)
+        get_filename_component(keg "${file}" DIRECTORY)
+        file(GLOB licenses "${keg}/../LICENSE*" "${keg}/../share/doc/*/LICENSE*")
+        if(licenses)
+            list(GET licenses 0 license)
+            list(APPEND MORAVA_EXTRA_NOTICES "${name}|${license}")
+        else()
+            message(WARNING "License notices: ${name}: no LICENSE file beside '${file}': the macOS game would ship without its notice")
         endif()
     endforeach()
 endif()
@@ -723,10 +806,13 @@ if(MORAVA_MONO)
     )
 endif()
 
-# The license notices a game ships with, beside the player: Build Game copies them with it (11.5)
+# The license notices a game ships with, beside the player: Build Game copies them with it (11.5). The extra ones (macOS:
+# Vulkan's loader and MoltenVK) by absolute path, joined with ^^ (a ; would split the command's argument)
+string(REPLACE ";" "^^" MORAVA_EXTRA_NOTICES_TEXT "${MORAVA_EXTRA_NOTICES}")
 if(TARGET MoravaPlayer AND MORAVA_SCRIPTING)
     add_custom_command(TARGET MoravaPlayer POST_BUILD
         COMMAND ${CMAKE_COMMAND} "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}" "-DDOTNET_DIR=${MORAVA_DOTNET_INSTALL}"
+            "-DEXTRA_NOTICES=${MORAVA_EXTRA_NOTICES_TEXT}"
             "-DOUTPUT=$<TARGET_FILE_DIR:MoravaPlayer>/THIRD_PARTY_NOTICES.txt" -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ThirdPartyNotices.cmake"
         VERBATIM
     )

@@ -38,6 +38,7 @@ static int s_ErrorCount = 0;       // (under s_StatusMutex)
 static int s_ExitCode = -1;        // (under s_StatusMutex); -1: no build finished yet
 static std::string s_OutputFolder; // empty: the project's default
 static std::string s_OutputProject; // the project s_OutputFolder was chosen for
+static std::string s_Platform;     // empty: the editor's own
 
 // Each line as the build's log wrote it: "[info] ...", "[warning] ...", "[error] ..."
 static void ReadBuildLine(const std::string& line)
@@ -69,7 +70,7 @@ static void ReadBuildLine(const std::string& line)
 	}
 }
 
-static void StartBuild(const Project& project, const std::string& outputFolder)
+static void StartBuild(const Project& project, const std::string& outputFolder, const std::string& platform)
 {
 	if (s_Worker.joinable())
 	{
@@ -84,10 +85,11 @@ static void StartBuild(const Project& project, const std::string& outputFolder)
 	}
 	s_Building = true;
 	s_WorkerDone = false;
-	s_Worker = std::thread([projectFile = project.FilePath, outputFolder]()
+	s_Worker = std::thread([projectFile = project.FilePath, outputFolder, platform]()
 	{
 		std::string error;
-		const int exitCode = Process::Run(Process::GetExecutablePath().u8string(), { "--build-game", projectFile, "--build-output", outputFolder }, std::string(), &ReadBuildLine, error);
+		const int exitCode = Process::Run(Process::GetExecutablePath().u8string(), { "--build-game", projectFile, "--build-output", outputFolder, "--build-platform", platform },
+			std::string(), &ReadBuildLine, error);
 		if (exitCode < 0)
 		{
 			ReadBuildLine("[error] Build Game: the build could not start: " + error);
@@ -269,13 +271,49 @@ void OnImGuiRenderBuildGamePanel()
 
 	save |= ShowBuildScenes(*project);
 
+	// For which platform: this one, and Linux once CI's template is beside the editor (Tools/Get-PlayerTemplates.ps1)
+	ImGui::SeparatorText("Platform");
+	const std::vector<std::string> platforms = GameBuilder::GetPlatforms();
+	if (s_Platform.empty() || std::find(platforms.begin(), platforms.end(), s_Platform) == platforms.end())
+	{
+		s_Platform = platforms.front();
+	}
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
+	if (ImGui::BeginCombo("Platform", s_Platform.c_str()))
+	{
+		for (const std::string& platform : platforms)
+		{
+			if (ImGui::Selectable(platform.c_str(), platform == s_Platform) && platform != s_Platform)
+			{
+				s_Platform = platform;
+				s_OutputFolder.clear(); // each platform has its own folder
+			}
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("win-x64: a folder with the game's .exe. linux-x64: a folder, and a .tar.gz of it beside it to hand out.\n"
+			"osx-arm64: an app (Name.app), built on a Mac.\n"
+			"Another platform's player comes from CI: Tools/Get-PlayerTemplates.ps1 puts it in\n%s", GameBuilder::GetTemplatesFolder().c_str());
+	}
+	if (platforms.size() == 1 && platforms.front() != "linux-x64")
+	{
+		ImGui::SameLine();
+		ImGui::TextDisabled("(?)");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("A Linux game too: download CI's Linux player with Tools/Get-PlayerTemplates.ps1");
+		}
+	}
+
 	// Where it goes: chosen for this session, the project's Build folder otherwise
 	if (s_OutputProject != project->FilePath)
 	{
 		s_OutputProject = project->FilePath;
 		s_OutputFolder.clear();
 	}
-	const std::string output = s_OutputFolder.empty() ? GameBuilder::GetDefaultOutputFolder(*project) : s_OutputFolder;
+	const std::string output = s_OutputFolder.empty() ? GameBuilder::GetDefaultOutputFolder(*project, s_Platform) : s_OutputFolder;
 	ImGui::SeparatorText("Output");
 	ImGui::TextWrapped("%s", output.c_str());
 	if (ImGui::Button("Choose Folder..."))
@@ -308,7 +346,7 @@ void OnImGuiRenderBuildGamePanel()
 			SaveProject();
 			save = false;
 		}
-		StartBuild(*project, output);
+		StartBuild(*project, output, s_Platform);
 	}
 	ImGui::EndDisabled();
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))

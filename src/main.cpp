@@ -62,7 +62,7 @@ int main(int argc, char** argv)
 	if (!options.BuildGameProject.empty())
 	{
 		spdlog::set_pattern("[%l] %v"); // File > Build Game reads each line's level
-		const int exitCode = GameBuilder::Run(options.BuildGameProject, options.BuildGameOutput);
+		const int exitCode = GameBuilder::Run(options.BuildGameProject, options.BuildGameOutput, options.BuildGamePlatform);
 		TextureCook::Shutdown();
 		return exitCode;
 	}

@@ -1,6 +1,7 @@
 #include "GameBuilder.h"
 
 #include "AssetFiles.h"
+#include "GameArchive.h"
 #include "PackBuilder.h"
 
 #include "Core/Log.h"
@@ -9,9 +10,11 @@
 #include "Project/Project.h"
 
 #include "stb_image.h"
+#include "stb_image_write.h"
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <chrono>
 #include <cstdint>
 #include <cstdlib>
@@ -20,6 +23,7 @@
 #include <filesystem>
 #include <fstream>
 #include <set>
+#include <sstream>
 #include <string>
 #include <system_error>
 #include <vector>
@@ -41,11 +45,30 @@ namespace fs = std::filesystem;
 namespace GameBuilder
 {
 #if defined(_WIN32)
-	static const char* const s_ExecutableExtension = ".exe";
+	static const char* const s_HostExecutableExtension = ".exe";
 #else
-	static const char* const s_ExecutableExtension = "";
+	static const char* const s_HostExecutableExtension = "";
 #endif
 	static const char* const s_NoticesFile = "THIRD_PARTY_NOTICES.txt";
+
+	// What a game for a platform is made of
+	struct Platform
+	{
+		std::string Name;
+		bool Windows = false, Linux = false, Mac = false;
+		std::string ExecutableExtension() const { return Windows ? ".exe" : ""; }
+		std::string PlayerFile() const { return "MoravaPlayer" + ExecutableExtension(); }
+	};
+
+	static Platform GetPlatform(const std::string& name)
+	{
+		Platform platform;
+		platform.Name = name;
+		platform.Windows = name.rfind("win-", 0) == 0;
+		platform.Linux = name.rfind("linux-", 0) == 0;
+		platform.Mac = name.rfind("osx-", 0) == 0;
+		return platform;
+	}
 
 	const char* GetPlatformName()
 	{
@@ -60,9 +83,33 @@ namespace GameBuilder
 #endif
 	}
 
-	std::string GetDefaultOutputFolder(const Project& project)
+	std::string GetDefaultOutputFolder(const Project& project, const std::string& platform)
 	{
-		return project.GetDirectory() + "/" + Project::BuildFolder + "/" + GetPlatformName();
+		return project.GetDirectory() + "/" + Project::BuildFolder + "/" + (platform.empty() ? std::string(GetPlatformName()) : platform);
+	}
+
+	std::string GetTemplatesFolder()
+	{
+		return (Process::GetExecutablePath().parent_path() / "PlayerTemplates").generic_u8string();
+	}
+
+	// This platform's, and a Linux game from anywhere once its template is here. Windows only on Windows (the icon and the version
+	// are written with Windows' own functions), macOS only on a Mac (the user's choice, 2026-11-06: an app is made where it can be
+	// tried)
+	bool CanBuildFor(const std::string& platform)
+	{
+		return platform == GetPlatformName() || platform == "linux-x64";
+	}
+
+	std::vector<std::string> GetPlatforms()
+	{
+		std::vector<std::string> platforms = { GetPlatformName() };
+		std::error_code error;
+		if (platforms[0] != "linux-x64" && fs::is_regular_file(fs::u8path(GetTemplatesFolder()) / "linux-x64" / "MoravaPlayer", error))
+		{
+			platforms.push_back("linux-x64");
+		}
+		return platforms;
 	}
 
 	std::string FindDotNet()
@@ -75,7 +122,7 @@ namespace GameBuilder
 		if (const char* root = std::getenv("DOTNET_ROOT"))
 		{
 			std::error_code error;
-			const fs::path candidate = fs::u8path(root) / (std::string("dotnet") + s_ExecutableExtension);
+			const fs::path candidate = fs::u8path(root) / (std::string("dotnet") + s_HostExecutableExtension);
 			if (fs::is_regular_file(candidate, error))
 			{
 				return candidate.u8string();
@@ -96,20 +143,27 @@ namespace GameBuilder
 
 	// ---- The player template
 
-	static bool HasPlayer(const fs::path& folder)
+	static bool HasPlayer(const fs::path& folder, const Platform& platform)
 	{
 		std::error_code error;
-		return fs::is_regular_file(folder / (std::string("MoravaPlayer") + s_ExecutableExtension), error);
+		return fs::is_regular_file(folder / platform.PlayerFile(), error);
 	}
 
-	// Where the player to ship is: a folder of templates beside the editor (an installed editor), the Release build beside a Debug
-	// editor's folder (Visual Studio's build folders), or the editor's own folder. Empty: none
-	static fs::path FindPlayerTemplate()
+	// Where the player to ship is: a folder of templates beside the editor (an installed editor, or CI's templates downloaded by
+	// Tools/Get-PlayerTemplates.ps1); for this platform also the Release build beside a Debug editor's folder (Visual Studio's
+	// build folders), or the editor's own folder. Empty: none
+	static fs::path FindPlayerTemplate(const Platform& platform)
 	{
 		const fs::path editorFolder = Process::GetExecutablePath().parent_path();
-		for (const fs::path& candidate : { editorFolder / "PlayerTemplates" / GetPlatformName(), editorFolder.parent_path() / "Release", editorFolder })
+		std::vector<fs::path> candidates = { fs::u8path(GetTemplatesFolder()) / platform.Name };
+		if (platform.Name == GetPlatformName())
 		{
-			if (HasPlayer(candidate))
+			candidates.push_back(editorFolder.parent_path() / "Release");
+			candidates.push_back(editorFolder);
+		}
+		for (const fs::path& candidate : candidates)
+		{
+			if (HasPlayer(candidate, platform))
 			{
 				return candidate;
 			}
@@ -117,9 +171,13 @@ namespace GameBuilder
 		return fs::path();
 	}
 
-	static bool CheckPlayerTemplate(const fs::path& folder)
+	static bool CheckPlayerTemplate(const fs::path& folder, const Platform& platform)
 	{
-		const fs::path player = folder / (std::string("MoravaPlayer") + s_ExecutableExtension);
+		if (platform.Name != GetPlatformName())
+		{
+			return true; // another platform's template comes from CI: its time says nothing about this editor's
+		}
+		const fs::path player = folder / platform.PlayerFile();
 		std::error_code error;
 		const fs::file_time_type playerTime = fs::last_write_time(player, error);
 		const fs::file_time_type editorTime = fs::last_write_time(Process::GetExecutablePath(), error);
@@ -148,63 +206,98 @@ namespace GameBuilder
 		return true;
 	}
 
-	static bool CopyPlayerTemplate(const fs::path& templateFolder, const fs::path& outputFolder, const fs::path& executable, bool hasScripts)
+	// A folder's files into another, replaced whole (so nothing older stays in it), without the build's stamp files
+	static bool CopyFolder(const fs::path& source, const fs::path& target)
 	{
-		if (!CopyOneFile(templateFolder / (std::string("MoravaPlayer") + s_ExecutableExtension), executable))
-		{
-			return false;
-		}
-
-		// What the player finds beside itself (ScriptHost): ScriptCore and the host. Not its symbols and documentation
 		std::error_code error;
-		for (const char* name : { "Morava.ScriptCore.dll", "Morava.ScriptCore.deps.json", "Morava.ScriptCore.runtimeconfig.json", "nethost.dll", s_NoticesFile })
+		fs::remove_all(target, error);
+		if (error)
 		{
-			if (fs::exists(templateFolder / name, error) && !CopyOneFile(templateFolder / name, outputFolder / name))
+			return Fail("'" + target.generic_u8string() + "' could not be replaced: " + error.message() + " (is the game running?)");
+		}
+		fs::create_directories(target, error);
+		for (fs::recursive_directory_iterator it(source, error), end; !error && it != end; it.increment(error))
+		{
+			const fs::path to = target / it->path().lexically_relative(source);
+			std::error_code entryError;
+			if (it->is_directory(entryError))
+			{
+				fs::create_directories(to, entryError);
+			}
+			else if (it->path().filename().u8string().rfind(".copied-", 0) != 0 && !CopyOneFile(it->path(), to))
 			{
 				return false;
 			}
 		}
-		if (!fs::exists(outputFolder / s_NoticesFile, error))
+		return error ? Fail("'" + source.generic_u8string() + "' could not be copied: " + error.message()) : true;
+	}
+
+	// Where a game's parts go: its executable, and the folder of its files (the same folder; in a macOS app Contents/Resources)
+	struct GameLayout
+	{
+		fs::path Executable;
+		fs::path Resources;
+		fs::path Bundle; // a macOS app: Name.app
+	};
+
+	static bool CopyPlayerTemplate(const fs::path& templateFolder, const GameLayout& layout, const Platform& platform, bool hasScripts)
+	{
+		std::error_code error;
+		fs::create_directories(layout.Executable.parent_path(), error);
+		fs::create_directories(layout.Resources, error);
+		if (!CopyOneFile(templateFolder / platform.PlayerFile(), layout.Executable))
+		{
+			return false;
+		}
+#if !defined(_WIN32)
+		// A template downloaded from CI lost its executable bit (artifacts are zip files). On Windows the Linux archive gives it
+		fs::permissions(layout.Executable, fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec, fs::perm_options::add, error);
+#endif
+
+		// What the player finds beside itself (ScriptHost): ScriptCore and the host. Not its symbols and documentation
+		for (const char* name : { "Morava.ScriptCore.dll", "Morava.ScriptCore.deps.json", "Morava.ScriptCore.runtimeconfig.json", "nethost.dll", s_NoticesFile })
+		{
+			if (fs::exists(templateFolder / name, error) && !CopyOneFile(templateFolder / name, layout.Resources / name))
+			{
+				return false;
+			}
+		}
+		if (!fs::exists(layout.Resources / s_NoticesFile, error))
 		{
 			return Fail(std::string("The player template has no ") + s_NoticesFile + ": build the player again");
 		}
 
-		// The private .NET: replaced whole, so an older version doesn't stay in it. Not the build's stamp file
-		const fs::path dotnetSource = templateFolder / "dotnet";
-		const fs::path dotnetTarget = outputFolder / "dotnet";
-		if (!fs::is_directory(dotnetSource, error))
+		// A macOS app carries the Vulkan loader and MoltenVK (the template's Frameworks/), and the driver file that names MoltenVK
+		// for the loader, which looks for it in the app's Resources/vulkan/icd.d
+		if (platform.Mac)
 		{
-			return hasScripts ? Fail("The player template has no private .NET ('" + dotnetSource.generic_u8string() + "'): the game's scripts couldn't run") : true;
-		}
-		fs::remove_all(dotnetTarget, error);
-		if (error)
-		{
-			return Fail("'" + dotnetTarget.generic_u8string() + "' could not be replaced: " + error.message() + " (is the game running?)");
-		}
-		for (fs::recursive_directory_iterator it(dotnetSource, error), end; !error && it != end; it.increment(error))
-		{
-			const fs::path target = dotnetTarget / it->path().lexically_relative(dotnetSource);
-			std::error_code entryError;
-			if (it->is_directory(entryError))
+			for (const char* folder : { "Frameworks", "vulkan" })
 			{
-				fs::create_directories(target, entryError);
+				if (!fs::is_directory(templateFolder / folder, error))
+				{
+					return Fail("The player template has no " + std::string(folder) + "/ (the Vulkan loader and MoltenVK): build the player again");
+				}
 			}
-			else if (it->path().filename().u8string().rfind(".copied-", 0) != 0 && !CopyOneFile(it->path(), target))
+			if (!CopyFolder(templateFolder / "Frameworks", layout.Bundle / "Contents" / "Frameworks") || !CopyFolder(templateFolder / "vulkan", layout.Resources / "vulkan"))
 			{
 				return false;
 			}
 		}
-		if (error)
+
+		// The private .NET
+		const fs::path dotnetSource = templateFolder / "dotnet";
+		if (!fs::is_directory(dotnetSource, error))
 		{
-			return Fail("The private .NET could not be copied: " + error.message());
+			return hasScripts ? Fail("The player template has no private .NET ('" + dotnetSource.generic_u8string() + "'): the game's scripts couldn't run") : true;
 		}
-		return true;
+		return CopyFolder(dotnetSource, layout.Resources / "dotnet");
 	}
 
 	// ---- The game's scripts
 
 	// Publishes the scripts in Release, in the project's Library (not over the assembly the editor has loaded). True with an empty
-	// folder when the project has nothing to publish: it has no scripts, or only an assembly built some other way
+	// folder when the project has nothing to publish: it has no scripts, or only an assembly built some other way. The assembly
+	// is the same on every platform: ScriptCore comes from the template, which is the same C# everywhere
 	static bool PublishScripts(const Project& project, const fs::path& templateFolder, fs::path& publishFolder)
 	{
 		const std::string csproj = project.GetScriptProjectPath();
@@ -284,6 +377,59 @@ namespace GameBuilder
 		}
 	}
 
+	// A square image at a smaller size (RGBA, rows from the top), averaged with its alpha weighing the colors
+	static std::vector<uint8_t> ResizeSquare(const uint8_t* rgba, int sourceSize, int size)
+	{
+		std::vector<uint8_t> out((size_t)size * size * 4);
+		for (int y = 0; y < size; y++)
+		{
+			const int y0 = y * sourceSize / size, y1 = std::max((y + 1) * sourceSize / size, y0 + 1);
+			for (int x = 0; x < size; x++)
+			{
+				const int x0 = x * sourceSize / size, x1 = std::max((x + 1) * sourceSize / size, x0 + 1);
+				uint64_t r = 0, g = 0, b = 0, a = 0;
+				for (int sy = y0; sy < y1; sy++)
+				{
+					for (int sx = x0; sx < x1; sx++)
+					{
+						const uint8_t* pixel = rgba + ((size_t)sy * sourceSize + sx) * 4;
+						r += (uint64_t)pixel[0] * pixel[3];
+						g += (uint64_t)pixel[1] * pixel[3];
+						b += (uint64_t)pixel[2] * pixel[3];
+						a += pixel[3];
+					}
+				}
+				const uint64_t count = (uint64_t)(x1 - x0) * (y1 - y0);
+				uint8_t* target = out.data() + ((size_t)y * size + x) * 4;
+				target[0] = a ? (uint8_t)(r / a) : 0;
+				target[1] = a ? (uint8_t)(g / a) : 0;
+				target[2] = a ? (uint8_t)(b / a) : 0;
+				target[3] = (uint8_t)(a / count);
+			}
+		}
+		return out;
+	}
+
+	// The project's icon as RGBA pixels, checked: square, and at least 16 pixels
+	static bool LoadIcon(const std::string& iconFile, std::vector<uint8_t>& pixels, int& size)
+	{
+		int width = 0, height = 0, channels = 0;
+		stbi_set_flip_vertically_on_load(0);
+		stbi_uc* data = stbi_load(iconFile.c_str(), &width, &height, &channels, 4);
+		if (!data)
+		{
+			return Fail("The icon '" + iconFile + "' can't be read: " + stbi_failure_reason());
+		}
+		pixels.assign(data, data + (size_t)width * height * 4);
+		stbi_image_free(data);
+		if (width != height || width < 16)
+		{
+			return Fail("The icon '" + iconFile + "' is " + std::to_string(width) + " x " + std::to_string(height) + ": it has to be square, 256 x 256 or larger for the sharpest result");
+		}
+		size = width;
+		return true;
+	}
+
 #if defined(_WIN32)
 	static std::wstring ToWide(const std::string& text)
 	{
@@ -355,8 +501,8 @@ namespace GameBuilder
 		return MakeVersionBlock(L"VS_VERSION_INFO", &fixedInfo, sizeof(fixedInfo), sizeof(fixedInfo), 0, { stringInfo, varInfo });
 	}
 
-	// A square image at a smaller size, averaged with its alpha weighing the colors, as an icon's bitmap: a header, the pixels
-	// from the bottom up in BGRA, then a mask that isn't used with 32 bits per pixel but has to be there
+	// An icon's bitmap: a header, the pixels from the bottom up in BGRA, then a mask that isn't used with 32 bits per pixel but has
+	// to be there
 	static std::vector<uint8_t> MakeIconImage(const uint8_t* rgba, int sourceSize, int size)
 	{
 		BITMAPINFOHEADER header = {};
@@ -368,34 +514,21 @@ namespace GameBuilder
 		header.biCompression = BI_RGB;
 		const size_t maskBytes = (size_t)((size + 31) / 32 * 4) * size;
 
+		const std::vector<uint8_t> resized = ResizeSquare(rgba, sourceSize, size);
 		std::vector<uint8_t> image;
 		AppendBytes(image, &header, sizeof(header));
 		image.resize(sizeof(header) + (size_t)size * size * 4 + maskBytes, 0);
 		uint8_t* out = image.data() + sizeof(header);
 		for (int y = 0; y < size; y++)
 		{
-			const int y0 = y * sourceSize / size, y1 = std::max((y + 1) * sourceSize / size, y0 + 1);
 			for (int x = 0; x < size; x++)
 			{
-				const int x0 = x * sourceSize / size, x1 = std::max((x + 1) * sourceSize / size, x0 + 1);
-				uint64_t r = 0, g = 0, b = 0, a = 0;
-				for (int sy = y0; sy < y1; sy++)
-				{
-					for (int sx = x0; sx < x1; sx++)
-					{
-						const uint8_t* pixel = rgba + ((size_t)sy * sourceSize + sx) * 4;
-						r += (uint64_t)pixel[0] * pixel[3];
-						g += (uint64_t)pixel[1] * pixel[3];
-						b += (uint64_t)pixel[2] * pixel[3];
-						a += pixel[3];
-					}
-				}
-				const uint64_t count = (uint64_t)(x1 - x0) * (y1 - y0);
+				const uint8_t* pixel = resized.data() + ((size_t)y * size + x) * 4;
 				uint8_t* target = out + ((size_t)(size - 1 - y) * size + x) * 4;
-				target[0] = a ? (uint8_t)(b / a) : 0;
-				target[1] = a ? (uint8_t)(g / a) : 0;
-				target[2] = a ? (uint8_t)(r / a) : 0;
-				target[3] = (uint8_t)(a / count);
+				target[0] = pixel[2];
+				target[1] = pixel[1];
+				target[2] = pixel[0];
+				target[3] = pixel[3];
 			}
 		}
 		return image;
@@ -418,17 +551,11 @@ namespace GameBuilder
 	// The executable's own icon and its window's: GLFW looks for an icon of this name, and Explorer takes the first by name
 	static bool AddIcon(HANDLE update, const std::string& iconFile)
 	{
-		int width = 0, height = 0, channels = 0;
-		stbi_set_flip_vertically_on_load(0);
-		stbi_uc* pixels = stbi_load(iconFile.c_str(), &width, &height, &channels, 4);
-		if (!pixels)
+		std::vector<uint8_t> pixels;
+		int width = 0;
+		if (!LoadIcon(iconFile, pixels, width))
 		{
-			return Fail("The icon '" + iconFile + "' can't be read: " + stbi_failure_reason());
-		}
-		if (width != height || width < 16)
-		{
-			stbi_image_free(pixels);
-			return Fail("The icon '" + iconFile + "' is " + std::to_string(width) + " x " + std::to_string(height) + ": it has to be square, 256 x 256 or larger for the sharpest result");
+			return false;
 		}
 
 		const WORD language = MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL);
@@ -441,13 +568,12 @@ namespace GameBuilder
 			{
 				continue;
 			}
-			std::vector<uint8_t> image = MakeIconImage(pixels, width, size);
+			std::vector<uint8_t> image = MakeIconImage(pixels.data(), width, size);
 			const WORD id = ++count;
 			ok = ok && UpdateResourceW(update, MAKEINTRESOURCEW(3) /* RT_ICON */, MAKEINTRESOURCEW(id), language, image.data(), (DWORD)image.size());
 			const IconGroupEntry entry = { (BYTE)(size % 256), (BYTE)(size % 256), 0, 0, 1, 32, (DWORD)image.size(), id };
 			AppendBytes(group, &entry, sizeof(entry));
 		}
-		stbi_image_free(pixels);
 		const IconGroupHeader header = { 0, 1, count };
 		std::memcpy(group.data(), &header, sizeof(header));
 		ok = ok && UpdateResourceW(update, MAKEINTRESOURCEW(14) /* RT_GROUP_ICON */, L"GLFW_ICON", language, group.data(), (DWORD)group.size());
@@ -500,21 +626,165 @@ namespace GameBuilder
 		file.flush();
 		return file ? true : Fail("The executable's console setting could not be changed");
 	}
-#else
-	static bool HideConsole(const fs::path&)
+#endif
+
+	// ---- A macOS app (11.6): Name.app/Contents with Info.plist, MacOS/<executable>, Resources/ (the game's files and its icon) and
+	// Frameworks/ (the Vulkan loader and MoltenVK). Not signed with a Developer ID (none yet, 2026-11-06): the executable and the
+	// libraries keep the ad-hoc signatures the template's build gave them, which Apple Silicon needs to run them at all, and
+	// nothing here changes them
+
+	static std::string EscapeXml(const std::string& text)
 	{
-		return true;
+		std::string out;
+		for (char c : text)
+		{
+			switch (c)
+			{
+			case '&': out += "&amp;"; break;
+			case '<': out += "&lt;"; break;
+			case '>': out += "&gt;"; break;
+			case '"': out += "&quot;"; break;
+			default: out += c;
+			}
+		}
+		return out;
 	}
 
-	static bool WriteResources(const Project& project, const fs::path&, const std::array<uint16_t, 4>&)
+	// com.<company>.<product> in lowercase letters, digits and hyphens: what macOS keeps the app's permissions and settings by
+	static std::string MakeBundleIdentifier(const Project& project)
 	{
-		if (!project.Build.Icon.empty())
+		auto part = [](const std::string& text)
 		{
-			Log::GetLogger()->info("Build Game: on this platform the icon isn't put in the executable yet");
+			std::string out;
+			for (char c : text)
+			{
+				if (std::isalnum((unsigned char)c))
+				{
+					out += (char)std::tolower((unsigned char)c);
+				}
+				else if (!out.empty() && out.back() != '-')
+				{
+					out += '-';
+				}
+			}
+			while (!out.empty() && out.back() == '-')
+			{
+				out.pop_back();
+			}
+			return out.empty() ? std::string("game") : out;
+		};
+		return "com." + (project.Build.Company.empty() ? std::string("morava") : part(project.Build.Company)) + "." + part(project.GetProductName());
+	}
+
+	static bool WriteInfoPlist(const Project& project, const fs::path& bundle, const std::string& executableName, bool hasIcon)
+	{
+		const std::string product = EscapeXml(project.GetProductName());
+		std::ostringstream plist;
+		plist << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+			<< "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"
+			<< "<plist version=\"1.0\">\n<dict>\n";
+		auto entry = [&plist](const char* key, const std::string& value)
+		{
+			plist << "\t<key>" << key << "</key>\n\t<string>" << value << "</string>\n";
+		};
+		entry("CFBundleDevelopmentRegion", "en");
+		entry("CFBundleExecutable", EscapeXml(executableName));
+		entry("CFBundleIdentifier", MakeBundleIdentifier(project));
+		entry("CFBundleInfoDictionaryVersion", "6.0");
+		entry("CFBundleName", product);
+		entry("CFBundleDisplayName", product);
+		entry("CFBundlePackageType", "APPL");
+		entry("CFBundleShortVersionString", EscapeXml(project.Build.Version));
+		entry("CFBundleVersion", EscapeXml(project.Build.Version));
+		if (hasIcon)
+		{
+			entry("CFBundleIconFile", "Icon");
+		}
+		entry("LSApplicationCategoryType", "public.app-category.games");
+		if (!project.Build.Company.empty())
+		{
+			entry("NSHumanReadableCopyright", EscapeXml(project.Build.Company));
+		}
+		plist << "\t<key>NSHighResolutionCapable</key>\n\t<true/>\n</dict>\n</plist>\n";
+
+		std::ofstream file(bundle / "Contents" / "Info.plist", std::ios::binary | std::ios::trunc);
+		file << plist.str();
+		return file.flush() ? true : Fail("The app's Info.plist could not be written");
+	}
+
+	static void AppendBigEndian(std::vector<uint8_t>& bytes, uint32_t value)
+	{
+		for (int shift = 24; shift >= 0; shift -= 8)
+		{
+			bytes.push_back((uint8_t)(value >> shift));
+		}
+	}
+
+	static void AppendPng(void* context, void* data, int bytes)
+	{
+		std::vector<uint8_t>* out = (std::vector<uint8_t>*)context;
+		out->insert(out->end(), (uint8_t*)data, (uint8_t*)data + bytes);
+	}
+
+	// An .icns file: PNG images at the sizes macOS asks for, each under its four-letter type, up to the icon's own size
+	static bool WriteIcns(const std::string& iconFile, const fs::path& target)
+	{
+		std::vector<uint8_t> pixels;
+		int width = 0;
+		if (!LoadIcon(iconFile, pixels, width))
+		{
+			return false;
+		}
+		const std::pair<const char*, int> types[] = { { "icp4", 16 }, { "icp5", 32 }, { "ic11", 32 }, { "icp6", 64 }, { "ic12", 64 }, { "ic07", 128 },
+			{ "ic08", 256 }, { "ic13", 256 }, { "ic09", 512 }, { "ic14", 512 }, { "ic10", 1024 } };
+		std::vector<uint8_t> body;
+		for (const auto& [type, size] : types)
+		{
+			if (size > width)
+			{
+				continue;
+			}
+			const std::vector<uint8_t> image = size == width ? pixels : ResizeSquare(pixels.data(), width, size);
+			std::vector<uint8_t> png;
+			stbi_write_png_to_func(&AppendPng, &png, size, size, 4, image.data(), size * 4);
+			if (png.empty())
+			{
+				return Fail("The icon could not be made at " + std::to_string(size) + " x " + std::to_string(size));
+			}
+			body.insert(body.end(), type, type + 4);
+			AppendBigEndian(body, (uint32_t)(png.size() + 8));
+			body.insert(body.end(), png.begin(), png.end());
+		}
+		std::vector<uint8_t> file = { 'i', 'c', 'n', 's' };
+		AppendBigEndian(file, (uint32_t)(body.size() + 8));
+		file.insert(file.end(), body.begin(), body.end());
+		std::ofstream out(target, std::ios::binary | std::ios::trunc);
+		out.write((const char*)file.data(), (std::streamsize)file.size());
+		return out.flush() ? true : Fail("The app's icon could not be written");
+	}
+
+	static bool FinishMacApp(const Project& project, const GameLayout& layout)
+	{
+		const bool hasIcon = !project.Build.Icon.empty();
+		if (hasIcon && !WriteIcns(project.GetIconPath(), layout.Resources / "Icon.icns"))
+		{
+			return false;
+		}
+		return WriteInfoPlist(project, layout.Bundle, layout.Executable.filename().u8string(), hasIcon);
+	}
+
+	// ---- A Linux game (11.6): the folder, and beside it a .tar.gz of it to hand out
+
+	static bool WriteLinuxArchive(const Project& project, const fs::path& output, const std::string& executableName, fs::path& archive)
+	{
+		archive = output.parent_path() / (executableName + "-" + project.Build.Version + "-linux-x64.tar.gz");
+		std::string error;
+		if (!GameArchive::WriteTarGz(output, executableName, archive, error))
+		{
+			return Fail("The archive could not be made: " + error);
 		}
 		return true;
 	}
-#endif
 
 	static uint64_t GetFolderBytes(const fs::path& folder)
 	{
@@ -531,7 +801,7 @@ namespace GameBuilder
 		return bytes;
 	}
 
-	int Run(const std::string& projectFile, const std::string& outputFolder)
+	int Run(const std::string& projectFile, const std::string& outputFolder, const std::string& platformName)
 	{
 		const auto start = std::chrono::steady_clock::now();
 		Project project;
@@ -562,23 +832,54 @@ namespace GameBuilder
 			Fail("The icon '" + open.Build.Icon + "' doesn't exist");
 			return 1;
 		}
-		const fs::path templateFolder = FindPlayerTemplate();
-		if (templateFolder.empty())
+		const Platform platform = GetPlatform(platformName.empty() ? std::string(GetPlatformName()) : platformName);
+		if (!platform.Windows && !platform.Linux && !platform.Mac)
 		{
-			Fail("There is no player to ship: build the Release configuration of MoravaPlayer");
+			Fail("'" + platform.Name + "' isn't a platform: win-x64, linux-x64, osx-arm64 or osx-x64");
 			return 1;
 		}
-		CheckPlayerTemplate(templateFolder);
+		if (!CanBuildFor(platform.Name))
+		{
+			Fail("This editor builds games for " + std::string(GetPlatformName()) + " and linux-x64, not for " + platform.Name + ": build it on that platform");
+			return 1;
+		}
+		const fs::path templateFolder = FindPlayerTemplate(platform);
+		if (templateFolder.empty())
+		{
+			Fail(platform.Name == GetPlatformName() ? std::string("There is no player to ship: build the Release configuration of MoravaPlayer") :
+				"There is no " + platform.Name + " player template in '" + GetTemplatesFolder() + "/" + platform.Name + "': download CI's (Tools/Get-PlayerTemplates.ps1)");
+			return 1;
+		}
+		CheckPlayerTemplate(templateFolder, platform);
 
-		const fs::path output = fs::u8path(outputFolder.empty() ? GetDefaultOutputFolder(open) : outputFolder);
+		const fs::path output = fs::u8path(outputFolder.empty() ? GetDefaultOutputFolder(open, platform.Name) : outputFolder);
 		fs::create_directories(output, fileError);
 		if (fileError)
 		{
 			Fail("The folder '" + output.generic_u8string() + "' can't be made: " + fileError.message());
 			return 1;
 		}
-		const fs::path executable = output / (EnvMapVulkanMaterialLibrary::MakeFileName(open.GetProductName(), "Game") + s_ExecutableExtension);
-		Log::GetLogger()->info("Build Game: '{0}' {1} for {2}, into '{3}', with the player from '{4}'", open.GetProductName(), open.Build.Version, GetPlatformName(),
+		const std::string executableName = EnvMapVulkanMaterialLibrary::MakeFileName(open.GetProductName(), "Game");
+		GameLayout layout;
+		if (platform.Mac)
+		{
+			// Made anew: an app is one thing, and what an older build left in it would ship with it
+			layout.Bundle = output / (open.GetProductName() + ".app");
+			fs::remove_all(layout.Bundle, fileError);
+			if (fileError)
+			{
+				Fail("'" + layout.Bundle.generic_u8string() + "' could not be replaced: " + fileError.message() + " (is the game running?)");
+				return 1;
+			}
+			layout.Executable = layout.Bundle / "Contents" / "MacOS" / executableName;
+			layout.Resources = layout.Bundle / "Contents" / "Resources";
+		}
+		else
+		{
+			layout.Executable = output / (executableName + platform.ExecutableExtension());
+			layout.Resources = output;
+		}
+		Log::GetLogger()->info("Build Game: '{0}' {1} for {2}, into '{3}', with the player from '{4}'", open.GetProductName(), open.Build.Version, platform.Name,
 			output.generic_u8string(), templateFolder.generic_u8string());
 
 		fs::path publishFolder;
@@ -588,7 +889,7 @@ namespace GameBuilder
 		}
 
 		PackBuilder::Options packOptions;
-		packOptions.OutputFolder = output.u8string();
+		packOptions.OutputFolder = layout.Resources.u8string();
 		packOptions.ScriptsFolder = publishFolder.u8string();
 		packOptions.Shipping = true;
 		if (PackBuilder::Run(projectFile, packOptions) != 0)
@@ -596,13 +897,33 @@ namespace GameBuilder
 			return 1;
 		}
 
-		if (!CopyPlayerTemplate(templateFolder, output, executable, !open.ScriptAssembly.empty()) || !WriteResources(open, executable, version) || !HideConsole(executable))
+		if (!CopyPlayerTemplate(templateFolder, layout, platform, !open.ScriptAssembly.empty()))
+		{
+			return 1;
+		}
+#if defined(_WIN32)
+		if (platform.Windows && (!WriteResources(open, layout.Executable, version) || !HideConsole(layout.Executable)))
+		{
+			return 1;
+		}
+#endif
+		if (platform.Mac && !FinishMacApp(open, layout))
+		{
+			return 1;
+		}
+		fs::path archive;
+		if (platform.Linux && !WriteLinuxArchive(open, output, executableName, archive))
 		{
 			return 1;
 		}
 
 		Log::GetLogger()->info("Build Game: done, {0:.0f} MB in {1:.1f} s: {2}", GetFolderBytes(output) / (1024.0 * 1024.0),
-			std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count(), executable.generic_u8string());
+			std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count(), (platform.Mac ? layout.Bundle : layout.Executable).generic_u8string());
+		if (!archive.empty())
+		{
+			std::error_code sizeError;
+			Log::GetLogger()->info("Build Game: to hand out: '{0}' ({1:.0f} MB)", archive.generic_u8string(), fs::file_size(archive, sizeError) / (1024.0 * 1024.0));
+		}
 		return 0;
 	}
 }

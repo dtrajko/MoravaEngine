@@ -123,6 +123,10 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		{
 			commandLine.BuildGameOutput = argv[++i];
 		}
+		else if (option == "--build-platform" && hasValue)
+		{
+			commandLine.BuildGamePlatform = argv[++i];
+		}
 		else if (option == "--scene" && hasValue)
 		{
 			commandLine.ScenePath = argv[++i];

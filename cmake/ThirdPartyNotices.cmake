@@ -1,7 +1,10 @@
 # The license notices a shipped game carries (docs/engine/Game_Engine_Runtime_Guide.html, 11.5): one entry for each library
 # in the player. The editor's own libraries (ImGui, assimp, shaderc) don't count. Run after the player links, so its template
 # has the file:
-#   cmake -DSOURCE_DIR=<repository> -DDOTNET_DIR=<.NET install> -DOUTPUT=<file> -P cmake/ThirdPartyNotices.cmake
+#   cmake -DSOURCE_DIR=<repository> -DDOTNET_DIR=<.NET install> -DOUTPUT=<file> [-DEXTRA_NOTICES=<name|file^^...>] -P cmake/ThirdPartyNotices.cmake
+#
+# EXTRA_NOTICES: libraries found on the build machine, each with its license file's absolute path (macOS: the Vulkan loader
+# and MoltenVK the app carries)
 #
 # An entry: name; the file with its license, relative to the repository; optionally, for a library that has it in a comment of
 # its header, the text the license begins with and the text after it (default: the comment's end). A missing file fails the
@@ -32,6 +35,11 @@ set(MORAVA_NOTICES
     "SMAA|vendor/smaa/LICENSE.txt"
 )
 
+if(EXTRA_NOTICES)
+    string(REPLACE "^^" ";" extra "${EXTRA_NOTICES}")
+    list(APPEND MORAVA_NOTICES ${extra})
+endif()
+
 set(text "Third-party software in this game\n=================================\n\nParts of the MoravaEngine's renderer are based on Hazel (https://github.com/TheCherno/Hazel), under the Apache License 2.0, whose text is the first below.\n")
 
 foreach(entry ${MORAVA_NOTICES})
@@ -39,7 +47,11 @@ foreach(entry ${MORAVA_NOTICES})
     list(LENGTH parts count)
     list(GET parts 0 name)
     list(GET parts 1 file)
-    set(path "${SOURCE_DIR}/${file}")
+    if(IS_ABSOLUTE "${file}")
+        set(path "${file}")
+    else()
+        set(path "${SOURCE_DIR}/${file}")
+    endif()
     if(NOT EXISTS "${path}")
         message(FATAL_ERROR "License notices: ${name}: ${file} doesn't exist (submodules checked out?)")
     endif()
