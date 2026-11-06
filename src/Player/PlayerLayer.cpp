@@ -101,7 +101,12 @@ void PlayerLayer::OnAttach()
 	m_Systems.OpenSettings(project ? GameSettings::GetUserFile(*project, GameSettings::SettingsFile) : std::string(),
 		project ? GameSettings::GetUserFile(*project, GameSettings::SaveDataFile) : std::string());
 	const PlayerSettings& player = m_Systems.GetSettings().GetPlayer();
-	m_FullscreenResolution = player.Resolution.value_or(PlayerResolution());
+	m_Resolution = player.Resolution.value_or(PlayerResolution());
+	GLFWwindow* window = Application::Get()->GetWindow()->GetHandle();
+	if (m_Resolution.Width > 0 && !glfwGetWindowMonitor(window))
+	{
+		PlaceWindow(window); // the player's window size, fitted to the monitor
+	}
 	StartQuality();
 	UpdateDisplayState(Application::Get()->GetWindow()->GetHandle()); // the scripts' OnCreate may ask
 	m_Systems.Begin(&m_Scene, &m_Input);
@@ -201,24 +206,105 @@ static GLFWmonitor* FindWindowMonitor(GLFWwindow* window)
 	return glfwGetPrimaryMonitor();
 }
 
+// The largest of the sizes (largest first) no larger than the one wanted; none: the smallest
+static PlayerResolution FitResolution(const std::vector<PlayerResolution>& sizes, const PlayerResolution& wanted)
+{
+	for (const PlayerResolution& size : sizes)
+	{
+		if (size.Width <= wanted.Width && size.Height <= wanted.Height)
+		{
+			return size;
+		}
+	}
+	return sizes.empty() ? wanted : sizes.back();
+}
+
+std::vector<PlayerResolution> PlayerLayer::GetWindowResolutions(GLFWmonitor* monitor) const
+{
+	std::vector<PlayerResolution> fitting;
+	if (!monitor)
+	{
+		return fitting;
+	}
+	int x = 0, y = 0, width = 0, height = 0;
+	glfwGetMonitorWorkarea(monitor, &x, &y, &width, &height);
+	for (const PlayerResolution& size : GetMonitorResolutions(monitor))
+	{
+		if ((int)size.Width + m_WindowFrame.x + m_WindowFrame.z <= width && (int)size.Height + m_WindowFrame.y + m_WindowFrame.w <= height)
+		{
+			fitting.push_back(size);
+		}
+	}
+	return fitting;
+}
+
+void PlayerLayer::PlaceWindow(GLFWwindow* window)
+{
+	GLFWmonitor* monitor = glfwGetWindowMonitor(window);
+	if (!monitor)
+	{
+		monitor = FindWindowMonitor(window);
+	}
+	const Project* project = Project::GetOpen();
+	PlayerResolution size{ project ? project->Window.Width : 1280u, project ? project->Window.Height : 720u };
+	if (m_Resolution.Width > 0)
+	{
+		size = FitResolution(GetWindowResolutions(monitor), m_Resolution);
+	}
+	if (glfwGetWindowAttrib(window, GLFW_MAXIMIZED) == GLFW_TRUE)
+	{
+		glfwRestoreWindow(window);
+	}
+	// Centered in the work area (the screen without the taskbar), its title bar inside it
+	int wx = 0, wy = 0, ww = 0, wh = 0;
+	if (monitor)
+	{
+		glfwGetMonitorWorkarea(monitor, &wx, &wy, &ww, &wh);
+	}
+	const int outerWidth = (int)size.Width + m_WindowFrame.x + m_WindowFrame.z;
+	const int outerHeight = (int)size.Height + m_WindowFrame.y + m_WindowFrame.w;
+	const int x = monitor ? wx + std::max(0, (ww - outerWidth) / 2) + m_WindowFrame.x : 100;
+	const int y = monitor ? wy + std::max(0, (wh - outerHeight) / 2) + m_WindowFrame.y : 100;
+	glfwSetWindowMonitor(window, nullptr, x, y, (int)size.Width, (int)size.Height, GLFW_DONT_CARE);
+	Log::GetLogger()->info("Player: a window, {0}x{1}; Alt+Enter or F11: fullscreen", size.Width, size.Height);
+}
+
 void PlayerLayer::UpdateDisplayState(GLFWwindow* window)
 {
 	GLFWmonitor* monitor = FindWindowMonitor(window);
-	if (monitor != m_ResolutionsMonitor)
+	const bool fullscreen = glfwGetWindowMonitor(window) != nullptr;
+	bool frameChanged = false;
+	if (!fullscreen)
+	{
+		glm::ivec4 frame(0);
+		glfwGetWindowFrameSize(window, &frame.x, &frame.y, &frame.z, &frame.w);
+		frameChanged = frame.y > 0 && frame != m_WindowFrame;
+		if (frameChanged)
+		{
+			m_WindowFrame = frame;
+		}
+	}
+	if (monitor != m_ResolutionsMonitor || fullscreen != m_ResolutionsFullscreen || frameChanged)
 	{
 		m_ResolutionsMonitor = monitor;
-		m_Resolutions = GetMonitorResolutions(monitor);
+		m_ResolutionsFullscreen = fullscreen;
+		m_Resolutions = fullscreen ? GetMonitorResolutions(monitor) : GetWindowResolutions(monitor);
 	}
-	// Fullscreen's size: the window's video mode now, else what the next fullscreen will be
-	PlayerResolution resolution = m_FullscreenResolution;
+	// The size in use: fullscreen's video mode; a window's own size when it is one of the list, else the player's choice as
+	// the window would have it
+	PlayerResolution resolution = m_Resolution;
 	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
-	if (glfwGetWindowMonitor(window) && mode)
+	if (fullscreen && mode)
 	{
 		resolution = PlayerResolution{ (uint32_t)mode->width, (uint32_t)mode->height };
 	}
-	else if (resolution.Width == 0 || std::find(m_Resolutions.begin(), m_Resolutions.end(), resolution) == m_Resolutions.end())
+	else if (!fullscreen)
 	{
-		resolution = mode ? PlayerResolution{ (uint32_t)mode->width, (uint32_t)mode->height } : PlayerResolution();
+		int width = 0, height = 0;
+		glfwGetWindowSize(window, &width, &height);
+		const PlayerResolution own{ (uint32_t)std::max(width, 0), (uint32_t)std::max(height, 0) };
+		resolution = std::find(m_Resolutions.begin(), m_Resolutions.end(), own) != m_Resolutions.end() || resolution.Width == 0 ? own :
+			FitResolution(m_Resolutions, resolution);
 	}
 	m_Systems.SetDisplayState(m_Resolutions, resolution, Application::Get()->GetWindow()->IsVSync(), EnvMapVulkanRenderer::GetQualityTier(),
 		EnvMapVulkanRenderer::IsRayTracingSupported());
@@ -227,16 +313,16 @@ void PlayerLayer::UpdateDisplayState(GLFWwindow* window)
 void PlayerLayer::ApplyPlayerRequests(GLFWwindow* window)
 {
 	PlayerResolution resolution;
-	if (m_Systems.TakeResolutionRequest(resolution) && resolution != m_FullscreenResolution)
+	if (m_Systems.TakeResolutionRequest(resolution) && resolution != m_Resolution)
 	{
-		m_FullscreenResolution = resolution;
+		m_Resolution = resolution;
 		if (glfwGetWindowMonitor(window))
 		{
 			SetFullscreen(window, true); // at the new size now
 		}
 		else
 		{
-			Log::GetLogger()->info("Player: fullscreen at {0}x{1} from the next fullscreen on", resolution.Width, resolution.Height);
+			PlaceWindow(window); // the window at the new size
 		}
 	}
 	bool vsync = false;
@@ -424,11 +510,11 @@ void PlayerLayer::SetFullscreen(GLFWwindow* window, bool fullscreen)
 		GLFWmonitor* target = FindWindowMonitor(window);
 		const GLFWvidmode* mode = glfwGetVideoMode(target);
 		int count = 0;
-		const GLFWvidmode* modes = m_FullscreenResolution.Width > 0 ? glfwGetVideoModes(target, &count) : nullptr;
+		const GLFWvidmode* modes = m_Resolution.Width > 0 ? glfwGetVideoModes(target, &count) : nullptr;
 		const GLFWvidmode* chosen = nullptr;
 		for (int i = 0; i < count; i++)
 		{
-			if ((uint32_t)modes[i].width == m_FullscreenResolution.Width && (uint32_t)modes[i].height == m_FullscreenResolution.Height &&
+			if ((uint32_t)modes[i].width == m_Resolution.Width && (uint32_t)modes[i].height == m_Resolution.Height &&
 				(!chosen || modes[i].refreshRate > chosen->refreshRate))
 			{
 				chosen = &modes[i];
@@ -443,22 +529,8 @@ void PlayerLayer::SetFullscreen(GLFWwindow* window, bool fullscreen)
 	}
 	else
 	{
-		// The project's window size, centered on the monitor it was on, then maximized (its title bar has the close button)
-		GLFWmonitor* monitor = glfwGetWindowMonitor(window);
-		const Project* project = Project::GetOpen();
-		const int width = project ? (int)project->Window.Width : 1280;
-		const int height = project ? (int)project->Window.Height : 720;
-		int mx = 0, my = 0;
-		const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
-		if (monitor)
-		{
-			glfwGetMonitorPos(monitor, &mx, &my);
-		}
-		const int x = mode ? mx + (mode->width - width) / 2 : 100;
-		const int y = mode ? my + (mode->height - height) / 2 : 100;
-		glfwSetWindowMonitor(window, nullptr, x, y, width, height, GLFW_DONT_CARE);
-		glfwMaximizeWindow(window);
-		Log::GetLogger()->info("Player: a window (maximized); Alt+Enter or F11: fullscreen again");
+		// The player's window size (or the project's), centered on the monitor it was on
+		PlaceWindow(window);
 	}
 }
 

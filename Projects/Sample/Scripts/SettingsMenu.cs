@@ -6,9 +6,10 @@ namespace Sample
     /// <summary>
     /// The Settings screen (on its canvas; its Panel hidden until Open): sliders for the music's and the effects' volumes and
     /// the mouse's sensitivity, drop-down lists of the quality, fullscreen or a window, fullscreen's resolution and VSync,
-    /// and a Controls screen where the keys and the gamepad's buttons are bound anew. A change counts at once; the
-    /// engine keeps the player's choices of the window, the quality, the volumes and the bindings for the next runs
-    /// (GameOptions keeps the mouse's sensitivity), and Back saves them. Opened by the main menu and the pause menu, which get
+    /// and a Controls screen where the keys and the gamepad's buttons are bound anew. The sliders count at once; the lists'
+    /// choices wait for Apply (Back without it gives them up). The engine keeps the player's choices of the window, the
+    /// quality, the volumes and the bindings for the next runs (GameOptions keeps the mouse's sensitivity), and Back saves
+    /// them. Opened by the main menu and the pause menu, which get
     /// the selection back when it closes; their Pause action (Escape, Start) is Back while it is open (an open list: closed
     /// first).
     /// </summary>
@@ -31,6 +32,9 @@ namespace Sample
         public Entity? DisplayDropdown;
         public Entity? ResolutionDropdown;
         public Entity? VSyncDropdown;
+
+        /// <summary>The button that puts the lists' choices in place (shown dimmed while there is nothing to apply).</summary>
+        public Entity? ApplyButton;
 
         /// <summary>The Controls screen (a UI Rect, hidden until the Controls button opens it).</summary>
         public Entity? ControlsPanel;
@@ -78,18 +82,21 @@ namespace Sample
         static readonly QualityLevel?[] QualityOptions = { null, QualityLevel.Low, QualityLevel.Medium, QualityLevel.High, QualityLevel.Ultra };
 
         Resolution[] resolutions = Array.Empty<Resolution>(); // the resolution list's options
-        int settling; // frames until the lists show the engine's values again: a choice takes effect after its frame
+        int settling; // frames until the lists show the engine's values again: an applied choice takes effect after its frame
         bool refill;  // the options again once settled (the automatic quality's level)
+        bool pending; // a list has a choice not applied yet: the lists keep showing the choices
+        UIDropdown? lastChosen; // where the selection goes after Apply (it dims, so it can't keep the selection)
 
         protected override void OnCreate()
         {
             if (Slider(MusicSlider) is UISlider music) music.ValueChanged += v => { Audio.SetBusVolume(AudioBus.Music, v); ShowValues(); };
             if (Slider(EffectsSlider) is UISlider effects) effects.ValueChanged += v => { Audio.SetBusVolume(AudioBus.Effects, v); ShowValues(); };
             if (Slider(MouseSlider) is UISlider mouse) mouse.ValueChanged += v => { GameOptions.SetMouseSensitivity(v); ShowValues(); };
-            if (Dropdown(QualityDropdown) is UIDropdown quality) quality.ValueChanged += ChooseQuality;
-            if (Dropdown(DisplayDropdown) is UIDropdown display) display.ValueChanged += option => { Application.Fullscreen = option == 0; settling = 3; };
-            if (Dropdown(ResolutionDropdown) is UIDropdown resolution) resolution.ValueChanged += ChooseResolution;
-            if (Dropdown(VSyncDropdown) is UIDropdown vsync) vsync.ValueChanged += option => { Application.VSync = option == 1; settling = 3; };
+            foreach (Entity? list in Lists)
+            {
+                if (Dropdown(list) is UIDropdown dropdown)
+                    dropdown.ValueChanged += _ => { lastChosen = dropdown; pending = Differs(); }; // put in place by Apply
+            }
 
             bindings = new[]
             {
@@ -121,6 +128,7 @@ namespace Sample
             if (Slider(EffectsSlider) is UISlider effects) effects.Value = Audio.GetBusVolume(AudioBus.Effects);
             if (Slider(MouseSlider) is UISlider mouse) mouse.Value = GameOptions.MouseSensitivity;
             ShowValues();
+            pending = false;
             FillLists();
             IsOpen = true;
             Show(Panel, true);
@@ -149,6 +157,12 @@ namespace Sample
                 Dropdown(DisplayDropdown)?.Select();
                 return;
             }
+            if (pending)
+            {
+                pending = false; // not applied: given up, the lists show what is in place again
+                ShowLists();
+                Log.Info("Settings: the choices not applied were given up");
+            }
             Settings.Save();
             IsOpen = false;
             Show(Panel, false);
@@ -160,20 +174,46 @@ namespace Sample
 
         Entity?[] Lists => new[] { QualityDropdown, DisplayDropdown, ResolutionDropdown, VSyncDropdown };
 
-        // The lists' choices (the shown values follow in OnUpdate: the window changes after this frame)
-        void ChooseQuality(int option)
+        // A list's choice differs from what is in place (a list set back to it: nothing to apply)
+        bool Differs()
         {
-            if (QualityOptions[Math.Clamp(option, 0, QualityOptions.Length - 1)] is QualityLevel level) Quality.Level = level;
-            else Quality.SetAutomatic();
-            settling = 3;
-            refill = true; // "Automatic" names the level it chose
+            if (Dropdown(QualityDropdown) is UIDropdown quality &&
+                quality.Value != (Quality.IsAutomatic ? 0 : Math.Max(0, Array.IndexOf(QualityOptions, Quality.Level))))
+                return true;
+            if (Dropdown(DisplayDropdown) is UIDropdown display && (display.Value == 0) != Application.Fullscreen)
+                return true;
+            if (Dropdown(ResolutionDropdown) is UIDropdown resolution && resolution.Value >= 0 && resolution.Value < resolutions.Length &&
+                !resolutions[resolution.Value].Equals(Application.Resolution))
+                return true;
+            return Dropdown(VSyncDropdown) is UIDropdown vsync && (vsync.Value == 1) != Application.VSync;
         }
 
-        void ChooseResolution(int option)
+        // The Apply button's On Click: the lists' choices in place, those that differ from what is (the window changes after
+        // this frame, so the lists show the engine's values again a few frames later)
+        void Apply()
         {
-            if (option >= 0 && option < resolutions.Length)
-                Application.Resolution = resolutions[option];
+            if (!pending)
+                return;
+            if (Dropdown(QualityDropdown) is UIDropdown quality)
+            {
+                QualityLevel? chosen = QualityOptions[Math.Clamp(quality.Value, 0, QualityOptions.Length - 1)];
+                if (chosen is QualityLevel level && (Quality.IsAutomatic || Quality.Level != level)) Quality.Level = level;
+                else if (chosen == null && !Quality.IsAutomatic) Quality.SetAutomatic();
+            }
+            if (Dropdown(ResolutionDropdown) is UIDropdown resolution && resolution.Value >= 0 && resolution.Value < resolutions.Length &&
+                !resolutions[resolution.Value].Equals(Application.Resolution))
+                Application.Resolution = resolutions[resolution.Value];
+            if (Dropdown(DisplayDropdown) is UIDropdown display && (display.Value == 0) != Application.Fullscreen)
+                Application.Fullscreen = display.Value == 0;
+            if (Dropdown(VSyncDropdown) is UIDropdown vsync && (vsync.Value == 1) != Application.VSync)
+                Application.VSync = vsync.Value == 1;
+            pending = false;
             settling = 3;
+            refill = true; // "Automatic" names the level it chose
+            if (Button(ApplyButton) is UIButton button)
+                button.Interactable = false;
+            lastChosen?.Select();
+            Log.Info("Settings: applied");
         }
 
         // The options that depend on the machine: the automatic quality's level, the monitor's resolutions (largest first)
@@ -249,9 +289,12 @@ namespace Sample
                 ShowBindings();
             }
 
-            // What the engine has now (a change shows in the next frame: the window changes after the frame); the monitor's
-            // resolutions again when the window moved to another one
-            if (!controlsOpen && --settling < 0)
+            if (Button(ApplyButton) is UIButton apply && apply.Interactable != pending)
+                apply.Interactable = pending;
+
+            // What the engine has now (an applied change shows a few frames later: the window changes after the frame); the
+            // monitor's resolutions again when the window moved to another one. Not while there are choices to apply
+            if (!controlsOpen && !pending && --settling < 0)
             {
                 settling = 0;
                 if (refill || Application.Resolutions.Length != resolutions.Length)

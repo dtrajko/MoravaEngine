@@ -365,6 +365,7 @@ Entities:
         DisplayDropdown: {Entity: 7310000000000008051}
         ResolutionDropdown: {Entity: 7310000000000008061}
         VSyncDropdown: {Entity: 7310000000000008071}
+        ApplyButton: {Entity: 7310000000000008093}
         ControlsPanel: {Entity: 7310000000000008100}
         ForwardKey: {Entity: 7310000000000008111}
         BackKey: {Entity: 7310000000000008121}
@@ -774,7 +775,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-240, 330], Size: [440, 84], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 330], Size: [360, 84], Visible: true}
     UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
     UIButton:
       Interactable: true
@@ -793,6 +794,32 @@ Entities:
       VerticalAlign: Middle
       Wrap: false
       LineSpacing: 1
+  - ID: 7310000000000008093
+    Name: Apply Button
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: false
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Apply}
+    UIText:
+      Text: Apply
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
   - ID: 7310000000000008091
     Name: Back Button
     Parent: 7310000000000008002
@@ -800,7 +827,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [240, 330], Size: [440, 84], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 330], Size: [360, 84], Visible: true}
     UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
     UIButton:
       Interactable: true
@@ -828,7 +855,7 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -50], Size: [1700, 60], Visible: true}
     UIText:
-      Text: "Up and down: the next setting. Left and right, or drag: change a slider. Enter or A: open a list, then choose. Escape or Start: back"
+      Text: "Up and down: the next setting. Left and right: a slider. Enter or A: open a list, choose, then Apply. Escape or Start: back"
       Font: ""
       Size: 30
       Color: [1, 1, 1, 0.7]
