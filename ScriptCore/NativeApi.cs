@@ -134,6 +134,10 @@ namespace Morava
         public delegate* unmanaged<void> SaveData_RemoveAll;
         public delegate* unmanaged<int> SaveData_Save;
         public delegate* unmanaged<char*, int, int> SaveData_GetFile;
+        public delegate* unmanaged<ulong, NativeUIDropdown*, int> UIDropdown_Get;
+        public delegate* unmanaged<ulong, NativeUIDropdown*, int> UIDropdown_Set;
+        public delegate* unmanaged<ulong, char*, int, int> UIDropdown_GetOptions;
+        public delegate* unmanaged<ulong, char*, int, int> UIDropdown_SetOptions;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -202,6 +206,12 @@ namespace Morava
     {
         public float Value, Min, Max, Step;
         public int WholeNumbers, Interactable;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeUIDropdown
+    {
+        public int Value, Count, Interactable, Open;
     }
 
     [StructLayout(LayoutKind.Sequential)]

@@ -291,6 +291,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::UIImage:           return scene->Has<UIImageComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::UIButton:          return scene->Has<UIButtonComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::UISlider:          return scene->Has<UISliderComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::UIDropdown:        return scene->Has<UIDropdownComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Animator:          return scene->Has<AnimatorComponent>(entity) ? 1 : 0;
 	}
 	return 0;
@@ -1176,6 +1177,89 @@ static int32_t UISliderSet(uint64_t entity, const ScriptUISlider* value)
 	return 1;
 }
 
+// ---- UIDropdown (11.4)
+
+static int32_t UIDropdownGet(uint64_t entity, ScriptUIDropdown* out)
+{
+	const UIDropdownComponent* dropdown = GetUIComponent<UIDropdownComponent>(entity);
+	if (!dropdown)
+	{
+		return 0;
+	}
+	out->Value = dropdown->Constrain(dropdown->Value);
+	out->Count = (int32_t)dropdown->Options.size();
+	out->Interactable = dropdown->Interactable ? 1 : 0;
+	out->Open = s_Context && s_Context->UI && s_Context->UI->GetOpenDropdown() == entity ? 1 : 0;
+	return 1;
+}
+
+static int32_t UIDropdownSet(uint64_t entity, const ScriptUIDropdown* value)
+{
+	UIDropdownComponent* dropdown = GetUIComponent<UIDropdownComponent>(entity);
+	if (!dropdown)
+	{
+		return 0;
+	}
+	dropdown->Value = dropdown->Constrain(value->Value);
+	dropdown->Interactable = value->Interactable != 0;
+	if (s_Context && s_Context->UI)
+	{
+		const bool open = s_Context->UI->GetOpenDropdown() == entity;
+		if (value->Open && !open)
+		{
+			s_Context->UI->OpenDropdown(entity); // not when it can't be selected now, or has no options
+		}
+		else if (!value->Open && open)
+		{
+			s_Context->UI->CloseDropdown();
+		}
+	}
+	return 1;
+}
+
+static int32_t UIDropdownGetOptions(uint64_t entity, char16_t* buffer, int capacity)
+{
+	const UIDropdownComponent* dropdown = GetUIComponent<UIDropdownComponent>(entity);
+	if (!dropdown)
+	{
+		return -2;
+	}
+	std::string joined;
+	for (size_t i = 0; i < dropdown->Options.size(); i++)
+	{
+		joined += (i ? "\n" : "") + dropdown->Options[i];
+	}
+	return CopyString(joined, buffer, capacity);
+}
+
+static int32_t UIDropdownSetOptions(uint64_t entity, const char16_t* options, int length)
+{
+	UIDropdownComponent* dropdown = GetUIComponent<UIDropdownComponent>(entity);
+	if (!dropdown)
+	{
+		return 0;
+	}
+	const std::string joined = ToUtf8(options, length);
+	dropdown->Options.clear();
+	for (size_t begin = 0; length > 0;)
+	{
+		const size_t end = joined.find('\n', begin);
+		dropdown->Options.push_back(joined.substr(begin, end == std::string::npos ? std::string::npos : end - begin));
+		if (end == std::string::npos)
+		{
+			break;
+		}
+		begin = end + 1;
+	}
+	dropdown->Value = dropdown->Constrain(dropdown->Value);
+	dropdown->HighlightedOption = dropdown->Constrain(dropdown->HighlightedOption);
+	if (dropdown->Options.empty() && s_Context && s_Context->UI && s_Context->UI->GetOpenDropdown() == entity)
+	{
+		s_Context->UI->CloseDropdown();
+	}
+	return 1;
+}
+
 // ---- Application, Settings (Milestone 2)
 
 static void ApplicationQuit()
@@ -1573,6 +1657,10 @@ namespace ScriptBindings
 		api.SaveData_RemoveAll = SaveDataRemoveAll;
 		api.SaveData_Save = SaveDataSave;
 		api.SaveData_GetFile = SaveDataGetFile;
+		api.UIDropdown_Get = UIDropdownGet;
+		api.UIDropdown_Set = UIDropdownSet;
+		api.UIDropdown_GetOptions = UIDropdownGetOptions;
+		api.UIDropdown_SetOptions = UIDropdownSetOptions;
 	}
 
 	void SetContext(ScriptContext* context)

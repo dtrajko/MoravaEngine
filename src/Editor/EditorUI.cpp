@@ -89,7 +89,7 @@ EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset)
 		return canvas;
 	}
 	const EnvMapVulkanEntityID parent = GetUIParentForNewElement();
-	const char* names[] = { "Canvas", "Panel", "Text", "Image", "Button", "Slider" };
+	const char* names[] = { "Canvas", "Panel", "Text", "Image", "Button", "Slider", "Dropdown" };
 	const EnvMapVulkanEntityID entity = s_Scene.CreateEntity(names[(int)preset], parent);
 	UIRectComponent& rect = s_Scene.Add<UIRectComponent>(entity);
 	switch (preset)
@@ -128,6 +128,18 @@ EnvMapVulkanEntityID AddUIEntity(UIEntityPreset preset)
 			s_Scene.Add<UIImageComponent>(entity).Color = glm::vec4(0.12f, 0.13f, 0.17f, 0.9f);
 			s_Scene.Add<UISliderComponent>(entity);
 			break;
+		case UIEntityPreset::Dropdown:
+		{
+			// Its image is its background (tinted by its state), its text the style of the chosen option
+			rect.Size = glm::vec2(400.0f, 64.0f);
+			s_Scene.Add<UIImageComponent>(entity).Color = glm::vec4(0.16f, 0.42f, 0.78f, 1.0f);
+			UIDropdownComponent& dropdown = s_Scene.Add<UIDropdownComponent>(entity);
+			dropdown.Options = { "Option A", "Option B", "Option C" };
+			UITextComponent& text = s_Scene.Add<UITextComponent>(entity);
+			text.Size = 34.0f;
+			text.Align = UITextAlign::Left;
+			break;
+		}
 		default:
 			break;
 	}
@@ -682,6 +694,131 @@ static void SliderControls(EnvMapVulkanEntityID entity, UISliderComponent& slide
 		"Scripts can also listen: GetComponent<UISlider>().ValueChanged += OnVolume");
 }
 
+static void DropdownControls(EnvMapVulkanEntityID entity, UIDropdownComponent& dropdown, const SceneUI* gameUI)
+{
+	if (gameUI)
+	{
+		const char* state = !dropdown.Interactable ? "Disabled" : gameUI->GetOpenDropdown() == entity ? "Open" :
+			gameUI->GetPressed() == entity ? "Pressed" : gameUI->GetSelected() == entity ? "Highlighted (selected)" : "Normal";
+		ImGui::TextDisabled("Now: %s", state);
+	}
+	// The options: one per line
+	std::string joined;
+	for (size_t i = 0; i < dropdown.Options.size(); i++)
+	{
+		joined += (i ? "\n" : "") + dropdown.Options[i];
+	}
+	char buffer[4096] = {};
+	snprintf(buffer, sizeof(buffer), "%s", joined.c_str());
+	const float lines = (float)std::clamp((int)dropdown.Options.size() + 1, 3, 10);
+	if (ImGui::InputTextMultiline("Options", buffer, sizeof(buffer), ImVec2(0.0f, ImGui::GetTextLineHeight() * lines + 8.0f)))
+	{
+		dropdown.Options.clear();
+		std::string text = buffer;
+		for (size_t begin = 0; begin <= text.size();)
+		{
+			size_t end = text.find('\n', begin);
+			std::string option = text.substr(begin, end == std::string::npos ? std::string::npos : end - begin);
+			if (!option.empty() && option.back() == '\r')
+			{
+				option.pop_back();
+			}
+			if (!option.empty() || end != std::string::npos)
+			{
+				dropdown.Options.push_back(option);
+			}
+			if (end == std::string::npos)
+			{
+				break;
+			}
+			begin = end + 1;
+		}
+		// A last empty line is where the next one is typed: not an option yet
+		while (!dropdown.Options.empty() && dropdown.Options.back().empty())
+		{
+			dropdown.Options.pop_back();
+		}
+		dropdown.Value = dropdown.Constrain(dropdown.Value);
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("One option per line, in the list's order (C#: dropdown.Options, which a script can fill: the\n"
+			"monitor's resolutions)");
+	}
+	const char* chosen = dropdown.Options.empty() ? "(no options)" : dropdown.GetChosen().c_str();
+	if (ImGui::BeginCombo("Value", chosen))
+	{
+		for (int i = 0; i < (int)dropdown.Options.size(); i++)
+		{
+			ImGui::PushID(i);
+			if (ImGui::Selectable(dropdown.Options[(size_t)i].empty() ? "(empty)" : dropdown.Options[(size_t)i].c_str(), i == dropdown.Value))
+			{
+				dropdown.Value = i;
+			}
+			ImGui::PopID();
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The option the game starts with (C#: dropdown.Value, the index; set there, it calls no On Value Changed)");
+	}
+	ImGui::Checkbox("Interactable", &dropdown.Interactable);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Off: the drop-down shows its Disabled color and can't be opened or selected (C#: dropdown.Interactable)");
+	}
+
+	ImGui::SeparatorText("Look");
+	if (!s_Scene.Has<UIImageComponent>(entity))
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "No image: no background, no state shown (check Image)");
+	}
+	if (!s_Scene.Has<UITextComponent>(entity))
+	{
+		ImGui::TextDisabled("No text: the options in the engine's font, white (check Text for a style)");
+	}
+	else
+	{
+		ImGui::TextDisabled("Its Text gives the options' style; the text itself is the chosen option's");
+	}
+	ImGui::ColorEdit4("List", &dropdown.ListColor.x);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The open list's background: one row of the element's height per option");
+	}
+	ImGui::ColorEdit4("Row Highlight", &dropdown.ItemHighlight.x);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The list's row under the mouse, or the one the keyboard or gamepad is on");
+	}
+	ImGui::ColorEdit4("Normal", &dropdown.Normal.x);
+	ImGui::ColorEdit4("Highlighted", &dropdown.Highlighted.x);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Under the mouse, selected with the keyboard or the gamepad (UI_Navigate), or open");
+	}
+	ImGui::ColorEdit4("Pressed", &dropdown.Pressed.x);
+	ImGui::ColorEdit4("Disabled", &dropdown.Disabled.x);
+	ImGui::DragFloat("Fade Duration", &dropdown.FadeDuration, 0.005f, 0.0f, 2.0f, "%.2f s");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The state colors multiply the image's own color. The change from one to the next takes this long,\n"
+			"in real time");
+	}
+	if (!gameUI)
+	{
+		dropdown.TintSet = false;
+		dropdown.Expanded = false;
+	}
+
+	ImGui::SeparatorText("On Value Changed");
+	UIMethodControls("drop-down", dropdown.OnValueChangedTarget, dropdown.OnValueChangedMethod,
+		"A method of the script with one int parameter, public or not: OnQuality for void OnQuality(int option).\n"
+		"Called when the player chooses another option (its index).\n"
+		"Scripts can also listen: GetComponent<UIDropdown>().ValueChanged += OnQuality");
+}
+
 void UIControls(EnvMapVulkanEntityID entity)
 {
 	const EntityKind kind = GetEntityKind(entity);
@@ -737,6 +874,16 @@ void UIControls(EnvMapVulkanEntityID entity)
 		{
 			ImGui::SetTooltip("A value the player sets along the element's width; its image is the track");
 		}
+		ImGui::SameLine();
+		bool hasDropdown = s_Scene.Has<UIDropdownComponent>(entity);
+		if (ImGui::Checkbox("Dropdown", &hasDropdown))
+		{
+			hasDropdown ? (void)s_Scene.Add<UIDropdownComponent>(entity) : s_Scene.Remove<UIDropdownComponent>(entity);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("One of a list of options, chosen from a list that opens over the UI; its image is its background");
+		}
 		if (!s_Scene.Has<UIRectComponent>(entity))
 		{
 			ImGui::SameLine();
@@ -772,6 +919,13 @@ void UIControls(EnvMapVulkanEntityID entity)
 		if (ImGui::CollapsingHeader("Slider##Section", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			SliderControls(entity, *slider, gameUI);
+		}
+	}
+	if (UIDropdownComponent* dropdown = s_Scene.TryGet<UIDropdownComponent>(entity))
+	{
+		if (ImGui::CollapsingHeader("Dropdown##Section", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			DropdownControls(entity, *dropdown, gameUI);
 		}
 	}
 	ImGui::PopID();

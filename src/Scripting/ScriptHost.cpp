@@ -292,7 +292,7 @@ static bool StartRuntime()
 		result = getFunctionPointer(SCRIPT_HOST_STR("Morava.Interop, Morava.ScriptCore"), SCRIPT_HOST_STR("Initialize"),
 			UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, reinterpret_cast<void**>(&initializeCore));
 	}
-	if (result != 0 || !initializeCore || initializeCore(&s_Native, &s_Managed) != 0 || !s_Managed.GetMemory)
+	if (result != 0 || !initializeCore || initializeCore(&s_Native, &s_Managed) != 0 || !s_Managed.GetMemory || !s_Managed.InvokeDropdownChanged)
 	{
 		Log::GetLogger()->error("C# scripting is not available: '{0}' could not be loaded ({1})", coreDll.u8string(), ResultCode(result));
 		s_Managed = {};
@@ -528,6 +528,21 @@ int ScriptHost::InvokeMethodFloat(void* instance, const std::string& name, float
 bool ScriptHost::InvokeSliderChanged(uint64_t slider, float value)
 {
 	return !s_Available || s_Managed.InvokeSliderChanged(slider, value) == 0;
+}
+
+int ScriptHost::InvokeMethodInt(void* instance, const std::string& name, int32_t value)
+{
+	if (!s_Available || !instance)
+	{
+		return 1;
+	}
+	const std::u16string name16 = ScriptUtf8ToUtf16(name);
+	return s_Managed.InvokeMethodInt(instance, name16.c_str(), int(name16.size()), value);
+}
+
+bool ScriptHost::InvokeDropdownChanged(uint64_t dropdown, int32_t value)
+{
+	return !s_Available || s_Managed.InvokeDropdownChanged(dropdown, value) == 0;
 }
 
 bool ScriptHost::GetMemory(int64_t& bytes, int32_t& collections)

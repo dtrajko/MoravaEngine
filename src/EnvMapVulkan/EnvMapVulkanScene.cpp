@@ -310,6 +310,14 @@ float UISliderComponent::GetStep() const
 	return WholeNumbers ? std::max(1.0f, std::round(tenth)) : tenth;
 }
 
+// UIDropdownComponent
+
+const std::string& UIDropdownComponent::GetChosen() const
+{
+	static const std::string none;
+	return Options.empty() ? none : Options[(size_t)Constrain(Value)];
+}
+
 // UITextComponent
 
 const char* UITextComponent::GetAlignName(UITextAlign align)
@@ -525,6 +533,10 @@ void EnvMapVulkanScene::RemapEntityReferences(EnvMapVulkanEntityID entity, const
 	if (UISliderComponent* slider = TryGet<UISliderComponent>(entity))
 	{
 		remap(slider->OnValueChangedTarget);
+	}
+	if (UIDropdownComponent* dropdown = TryGet<UIDropdownComponent>(entity))
+	{
+		remap(dropdown->OnValueChangedTarget);
 	}
 }
 

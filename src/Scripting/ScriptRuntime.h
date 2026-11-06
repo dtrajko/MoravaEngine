@@ -51,6 +51,8 @@ public:
 	// The frame's slider changes (SceneUI::GetValueChanges): each slider's On Value Changed method (UISliderComponent),
 	// then its C# listeners (slider.ValueChanged)
 	void DispatchSliderChanges(const std::vector<SceneUI::ValueChange>& changes);
+	// The frame's drop-down choices (SceneUI::GetDropdownChanges): each one's On Value Changed method, then its C# listeners
+	void DispatchDropdownChanges(const std::vector<SceneUI::DropdownChange>& changes);
 	// Drops the instances of entities that are gone
 	void RemoveDestroyed();
 
@@ -85,7 +87,9 @@ private:
 	// A UI element's method (a button's On Click, a slider's On Value Changed): of target's script, or (no target) of the
 	// first script from the element up to its canvas that has it; value: the slider's (nullptr: a method without
 	// parameters). Logged once per element and method when no script has it
-	void CallUIMethod(EnvMapVulkanEntityID element, EnvMapVulkanEntityID target, const std::string& method, const float* value);
+	// value: a slider's (one float parameter), choice: a drop-down's (one int parameter), neither: a button's (none)
+	void CallUIMethod(EnvMapVulkanEntityID element, EnvMapVulkanEntityID target, const std::string& method, const float* value,
+		const int32_t* choice = nullptr);
 
 	EnvMapVulkanScene* m_Scene = nullptr;
 	std::vector<Instance> m_Instances; // in the order they were made: the order they are called in
