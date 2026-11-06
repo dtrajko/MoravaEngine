@@ -74,6 +74,9 @@ public:
 	// and the slider's ValueChanged listeners (false: one threw)
 	static int InvokeMethodFloat(void* instance, const std::string& name, float value);
 	static bool InvokeSliderChanged(uint64_t slider, float value);
+	// A UI drop-down's choice (11.4): the method with one int parameter, and the drop-down's ValueChanged listeners
+	static int InvokeMethodInt(void* instance, const std::string& name, int32_t value);
+	static bool InvokeDropdownChanged(uint64_t dropdown, int32_t value);
 
 	// The managed heap in bytes and the garbage collections since startup (false without C#)
 	static bool GetMemory(int64_t& bytes, int32_t& collections);

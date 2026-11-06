@@ -5,11 +5,12 @@ namespace Sample
 {
     /// <summary>
     /// The Settings screen (on its canvas; its Panel hidden until Open): sliders for the music's and the effects' volumes and
-    /// the mouse's sensitivity, buttons that step through the quality, fullscreen or a window, fullscreen's resolution and
-    /// VSync, and a Controls screen where the keys and the gamepad's buttons are bound anew. A change counts at once; the
+    /// the mouse's sensitivity, drop-down lists of the quality, fullscreen or a window, fullscreen's resolution and VSync,
+    /// and a Controls screen where the keys and the gamepad's buttons are bound anew. A change counts at once; the
     /// engine keeps the player's choices of the window, the quality, the volumes and the bindings for the next runs
     /// (GameOptions keeps the mouse's sensitivity), and Back saves them. Opened by the main menu and the pause menu, which get
-    /// the selection back when it closes; their Pause action (Escape, Start) is Back while it is open.
+    /// the selection back when it closes; their Pause action (Escape, Start) is Back while it is open (an open list: closed
+    /// first).
     /// </summary>
     public class SettingsMenu : Entity
     {
@@ -25,11 +26,11 @@ namespace Sample
         public Entity? EffectsValue;
         public Entity? MouseValue;
 
-        /// <summary>Buttons that step through a setting, each showing it with a UI Text of its own.</summary>
-        public Entity? QualityButton;
-        public Entity? DisplayButton;
-        public Entity? ResolutionButton;
-        public Entity? VSyncButton;
+        /// <summary>Drop-down lists of the settings (UIDropdown).</summary>
+        public Entity? QualityDropdown;
+        public Entity? DisplayDropdown;
+        public Entity? ResolutionDropdown;
+        public Entity? VSyncDropdown;
 
         /// <summary>The Controls screen (a UI Rect, hidden until the Controls button opens it).</summary>
         public Entity? ControlsPanel;
@@ -73,13 +74,22 @@ namespace Sample
         Binding[] bindings = Array.Empty<Binding>();
         int rebinding = -1; // the binding waiting for a press
 
-        static readonly QualityLevel?[] QualitySteps = { null, QualityLevel.Low, QualityLevel.Medium, QualityLevel.High, QualityLevel.Ultra };
+        // The quality list's options in order: automatic (the GPU's), then the levels
+        static readonly QualityLevel?[] QualityOptions = { null, QualityLevel.Low, QualityLevel.Medium, QualityLevel.High, QualityLevel.Ultra };
+
+        Resolution[] resolutions = Array.Empty<Resolution>(); // the resolution list's options
+        int settling; // frames until the lists show the engine's values again: a choice takes effect after its frame
+        bool refill;  // the options again once settled (the automatic quality's level)
 
         protected override void OnCreate()
         {
             if (Slider(MusicSlider) is UISlider music) music.ValueChanged += v => { Audio.SetBusVolume(AudioBus.Music, v); ShowValues(); };
             if (Slider(EffectsSlider) is UISlider effects) effects.ValueChanged += v => { Audio.SetBusVolume(AudioBus.Effects, v); ShowValues(); };
             if (Slider(MouseSlider) is UISlider mouse) mouse.ValueChanged += v => { GameOptions.SetMouseSensitivity(v); ShowValues(); };
+            if (Dropdown(QualityDropdown) is UIDropdown quality) quality.ValueChanged += ChooseQuality;
+            if (Dropdown(DisplayDropdown) is UIDropdown display) display.ValueChanged += option => { Application.Fullscreen = option == 0; settling = 3; };
+            if (Dropdown(ResolutionDropdown) is UIDropdown resolution) resolution.ValueChanged += ChooseResolution;
+            if (Dropdown(VSyncDropdown) is UIDropdown vsync) vsync.ValueChanged += option => { Application.VSync = option == 1; settling = 3; };
 
             bindings = new[]
             {
@@ -111,6 +121,7 @@ namespace Sample
             if (Slider(EffectsSlider) is UISlider effects) effects.Value = Audio.GetBusVolume(AudioBus.Effects);
             if (Slider(MouseSlider) is UISlider mouse) mouse.Value = GameOptions.MouseSensitivity;
             ShowValues();
+            FillLists();
             IsOpen = true;
             Show(Panel, true);
             Slider(MusicSlider)?.Select();
@@ -122,12 +133,20 @@ namespace Sample
         {
             if (!IsOpen || rebinding >= 0)
                 return; // a binding waiting for a press: Escape gives it up first
+            foreach (Entity? list in Lists)
+            {
+                if (Dropdown(list) is UIDropdown open && open.IsOpen)
+                {
+                    open.Close(); // an open list: Escape closes it unchanged
+                    return;
+                }
+            }
             if (controlsOpen)
             {
                 controlsOpen = false;
                 Show(ControlsPanel, false);
                 Show(Panel, true);
-                Button(DisplayButton)?.Select();
+                Dropdown(DisplayDropdown)?.Select();
                 return;
             }
             Settings.Save();
@@ -139,27 +158,57 @@ namespace Sample
             then?.Invoke();
         }
 
-        // The buttons' On Click (the label follows in OnUpdate: the window changes after this frame)
-        void StepQuality()
+        Entity?[] Lists => new[] { QualityDropdown, DisplayDropdown, ResolutionDropdown, VSyncDropdown };
+
+        // The lists' choices (the shown values follow in OnUpdate: the window changes after this frame)
+        void ChooseQuality(int option)
         {
-            int current = Quality.IsAutomatic ? 0 : Array.IndexOf(QualitySteps, Quality.Level);
-            QualityLevel? next = QualitySteps[(current + 1) % QualitySteps.Length];
-            if (next is QualityLevel level) Quality.Level = level;
+            if (QualityOptions[Math.Clamp(option, 0, QualityOptions.Length - 1)] is QualityLevel level) Quality.Level = level;
             else Quality.SetAutomatic();
+            settling = 3;
+            refill = true; // "Automatic" names the level it chose
         }
 
-        void ToggleDisplay() => Application.Fullscreen = !Application.Fullscreen;
-
-        void StepResolution()
+        void ChooseResolution(int option)
         {
-            Resolution[] resolutions = Application.Resolutions;
-            if (resolutions.Length == 0)
-                return;
-            int current = Array.IndexOf(resolutions, Application.Resolution);
-            Application.Resolution = resolutions[(current + 1) % resolutions.Length]; // largest first: after the smallest, the largest again
+            if (option >= 0 && option < resolutions.Length)
+                Application.Resolution = resolutions[option];
+            settling = 3;
         }
 
-        void ToggleVSync() => Application.VSync = !Application.VSync;
+        // The options that depend on the machine: the automatic quality's level, the monitor's resolutions (largest first)
+        void FillLists()
+        {
+            if (Dropdown(QualityDropdown) is UIDropdown quality)
+            {
+                string automatic = Quality.IsAutomatic ? $"Automatic ({Quality.Level})" : "Automatic";
+                quality.Options = new[] { automatic, "Low", "Medium", "High", "Ultra" };
+            }
+            if (Dropdown(ResolutionDropdown) is UIDropdown resolution)
+            {
+                resolutions = Application.Resolutions;
+                string[] options = new string[resolutions.Length];
+                for (int i = 0; i < resolutions.Length; i++)
+                    options[i] = resolutions[i].ToString();
+                // The editor's Play: the game draws into the Viewport, no resolution to choose
+                resolution.Options = options.Length > 0 ? options : new[] { "The editor's Viewport" };
+                resolution.Interactable = options.Length > 0;
+            }
+            ShowLists();
+        }
+
+        // The lists show what the engine has now (also after F11, or a choice that didn't take)
+        void ShowLists()
+        {
+            if (Dropdown(QualityDropdown) is UIDropdown quality && !quality.IsOpen)
+                quality.Value = Quality.IsAutomatic ? 0 : Math.Max(0, Array.IndexOf(QualityOptions, Quality.Level));
+            if (Dropdown(DisplayDropdown) is UIDropdown display && !display.IsOpen)
+                display.Value = Application.Fullscreen ? 0 : 1;
+            if (Dropdown(ResolutionDropdown) is UIDropdown resolution && !resolution.IsOpen && resolutions.Length > 0)
+                resolution.Value = Math.Max(0, Array.IndexOf(resolutions, Application.Resolution));
+            if (Dropdown(VSyncDropdown) is UIDropdown vsync && !vsync.IsOpen)
+                vsync.Value = Application.VSync ? 1 : 0;
+        }
 
         void OpenControls()
         {
@@ -200,14 +249,16 @@ namespace Sample
                 ShowBindings();
             }
 
-            // What the engine has now (a change shows in the next frame: the window changes after the frame)
-            SetText(QualityButton, $"{Quality.Level}" + (Quality.IsAutomatic ? " (automatic)" : ""));
-            SetText(DisplayButton, Application.Fullscreen ? "Fullscreen" : "Window");
-            Resolution[] resolutions = Application.Resolutions;
-            SetText(ResolutionButton, resolutions.Length > 0 ? Application.Resolution.ToString() : "The editor's Viewport");
-            if (Button(ResolutionButton) is UIButton resolution)
-                resolution.Interactable = resolutions.Length > 0;
-            SetText(VSyncButton, Application.VSync ? "On" : "Off");
+            // What the engine has now (a change shows in the next frame: the window changes after the frame); the monitor's
+            // resolutions again when the window moved to another one
+            if (!controlsOpen && --settling < 0)
+            {
+                settling = 0;
+                if (refill || Application.Resolutions.Length != resolutions.Length)
+                    FillLists();
+                refill = false;
+                ShowLists();
+            }
         }
 
         // The binding of the row's column: the keyboard's first key (a composite's, for a part) or mouse button, the
@@ -251,6 +302,8 @@ namespace Sample
         static UISlider? Slider(Entity? entity) => entity?.GetComponent<UISlider>();
 
         static UIButton? Button(Entity? entity) => entity?.GetComponent<UIButton>();
+
+        static UIDropdown? Dropdown(Entity? entity) => entity?.GetComponent<UIDropdown>();
 
         static void SetText(Entity? entity, string text)
         {

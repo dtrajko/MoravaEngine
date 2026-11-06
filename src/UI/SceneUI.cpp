@@ -19,9 +19,13 @@ void SceneUI::Start(EnvMapVulkanScene& scene, const InputMap& map)
 	m_Scene = &scene;
 	m_HasNavigate = map.Find(InputMap::UINavigateAction) != nullptr;
 	m_HasSubmit = map.Find(InputMap::UISubmitAction) != nullptr;
-	if ((scene.FindFirst<UIButtonComponent>() != NoEntity || scene.FindFirst<UISliderComponent>() != NoEntity) && (!m_HasNavigate || !m_HasSubmit))
+	// No list open from an earlier run of the scene
+	scene.Each<UIDropdownComponent>([](EnvMapVulkanEntityID, UIDropdownComponent& dropdown) { dropdown.Expanded = false; });
+	const bool selectables = scene.FindFirst<UIButtonComponent>() != NoEntity || scene.FindFirst<UISliderComponent>() != NoEntity ||
+		scene.FindFirst<UIDropdownComponent>() != NoEntity;
+	if (selectables && (!m_HasNavigate || !m_HasSubmit))
 	{
-		Log::GetLogger()->info("UI: the input map has no {0}: the buttons and sliders work with the mouse only (Project Settings: Input)",
+		Log::GetLogger()->info("UI: the input map has no {0}: the buttons, sliders and drop-downs work with the mouse only (Project Settings: Input)",
 			!m_HasNavigate && !m_HasSubmit ? "UI_Navigate and UI_Submit" : !m_HasNavigate ? "UI_Navigate" : "UI_Submit");
 	}
 }
@@ -34,12 +38,14 @@ void SceneUI::Stop()
 	m_PointerMoved = false;
 	m_PreviousButtons = m_HeldButtons = 0;
 	m_LeftPressed = m_LeftReleased = false;
-	m_Hovered = m_HoveredButton = m_Selected = m_MousePressed = m_SubmitPressed = m_DraggedSlider = NoEntity;
+	m_Hovered = m_HoveredButton = m_Selected = m_MousePressed = m_SubmitPressed = m_DraggedSlider = m_OpenDropdown = NoEntity;
+	m_DropdownPressedRow = -1;
 	m_SelectedByMouse = false;
 	m_NavigateDirection = glm::ivec2(0);
 	m_NavigateRepeat = 0.0f;
 	m_Clicks.clear();
 	m_ValueChanges.clear();
+	m_DropdownChanges.clear();
 }
 
 uint32_t SceneUI::UpdatePointer(const UIPointer& pointer, const glm::vec2& viewSize)
@@ -52,7 +58,8 @@ uint32_t SceneUI::UpdatePointer(const UIPointer& pointer, const glm::vec2& viewS
 	UILayout::Build(*m_Scene, viewSize, m_Layout, true);
 
 	m_PointerMoved = pointer.Inside != m_Pointer.Inside || (pointer.Inside && pointer.Position != m_Pointer.Position);
-	const bool overUI = pointer.Inside && HitTest(pointer.Position);
+	// An open drop-down's list has every press (one outside it closes it)
+	const bool overUI = pointer.Inside && (m_OpenDropdown != NoEntity || HitTest(pointer.Position));
 	const uint32_t pressed = pointer.Buttons & ~m_PreviousButtons;
 	const uint32_t released = m_PreviousButtons & ~pointer.Buttons;
 	// A press that begins over the UI is the UI's until its release
@@ -68,13 +75,35 @@ void SceneUI::Update(const InputSystem* input, float unscaledFrameTime)
 {
 	m_Clicks.clear();
 	m_ValueChanges.clear();
+	m_DropdownChanges.clear();
 	if (!m_Scene)
 	{
 		return;
 	}
 	// Laid out again: the fixed steps' scripts may have opened a menu
 	UILayout::Build(*m_Scene, m_ViewSize, m_Layout, true);
-	auto click = [&](EnvMapVulkanEntityID button) { m_Clicks.push_back({ button }); };
+	if (m_OpenDropdown != NoEntity && !IsSelectable(m_OpenDropdown))
+	{
+		CloseDropdown(); // hidden, no longer Interactable, or gone
+	}
+	if (m_OpenDropdown != NoEntity)
+	{
+		UpdateOpenDropdown(input, unscaledFrameTime);
+		UpdateTints(unscaledFrameTime);
+		return;
+	}
+	// A click: a button's, or a drop-down opens
+	auto click = [&](EnvMapVulkanEntityID element)
+	{
+		if (m_Scene->Has<UIDropdownComponent>(element))
+		{
+			OpenDropdown(element);
+		}
+		else
+		{
+			m_Clicks.push_back({ element });
+		}
+	};
 
 	const UIElementRect* hit = m_Pointer.Inside ? HitTest(m_Pointer.Position) : nullptr;
 	m_Hovered = hit ? hit->Entity : NoEntity;
@@ -129,34 +158,16 @@ void SceneUI::Update(const InputSystem* input, float unscaledFrameTime)
 	m_PointerMoved = false;
 
 	// The keyboard and the gamepad
-	if (input && input->IsEnabled() && m_HasNavigate)
+	glm::ivec2 direction(0);
+	if (ReadNavigate(input, unscaledFrameTime, direction))
 	{
-		const glm::vec2 value = input->Get(InputMap::UINavigateAction).Value;
-		glm::ivec2 direction(0);
-		if (glm::length(value) >= 0.5f)
-		{
-			// The stronger axis, in the view's directions (y down: up on the stick is -y)
-			direction = std::abs(value.x) > std::abs(value.y) ? glm::ivec2(value.x > 0.0f ? 1 : -1, 0) : glm::ivec2(0, value.y > 0.0f ? -1 : 1);
-		}
-		if (direction != glm::ivec2(0))
-		{
-			if (direction != m_NavigateDirection)
-			{
-				Navigate(direction);
-				m_NavigateRepeat = s_NavigateRepeatDelay;
-			}
-			else if ((m_NavigateRepeat -= unscaledFrameTime) <= 0.0f)
-			{
-				Navigate(direction);
-				m_NavigateRepeat = s_NavigateRepeatInterval;
-			}
-		}
-		m_NavigateDirection = direction;
+		Navigate(direction);
 	}
 	if (input && input->IsEnabled() && m_HasSubmit)
 	{
 		const InputActionState& submit = input->Get(InputMap::UISubmitAction);
-		if (submit.PressedThisFrame && m_Selected != NoEntity && m_Scene->Has<UIButtonComponent>(m_Selected))
+		const bool pressable = m_Selected != NoEntity && (m_Scene->Has<UIButtonComponent>(m_Selected) || m_Scene->Has<UIDropdownComponent>(m_Selected));
+		if (submit.PressedThisFrame && pressable)
 		{
 			click(m_Selected);
 			m_SubmitPressed = m_Selected;
@@ -167,6 +178,157 @@ void SceneUI::Update(const InputSystem* input, float unscaledFrameTime)
 		}
 	}
 	UpdateTints(unscaledFrameTime);
+}
+
+bool SceneUI::ReadNavigate(const InputSystem* input, float unscaledFrameTime, glm::ivec2& direction)
+{
+	direction = glm::ivec2(0);
+	if (!input || !input->IsEnabled() || !m_HasNavigate)
+	{
+		return false;
+	}
+	const glm::vec2 value = input->Get(InputMap::UINavigateAction).Value;
+	if (glm::length(value) >= 0.5f)
+	{
+		// The stronger axis, in the view's directions (y down: up on the stick is -y)
+		direction = std::abs(value.x) > std::abs(value.y) ? glm::ivec2(value.x > 0.0f ? 1 : -1, 0) : glm::ivec2(0, value.y > 0.0f ? -1 : 1);
+	}
+	bool moves = false;
+	if (direction != glm::ivec2(0))
+	{
+		if (direction != m_NavigateDirection)
+		{
+			moves = true;
+			m_NavigateRepeat = s_NavigateRepeatDelay;
+		}
+		else if ((m_NavigateRepeat -= unscaledFrameTime) <= 0.0f)
+		{
+			moves = true;
+			m_NavigateRepeat = s_NavigateRepeatInterval;
+		}
+	}
+	m_NavigateDirection = direction;
+	return moves;
+}
+
+bool SceneUI::OpenDropdown(EnvMapVulkanEntityID entity)
+{
+	UIDropdownComponent* dropdown = m_Scene ? m_Scene->TryGet<UIDropdownComponent>(entity) : nullptr;
+	if (!dropdown || dropdown->Options.empty() || !IsSelectable(entity))
+	{
+		return false;
+	}
+	if (m_OpenDropdown != entity)
+	{
+		CloseDropdown();
+	}
+	m_OpenDropdown = entity;
+	dropdown->Expanded = true;
+	dropdown->HighlightedOption = dropdown->Constrain(dropdown->Value);
+	m_Selected = entity;
+	m_MousePressed = m_SubmitPressed = NoEntity;
+	m_DropdownPressedRow = -1;
+	return true;
+}
+
+void SceneUI::CloseDropdown()
+{
+	if (m_Scene && m_OpenDropdown != NoEntity)
+	{
+		if (UIDropdownComponent* dropdown = m_Scene->TryGet<UIDropdownComponent>(m_OpenDropdown))
+		{
+			dropdown->Expanded = false;
+		}
+	}
+	m_OpenDropdown = NoEntity;
+	m_DropdownPressedRow = -1;
+}
+
+void SceneUI::ChooseOption(int option)
+{
+	UIDropdownComponent* dropdown = m_Scene->TryGet<UIDropdownComponent>(m_OpenDropdown);
+	if (dropdown && !dropdown->Options.empty())
+	{
+		option = dropdown->Constrain(option);
+		const bool changed = option != dropdown->Constrain(dropdown->Value);
+		dropdown->Value = option;
+		if (changed)
+		{
+			m_DropdownChanges.push_back({ m_OpenDropdown, option });
+		}
+	}
+	// The selection stays on the drop-down: the keyboard goes on from there
+	m_Selected = m_OpenDropdown;
+	m_SelectedByMouse = false;
+	CloseDropdown();
+}
+
+void SceneUI::UpdateOpenDropdown(const InputSystem* input, float unscaledFrameTime)
+{
+	UIDropdownComponent* dropdown = m_Scene->TryGet<UIDropdownComponent>(m_OpenDropdown);
+	const UIElementRect* element = FindElement(m_OpenDropdown);
+	if (!dropdown || !element || dropdown->Options.empty())
+	{
+		CloseDropdown();
+		return;
+	}
+	const UIDropdownListGeometry list = UILayout::GetDropdownList(*dropdown, element->Min, element->Max, m_ViewSize);
+	const glm::vec2 point = m_Pointer.Position;
+	const int row = m_Pointer.Inside ? list.RowAt(point) : -1;
+	const bool onElement = m_Pointer.Inside && point.x >= element->Min.x && point.y >= element->Min.y && point.x < element->Max.x &&
+		point.y < element->Max.y;
+	m_Hovered = m_HoveredButton = row >= 0 || onElement ? m_OpenDropdown : NoEntity;
+	dropdown->HighlightedOption = dropdown->Constrain(dropdown->HighlightedOption);
+
+	// The mouse: the row under it is highlighted; a press and a release on a row chooses it; a click on the drop-down
+	// itself closes the list, a press anywhere else closes it at once (and does nothing more)
+	if (m_PointerMoved && row >= 0)
+	{
+		dropdown->HighlightedOption = row;
+	}
+	const EnvMapVulkanEntityID open = m_OpenDropdown;
+	if (m_LeftPressed)
+	{
+		m_DropdownPressedRow = row >= 0 ? row : onElement ? -2 : -1;
+		if (row < 0 && !onElement)
+		{
+			CloseDropdown();
+		}
+	}
+	if (m_LeftReleased && m_OpenDropdown == open)
+	{
+		if (m_DropdownPressedRow >= 0 && row == m_DropdownPressedRow)
+		{
+			ChooseOption(row);
+		}
+		else if (m_DropdownPressedRow == -2 && onElement)
+		{
+			CloseDropdown();
+		}
+		m_DropdownPressedRow = -1;
+	}
+	m_LeftPressed = m_LeftReleased = false;
+	m_PointerMoved = false;
+
+	// The keyboard and the gamepad: up and down along the list (held, it repeats), UI_Submit chooses
+	glm::ivec2 direction(0);
+	if (ReadNavigate(input, unscaledFrameTime, direction) && direction.y != 0 && m_OpenDropdown == open)
+	{
+		dropdown->HighlightedOption = dropdown->Constrain(dropdown->HighlightedOption + direction.y);
+	}
+	if (input && input->IsEnabled() && m_HasSubmit)
+	{
+		const InputActionState& submit = input->Get(InputMap::UISubmitAction);
+		if (submit.PressedThisFrame && m_OpenDropdown == open)
+		{
+			ChooseOption(dropdown->HighlightedOption);
+			m_SubmitPressed = open;
+		}
+		if (!submit.Held)
+		{
+			m_SubmitPressed = NoEntity;
+		}
+	}
 }
 
 bool SceneUI::Select(EnvMapVulkanEntityID entity)
@@ -216,7 +378,7 @@ const UIElementRect* SceneUI::HitTest(const glm::vec2& point) const
 	for (auto it = m_Layout.Elements.rbegin(); it != m_Layout.Elements.rend(); ++it)
 	{
 		const bool catches = m_Scene->Has<UIImageComponent>(it->Entity) || m_Scene->Has<UIButtonComponent>(it->Entity) ||
-			m_Scene->Has<UISliderComponent>(it->Entity);
+			m_Scene->Has<UISliderComponent>(it->Entity) || m_Scene->Has<UIDropdownComponent>(it->Entity);
 		if (catches && point.x >= it->Min.x && point.y >= it->Min.y && point.x < it->Max.x && point.y < it->Max.y)
 		{
 			return &*it;
@@ -229,7 +391,7 @@ EnvMapVulkanEntityID SceneUI::FindSelectable(EnvMapVulkanEntityID element) const
 {
 	for (EnvMapVulkanEntityID id = element; id != NoEntity; id = m_Scene->GetParent(id))
 	{
-		if (m_Scene->Has<UIButtonComponent>(id) || m_Scene->Has<UISliderComponent>(id))
+		if (m_Scene->Has<UIButtonComponent>(id) || m_Scene->Has<UISliderComponent>(id) || m_Scene->Has<UIDropdownComponent>(id))
 		{
 			return id;
 		}
@@ -249,7 +411,8 @@ bool SceneUI::IsSelectable(EnvMapVulkanEntityID entity) const
 	}
 	const UIButtonComponent* button = m_Scene->TryGet<UIButtonComponent>(entity);
 	const UISliderComponent* slider = m_Scene->TryGet<UISliderComponent>(entity);
-	if (!(button ? button->Interactable : slider && slider->Interactable))
+	const UIDropdownComponent* dropdown = m_Scene->TryGet<UIDropdownComponent>(entity);
+	if (!(button ? button->Interactable : slider ? slider->Interactable : dropdown && dropdown->Interactable))
 	{
 		return false;
 	}
@@ -395,5 +558,9 @@ void SceneUI::UpdateTints(float unscaledFrameTime)
 	m_Scene->Each<UISliderComponent>([&](EnvMapVulkanEntityID entity, UISliderComponent& slider)
 	{
 		FadeTint(slider, entity == pressed, entity == m_Selected, unscaledFrameTime);
+	});
+	m_Scene->Each<UIDropdownComponent>([&](EnvMapVulkanEntityID entity, UIDropdownComponent& dropdown)
+	{
+		FadeTint(dropdown, entity == pressed, entity == m_Selected || entity == m_OpenDropdown, unscaledFrameTime);
 	});
 }

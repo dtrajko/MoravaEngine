@@ -485,6 +485,25 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
+		if (const UIDropdownComponent* dropdown = scene.TryGet<UIDropdownComponent>(entity))
+		{
+			out << YAML::Key << "UIDropdown" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Options" << YAML::Value << YAML::Flow << dropdown->Options;
+			out << YAML::Key << "Value" << YAML::Value << dropdown->Constrain(dropdown->Value);
+			out << YAML::Key << "Interactable" << YAML::Value << dropdown->Interactable;
+			WriteVec4(out, "ListColor", dropdown->ListColor);
+			WriteVec4(out, "ItemHighlight", dropdown->ItemHighlight);
+			WriteVec4(out, "Normal", dropdown->Normal);
+			WriteVec4(out, "Highlighted", dropdown->Highlighted);
+			WriteVec4(out, "Pressed", dropdown->Pressed);
+			WriteVec4(out, "Disabled", dropdown->Disabled);
+			out << YAML::Key << "FadeDuration" << YAML::Value << dropdown->FadeDuration;
+			out << YAML::Key << "OnValueChanged" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "Target" << YAML::Value << dropdown->OnValueChangedTarget;
+			out << YAML::Key << "Method" << YAML::Value << dropdown->OnValueChangedMethod;
+			out << YAML::EndMap;
+			out << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -828,6 +847,32 @@ namespace EnvMapVulkanSceneSerializer
 			{
 				slider.OnValueChangedTarget = onChange["Target"].as<uint64_t>(NoEntity);
 				slider.OnValueChangedMethod = onChange["Method"].as<std::string>("");
+			}
+		}
+		if (YAML::Node dropdownNode = node["UIDropdown"]; dropdownNode && dropdownNode.IsMap())
+		{
+			UIDropdownComponent& dropdown = scene.Add<UIDropdownComponent>(entity);
+			if (YAML::Node options = dropdownNode["Options"]; options && options.IsSequence())
+			{
+				for (const YAML::Node& option : options)
+				{
+					dropdown.Options.push_back(option.as<std::string>(""));
+				}
+			}
+			Read(dropdownNode, "Value", dropdown.Value);
+			dropdown.Value = dropdown.Constrain(dropdown.Value);
+			Read(dropdownNode, "Interactable", dropdown.Interactable);
+			ReadVec4(dropdownNode["ListColor"], dropdown.ListColor);
+			ReadVec4(dropdownNode["ItemHighlight"], dropdown.ItemHighlight);
+			ReadVec4(dropdownNode["Normal"], dropdown.Normal);
+			ReadVec4(dropdownNode["Highlighted"], dropdown.Highlighted);
+			ReadVec4(dropdownNode["Pressed"], dropdown.Pressed);
+			ReadVec4(dropdownNode["Disabled"], dropdown.Disabled);
+			Read(dropdownNode, "FadeDuration", dropdown.FadeDuration);
+			if (YAML::Node onChange = dropdownNode["OnValueChanged"]; onChange && onChange.IsMap())
+			{
+				dropdown.OnValueChangedTarget = onChange["Target"].as<uint64_t>(NoEntity);
+				dropdown.OnValueChangedMethod = onChange["Method"].as<std::string>("");
 			}
 		}
 		if (YAML::Node probesNode = node["ProbeVolume"])

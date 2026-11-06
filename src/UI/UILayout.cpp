@@ -82,6 +82,32 @@ UISliderGeometry UILayout::GetSliderGeometry(const UISliderComponent& slider, co
 	return geometry;
 }
 
+int UIDropdownListGeometry::RowAt(const glm::vec2& point) const
+{
+	if (Count <= 0 || RowHeight <= 0.0f || point.x < Min.x || point.x >= Max.x || point.y < Min.y || point.y >= Max.y)
+	{
+		return -1;
+	}
+	return std::min((int)((point.y - Min.y) / RowHeight), Count - 1);
+}
+
+UIDropdownListGeometry UILayout::GetDropdownList(const UIDropdownComponent& dropdown, const glm::vec2& min, const glm::vec2& max, const glm::vec2& viewSize)
+{
+	UIDropdownListGeometry list;
+	list.Count = (int)dropdown.Options.size();
+	list.RowHeight = std::max(max.y - min.y, 1.0f);
+	const float height = list.RowHeight * (float)list.Count;
+	float top = max.y; // below
+	if (top + height > viewSize.y)
+	{
+		// Above when it fits there, else as far down as it fits (from the view's top when it is taller than the view)
+		top = min.y - height >= 0.0f ? min.y - height : std::max(0.0f, std::min(max.y, viewSize.y - height));
+	}
+	list.Min = glm::vec2(min.x, top);
+	list.Max = glm::vec2(max.x, top + height);
+	return list;
+}
+
 EnvMapVulkanEntityID UILayout::FindCanvas(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity)
 {
 	for (EnvMapVulkanEntityID id = entity; id != NoEntity; id = scene.GetParent(id))
@@ -261,6 +287,83 @@ namespace
 		}
 	}
 
+	// A drop-down's text: the style of its element's UI Text (none: the engine's font, white, sized to the element), the
+	// option's words in it, and a margin at the left end for left-aligned text
+	UITextComponent DropdownTextStyle(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, float rowHeight, float scale)
+	{
+		UITextComponent style;
+		if (const UITextComponent* text = scene.TryGet<UITextComponent>(entity))
+		{
+			style = *text;
+		}
+		else
+		{
+			style.Size = rowHeight / std::max(scale, 1e-4f) * 0.55f;
+		}
+		style.Wrap = false;
+		return style;
+	}
+
+	// One row's text in [min, max]: a margin of a third of its height at the ends
+	void AddDropdownText(UIDrawList& out, UITextComponent style, const std::string& option, const glm::vec2& min, const glm::vec2& max, float scale)
+	{
+		const float margin = (max.y - min.y) * 0.33f;
+		style.Text = option;
+		if (style.Color.a > 0.0f && !option.empty())
+		{
+			AddText(out, style, glm::vec2(min.x + margin, min.y), glm::vec2(std::max(min.x + margin, max.x - margin), max.y), scale);
+		}
+	}
+
+	// A triangle pointing down, centered at center: a quad per pixel row (crisp at any size, no texture)
+	void AddArrow(UIDrawList& out, const glm::vec2& center, float width, const glm::vec4& color)
+	{
+		const H2M::RefH2M<H2M::Texture2D_H2M> none;
+		const int rows = std::max(1, (int)std::round(width * 0.5f));
+		const float top = std::round(center.y - rows * 0.5f);
+		for (int i = 0; i < rows; i++)
+		{
+			const float half = width * 0.5f * (1.0f - (i + 0.5f) / rows);
+			out.AddQuad(glm::vec2(center.x - half, top + i), glm::vec2(center.x + half, top + i + 1), glm::vec2(0.0f), glm::vec2(0.0f), color, none);
+			out.ImageQuads++;
+		}
+	}
+
+	// An open drop-down's list, over everything (UILayout::Build draws it last)
+	void AddDropdownList(const EnvMapVulkanScene& scene, UIDrawList& out, const UIElementRect& element, const UIDropdownComponent& dropdown,
+		const glm::vec2& viewSize)
+	{
+		const UIDropdownListGeometry list = UILayout::GetDropdownList(dropdown, element.Min, element.Max, viewSize);
+		if (list.Count == 0)
+		{
+			return;
+		}
+		const H2M::RefH2M<H2M::Texture2D_H2M> none;
+		const UITextComponent style = DropdownTextStyle(scene, element.Entity, list.RowHeight, element.Scale);
+		out.AddQuad(list.Min, list.Max, glm::vec2(0.0f), glm::vec2(0.0f), dropdown.ListColor, none);
+		out.ImageQuads++;
+		const int chosen = dropdown.Constrain(dropdown.Value);
+		for (int i = 0; i < list.Count; i++)
+		{
+			const glm::vec2 rowMin(list.Min.x, list.Min.y + list.RowHeight * (float)i);
+			const glm::vec2 rowMax(list.Max.x, rowMin.y + list.RowHeight);
+			if (i == dropdown.HighlightedOption)
+			{
+				out.AddQuad(rowMin, rowMax, glm::vec2(0.0f), glm::vec2(0.0f), dropdown.ItemHighlight, none);
+				out.ImageQuads++;
+			}
+			if (i == chosen)
+			{
+				// The chosen one: a bar at its left end, in the text's color
+				const float bar = std::max(3.0f, std::round(5.0f * element.Scale));
+				out.AddQuad(rowMin, glm::vec2(rowMin.x + bar, rowMax.y), glm::vec2(0.0f), glm::vec2(0.0f), style.Color, none);
+				out.ImageQuads++;
+			}
+			AddDropdownText(out, style, dropdown.Options[(size_t)i], rowMin, rowMax, element.Scale);
+		}
+		out.AddOutline(list.Min, list.Max, std::max(1.0f, std::round(element.Scale * 1.5f)), glm::vec4(1.0f, 1.0f, 1.0f, 0.3f));
+	}
+
 	struct LayoutContext
 	{
 		const EnvMapVulkanScene& Scene;
@@ -309,7 +412,8 @@ namespace
 			// can't be used, as its fill is
 			const UIButtonComponent* button = scene.TryGet<UIButtonComponent>(entity);
 			const UISliderComponent* slider = scene.TryGet<UISliderComponent>(entity);
-			const glm::vec4 color = button ? image->Color * button->GetTint() :
+			const UIDropdownComponent* dropdown = scene.TryGet<UIDropdownComponent>(entity);
+			const glm::vec4 color = button ? image->Color * button->GetTint() : dropdown ? image->Color * dropdown->GetTint() :
 				(slider && !slider->Interactable ? image->Color * slider->Disabled : image->Color);
 			if (color.a > 0.0f && (texture || image->Texture.empty()))
 			{
@@ -344,7 +448,21 @@ namespace
 				context.Out.ImageQuads++;
 			}
 		}
-		const UITextComponent* text = context.ElementsOnly ? nullptr : scene.TryGet<UITextComponent>(entity);
+		const UIDropdownComponent* dropdown = context.ElementsOnly ? nullptr : scene.TryGet<UIDropdownComponent>(entity);
+		if (dropdown)
+		{
+			// The chosen option left of the arrow, the arrow in the text's color (dimmed when it can't be used)
+			const float height = max.y - min.y;
+			const UITextComponent style = DropdownTextStyle(scene, entity, height, context.Scale);
+			const float arrowArea = std::min(height, (max.x - min.x) * 0.5f);
+			AddDropdownText(context.Out, style, dropdown->GetChosen(), min, glm::vec2(max.x - arrowArea * 0.6f, max.y), context.Scale);
+			const glm::vec4 arrow = dropdown->Interactable ? style.Color : style.Color * dropdown->Disabled;
+			if (arrow.a > 0.0f)
+			{
+				AddArrow(context.Out, glm::vec2(max.x - arrowArea * 0.5f, (min.y + max.y) * 0.5f), height * 0.34f, arrow);
+			}
+		}
+		const UITextComponent* text = context.ElementsOnly || dropdown ? nullptr : scene.TryGet<UITextComponent>(entity);
 		if (text)
 		{
 			if (text->Color.a > 0.0f)
@@ -406,6 +524,20 @@ void UILayout::Build(const EnvMapVulkanScene& scene, const glm::vec2& viewSize, 
 		}
 		LayoutContext context = { scene, out, canvas, GetCanvasScale(scene.Get<UICanvasComponent>(canvas), viewSize), elementsOnly };
 		LayoutElement(context, canvas, glm::vec2(0.0f), viewSize);
+	}
+	// An open drop-down's list over every canvas (the elements' rectangles are kept as they were: a copy of each)
+	if (!elementsOnly)
+	{
+		const size_t count = out.Elements.size();
+		for (size_t i = 0; i < count; i++)
+		{
+			const UIElementRect element = out.Elements[i];
+			const UIDropdownComponent* dropdown = scene.TryGet<UIDropdownComponent>(element.Entity);
+			if (dropdown && dropdown->Expanded)
+			{
+				AddDropdownList(scene, out, element, *dropdown, viewSize);
+			}
+		}
 	}
 }
 

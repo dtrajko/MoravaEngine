@@ -6,7 +6,7 @@ Project:
   InputMap: Settings/Input.minput
   ScriptAssembly: Scripts/bin/Sample.dll
   ScriptProject: Scripts/Sample.csproj
-  Window: {Width: 1280, Height: 720, Fullscreen: true, VSync: true, Title: Coin Collector}
+  Window: {Width: 1280, Height: 720, Fullscreen: true, VSync: false, Title: Coin Collector}
   Physics: {Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, Dynamic-Character, Dynamic-Trigger, Character-Character, Character-Trigger]}
   Audio: {Master: 1, Music: 0.51, Effects: 1, UI: 0.69}
   Build:
@@ -14,6 +14,7 @@ Project:
     Company: Morava Games
     Version: 1.0.0
     Icon: Assets/Icon.png
+    DefaultQuality: Auto
     Scenes:
       - {File: Scenes/MainMenu.mscene, FileID: 824691305345922092}
       - {File: Scenes/Level1.mscene, FileID: 5197415490875490884}

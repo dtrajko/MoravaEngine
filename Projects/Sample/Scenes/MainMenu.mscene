@@ -361,10 +361,10 @@ Entities:
         MusicValue: {Entity: 7310000000000008012}
         EffectsValue: {Entity: 7310000000000008022}
         MouseValue: {Entity: 7310000000000008032}
-        QualityButton: {Entity: 7310000000000008041}
-        DisplayButton: {Entity: 7310000000000008051}
-        ResolutionButton: {Entity: 7310000000000008061}
-        VSyncButton: {Entity: 7310000000000008071}
+        QualityDropdown: {Entity: 7310000000000008041}
+        DisplayDropdown: {Entity: 7310000000000008051}
+        ResolutionDropdown: {Entity: 7310000000000008061}
+        VSyncDropdown: {Entity: 7310000000000008071}
         ControlsPanel: {Entity: 7310000000000008100}
         ForwardKey: {Entity: 7310000000000008111}
         BackKey: {Entity: 7310000000000008121}
@@ -597,7 +597,7 @@ Entities:
       Wrap: false
       LineSpacing: 1
   - ID: 7310000000000008041
-    Name: Quality Button
+    Name: Quality Dropdown
     Parent: 7310000000000008002
     Transform:
       Translation: [0, 0, 0]
@@ -605,20 +605,24 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -75], Size: [560, 66], Visible: true}
     UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
-    UIButton:
+    UIDropdown:
+      Options: [Automatic, Low, Medium, High, Ultra]
+      Value: 0
       Interactable: true
+      ListColor: [0.07, 0.08, 0.11, 0.97]
+      ItemHighlight: [0.16, 0.42, 0.78, 1]
       Normal: [0.85, 0.85, 0.85, 1]
       Highlighted: [1, 1, 1, 1]
       Pressed: [0.65, 0.65, 0.65, 1]
       Disabled: [0.55, 0.55, 0.55, 0.5]
       FadeDuration: 0.1
-      OnClick: {Target: 0, Method: StepQuality}
+      OnValueChanged: {Target: 0, Method: ""}
     UIText:
       Text: ""
       Font: ""
       Size: 40
       Color: [1, 1, 1, 1]
-      Align: Center
+      Align: Left
       VerticalAlign: Middle
       Wrap: false
       LineSpacing: 1
@@ -640,7 +644,7 @@ Entities:
       Wrap: false
       LineSpacing: 1
   - ID: 7310000000000008051
-    Name: Display Button
+    Name: Display Dropdown
     Parent: 7310000000000008002
     Transform:
       Translation: [0, 0, 0]
@@ -648,20 +652,24 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 10], Size: [560, 66], Visible: true}
     UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
-    UIButton:
+    UIDropdown:
+      Options: [Fullscreen, Window]
+      Value: 0
       Interactable: true
+      ListColor: [0.07, 0.08, 0.11, 0.97]
+      ItemHighlight: [0.16, 0.42, 0.78, 1]
       Normal: [0.85, 0.85, 0.85, 1]
       Highlighted: [1, 1, 1, 1]
       Pressed: [0.65, 0.65, 0.65, 1]
       Disabled: [0.55, 0.55, 0.55, 0.5]
       FadeDuration: 0.1
-      OnClick: {Target: 0, Method: ToggleDisplay}
+      OnValueChanged: {Target: 0, Method: ""}
     UIText:
       Text: ""
       Font: ""
       Size: 40
       Color: [1, 1, 1, 1]
-      Align: Center
+      Align: Left
       VerticalAlign: Middle
       Wrap: false
       LineSpacing: 1
@@ -683,7 +691,7 @@ Entities:
       Wrap: false
       LineSpacing: 1
   - ID: 7310000000000008061
-    Name: Resolution Button
+    Name: Resolution Dropdown
     Parent: 7310000000000008002
     Transform:
       Translation: [0, 0, 0]
@@ -691,20 +699,24 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 95], Size: [560, 66], Visible: true}
     UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
-    UIButton:
+    UIDropdown:
+      Options: []
+      Value: 0
       Interactable: true
+      ListColor: [0.07, 0.08, 0.11, 0.97]
+      ItemHighlight: [0.16, 0.42, 0.78, 1]
       Normal: [0.85, 0.85, 0.85, 1]
       Highlighted: [1, 1, 1, 1]
       Pressed: [0.65, 0.65, 0.65, 1]
       Disabled: [0.55, 0.55, 0.55, 0.5]
       FadeDuration: 0.1
-      OnClick: {Target: 0, Method: StepResolution}
+      OnValueChanged: {Target: 0, Method: ""}
     UIText:
       Text: ""
       Font: ""
       Size: 40
       Color: [1, 1, 1, 1]
-      Align: Center
+      Align: Left
       VerticalAlign: Middle
       Wrap: false
       LineSpacing: 1
@@ -726,7 +738,7 @@ Entities:
       Wrap: false
       LineSpacing: 1
   - ID: 7310000000000008071
-    Name: VSync Button
+    Name: VSync Dropdown
     Parent: 7310000000000008002
     Transform:
       Translation: [0, 0, 0]
@@ -734,20 +746,24 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 180], Size: [560, 66], Visible: true}
     UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
-    UIButton:
+    UIDropdown:
+      Options: [Off, On]
+      Value: 0
       Interactable: true
+      ListColor: [0.07, 0.08, 0.11, 0.97]
+      ItemHighlight: [0.16, 0.42, 0.78, 1]
       Normal: [0.85, 0.85, 0.85, 1]
       Highlighted: [1, 1, 1, 1]
       Pressed: [0.65, 0.65, 0.65, 1]
       Disabled: [0.55, 0.55, 0.55, 0.5]
       FadeDuration: 0.1
-      OnClick: {Target: 0, Method: ToggleVSync}
+      OnValueChanged: {Target: 0, Method: ""}
     UIText:
       Text: ""
       Font: ""
       Size: 40
       Color: [1, 1, 1, 1]
-      Align: Center
+      Align: Left
       VerticalAlign: Middle
       Wrap: false
       LineSpacing: 1
@@ -812,7 +828,7 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -50], Size: [1700, 60], Visible: true}
     UIText:
-      Text: "Up and down: the next setting. Left and right, or drag: change a slider. Enter or A: change a setting. Escape or Start: back"
+      Text: "Up and down: the next setting. Left and right, or drag: change a slider. Enter or A: open a list, then choose. Escape or Start: back"
       Font: ""
       Size: 30
       Color: [1, 1, 1, 0.7]

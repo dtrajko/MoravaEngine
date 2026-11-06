@@ -79,6 +79,17 @@ struct UISliderGeometry
 	glm::vec2 HalfHandle = glm::vec2(0.0f);
 };
 
+// Where an open drop-down's list is in view pixels (UIDropdownComponent): Count rows of RowHeight, the first at Min.y
+struct UIDropdownListGeometry
+{
+	glm::vec2 Min = glm::vec2(0.0f), Max = glm::vec2(0.0f);
+	float RowHeight = 0.0f;
+	int Count = 0;
+
+	// The row at the point (-1: none)
+	int RowAt(const glm::vec2& point) const;
+};
+
 /**
  * Lays out the game UI (docs/engine/Game_Engine_Runtime_Guide.html, 7.1 and 7.2): every canvas of the scene for a view of
  * viewSize pixels, its elements' rectangles from their anchors (UIRectComponent), then their images and text as quads.
@@ -86,7 +97,8 @@ struct UISliderGeometry
  *
  * Canvases are drawn by SortOrder, then in the scene's order; in a canvas, an element before its children and its
  * children in order (later ones on top), an element's image before its text. A slider: its image (the track), its fill
- * and its handle, then its text. An entity under a canvas without a
+ * and its handle, then its text. A drop-down: its image, its chosen option and its arrow; its open list is drawn last,
+ * over every canvas. An entity under a canvas without a
  * UIRectComponent is a group: its children are laid out in its parent's rectangle. A canvas under another canvas is a
  * canvas of its own (the whole view).
  */
@@ -109,6 +121,9 @@ namespace UILayout
 
 	// A slider's parts in its element's rectangle (view pixels; scale: its canvas's view pixels per reference pixel)
 	UISliderGeometry GetSliderGeometry(const UISliderComponent& slider, const glm::vec2& min, const glm::vec2& max, float scale);
+	// A drop-down's list for its element's rectangle (view pixels) in a view of viewSize: below the element, else above it,
+	// else where it fits best
+	UIDropdownListGeometry GetDropdownList(const UIDropdownComponent& dropdown, const glm::vec2& min, const glm::vec2& max, const glm::vec2& viewSize);
 
 	// View pixels per reference pixel for this canvas in a view of that size
 	float GetCanvasScale(const UICanvasComponent& canvas, const glm::vec2& viewSize);

@@ -109,6 +109,16 @@ struct ScriptUISlider
 	int32_t Interactable = 1;
 };
 
+// A UIDropdownComponent as a script reads and writes it (UIDropdown's properties; its options come apart). Set: Open 1
+// opens its list, 0 closes it (SceneUI); Count is only read
+struct ScriptUIDropdown
+{
+	int32_t Value = 0;
+	int32_t Count = 0;
+	int32_t Interactable = 1;
+	int32_t Open = 0;
+};
+
 // What an animator does now (Animator's properties; its state's name comes apart, Animator_GetState)
 struct ScriptAnimatorInfo
 {
@@ -150,7 +160,7 @@ struct ScriptFieldReport
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
-	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11 };
+	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -339,6 +349,13 @@ struct ScriptNativeApi
 	void (*SaveData_RemoveAll)();
 	int32_t (*SaveData_Save)();
 	int32_t (*SaveData_GetFile)(char16_t* buffer, int capacity);
+	// UIDropdown (11.4): 0 when the entity has no drop-down. Set: the value kept within the options; a value set here calls
+	// no On Value Changed and no ValueChanged listener. The options as one text, a line feed between them (Get: as
+	// Entity_GetName, -2 without a drop-down)
+	int32_t (*UIDropdown_Get)(uint64_t entity, ScriptUIDropdown* out);
+	int32_t (*UIDropdown_Set)(uint64_t entity, const ScriptUIDropdown* value);
+	int32_t (*UIDropdown_GetOptions)(uint64_t entity, char16_t* buffer, int capacity);
+	int32_t (*UIDropdown_SetOptions)(uint64_t entity, const char16_t* options, int length);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke
@@ -376,6 +393,10 @@ struct ScriptManagedApi
 	int (*InvokeMethodFloat)(void* instance, const char16_t* name, int length, float value);
 	// The slider's ValueChanged event, to its C# listeners: 0, or 1 when one threw
 	int (*InvokeSliderChanged)(uint64_t slider, float value);
+	// A drop-down's On Value Changed (11.4): a method of the instance with one int parameter, as InvokeMethodFloat
+	int (*InvokeMethodInt)(void* instance, const char16_t* name, int length, int32_t value);
+	// The drop-down's ValueChanged event, to its C# listeners: 0, or 1 when one threw
+	int (*InvokeDropdownChanged)(uint64_t dropdown, int32_t value);
 };
 
 enum class ScriptCollisionKind : int32_t { CollisionEnter = 0, CollisionExit = 1, TriggerEnter = 2, TriggerExit = 3 };

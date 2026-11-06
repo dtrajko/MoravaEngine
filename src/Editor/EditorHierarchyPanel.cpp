@@ -443,6 +443,15 @@ void OnImGuiRenderSceneHierarchy()
 				ImGui::SetTooltip("A value between a minimum and a maximum (a volume) set with the mouse, or, selected, with\n"
 					"the keyboard's and gamepad's left and right. Its On Value Changed calls a script (Inspector: Slider)");
 			}
+			if (ImGui::MenuItem("Dropdown"))
+			{
+				AddUIEntity(UIEntityPreset::Dropdown);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("One of a list of options (a quality level, a resolution), chosen from a list that opens over\n"
+					"the rest of the UI. Its On Value Changed calls a script (Inspector: Dropdown)");
+			}
 			ImGui::TextDisabled("Elements go under the selected UI entity,\nelse under the first canvas (made if none)");
 			ImGui::EndMenu();
 		}

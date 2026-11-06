@@ -245,7 +245,8 @@ void ScriptRuntime::DispatchAnimationEvents(const std::vector<SceneAnimation::Ev
 	}
 }
 
-void ScriptRuntime::CallUIMethod(EnvMapVulkanEntityID element, EnvMapVulkanEntityID target, const std::string& method, const float* value)
+void ScriptRuntime::CallUIMethod(EnvMapVulkanEntityID element, EnvMapVulkanEntityID target, const std::string& method, const float* value,
+	const int32_t* choice)
 {
 	// The target's script, or the first script from the element up to its canvas that has the method
 	std::vector<EnvMapVulkanEntityID> candidates;
@@ -272,7 +273,8 @@ void ScriptRuntime::CallUIMethod(EnvMapVulkanEntityID element, EnvMapVulkanEntit
 			continue;
 		}
 		const size_t index = size_t(instance - m_Instances.data());
-		const int result = value ? ScriptHost::InvokeMethodFloat(instance->Handle, method, *value) : ScriptHost::InvokeMethod(instance->Handle, method);
+		const int result = value ? ScriptHost::InvokeMethodFloat(instance->Handle, method, *value) :
+			choice ? ScriptHost::InvokeMethodInt(instance->Handle, method, *choice) : ScriptHost::InvokeMethod(instance->Handle, method);
 		if (result == 2)
 		{
 			continue; // not this script's
@@ -285,11 +287,11 @@ void ScriptRuntime::CallUIMethod(EnvMapVulkanEntityID element, EnvMapVulkanEntit
 	}
 	if (m_MissingMethods.insert({ element, method }).second)
 	{
-		const char* what = value ? "slider" : "button";
+		const char* what = value ? "slider" : choice ? "drop-down" : "button";
 		const std::string where = target != NoEntity ? "its target '" + EntityName(*m_Scene, target) + "'" :
 			std::string("the ") + what + " and its parents up to the canvas";
 		Log::GetLogger()->error("UI: the {0} '{1}' calls {2}(), but no script of {3} has a method {2} {4}", what,
-			EntityName(*m_Scene, element), method, where, value ? "with one float parameter" : "without parameters");
+			EntityName(*m_Scene, element), method, where, value ? "with one float parameter" : choice ? "with one int parameter" : "without parameters");
 	}
 }
 
@@ -331,6 +333,28 @@ void ScriptRuntime::DispatchSliderChanges(const std::vector<SceneUI::ValueChange
 		if (m_Scene->Exists(change.Slider) && !ScriptHost::InvokeSliderChanged(change.Slider, change.Value))
 		{
 			Threw("UISlider.ValueChanged", change.Slider);
+		}
+	}
+}
+
+void ScriptRuntime::DispatchDropdownChanges(const std::vector<SceneUI::DropdownChange>& changes)
+{
+	for (const SceneUI::DropdownChange& change : changes)
+	{
+		const UIDropdownComponent* dropdown = m_Scene ? m_Scene->TryGet<UIDropdownComponent>(change.Dropdown) : nullptr;
+		if (!dropdown)
+		{
+			continue;
+		}
+		const std::string method = dropdown->OnValueChangedMethod; // a copy: the method may change the drop-down
+		const int32_t value = change.Value;
+		if (!method.empty())
+		{
+			CallUIMethod(change.Dropdown, dropdown->OnValueChangedTarget, method, nullptr, &value);
+		}
+		if (m_Scene->Exists(change.Dropdown) && !ScriptHost::InvokeDropdownChanged(change.Dropdown, value))
+		{
+			Threw("UIDropdown.ValueChanged", change.Dropdown);
 		}
 	}
 }

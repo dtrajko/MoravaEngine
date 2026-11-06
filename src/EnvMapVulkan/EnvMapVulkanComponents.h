@@ -462,6 +462,44 @@ struct UISliderComponent
 	float GetStep() const;
 };
 
+// A drop-down list (11.4): one of its Options, chosen from a list that opens over the rest of the UI. Closed, the element
+// shows its image (times the color of its state, as a button's), the chosen option in the style of its own UI Text (its
+// text is replaced; no UI Text: the engine's font, white) and an arrow at its right end. A click or UI_Submit opens the
+// list below the element (above it when it doesn't fit there), one row of the element's height per option, the chosen one
+// marked; UI_Navigate's up and down move along it, UI_Submit or a click chooses, a click outside it closes it unchanged
+// (a script can close it too: the sample's Escape). While it is open the rest of the UI waits. A choice by the player calls
+// OnValueChangedMethod, a method with one int parameter, of the script of OnValueChangedTarget (none: the first script
+// that has it, from the drop-down up to its canvas), and C#'s dropdown.ValueChanged listeners; a value set by a script or
+// the Inspector calls neither.
+struct UIDropdownComponent
+{
+	std::vector<std::string> Options;
+	int Value = 0;           // the chosen option's index (Constrain: within the options)
+	bool Interactable = true;
+	glm::vec4 ListColor = glm::vec4(0.07f, 0.08f, 0.11f, 0.97f);   // the open list's background
+	glm::vec4 ItemHighlight = glm::vec4(0.16f, 0.42f, 0.78f, 1.0f); // its row under the mouse or the keyboard
+	glm::vec4 Normal = glm::vec4(0.85f, 0.85f, 0.85f, 1.0f);
+	glm::vec4 Highlighted = glm::vec4(1.0f);
+	glm::vec4 Pressed = glm::vec4(0.65f, 0.65f, 0.65f, 1.0f);
+	glm::vec4 Disabled = glm::vec4(0.55f, 0.55f, 0.55f, 0.5f);
+	float FadeDuration = 0.1f;
+	EnvMapVulkanEntityID OnValueChangedTarget = NoEntity;
+	std::string OnValueChangedMethod;
+
+	// Runtime: not saved. The color the image is multiplied by now (as a button's); the list open (UI/SceneUI opens and
+	// closes it) and its row the keyboard or the mouse is on
+	glm::vec4 Tint = glm::vec4(1.0f);
+	bool TintSet = false;
+	bool Expanded = false;
+	int HighlightedOption = 0;
+
+	glm::vec4 GetTint() const { return TintSet ? Tint : (Interactable ? Normal : Disabled); }
+	// The index within the options (0 when there are none)
+	int Constrain(int value) const { return Options.empty() ? 0 : glm::clamp(value, 0, (int)Options.size() - 1); }
+	// The chosen option's text ("" when there are none)
+	const std::string& GetChosen() const;
+};
+
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
 // ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
 template<typename T>
@@ -485,4 +523,4 @@ struct ComponentList
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, PrefabComponent,
-	UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent>;
+	UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;

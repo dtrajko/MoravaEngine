@@ -38,6 +38,11 @@ struct UIPointer
  * slider); selected, UI_Navigate's left and right change its value by its step (held, it repeats), up and down move the
  * selection. Each change the player makes is reported once per frame (GetValueChanges).
  *
+ * Drop-downs (11.4): selected like buttons; a click or UI_Submit opens the list (UIDropdownComponent). While one is open it
+ * has the mouse, the keyboard and the gamepad to itself: UI_Navigate's up and down move along the list, UI_Submit or a
+ * click on a row chooses it and closes the list, a press outside the list closes it unchanged (CloseDropdown: a script's
+ * way, as for Escape). A choice that changes the value is reported (GetDropdownChanges).
+ *
  * Real time: the buttons' color fades and the navigation's repeat use the frame's unscaled time, so a pause menu (time
  * scale 0) still works and fades.
  */
@@ -52,6 +57,11 @@ public:
 	{
 		EnvMapVulkanEntityID Slider = NoEntity;
 		float Value = 0.0f;
+	};
+	struct DropdownChange
+	{
+		EnvMapVulkanEntityID Dropdown = NoEntity;
+		int Value = 0;
 	};
 
 	// The game starts (map: the actions the UI reads, when it has them) or stops
@@ -69,6 +79,13 @@ public:
 	const std::vector<Click>& GetClicks() const { return m_Clicks; }
 	// The sliders the player changed in this frame, each once, with its new value
 	const std::vector<ValueChange>& GetValueChanges() const { return m_ValueChanges; }
+	// The drop-downs the player chose a new option of in this frame
+	const std::vector<DropdownChange>& GetDropdownChanges() const { return m_DropdownChanges; }
+
+	// The drop-down whose list is open (NoEntity: none). Open: false when it can't be selected now or has no options
+	EnvMapVulkanEntityID GetOpenDropdown() const { return m_OpenDropdown; }
+	bool OpenDropdown(EnvMapVulkanEntityID dropdown);
+	void CloseDropdown();
 
 	// The selected button or slider (NoEntity: none); Select(NoEntity) drops it. False: not a button or slider that can be
 	// selected now (it isn't shown, or isn't Interactable)
@@ -84,7 +101,7 @@ private:
 	const UIElementRect* FindElement(EnvMapVulkanEntityID entity) const;
 	// The topmost element under the point that catches the mouse
 	const UIElementRect* HitTest(const glm::vec2& point) const;
-	// The button or slider an element belongs to: itself, else the nearest ancestor up to its canvas (NoEntity: none)
+	// The button, slider or drop-down an element belongs to: itself, else the nearest ancestor up to its canvas (NoEntity: none)
 	EnvMapVulkanEntityID FindSelectable(EnvMapVulkanEntityID element) const;
 	bool IsSelectable(EnvMapVulkanEntityID entity) const;
 	// UI_Navigate pushed: the selection moves, or a selected slider's value with left and right
@@ -93,6 +110,11 @@ private:
 	// A slider's value from the player (reported once per frame when it changed)
 	void SetSliderValue(EnvMapVulkanEntityID entity, float value);
 	void DragSlider();
+	// The frame's mouse, keyboard and gamepad while a drop-down's list is open
+	void UpdateOpenDropdown(const InputSystem* input, float unscaledFrameTime);
+	void ChooseOption(int option);
+	// UI_Navigate's direction now, and whether it moves this frame (a new push, or held past the repeat's delay)
+	bool ReadNavigate(const InputSystem* input, float unscaledFrameTime, glm::ivec2& direction);
 	void UpdateTints(float unscaledFrameTime);
 
 	EnvMapVulkanScene* m_Scene = nullptr;
@@ -113,10 +135,13 @@ private:
 	EnvMapVulkanEntityID m_MousePressed = NoEntity;  // the left button went down on it
 	EnvMapVulkanEntityID m_SubmitPressed = NoEntity; // UI_Submit held on it
 	EnvMapVulkanEntityID m_DraggedSlider = NoEntity; // the left button went down on it and is held
+	EnvMapVulkanEntityID m_OpenDropdown = NoEntity;
+	int m_DropdownPressedRow = -1;                   // the left button went down on this row of the open list
 
 	glm::ivec2 m_NavigateDirection = glm::ivec2(0); // held now: one of four, or none
 	float m_NavigateRepeat = 0.0f;                  // seconds until it moves again
 
 	std::vector<Click> m_Clicks;
 	std::vector<ValueChange> m_ValueChanges;
+	std::vector<DropdownChange> m_DropdownChanges;
 };

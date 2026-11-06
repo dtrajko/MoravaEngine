@@ -331,11 +331,130 @@ namespace Morava
         internal static void ClearListeners() => s_ValueChanged.Clear();
     }
 
+    /// <summary>
+    /// A drop-down list (Inspector: Dropdown): one of its Options, chosen from a list that opens over the rest of the UI with
+    /// a click, or with UI_Submit (Enter, the gamepad's A) while it is selected. In the list, UI_Navigate's up and down move
+    /// and UI_Submit or a click chooses; a click outside closes it unchanged. While it is open the rest of the UI waits:
+    /// a menu's Back (Escape) can close it first (<see cref="IsOpen"/>, <see cref="Close"/>).
+    /// </summary>
+    public sealed unsafe class UIDropdown : Component
+    {
+        // The listeners of each drop-down, by entity (as UIButton's)
+        static readonly Dictionary<ulong, Action<int>?> s_ValueChanged = new();
+
+        NativeUIDropdown Get()
+        {
+            NativeUIDropdown value;
+            if (Interop.Game->UIDropdown_Get(Entity.Id, &value) == 0) throw Missing("UI drop-down");
+            return value;
+        }
+
+        void Set(NativeUIDropdown value)
+        {
+            if (Interop.Game->UIDropdown_Set(Entity.Id, &value) == 0) throw Missing("UI drop-down");
+        }
+
+        /// <summary>The options, in the list's order (no line feeds in them). Set: the value stays within them.</summary>
+        public string[] Options
+        {
+            get
+            {
+                string joined = UIStrings.Get(Entity, "UI drop-down", (char* buffer, int capacity) => Interop.Game->UIDropdown_GetOptions(Entity.Id, buffer, capacity));
+                return Get().Count == 0 ? Array.Empty<string>() : joined.Split('\n');
+            }
+            set
+            {
+                string joined = string.Join("\n", value ?? Array.Empty<string>());
+                if (value == null || value.Length == 0) joined = "";
+                fixed (char* chars = joined)
+                    if (Interop.Game->UIDropdown_SetOptions(Entity.Id, chars, joined.Length) == 0) throw Missing("UI drop-down");
+            }
+        }
+
+        /// <summary>
+        /// The chosen option's index, within the options. Set here, it calls neither the On Value Changed method nor
+        /// ValueChanged: a menu showing the saved settings doesn't save them again.
+        /// </summary>
+        public int Value
+        {
+            get => Get().Value;
+            set { NativeUIDropdown d = Get(); d.Value = value; Set(d); }
+        }
+
+        /// <summary>The chosen option's text ("" when there are none).</summary>
+        public string Text
+        {
+            get
+            {
+                string[] options = Options;
+                return options.Length > 0 ? options[Math.Clamp(Value, 0, options.Length - 1)] : "";
+            }
+        }
+
+        /// <summary>False: the drop-down shows its Disabled color, can't be opened or selected.</summary>
+        public bool Interactable
+        {
+            get => Get().Interactable != 0;
+            set { NativeUIDropdown d = Get(); d.Interactable = value ? 1 : 0; Set(d); }
+        }
+
+        /// <summary>Its list is open (the rest of the UI waits for it).</summary>
+        public bool IsOpen => Get().Open != 0;
+
+        /// <summary>Opens its list (not when it can't be selected now, or has no options).</summary>
+        public void Open() { NativeUIDropdown d = Get(); d.Open = 1; Set(d); }
+
+        /// <summary>Closes its list without a choice.</summary>
+        public void Close() { NativeUIDropdown d = Get(); d.Open = 0; Set(d); }
+
+        /// <summary>The drop-down is the selected element (UI_Submit opens it).</summary>
+        public bool IsSelected => Interop.Game->UI_GetSelected() == Entity.Id;
+
+        /// <summary>Makes it the selected element. False when it can't be selected now: hidden, or not Interactable.</summary>
+        public bool Select() => Interop.Game->UI_Select(Entity.Id) != 0;
+
+        /// <summary>
+        /// The player chose another option (its index): after the drop-down's On Value Changed method, in the frame's update
+        /// (before OnUpdate), also while TimeScale is 0.
+        /// </summary>
+        public event Action<int> ValueChanged
+        {
+            add { s_ValueChanged.TryGetValue(Entity.Id, out Action<int>? listeners); s_ValueChanged[Entity.Id] = listeners + value; }
+            remove
+            {
+                if (s_ValueChanged.TryGetValue(Entity.Id, out Action<int>? listeners))
+                {
+                    listeners -= value;
+                    if (listeners == null) s_ValueChanged.Remove(Entity.Id); else s_ValueChanged[Entity.Id] = listeners;
+                }
+            }
+        }
+
+        // Each listener, also when one before it threw (logged): true when none threw
+        internal static bool RaiseValueChanged(ulong dropdown, int value)
+        {
+            if (!s_ValueChanged.TryGetValue(dropdown, out Action<int>? listeners) || listeners == null) return true;
+            bool ok = true;
+            foreach (Action<int> listener in listeners.GetInvocationList())
+            {
+                try { listener(value); }
+                catch (Exception e)
+                {
+                    Log.Error($"{listener.Method.DeclaringType?.Name}.{listener.Method.Name} (UIDropdown.ValueChanged): {e}");
+                    ok = false;
+                }
+            }
+            return ok;
+        }
+
+        internal static void ClearListeners() => s_ValueChanged.Clear();
+    }
+
     /// <summary>The game UI as a whole.</summary>
     public static unsafe class UI
     {
         /// <summary>
-        /// The selected element, a button or a slider (UI_Navigate moves it), null for none; set null to drop the selection.
+        /// The selected element, a button, a slider or a drop-down (UI_Navigate moves it), null for none; set null to drop the selection.
         /// </summary>
         public static Entity? Selected
         {
