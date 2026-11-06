@@ -22,6 +22,9 @@ namespace Sample
             string summary = CollectorGame.Levels == 0 ? "No levels played yet" :
                 $"{CollectorGame.Coins} coins in {CollectorGame.Levels} {(CollectorGame.Levels == 1 ? "level" : "levels")}\nTime {CollectorGame.FormatTime(CollectorGame.Seconds)}" +
                 (CollectorGame.Falls > 0 ? $", {CollectorGame.Falls} {(CollectorGame.Falls == 1 ? "splash" : "splashes")}" : ", not a single splash");
+            // A finished run is kept when it is the best (SaveData), and the best is shown under it
+            if (CollectorGame.Levels > 0)
+                summary += CollectorGame.FinishRun() ? "\nThe best run so far!" : "\n" + CollectorGame.BestText();
             if (SummaryText?.GetComponent<UIText>() is UIText text)
                 text.Text = summary;
             FirstButton?.GetComponent<UIButton>()?.Select();

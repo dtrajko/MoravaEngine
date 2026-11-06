@@ -33,6 +33,8 @@ namespace H2M
 		void Create(uint32_t* width, uint32_t* height, bool vsync = false);
 		
 		void OnResize(uint32_t width, uint32_t height);
+		// VSync on or off while the window is open: the swapchain is made again (the GPU waits first)
+		void SetVSync(bool vsync);
 
 		void BeginFrame();
 		void Present();

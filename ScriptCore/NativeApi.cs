@@ -113,6 +113,27 @@ namespace Morava
         public delegate* unmanaged<ulong, NativeUISlider*, int> UISlider_Set;
         public delegate* unmanaged<int> Application_GetFullscreen;
         public delegate* unmanaged<int, void> Application_SetFullscreen;
+        public delegate* unmanaged<uint*, int, int> Application_GetResolutions;
+        public delegate* unmanaged<uint*, void> Application_GetResolution;
+        public delegate* unmanaged<uint, uint, void> Application_SetResolution;
+        public delegate* unmanaged<int> Application_GetVSync;
+        public delegate* unmanaged<int, void> Application_SetVSync;
+        public delegate* unmanaged<int> Quality_GetLevel;
+        public delegate* unmanaged<int, void> Quality_SetLevel;
+        public delegate* unmanaged<int> Quality_IsAutomatic;
+        public delegate* unmanaged<int> Quality_IsRayTracingSupported;
+        public delegate* unmanaged<char*, int, int> Input_GetBindingCount;
+        public delegate* unmanaged<char*, int, int, int, int*, char*, int, int> Input_GetBinding;
+        public delegate* unmanaged<char*, int, int, int, int> Input_Rebind;
+        public delegate* unmanaged<int> Input_GetRebindState;
+        public delegate* unmanaged<void> Input_CancelRebind;
+        public delegate* unmanaged<void> Input_ResetBindings;
+        public delegate* unmanaged<char*, int, char*, int, int> SaveData_Get;
+        public delegate* unmanaged<char*, int, char*, int, void> SaveData_Set;
+        public delegate* unmanaged<char*, int, int> SaveData_Remove;
+        public delegate* unmanaged<void> SaveData_RemoveAll;
+        public delegate* unmanaged<int> SaveData_Save;
+        public delegate* unmanaged<char*, int, int> SaveData_GetFile;
     }
 
     [StructLayout(LayoutKind.Sequential)]

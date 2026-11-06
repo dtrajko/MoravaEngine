@@ -4,6 +4,9 @@
 #include <vector>
 
 
+namespace YAML { class Emitter; class Node; }
+
+
 // What an action gives the game: a button (held or not, pressed or released this frame), one axis, or two
 enum class InputActionType
 {
@@ -40,6 +43,12 @@ struct InputBinding
 	float DeadZone = 0.15f;              // gamepad axes and sticks: below it the value is 0 (the stick at rest drifts a little)
 	std::string Text;                    // as the input file names it, for the Input panel: "Key: Space", "Gamepad: LeftStick"
 };
+
+// A binding, or one key of a composite (the numbers are C#'s BindingPart)
+enum class InputBindingPart : int { Whole = 0, Up = 1, Down = 2, Left = 3, Right = 4 };
+
+// Which hand a binding is for: what a Controls screen lists in its columns (the numbers are C#'s InputDevice)
+enum class InputDevice : int { Keyboard = 0, Mouse = 1, Gamepad = 2 };
 
 struct InputAction
 {
@@ -102,6 +111,17 @@ struct InputMap
 	// a warning in the log
 	static bool Load(const std::string& filepath, InputMap& map, std::string& error);
 	bool Save(const std::string& filepath, std::string& error) const;
+
+	// One binding as input files write it ({ Key: Space }): false (error explains) when the node isn't one. The player's
+	// bindings are kept in this form too (PlayerSettings)
+	static bool ReadBinding(const YAML::Node& node, InputBinding& binding, std::string& error);
+	static void WriteBinding(YAML::Emitter& out, const InputBinding& binding);
+	// A binding as a player reads it: "Space", "Left Shift", "Mouse Left", "Gamepad A", a composite "W, S, A, D" (a part of
+	// it: its key). Empty: the composite has no key there
+	static std::string DescribeBinding(const InputBinding& binding, InputBindingPart part = InputBindingPart::Whole);
+	static InputDevice GetDevice(const InputBinding& binding);
+	// The key of a composite's part (-1: none, or not a composite), and where it is kept
+	static int* GetCompositeKey(InputBinding& binding, InputBindingPart part);
 
 	static const char* GetTypeName(InputActionType type);
 	// A key's name in input files ("Space"), and the key a name means (-1: none)

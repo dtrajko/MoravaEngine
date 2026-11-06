@@ -24,6 +24,8 @@
 #include "EnvMapVulkanSceneData.h"
 #include "EnvMapVulkanViewOptions.h"
 
+#include "Renderer/QualityTier.h"
+
 #include <functional>
 
 
@@ -87,6 +89,12 @@ public:
 	// The debug overlay (7.4, UI/DebugOverlay) over the view, after the game UI, from the next frame on: shown or not, the
 	// running game's numbers (nullptr: no game runs, only the frame's) and the display's content scale. Copied
 	static void SetDebugOverlay(bool shown, const DebugOverlayGame* game = nullptr, float scale = 1.0f);
+	// The quality tier the scene's settings are drawn with (EnvMapVulkanQuality), from the next frame on. High (the start):
+	// the scene as it was made, as the editor shows it
+	static void SetQualityTier(QualityTier tier);
+	static QualityTier GetQualityTier();
+	// What Auto picks for this GPU (QualityTier.h)
+	static QualityGPU GetQualityGPU();
 
 	// --- What the editor asks the renderer (src/Editor)
 

@@ -2,6 +2,8 @@
 
 #include "EnvMapVulkan/EnvMapVulkanComponents.h"
 
+#include "Game/PlayerSettings.h"
+
 #include <cstdint>
 #include <set>
 #include <string>
@@ -31,7 +33,9 @@ struct ScriptContext
 	ScriptRuntime* Scripts = nullptr;
 	InputSystem* Input = nullptr;   // nullptr: no input (Simulate, where scripts don't run)
 	SceneUI* UI = nullptr;          // the game UI's buttons and selection (7.3)
-	GameSettings* Settings = nullptr; // what the game remembers between runs (Milestone 2: the C# Settings class)
+	GameSettings* Settings = nullptr; // what the game remembers between runs (Milestone 2: the C# Settings class; 11.4: the player's settings)
+	GameSettings* SaveData = nullptr; // the game's progress (11.4: the C# SaveData class)
+	const InputMap* ProjectInputMap = nullptr; // the bindings without the player's (Input.ResetBindings)
 
 	// The scene's name and file (relative to the project; empty: never saved), and the one Scene.Load asked for (6.2): done
 	// by the game's owner at the end of the frame (GameSystems::TakeSceneLoad). An empty path: the current scene again
@@ -41,6 +45,17 @@ struct ScriptContext
 	bool QuitRequested = false;     // Application.Quit: the owner ends the game after this frame (GameSystems::TakeQuit)
 	bool Fullscreen = false;        // the window fills its monitor now (the owner says so each frame)
 	int FullscreenRequest = -1;     // Application.Fullscreen set: 0 or 1, taken by the owner after the frame (-1: none)
+	// The display and the quality as the owner says each frame (11.4), and what a script set: taken by the owner after the
+	// frame (GameSystems::TakeResolutionRequest...)
+	std::vector<PlayerResolution> Resolutions; // the monitor's, largest first
+	PlayerResolution Resolution;               // fullscreen's
+	bool VSync = false;
+	QualityTier Quality = QualityTier::High;
+	bool RayTracingSupported = false;
+	bool ResolutionRequested = false, VSyncRequested = false, QualityRequested = false;
+	PlayerResolution ResolutionRequest;
+	bool VSyncRequest = false;
+	QualityTier QualityRequest = QualityTier::Auto;
 
 	bool InFixedStep = false;       // in OnFixedUpdate: Input's edges and Time.DeltaTime are the fixed step's
 	float DeltaTime = 0.0f;         // the current update's

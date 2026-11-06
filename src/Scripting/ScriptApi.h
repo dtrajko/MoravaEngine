@@ -306,6 +306,39 @@ struct ScriptNativeApi
 	// this frame (the player switches; the editor's Play is in a panel: logged, nothing changes)
 	int32_t (*Application_GetFullscreen)();
 	void (*Application_SetFullscreen)(int32_t fullscreen);
+	// The player's settings (11.4): what a script sets here is the player's choice, kept in the settings file (PlayerSettings)
+	// and put in place at the next start too; Application.Fullscreen and Audio_SetVolumes are too from now on.
+	// Resolutions: the monitor's sizes for fullscreen, largest first, as width and height pairs into out (room for capacity of
+	// them): how many there are. Resolution: fullscreen's now (out: width, height); Set asks for it after this frame (the
+	// player: in fullscreen, at once; else at the next fullscreen). VSync: the window waits for the display (1) or not (0)
+	int32_t (*Application_GetResolutions)(uint32_t* out, int capacity);
+	void (*Application_GetResolution)(uint32_t* out);
+	void (*Application_SetResolution)(uint32_t width, uint32_t height);
+	int32_t (*Application_GetVSync)();
+	void (*Application_SetVSync)(int32_t vsync);
+	// Quality (11.4): the tier the game is drawn with (QualityTier: 0 Low to 3 Ultra). Set: from the next frame on; -1 is Auto
+	// (the GPU's tier, no choice kept). IsAutomatic: 1 when the player chose none. IsRayTracingSupported: 1 when the GPU traces rays
+	int32_t (*Quality_GetLevel)();
+	void (*Quality_SetLevel)(int32_t level);
+	int32_t (*Quality_IsAutomatic)();
+	int32_t (*Quality_IsRayTracingSupported)();
+	// Input's bindings (11.4): how many an action has (-1: no such action); one as a player reads it ("Space", "Gamepad A"),
+	// as Entity_GetName (-2: no such binding or part), with its InputDevice in device (part: InputBindingPart). Rebind: the
+	// next press replaces it (InputSystem::StartRebind): 1 started, 0 not. The rebind's InputRebindState; Cancel gives it
+	// up; Reset: the project's bindings again, for every action (the player's are forgotten)
+	int32_t (*Input_GetBindingCount)(const char16_t* action, int length);
+	int32_t (*Input_GetBinding)(const char16_t* action, int length, int32_t binding, int32_t part, int32_t* device, char16_t* buffer, int capacity);
+	int32_t (*Input_Rebind)(const char16_t* action, int length, int32_t binding, int32_t part);
+	int32_t (*Input_GetRebindState)();
+	void (*Input_CancelRebind)();
+	void (*Input_ResetBindings)();
+	// SaveData (11.4): as Settings, in the save data file. RemoveAll: every value
+	int32_t (*SaveData_Get)(const char16_t* key, int keyLength, char16_t* buffer, int capacity);
+	void (*SaveData_Set)(const char16_t* key, int keyLength, const char16_t* value, int valueLength);
+	int32_t (*SaveData_Remove)(const char16_t* key, int keyLength);
+	void (*SaveData_RemoveAll)();
+	int32_t (*SaveData_Save)();
+	int32_t (*SaveData_GetFile)(char16_t* buffer, int capacity);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

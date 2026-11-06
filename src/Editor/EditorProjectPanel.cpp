@@ -362,14 +362,15 @@ void OnImGuiRenderProjectPanel()
 	save |= ImGui::Checkbox("Fullscreen", &project->Window.Fullscreen);
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("The primary monitor, at its resolution (the width and height are the windowed size)");
+		ImGui::SetTooltip("The primary monitor, at its resolution (the width and height are the windowed size).\n"
+			"Until the player chooses: the game keeps the player's choice (Application.Fullscreen, F11, Alt+Enter)");
 	}
 	save |= ImGui::Checkbox("VSync (player)", &project->Window.VSync);
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("Frames wait for the display's refresh: no tearing, and no more frames than the display shows.\n"
-			"Used by MoravaPlayer when it starts; the editor always runs without VSync, so its frame times are what\n"
-			"a frame really costs");
+			"Used by MoravaPlayer when it starts, until the player chooses (Application.VSync); the editor always runs\n"
+			"without VSync, so its frame times are what a frame really costs");
 	}
 	ImGui::PopItemWidth();
 

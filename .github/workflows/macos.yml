@@ -306,6 +306,21 @@ jobs:
             exit 1
           fi
 
+          # 11.4: the player's settings in the user's folder. None at first: the GPU's quality tier; then the player's choices
+          SETTINGS_FOLDER="$HOME/Library/Application Support/Morava Games/Coin Collector"
+          grep -q "Settings: none yet ('$SETTINGS_FOLDER/Settings.yaml')" "$OUT" || { echo "::error::The game's settings aren't looked for in the user's folder"; exit 1; }
+          grep -q "Quality: .*(chosen for this GPU" "$OUT" || { echo "::error::The game didn't choose a quality tier for the GPU"; exit 1; }
+          SETTINGS_LOG="$PWD/game-settings-test.log"
+          mkdir -p "$SETTINGS_FOLDER"
+          printf 'Player:\n  Quality: Low\n  Bindings:\n    Jump: [{Key: J}, {Gamepad: A}]\nSettings:\n  MouseSensitivity: 2\n' > "$SETTINGS_FOLDER/Settings.yaml"
+          (cd / && gtimeout 300 "$GAME/Coin_Collector" --exit-after 10 > "$SETTINGS_LOG" 2>&1) || true
+          if ! grep -q "Quality: Low, the player's choice" "$SETTINGS_LOG" || ! grep -q "Input: the player's bindings of 1 action" "$SETTINGS_LOG" ||
+             ! grep -q "C#: Options: .*mouse x2.00" "$SETTINGS_LOG"; then
+            echo "::error::The player's settings weren't put in place (see game-settings-test.log)"
+            exit 1
+          fi
+          rm "$SETTINGS_FOLDER/Settings.yaml"
+
           # 11.4: the log in the user's folder, and a forced crash that says so there
           USER_FOLDER="$HOME/Library/Application Support/Morava Games/Coin Collector"
           grep -q "Playing scene 'MainMenu'" "$USER_FOLDER/Player.log" || { echo "::error::The game's log isn't in the user's folder"; exit 1; }
@@ -330,6 +345,7 @@ jobs:
             collector-smoke-test.log
             build-game.log
             game-smoke-test.log
+            game-settings-test.log
           if-no-files-found: ignore
 
       - name: Build log

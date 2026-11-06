@@ -20,6 +20,8 @@ struct WindowSpecification
 	uint32_t Height = 720;
 	bool Decorated = true;
 	bool Fullscreen = false;
+	// Fullscreen at this size, when the primary monitor has a video mode of it (0: at the monitor's own)
+	uint32_t FullscreenWidth = 0, FullscreenHeight = 0;
 	bool VSync = true;
 
 	WindowSpecification(std::string title = "Untitled", uint32_t width = 1280, uint32_t height = 720)

@@ -198,6 +198,11 @@ bool Project::FromYaml(const YAML::Node& root, const std::string& filepath, Proj
 		project.Build.Company = build["Company"].as<std::string>("");
 		project.Build.Version = build["Version"].as<std::string>(project.Build.Version);
 		project.Build.Icon = build["Icon"].as<std::string>("");
+		const std::string quality = build["DefaultQuality"].as<std::string>(GetQualityTierName(project.Build.DefaultQuality));
+		if (!FindQualityTier(quality, project.Build.DefaultQuality))
+		{
+			Log::GetLogger()->warn("Project '{0}': Build.DefaultQuality '{1}' is none of Auto, Low, Medium, High, Ultra (Auto then)", filepath, quality);
+		}
 		if (YAML::Node scenes = build["Scenes"]; scenes && scenes.IsSequence())
 		{
 			for (const YAML::Node& scene : scenes)
@@ -254,6 +259,7 @@ bool Project::Save(std::string& error) const
 	out << YAML::Key << "Company" << YAML::Value << Build.Company;
 	out << YAML::Key << "Version" << YAML::Value << Build.Version;
 	out << YAML::Key << "Icon" << YAML::Value << Build.Icon;
+	out << YAML::Key << "DefaultQuality" << YAML::Value << GetQualityTierName(Build.DefaultQuality);
 	out << YAML::Key << "Scenes" << YAML::Value << YAML::BeginSeq;
 	for (const std::string& scene : GetBuildScenes())
 	{

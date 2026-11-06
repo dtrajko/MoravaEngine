@@ -21,6 +21,15 @@ struct InputActionState
 	int Binding = -1; // the binding that gave the value (the largest), -1: none
 };
 
+// Where a rebind is (InputSystem::StartRebind)
+enum class InputRebindState : int
+{
+	None = 0,      // none started
+	Listening = 1, // waiting for a press
+	Done = 2,      // the binding changed
+	Cancelled = 3, // given up (Escape, the gamepad's Back, CancelRebind)
+};
+
 // A connected controller: a gamepad (GLFW knows its layout, from SDL's database of controllers), or a joystick GLFW has no
 // layout for (no binding reads it)
 struct InputGamepadInfo
@@ -90,9 +99,34 @@ public:
 
 	static std::vector<InputGamepadInfo> GetGamepads();
 
+	// Rebinding (11.4, a game's Controls screen): the next key, mouse button or gamepad button pressed replaces a binding of
+	// an action, or one key of a composite (part: InputBindingPart). A keyboard binding takes a key or a mouse button (a
+	// composite's key: a key), a gamepad binding a gamepad button; Escape or the gamepad's Back gives up. Until then, and
+	// until what was pressed is released, every action reads released (the press isn't also a jump, the UI doesn't move).
+	// False: no such action, binding or part, or a binding nothing can be pressed for (a stick, the mouse's motion)
+	bool StartRebind(const std::string& action, int binding, InputBindingPart part);
+	void CancelRebind();
+	InputRebindState GetRebindState() const { return m_Rebind.State; }
+	bool IsRebinding() const { return m_Rebind.State == InputRebindState::Listening || m_Rebind.Holding; }
+	// A rebind is done: true once, with the action whose bindings changed (the owner remembers them)
+	bool TakeRebound(std::string& action);
+
 private:
 	glm::vec2 ReadBinding(GLFWwindow* window, const InputBinding& binding, InputActionType type) const;
 	void SetMouseCaptured(GLFWwindow* window, bool captured);
+	void UpdateRebind(GLFWwindow* window);
+
+	struct Rebind
+	{
+		InputRebindState State = InputRebindState::None;
+		int Action = -1, Binding = -1;
+		InputBindingPart Part = InputBindingPart::Whole;
+		bool Gamepad = false;      // what it listens to: the gamepad's buttons, else the keyboard (and the mouse's buttons)
+		bool WaitRelease = false;  // what was held when it started is released first
+		bool Holding = false;      // done: the press that did it is still held
+		bool Rebound = false;      // for TakeRebound
+	};
+	Rebind m_Rebind;
 
 	InputMap m_Map;
 	std::vector<InputActionState> m_States;

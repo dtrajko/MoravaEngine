@@ -178,8 +178,22 @@ void GLFWWindow::InitGLFW(const WindowSpecification& props)
 	{
 		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+		// A size asked for: the monitor's mode of that size with the highest refresh rate
+		int count = 0;
+		const GLFWvidmode* modes = props.FullscreenWidth > 0 ? glfwGetVideoModes(primaryMonitor, &count) : nullptr;
+		for (int i = 0; i < count; i++)
+		{
+			const bool size = (uint32_t)modes[i].width == props.FullscreenWidth && (uint32_t)modes[i].height == props.FullscreenHeight;
+			const bool better = (uint32_t)mode->width != props.FullscreenWidth || (uint32_t)mode->height != props.FullscreenHeight ||
+				modes[i].refreshRate > mode->refreshRate;
+			if (size && better)
+			{
+				mode = &modes[i];
+			}
+		}
 		m_Data.Width = (uint32_t)mode->width;
 		m_Data.Height = (uint32_t)mode->height;
+		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 		m_GLFW_Window = glfwCreateWindow(mode->width, mode->height, m_Data.Title.c_str(), primaryMonitor, nullptr);
 	}
 	else
@@ -241,6 +255,12 @@ void GLFWWindow::SetVSync(bool enabled)
 			glfwSwapInterval(0);
 		}
 	}
+#if defined(GRAPHICS_API_VULKAN)
+	else if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan && m_Data.VSync != enabled)
+	{
+		m_SwapChain.SetVSync(enabled); // the present mode is the swapchain's: it is made again
+	}
+#endif
 
 	m_Data.VSync = enabled;
 }

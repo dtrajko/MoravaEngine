@@ -22,10 +22,15 @@ namespace Sample
         /// <summary>A text that pulses (none: nothing pulses).</summary>
         public Entity? Title;
 
+        /// <summary>A UI Text for the best finished run (kept in SaveData; none: not shown).</summary>
+        public Entity? BestText;
+
         protected override void OnCreate()
         {
             GameOptions.ApplyAtStart();
             Input.CursorLocked = false;
+            if (BestText?.GetComponent<UIText>() is UIText best)
+                best.Text = CollectorGame.BestText();
             Show(true);
         }
 

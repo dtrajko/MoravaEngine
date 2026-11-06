@@ -10,6 +10,8 @@
 #include "Core/Log.h"
 #include "Core/Process.h"
 
+#include "Game/GameSettings.h"
+
 #include "H2M/Core/LogH2M.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
@@ -98,9 +100,16 @@ int main(int argc, char** argv)
 			PlayerProduct::InstallCrashHandler(project);
 			PlayerProduct::StopOnDamagedFiles();
 		}
+		// The project's window, as the player last chose it (11.4: the settings in the user's folder)
+		const PlayerSettings player = GameSettings::ReadPlayerSettings(GameSettings::GetUserFile(project, GameSettings::SettingsFile));
 		window = WindowSpecification(project.GetWindowTitle(), project.Window.Width, project.Window.Height);
-		window.Fullscreen = project.Window.Fullscreen;
-		window.VSync = project.Window.VSync;
+		window.Fullscreen = player.Fullscreen.value_or(project.Window.Fullscreen);
+		window.VSync = player.VSync.value_or(project.Window.VSync);
+		if (player.Resolution)
+		{
+			window.FullscreenWidth = player.Resolution->Width;
+			window.FullscreenHeight = player.Resolution->Height;
+		}
 	}
 	if (!commandLine.CrashTest.empty() && commandLine.CrashTest != "frame")
 	{

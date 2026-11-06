@@ -5,6 +5,7 @@
 #include "Core/Application.h"
 #include "Core/Log.h"
 
+#include "EnvMapVulkan/EnvMapVulkanQuality.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneLoader.h"
@@ -22,7 +23,9 @@
 
 #include <glm/glm.hpp>
 
+#include <algorithm>
 #include <chrono>
+#include <optional>
 #include <string>
 
 
@@ -92,10 +95,161 @@ void PlayerLayer::OnAttach()
 	}
 	m_Input.SetMap(GameSystems::LoadInputMap());
 	m_Systems.SetSceneInfo(name, m_ScenePath);
-	// What the game remembered from its last run, in the user's folder (the C# Settings class)
-	m_Systems.OpenSettings(Project::GetOpen() ? GameSettings::GetUserFile(*Project::GetOpen()) : std::string());
+	// What the game remembered from its last run, in the user's folder: the player's settings and the game's (the C# Settings
+	// class), and its progress (SaveData). Without a project: for this run only
+	const Project* project = Project::GetOpen();
+	m_Systems.OpenSettings(project ? GameSettings::GetUserFile(*project, GameSettings::SettingsFile) : std::string(),
+		project ? GameSettings::GetUserFile(*project, GameSettings::SaveDataFile) : std::string());
+	const PlayerSettings& player = m_Systems.GetSettings().GetPlayer();
+	m_FullscreenResolution = player.Resolution.value_or(PlayerResolution());
+	StartQuality();
+	UpdateDisplayState(Application::Get()->GetWindow()->GetHandle()); // the scripts' OnCreate may ask
 	m_Systems.Begin(&m_Scene, &m_Input);
 	m_Playing = true;
+}
+
+void PlayerLayer::SetQuality(QualityTier tier, const char* why)
+{
+	if (tier == QualityTier::Auto)
+	{
+		const QualityGPU gpu = EnvMapVulkanRenderer::GetQualityGPU();
+		tier = ChooseQualityTier(gpu);
+		Log::GetLogger()->info("Quality: {0}, {1} (chosen for this GPU: {2}, {3} ray tracing): {4}", GetQualityTierName(tier), why,
+			gpu.Discrete ? "a graphics card" : "in the processor", gpu.RayTracing ? "with" : "without", EnvMapVulkanQuality::Describe(tier));
+	}
+	else
+	{
+		Log::GetLogger()->info("Quality: {0}, {1}: {2}", GetQualityTierName(tier), why, EnvMapVulkanQuality::Describe(tier));
+	}
+	EnvMapVulkanRenderer::SetQualityTier(tier);
+}
+
+void PlayerLayer::StartQuality()
+{
+	const std::string& option = Application::Get()->GetCommandLine().Quality;
+	QualityTier tier = QualityTier::Auto;
+	if (!option.empty())
+	{
+		if (FindQualityTier(option, tier))
+		{
+			SetQuality(tier, "as --quality asks");
+			return;
+		}
+		Log::GetLogger()->warn("--quality {0}: none of Low, Medium, High, Ultra, Auto", option);
+	}
+	if (const std::optional<QualityTier>& chosen = m_Systems.GetSettings().GetPlayer().Quality)
+	{
+		SetQuality(*chosen, "the player's choice");
+		return;
+	}
+	const Project* project = Project::GetOpen();
+	SetQuality(project ? project->Build.DefaultQuality : QualityTier::Auto, "the project's default");
+}
+
+// The monitor's sizes for fullscreen, largest first, each once: those of its own shape (a 16:9 monitor's 16:9 sizes; the
+// others would be stretched or shown with black bars), at least 1024 wide
+static std::vector<PlayerResolution> GetMonitorResolutions(GLFWmonitor* monitor)
+{
+	std::vector<PlayerResolution> resolutions;
+	int count = 0;
+	const GLFWvidmode* modes = monitor ? glfwGetVideoModes(monitor, &count) : nullptr;
+	const GLFWvidmode* own = monitor ? glfwGetVideoMode(monitor) : nullptr;
+	const float aspect = own && own->height > 0 ? (float)own->width / (float)own->height : 0.0f;
+	for (int i = 0; i < count; i++)
+	{
+		const PlayerResolution resolution{ (uint32_t)modes[i].width, (uint32_t)modes[i].height };
+		const bool shape = aspect <= 0.0f || std::abs((float)modes[i].width / (float)std::max(modes[i].height, 1) - aspect) < 0.02f;
+		if (shape && modes[i].width >= 1024 && std::find(resolutions.begin(), resolutions.end(), resolution) == resolutions.end())
+		{
+			resolutions.push_back(resolution);
+		}
+	}
+	if (resolutions.empty() && own)
+	{
+		resolutions.push_back(PlayerResolution{ (uint32_t)own->width, (uint32_t)own->height });
+	}
+	std::sort(resolutions.begin(), resolutions.end(), [](const PlayerResolution& a, const PlayerResolution& b)
+	{
+		return a.Width != b.Width ? a.Width > b.Width : a.Height > b.Height;
+	});
+	return resolutions;
+}
+
+// The monitor the window is on: its fullscreen monitor, else the one its center is on (the primary when none)
+static GLFWmonitor* FindWindowMonitor(GLFWwindow* window)
+{
+	if (GLFWmonitor* monitor = glfwGetWindowMonitor(window))
+	{
+		return monitor;
+	}
+	int x = 0, y = 0, width = 0, height = 0;
+	glfwGetWindowPos(window, &x, &y);
+	glfwGetWindowSize(window, &width, &height);
+	int count = 0;
+	GLFWmonitor** monitors = glfwGetMonitors(&count);
+	for (int i = 0; i < count; i++)
+	{
+		int mx = 0, my = 0;
+		glfwGetMonitorPos(monitors[i], &mx, &my);
+		const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+		const int cx = x + width / 2, cy = y + height / 2;
+		if (mode && cx >= mx && cx < mx + mode->width && cy >= my && cy < my + mode->height)
+		{
+			return monitors[i];
+		}
+	}
+	return glfwGetPrimaryMonitor();
+}
+
+void PlayerLayer::UpdateDisplayState(GLFWwindow* window)
+{
+	GLFWmonitor* monitor = FindWindowMonitor(window);
+	if (monitor != m_ResolutionsMonitor)
+	{
+		m_ResolutionsMonitor = monitor;
+		m_Resolutions = GetMonitorResolutions(monitor);
+	}
+	// Fullscreen's size: the window's video mode now, else what the next fullscreen will be
+	PlayerResolution resolution = m_FullscreenResolution;
+	const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
+	if (glfwGetWindowMonitor(window) && mode)
+	{
+		resolution = PlayerResolution{ (uint32_t)mode->width, (uint32_t)mode->height };
+	}
+	else if (resolution.Width == 0 || std::find(m_Resolutions.begin(), m_Resolutions.end(), resolution) == m_Resolutions.end())
+	{
+		resolution = mode ? PlayerResolution{ (uint32_t)mode->width, (uint32_t)mode->height } : PlayerResolution();
+	}
+	m_Systems.SetDisplayState(m_Resolutions, resolution, Application::Get()->GetWindow()->IsVSync(), EnvMapVulkanRenderer::GetQualityTier(),
+		EnvMapVulkanRenderer::IsRayTracingSupported());
+}
+
+void PlayerLayer::ApplyPlayerRequests(GLFWwindow* window)
+{
+	PlayerResolution resolution;
+	if (m_Systems.TakeResolutionRequest(resolution) && resolution != m_FullscreenResolution)
+	{
+		m_FullscreenResolution = resolution;
+		if (glfwGetWindowMonitor(window))
+		{
+			SetFullscreen(window, true); // at the new size now
+		}
+		else
+		{
+			Log::GetLogger()->info("Player: fullscreen at {0}x{1} from the next fullscreen on", resolution.Width, resolution.Height);
+		}
+	}
+	bool vsync = false;
+	if (m_Systems.TakeVSyncRequest(vsync) && vsync != Application::Get()->GetWindow()->IsVSync())
+	{
+		Application::Get()->GetWindow()->SetVSync(vsync);
+		Log::GetLogger()->info("Player: VSync {0}", vsync ? "on" : "off");
+	}
+	QualityTier tier = QualityTier::Auto;
+	if (m_Systems.TakeQualityRequest(tier))
+	{
+		SetQuality(tier, tier == QualityTier::Auto ? "the player chose automatic" : "the player's choice");
+	}
 }
 
 void PlayerLayer::OnDetach()
@@ -154,6 +308,7 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	m_Input.SetBlockedMouseButtons(m_Systems.UpdateUIPointer(pointer, viewSize));
 	m_Input.Update(window, focused, ts.GetSeconds());
 	m_Systems.SetFullscreenState(glfwGetWindowMonitor(window) != nullptr);
+	UpdateDisplayState(window);
 	m_GameLoop.Frame(ts.GetSeconds(), &m_Systems);
 	std::string load;
 	if (m_Systems.TakeSceneLoad(load))
@@ -165,6 +320,7 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	{
 		SetFullscreen(window, fullscreen); // Application.Fullscreen (a Settings menu)
 	}
+	ApplyPlayerRequests(window);
 	if (m_Systems.TakeQuit())
 	{
 		Application::Get()->GetWindow()->SetShouldClose(true); // as if the window was closed: this frame is the last
@@ -260,29 +416,30 @@ void PlayerLayer::UpdateFullscreenKeys(GLFWwindow* window)
 
 void PlayerLayer::SetFullscreen(GLFWwindow* window, bool fullscreen)
 {
+	m_Systems.EditSettings().EditPlayer().Fullscreen = fullscreen; // the player's choice (the keys', a Settings menu's)
 	if (fullscreen)
 	{
-		// On the monitor the window is on (its center), at the monitor's own resolution
-		int x = 0, y = 0, width = 0, height = 0;
-		glfwGetWindowPos(window, &x, &y);
-		glfwGetWindowSize(window, &width, &height);
+		// On the monitor the window is on, at the player's resolution when the monitor has it (the highest refresh rate of
+		// that size), else at the monitor's own
+		GLFWmonitor* target = FindWindowMonitor(window);
+		const GLFWvidmode* mode = glfwGetVideoMode(target);
 		int count = 0;
-		GLFWmonitor** monitors = glfwGetMonitors(&count);
-		GLFWmonitor* target = glfwGetPrimaryMonitor();
+		const GLFWvidmode* modes = m_FullscreenResolution.Width > 0 ? glfwGetVideoModes(target, &count) : nullptr;
+		const GLFWvidmode* chosen = nullptr;
 		for (int i = 0; i < count; i++)
 		{
-			int mx = 0, my = 0;
-			glfwGetMonitorPos(monitors[i], &mx, &my);
-			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
-			const int cx = x + width / 2, cy = y + height / 2;
-			if (mode && cx >= mx && cx < mx + mode->width && cy >= my && cy < my + mode->height)
+			if ((uint32_t)modes[i].width == m_FullscreenResolution.Width && (uint32_t)modes[i].height == m_FullscreenResolution.Height &&
+				(!chosen || modes[i].refreshRate > chosen->refreshRate))
 			{
-				target = monitors[i];
+				chosen = &modes[i];
 			}
 		}
-		const GLFWvidmode* mode = glfwGetVideoMode(target);
+		if (chosen)
+		{
+			mode = chosen;
+		}
 		glfwSetWindowMonitor(window, target, 0, 0, mode->width, mode->height, mode->refreshRate);
-		Log::GetLogger()->info("Player: fullscreen, {0}x{1}", mode->width, mode->height);
+		Log::GetLogger()->info("Player: fullscreen, {0}x{1} at {2} Hz", mode->width, mode->height, mode->refreshRate);
 	}
 	else
 	{
