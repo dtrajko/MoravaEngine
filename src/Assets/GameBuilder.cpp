@@ -770,7 +770,24 @@ namespace GameBuilder
 		{
 			return false;
 		}
-		return WriteInfoPlist(project, layout.Bundle, layout.Executable.filename().u8string(), hasIcon);
+		if (!WriteInfoPlist(project, layout.Bundle, layout.Executable.filename().u8string(), hasIcon))
+		{
+			return false;
+		}
+#if defined(__APPLE__)
+		// Inside an app, macOS checks the app's signature, which seals Info.plist and Resources: the player's own (ad hoc,
+		// from the template's build) says resources must be present. Signed ad hoc again as a whole; the Frameworks are
+		// signed already. Not with a Developer ID (none yet, 11.6), so a downloaded copy still needs right-click > Open
+		std::string error;
+		std::string output;
+		const int exitCode = Process::Run("/usr/bin/codesign", { "--force", "--sign", "-", layout.Bundle.u8string() }, std::string(),
+			[&output](const std::string& line) { output += line + "\n"; }, error);
+		if (exitCode != 0)
+		{
+			return Fail("The app could not be signed (codesign, exit code " + std::to_string(exitCode) + "): " + (error.empty() ? output : error));
+		}
+#endif
+		return true;
 	}
 
 	// ---- A Linux game (11.6): the folder, and beside it a .tar.gz of it to hand out

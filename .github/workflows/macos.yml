@@ -294,7 +294,7 @@ jobs:
             test -s "$APP/$file" || { echo "::error::The app has no $file"; exit 1; }
           done
           plutil -lint "$APP/Contents/Info.plist"
-          codesign --verify --verbose "$EXE" || { echo "::error::The executable's ad-hoc signature isn't valid"; exit 1; }
+          codesign --verify --verbose=2 "$APP" || { echo "::error::The app's ad-hoc signature isn't valid"; exit 1; }
           test -s "$GAME/THIRD_PARTY_NOTICES.txt" || { echo "::error::The game has no license notices"; exit 1; }
           grep -q "^MoltenVK$" "$GAME/THIRD_PARTY_NOTICES.txt" || echo "::warning::The notices don't name MoltenVK"
           if grep -aq "Scenes/Physics.mscene" "$GAME/Game.mpak"; then
