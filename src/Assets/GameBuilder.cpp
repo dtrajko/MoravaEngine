@@ -16,7 +16,9 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <cstddef>
 #include <filesystem>
+#include <fstream>
 #include <set>
 #include <string>
 #include <system_error>
@@ -475,7 +477,35 @@ namespace GameBuilder
 		}
 		return ok;
 	}
+
+	// The player's template is a console program, which tests and developers read the output of. The copy that ships opens no
+	// console window: the same program, with the header's subsystem changed (the log is in the user's folder)
+	static bool HideConsole(const fs::path& executable)
+	{
+		std::fstream file(executable, std::ios::binary | std::ios::in | std::ios::out);
+		uint32_t peOffset = 0, signature = 0;
+		uint16_t magic = 0;
+		file.read((char*)&magic, sizeof(magic));
+		file.seekg(0x3C);
+		file.read((char*)&peOffset, sizeof(peOffset));
+		file.seekg(peOffset);
+		file.read((char*)&signature, sizeof(signature));
+		if (!file || magic != IMAGE_DOS_SIGNATURE || signature != IMAGE_NT_SIGNATURE)
+		{
+			return Fail("The executable '" + executable.u8string() + "' isn't a Windows program");
+		}
+		const uint16_t subsystem = IMAGE_SUBSYSTEM_WINDOWS_GUI;
+		file.seekp(peOffset + sizeof(uint32_t) + sizeof(IMAGE_FILE_HEADER) + offsetof(IMAGE_OPTIONAL_HEADER64, Subsystem));
+		file.write((const char*)&subsystem, sizeof(subsystem));
+		file.flush();
+		return file ? true : Fail("The executable's console setting could not be changed");
+	}
 #else
+	static bool HideConsole(const fs::path&)
+	{
+		return true;
+	}
+
 	static bool WriteResources(const Project& project, const fs::path&, const std::array<uint16_t, 4>&)
 	{
 		if (!project.Build.Icon.empty())
@@ -566,7 +596,7 @@ namespace GameBuilder
 			return 1;
 		}
 
-		if (!CopyPlayerTemplate(templateFolder, output, executable, !open.ScriptAssembly.empty()) || !WriteResources(open, executable, version))
+		if (!CopyPlayerTemplate(templateFolder, output, executable, !open.ScriptAssembly.empty()) || !WriteResources(open, executable, version) || !HideConsole(executable))
 		{
 			return 1;
 		}

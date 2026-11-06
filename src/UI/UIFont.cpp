@@ -3,6 +3,7 @@
 #include "Core/EnginePaths.h"
 
 #include "Core/Log.h"
+#include "Game/GameSettings.h"
 #include "Project/Project.h"
 
 // Windows' headers (through the precompiled header) define INFINITE, a wait timeout; msdfgen has a constant of that name
@@ -61,6 +62,12 @@ static std::string GetCacheFolder()
 {
 	if (const Project* project = Project::GetOpen())
 	{
+		// A shipped game's own folder may be read-only, and it isn't the game's to write into
+		const std::string userFolder = project->Shipped ? GameSettings::GetUserDataFolder(*project) : std::string();
+		if (!userFolder.empty())
+		{
+			return userFolder + "/FontCache";
+		}
 		return project->GetDirectory() + "/Library/FontCache";
 	}
 	return RESOURCES_DIR "/Cache/Fonts";

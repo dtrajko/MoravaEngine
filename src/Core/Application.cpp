@@ -102,6 +102,14 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		{
 			commandLine.Validation = true;
 		}
+		else if (option == "--verbose")
+		{
+			commandLine.Verbose = true;
+		}
+		else if (option == "--crash-test" && hasValue)
+		{
+			commandLine.CrashTest = argv[++i];
+		}
 		else if (option == "--build-game" && hasValue)
 		{
 			commandLine.BuildGameProject = argv[++i];

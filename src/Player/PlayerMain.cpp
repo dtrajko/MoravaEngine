@@ -3,6 +3,7 @@
 // scene in the project's window; MoravaPlayer --scene <file.mscene> plays a scene (see PlayerLayer).
 
 #include "PlayerApplication.h"
+#include "PlayerProduct.h"
 
 #include "Assets/AssetFiles.h"
 #include "Core/Application.h"
@@ -14,6 +15,8 @@
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "Project/Project.h"
+
+#include "Renderer/VulkanSupport.h"
 
 #include <filesystem>
 #include <memory>
@@ -27,6 +30,8 @@ int main(int argc, char** argv)
 	// The game's pack: named, or when nothing else is named Game.mpak beside the executable, or else in the current folder. A
 	// game beside its pack works in its own folder, so a shortcut or another folder it is started from doesn't matter
 	const ApplicationCommandLine commandLine = ApplicationCommandLine::Parse(argc, argv);
+	const bool startedAsGame = commandLine.PackPath.empty() && commandLine.ProjectPath.empty() && commandLine.ScenePath.empty();
+	PlayerProduct::SetMessagesShown(startedAsGame && commandLine.ExitAfterSeconds <= 0.0f);
 	std::string packPath = commandLine.PackPath;
 	if (packPath.empty() && commandLine.ProjectPath.empty())
 	{
@@ -47,9 +52,15 @@ int main(int argc, char** argv)
 		std::string error;
 		if (!AssetFiles::MountPack(packPath, error))
 		{
-			Log::GetLogger()->error("Pack '{0}' could not be opened: {1}", packPath, error);
+			PlayerProduct::ShowFatalMessage("The game's data file can't be read (" + error + "). Please install the game again.\n\n" + packPath);
 			return 1;
 		}
+	}
+	else if (startedAsGame)
+	{
+		Log::GetLogger()->info("To play something else than a built game: --project <file.mproject> or --scene <file.mscene>");
+		PlayerProduct::ShowFatalMessage(std::string("The game's data file (") + AssetFiles::DefaultPackName + ") is missing. Please install the game again.");
+		return 1;
 	}
 	else if (!Application::IsWorkingDirectoryValid())
 	{
@@ -76,17 +87,38 @@ int main(int argc, char** argv)
 		std::string error;
 		if (!(AssetFiles::IsPackMounted() ? Project::LoadFromPack(project, error) : Project::Load(projectPath, project, error)))
 		{
-			Log::GetLogger()->error("Project '{0}' could not be opened: {1}", projectPath, error);
+			PlayerProduct::ShowFatalMessage("The game's project could not be opened (" + error + "). Please install the game again.");
 			return 1;
 		}
 		Project::SetOpen(project);
+		PlayerProduct::SetProject(project);
+		if (project.Shipped)
+		{
+			PlayerProduct::StartLogFile(project, commandLine.Verbose);
+			PlayerProduct::InstallCrashHandler(project);
+			PlayerProduct::StopOnDamagedFiles();
+		}
 		window = WindowSpecification(project.GetWindowTitle(), project.Window.Width, project.Window.Height);
 		window.Fullscreen = project.Window.Fullscreen;
 		window.VSync = project.Window.VSync;
 	}
+	if (!commandLine.CrashTest.empty() && commandLine.CrashTest != "frame")
+	{
+		PlayerProduct::Crash(commandLine.CrashTest);
+	}
+
+	// Before a window: a machine that can't run the renderer is told so
+	std::string reason;
+	if (!VulkanSupport::Check(reason))
+	{
+		PlayerProduct::ShowFatalMessage(reason + "\n\nInstalling the latest driver for the graphics card may help.");
+		return 1;
+	}
+
 	Application::Get()->InitWindow(window);
 
 	Application::Get()->Run();
 
+	PlayerProduct::FlushLog();
 	return Application::Get()->GetExitCode();
 }

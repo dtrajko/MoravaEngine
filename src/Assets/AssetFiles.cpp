@@ -10,12 +10,35 @@
 #include <memory>
 
 
+#include <mutex>
+
 namespace fs = std::filesystem;
 
 namespace AssetFiles
 {
 	static std::unique_ptr<AssetPack> s_Pack;
 	static std::string s_PackFile;
+	static std::mutex s_FailedFileMutex;
+	static std::string s_LastFailedFile;
+	static std::function<void(const std::string&)> s_DamagedFileHandler;
+
+	void NoteFailedFile(const std::string& path)
+	{
+		std::lock_guard<std::mutex> lock(s_FailedFileMutex);
+		s_LastFailedFile = path;
+	}
+
+	std::string GetLastFailedFile()
+	{
+		// Asked in a crash, which may have stopped a thread here
+		std::unique_lock<std::mutex> lock(s_FailedFileMutex, std::try_to_lock);
+		return lock.owns_lock() ? s_LastFailedFile : std::string();
+	}
+
+	void SetDamagedFileHandler(const std::function<void(const std::string& file)>& handler)
+	{
+		s_DamagedFileHandler = handler;
+	}
 
 	bool MountPack(const std::string& file, std::string& error)
 	{
@@ -47,6 +70,11 @@ namespace AssetFiles
 		if (!s_Pack->Read(entry, bytes, error))
 		{
 			Log::GetLogger()->error("Assets: '{0}' can't be read: {1}", entry.Path, error);
+			NoteFailedFile(entry.Path);
+			if (s_DamagedFileHandler)
+			{
+				s_DamagedFileHandler(entry.Path);
+			}
 			return false;
 		}
 		return true;
@@ -66,8 +94,14 @@ namespace AssetFiles
 	{
 		if (s_Pack)
 		{
-			const AssetPack::Entry* entry = s_Pack->Find(ProjectPaths::ToStored(path), AssetPack::Kind::File);
-			return entry && ReadEntry(*entry, bytes);
+			const std::string stored = ProjectPaths::ToStored(path);
+			const AssetPack::Entry* entry = s_Pack->Find(stored, AssetPack::Kind::File);
+			if (!entry)
+			{
+				NoteFailedFile(stored);
+				return false;
+			}
+			return ReadEntry(*entry, bytes);
 		}
 		return CookFiles::ReadWholeFile(fs::u8path(path), bytes);
 	}

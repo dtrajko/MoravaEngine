@@ -1,5 +1,7 @@
 #include "PlayerLayer.h"
 
+#include "PlayerProduct.h"
+
 #include "Core/Application.h"
 #include "Core/Log.h"
 
@@ -10,6 +12,8 @@
 #include "H2M/Platform/Vulkan/VulkanSwapChainH2M.h"
 
 #include "Project/Project.h"
+
+#include "Scripting/ScriptHost.h"
 
 #include "UI/DebugOverlay.h"
 
@@ -29,6 +33,12 @@ PlayerLayer::PlayerLayer()
 
 void PlayerLayer::OnAttach()
 {
+	// The .NET runtime, started by now, has set its own filter for crashes
+	if (Project::GetOpen() && Project::GetOpen()->Shipped)
+	{
+		PlayerProduct::InstallCrashHandler(*Project::GetOpen());
+	}
+
 	// --scene, else the project's start scene
 	std::string scenePath = Application::Get()->GetCommandLine().ScenePath;
 	if (scenePath.empty() && Project::GetOpen())
@@ -36,7 +46,7 @@ void PlayerLayer::OnAttach()
 		scenePath = ProjectPaths::Resolve(Project::GetOpen()->StartScene);
 		if (scenePath.empty())
 		{
-			Log::GetLogger()->error("No scene to play: the project '{0}' has no start scene", Project::GetOpen()->Name);
+			PlayerProduct::ShowFatalMessage("No scene to play: the project '" + Project::GetOpen()->Name + "' has no start scene.");
 			Application::Get()->Close(1);
 			return;
 		}
@@ -51,7 +61,7 @@ void PlayerLayer::OnAttach()
 	std::string name, error;
 	if (!EnvMapVulkanSceneLoader::Open(scenePath, m_Scene, name, m_RenderSettings, error))
 	{
-		Log::GetLogger()->error("Scene '{0}' could not be opened: {1}", scenePath, error);
+		PlayerProduct::ShowFatalMessage("The scene '" + scenePath + "' could not be opened (" + error + "). Installing the game again may help.");
 		Application::Get()->Close(1);
 		return;
 	}
@@ -73,6 +83,13 @@ void PlayerLayer::OnAttach()
 		Log::GetLogger()->info("Debug overlay: shown (F3 hides it)");
 	}
 	GameSystems::LoadScripts();
+	if (Project::GetOpen() && Project::GetOpen()->Shipped && !Project::GetOpen()->ScriptAssembly.empty() && !ScriptHost::IsGameAssemblyLoaded())
+	{
+		PlayerProduct::ShowFatalMessage("The game's scripts could not be started. Please install the game again.");
+		m_Playing = false;
+		Application::Get()->Close(1);
+		return;
+	}
 	m_Input.SetMap(GameSystems::LoadInputMap());
 	m_Systems.SetSceneInfo(name, m_ScenePath);
 	// What the game remembered from its last run, in the user's folder (the C# Settings class)
@@ -103,6 +120,10 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	if (!m_Playing)
 	{
 		return; // the scene could not be opened: the player is closing
+	}
+	if (Application::Get()->GetCommandLine().CrashTest == "frame")
+	{
+		PlayerProduct::Crash("frame");
 	}
 
 	// Input (the window is the game: it has input while it has the focus), the game, then the camera where the game put the
