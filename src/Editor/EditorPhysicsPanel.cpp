@@ -52,6 +52,8 @@ static ImU32 GetDebugLineColor(ScenePhysics::DebugLineKind kind)
 		case ScenePhysics::DebugLineKind::Trigger:   return IM_COL32(255, 220, 0, 230);
 		case ScenePhysics::DebugLineKind::Character: return IM_COL32(255, 140, 40, 230);
 		case ScenePhysics::DebugLineKind::Contact:   return IM_COL32(255, 50, 50, 255);
+		case ScenePhysics::DebugLineKind::Wheel:         return IM_COL32(0, 220, 230, 230);
+		case ScenePhysics::DebugLineKind::WheelOnGround: return IM_COL32(200, 255, 255, 255);
 		default:                                     return IM_COL32(255, 255, 255, 255);
 	}
 }
@@ -178,6 +180,13 @@ static void DebugViewControls(const ScenePhysics* physics)
 		ColorLegend(ScenePhysics::DebugLineKind::Trigger, "Trigger");
 		ImGui::SameLine();
 		ColorLegend(ScenePhysics::DebugLineKind::Character, "Character");
+		ImGui::SameLine();
+		ColorLegend(ScenePhysics::DebugLineKind::Wheel, "Wheel");
+		if (physics)
+		{
+			ImGui::SameLine();
+			ColorLegend(ScenePhysics::DebugLineKind::WheelOnGround, "On Ground");
+		}
 	}
 }
 
@@ -187,7 +196,7 @@ static void StatsControls(const ScenePhysics& physics)
 	ImGui::SeparatorText("World");
 	ImGui::Text("Bodies: %u dynamic, %u kinematic, %u static, %u trigger%s", stats.Dynamic, stats.Kinematic, stats.Static, stats.Triggers,
 		stats.Triggers == 1 ? "" : "s");
-	ImGui::Text("Characters: %u", stats.Characters);
+	ImGui::Text("Characters: %u, vehicles: %u", stats.Characters, stats.Vehicles);
 	ImGui::Text("Awake: %u (the rest sleep until something touches them)", stats.Awake);
 	ImGui::Text("Touching pairs: %u", stats.TouchingPairs);
 	ImGui::Text("Steps: %s, last %.2f ms, average %.2f ms", FormatCount(stats.Steps).c_str(), stats.LastStepMs, stats.AverageStepMs);

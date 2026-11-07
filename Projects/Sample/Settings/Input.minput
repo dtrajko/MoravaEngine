@@ -36,6 +36,21 @@ Actions:
   - Name: Pause         # the pause menu opens or closes (PauseMenu)
     Type: Button
     Bindings: [ { Key: Escape }, { Gamepad: Start } ]
+  - Name: Accelerate    # Axis1D, 0 to 1: a vehicle's throttle (the engine reads it for a vehicle with Controls: Player)
+    Type: Axis1D
+    Bindings: [ { Key: W }, { Key: Up }, { Gamepad: RightTrigger } ]
+  - Name: Brake         # Axis1D, 0 to 1: a vehicle brakes, and once it stops, reverses
+    Type: Axis1D
+    Bindings: [ { Key: S }, { Key: Down }, { Gamepad: LeftTrigger } ]
+  - Name: Steer         # Axis1D: -1 left, 1 right
+    Type: Axis1D
+    Bindings:
+      - { Composite: AD, Negative: A, Positive: D }
+      - { Composite: Arrows, Negative: Left, Positive: Right }
+      - { Gamepad: LeftStickX, DeadZone: 0.15 }
+  - Name: Handbrake     # held: a vehicle's handbrake (its rear wheels lock, the throttle lets go)
+    Type: Button
+    Bindings: [ { Key: Space }, { Gamepad: B } ]
   - Name: UI_Navigate   # Axis2D: the game UI's selection from button to button (the engine reads it)
     Type: Axis2D
     Bindings:

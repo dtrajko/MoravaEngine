@@ -365,6 +365,37 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "PushStrength" << YAML::Value << character->PushStrength;
 			out << YAML::EndMap;
 		}
+		if (const VehicleComponent* vehicle = scene.TryGet<VehicleComponent>(entity))
+		{
+			out << YAML::Key << "Vehicle" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Controls" << YAML::Value << VehicleComponent::GetControlName(vehicle->Controls);
+			out << YAML::Key << "EngineTorque" << YAML::Value << vehicle->EngineTorque;
+			out << YAML::Key << "MaxRpm" << YAML::Value << vehicle->MaxRpm;
+			out << YAML::Key << "MaxSteerAngle" << YAML::Value << vehicle->MaxSteerAngle;
+			out << YAML::Key << "BrakeTorque" << YAML::Value << vehicle->BrakeTorque;
+			out << YAML::Key << "HandbrakeTorque" << YAML::Value << vehicle->HandbrakeTorque;
+			out << YAML::Key << "SuspensionTravel" << YAML::Value << vehicle->SuspensionTravel;
+			out << YAML::Key << "SuspensionFrequency" << YAML::Value << vehicle->SuspensionFrequency;
+			out << YAML::Key << "SuspensionDamping" << YAML::Value << vehicle->SuspensionDamping;
+			out << YAML::Key << "AntiRollBars" << YAML::Value << vehicle->AntiRollBars;
+			out << YAML::Key << "MaxTilt" << YAML::Value << vehicle->MaxTilt;
+			WriteVec3(out, "CenterOfMassOffset", vehicle->CenterOfMassOffset);
+			out << YAML::Key << "Wheels" << YAML::Value << YAML::BeginSeq;
+			for (const VehicleComponent::Wheel& wheel : vehicle->Wheels)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Entity" << YAML::Value << wheel.Entity;
+				WriteVec3(out, "Position", wheel.Position);
+				out << YAML::Key << "Radius" << YAML::Value << wheel.Radius;
+				out << YAML::Key << "Width" << YAML::Value << wheel.Width;
+				out << YAML::Key << "Steers" << YAML::Value << wheel.Steers;
+				out << YAML::Key << "Driven" << YAML::Value << wheel.Driven;
+				out << YAML::Key << "Handbrake" << YAML::Value << wheel.Handbrake;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
 		if (const ScriptComponent* script = scene.TryGet<ScriptComponent>(entity))
 		{
 			WriteScript(out, *script);
@@ -810,6 +841,38 @@ namespace EnvMapVulkanSceneSerializer
 			Read(characterNode, "StepHeight", character.StepHeight);
 			Read(characterNode, "Mass", character.Mass);
 			Read(characterNode, "PushStrength", character.PushStrength);
+		}
+		if (YAML::Node vehicleNode = node["Vehicle"]; vehicleNode && vehicleNode.IsMap())
+		{
+			VehicleComponent& vehicle = scene.Add<VehicleComponent>(entity);
+			vehicle.Controls = vehicleNode["Controls"].as<std::string>("Player") == "Script" ? VehicleComponent::ControlMode::Script
+				: VehicleComponent::ControlMode::Player;
+			Read(vehicleNode, "EngineTorque", vehicle.EngineTorque);
+			Read(vehicleNode, "MaxRpm", vehicle.MaxRpm);
+			Read(vehicleNode, "MaxSteerAngle", vehicle.MaxSteerAngle);
+			Read(vehicleNode, "BrakeTorque", vehicle.BrakeTorque);
+			Read(vehicleNode, "HandbrakeTorque", vehicle.HandbrakeTorque);
+			Read(vehicleNode, "SuspensionTravel", vehicle.SuspensionTravel);
+			Read(vehicleNode, "SuspensionFrequency", vehicle.SuspensionFrequency);
+			Read(vehicleNode, "SuspensionDamping", vehicle.SuspensionDamping);
+			Read(vehicleNode, "AntiRollBars", vehicle.AntiRollBars);
+			Read(vehicleNode, "MaxTilt", vehicle.MaxTilt);
+			ReadVec3(vehicleNode["CenterOfMassOffset"], vehicle.CenterOfMassOffset);
+			if (YAML::Node wheels = vehicleNode["Wheels"]; wheels && wheels.IsSequence())
+			{
+				for (const YAML::Node& wheelNode : wheels)
+				{
+					VehicleComponent::Wheel wheel;
+					wheel.Entity = wheelNode["Entity"].as<uint64_t>(NoEntity);
+					ReadVec3(wheelNode["Position"], wheel.Position);
+					Read(wheelNode, "Radius", wheel.Radius);
+					Read(wheelNode, "Width", wheel.Width);
+					Read(wheelNode, "Steers", wheel.Steers);
+					Read(wheelNode, "Driven", wheel.Driven);
+					Read(wheelNode, "Handbrake", wheel.Handbrake);
+					vehicle.Wheels.push_back(wheel);
+				}
+			}
 		}
 		if (YAML::Node scriptNode = node["Script"]; scriptNode && scriptNode.IsMap())
 		{

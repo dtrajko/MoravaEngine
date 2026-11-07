@@ -303,6 +303,54 @@ struct CharacterControllerComponent
 	float PushStrength = 100.0f;               // newtons: the most it pushes a dynamic body with
 };
 
+// The entity is a wheeled vehicle (docs/engine/Game_Engine_Runtime_Guide.html, the vehicle scene, part B): its dynamic body
+// (Collider + Rigid Body, Dynamic: the mass is the Rigid Body's) rides on wheels with springs, an engine drives some of
+// them through an automatic gearbox, and some steer. Jolt's VehicleConstraint with a WheeledVehicleController does the
+// physics. Its forward is the entity's -Z (as a camera looks), up its +Y; it should not be scaled (its wheels' models,
+// children of it, would be stretched as they turn): an Empty, with the body's model a scaled child.
+//
+// The wheels are rays of the suspension cast down from the body, each with a radius and a width; a wheel's Entity (a model:
+// a cylinder, a tire) is only what is drawn, placed by the engine where the wheel is while the game runs, turned as it
+// rolls and steers (from its place in the editor: the rotation it has there is the wheel's at rest).
+struct VehicleComponent
+{
+	struct Wheel
+	{
+		EnvMapVulkanEntityID Entity = NoEntity; // what is drawn as the wheel (none: nothing)
+		glm::vec3 Position = glm::vec3(0.0f);   // the wheel's center with the spring fully out, in the vehicle's space (meters)
+		float Radius = 0.35f;
+		float Width = 0.25f;
+		bool Steers = false;
+		bool Driven = true;                     // the engine turns it (wheels at the same height across: one axle)
+		bool Handbrake = false;
+	};
+	std::vector<Wheel> Wheels;
+
+	// Who drives it: Player, from the input's actions (Accelerate, Brake, Steer, Handbrake; without them Move and Jump);
+	// Script, from a script's Vehicle.SetInput (an AI driver, a cutscene)
+	enum class ControlMode { Player, Script };
+	ControlMode Controls = ControlMode::Player;
+
+	// The engine and the gearbox
+	float EngineTorque = 500.0f;            // newton meters, at its best
+	float MaxRpm = 6000.0f;
+	// Steering and brakes
+	float MaxSteerAngle = 30.0f;            // degrees
+	float BrakeTorque = 1500.0f;            // newton meters, per wheel
+	float HandbrakeTorque = 4000.0f;
+	// The springs: how far a wheel goes up from fully out, how fast it bounces (Hz: higher is stiffer) and how soon it stops
+	float SuspensionTravel = 0.3f;
+	float SuspensionFrequency = 1.5f;
+	float SuspensionDamping = 0.5f;
+	bool AntiRollBars = true;               // an axle's two wheels pull each other down: it leans less in turns
+	// It is kept from tipping over further than this (degrees from upright; 180: free)
+	float MaxTilt = 60.0f;
+	// The center of its mass, moved from the body shape's: lower is steadier (a real car's engine sits low)
+	glm::vec3 CenterOfMassOffset = glm::vec3(0.0f, -0.3f, 0.0f);
+
+	static const char* GetControlName(ControlMode mode);
+};
+
 // A C# script on the entity (docs/engine/Game_Engine_Runtime_Guide.html, 4.5): a class of the project's game assembly that
 // derives from Morava.Entity. While the game runs, an instance of it gets the entity's OnCreate, OnUpdate, OnFixedUpdate and
 // collision calls (ScriptRuntime keeps the instances, not this component). Fields: the public fields set in the
@@ -552,5 +600,5 @@ struct ComponentList
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
-	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, PrefabComponent,
-	UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;
+	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, VehicleComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent,
+	PrefabComponent, UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;

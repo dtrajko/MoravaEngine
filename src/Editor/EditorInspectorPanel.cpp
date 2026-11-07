@@ -649,6 +649,186 @@ static void InputTestControls(EnvMapVulkanEntityID model)
 	}
 }
 
+// A vehicle (VehicleComponent): its wheels, engine, brakes and springs; while the game runs, how it goes
+static void VehicleControls(EnvMapVulkanEntityID entity, VehicleComponent& vehicle)
+{
+	const ImVec4 warningColor(1.0f, 0.8f, 0.3f, 1.0f);
+	ImGui::Spacing();
+	ImGui::TextUnformatted("Vehicle");
+	const RigidBodyComponent* body = s_Scene.TryGet<RigidBodyComponent>(entity);
+	if (!s_Scene.Has<ColliderComponent>(entity) || !body || body->Type != RigidBodyComponent::BodyType::Dynamic)
+	{
+		ImGui::TextColored(warningColor, "It needs a Collider and a Dynamic Rigid Body (its mass is the body's)");
+	}
+	const glm::mat4 world = s_Scene.GetWorldTransform(entity);
+	const glm::vec3 scale(glm::length(glm::vec3(world[0])), glm::length(glm::vec3(world[1])), glm::length(glm::vec3(world[2])));
+	if (glm::any(glm::greaterThan(glm::abs(scale - glm::vec3(1.0f)), glm::vec3(0.01f))))
+	{
+		ImGui::TextColored(warningColor, "It is scaled: its wheels' models would stretch as they turn.\n"
+			"Make it an Empty, with the body's model a scaled child.");
+	}
+
+	int controls = (int)vehicle.Controls;
+	if (ImGui::Combo("Controls", &controls, "Player\0Script\0"))
+	{
+		vehicle.Controls = (VehicleComponent::ControlMode)controls;
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Player: the input's actions drive it: Accelerate, Brake, Steer and Handbrake, or without them\n"
+			"Move (W, S: throttle and reverse; A, D: steering) and Jump (the handbrake).\n"
+			"Script: a script drives it with GetComponent<Vehicle>().SetInput (an AI driver).");
+	}
+	ImGui::DragFloat("Engine Torque", &vehicle.EngineTorque, 5.0f, 0.0f, 100000.0f, "%.0f Nm", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The engine's strongest pull: a small car about 150 Nm, a sports car 500, a truck 2000.\n"
+			"It goes to the wheels through an automatic gearbox: more torque, faster acceleration.");
+	}
+	ImGui::DragFloat("Max RPM", &vehicle.MaxRpm, 50.0f, 1500.0f, 20000.0f, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::SliderFloat("Max Steer Angle", &vehicle.MaxSteerAngle, 0.0f, 60.0f, "%.0f deg");
+	ImGui::DragFloat("Brake Torque", &vehicle.BrakeTorque, 10.0f, 0.0f, 100000.0f, "%.0f Nm", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::DragFloat("Handbrake Torque", &vehicle.HandbrakeTorque, 10.0f, 0.0f, 100000.0f, "%.0f Nm", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Per wheel. The handbrake holds the wheels marked Handbrake (the back ones): they lock and slide");
+	}
+	ImGui::DragFloat("Suspension Travel", &vehicle.SuspensionTravel, 0.005f, 0.01f, 2.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How far a wheel goes up from where it is placed (its spring fully out)");
+	}
+	ImGui::DragFloat("Suspension Frequency", &vehicle.SuspensionFrequency, 0.05f, 0.1f, 20.0f, "%.2f Hz", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How fast it bounces on its springs: 1 to 2 for a car (soft), 3 or more for a race car (stiff)");
+	}
+	ImGui::SliderFloat("Suspension Damping", &vehicle.SuspensionDamping, 0.0f, 1.0f, "%.2f");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How soon the bouncing stops: 0 bounces on and on, 1 settles without bouncing");
+	}
+	ImGui::Checkbox("Anti-Roll Bars", &vehicle.AntiRollBars);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("An axle's two wheels pull each other down: it leans less in turns");
+	}
+	ImGui::SliderFloat("Max Tilt", &vehicle.MaxTilt, 1.0f, 180.0f, "%.0f deg");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("It is held from tipping further than this from upright (180: free to roll over)");
+	}
+	ImGui::DragFloat3("Center of Mass", &vehicle.CenterOfMassOffset.x, 0.01f);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Moved from the middle of its collider, in meters: lower is steadier (a real car's engine sits low)");
+	}
+
+	// The wheels
+	if (ImGui::Button("Fit Wheels"))
+	{
+		if (!ScenePhysics::FitWheels(s_Scene, entity, vehicle))
+		{
+			ShowNotification("Fit Wheels: no model under the vehicle has \"Wheel\" in its name", true);
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The wheels from the models under the vehicle named \"Wheel...\": each one's place, radius and width\n"
+			"from its model (its origin is the wheel's center). The front ones steer, the back ones have the handbrake,\n"
+			"all are driven. The models are then only drawn: the engine turns and moves them while the game runs.");
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Add Wheel"))
+	{
+		vehicle.Wheels.push_back(VehicleComponent::Wheel());
+	}
+	int removed = -1;
+	for (int w = 0; w < (int)vehicle.Wheels.size(); w++)
+	{
+		VehicleComponent::Wheel& wheel = vehicle.Wheels[w];
+		ImGui::PushID(w);
+		const bool hasModel = wheel.Entity != NoEntity && s_Scene.Exists(wheel.Entity);
+		char label[160];
+		snprintf(label, sizeof(label), "Wheel %d%s%s###Wheel", w + 1, hasModel ? ": " : "", hasModel ? s_Scene.Get<NameComponent>(wheel.Entity).Name.c_str() : "");
+		if (ImGui::TreeNode(label))
+		{
+			// The model drawn as the wheel: one of the vehicle's descendants
+			if (ImGui::BeginCombo("Model", hasModel ? s_Scene.Get<NameComponent>(wheel.Entity).Name.c_str() : "(none)"))
+			{
+				if (ImGui::Selectable("(none)", !hasModel))
+				{
+					wheel.Entity = NoEntity;
+				}
+				for (EnvMapVulkanEntityID child : s_Scene.GetSubtree(entity))
+				{
+					if (child != entity && s_Scene.Has<ModelComponent>(child) &&
+						ImGui::Selectable(s_Scene.Get<NameComponent>(child).Name.c_str(), child == wheel.Entity))
+					{
+						wheel.Entity = child;
+					}
+				}
+				ImGui::EndCombo();
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("What is drawn as the wheel (none: nothing). Its rotation here is the wheel's at rest");
+			}
+			if (ImGui::DragFloat3("Position", &wheel.Position.x, 0.01f) && hasModel)
+			{
+				// The model goes with it: at the wheel's center, as the vehicle places it
+				const glm::quat rotation = glm::quat_cast(glm::mat3(glm::normalize(glm::vec3(world[0])), glm::normalize(glm::vec3(world[1])),
+					glm::normalize(glm::vec3(world[2]))));
+				SetEntityPosition(s_Scene, wheel.Entity, glm::vec3(world[3]) + rotation * wheel.Position);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Its center with the spring fully out, in the vehicle's space (meters; forward is -Z)");
+			}
+			ImGui::DragFloat("Radius", &wheel.Radius, 0.005f, 0.01f, 5.0f, "%.3f m", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::DragFloat("Width", &wheel.Width, 0.005f, 0.01f, 5.0f, "%.3f m", ImGuiSliderFlags_AlwaysClamp);
+			ImGui::Checkbox("Steers", &wheel.Steers);
+			ImGui::SameLine();
+			ImGui::Checkbox("Driven", &wheel.Driven);
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The engine turns it (two driven wheels across from each other share an axle)");
+			}
+			ImGui::SameLine();
+			ImGui::Checkbox("Handbrake", &wheel.Handbrake);
+			if (ImGui::SmallButton("Remove Wheel"))
+			{
+				removed = w;
+			}
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+	if (removed >= 0)
+	{
+		vehicle.Wheels.erase(vehicle.Wheels.begin() + removed);
+	}
+	if (vehicle.Wheels.empty())
+	{
+		ImGui::TextColored(warningColor, "No wheels: Fit Wheels, or Add Wheel");
+	}
+
+	// The running game: how it goes
+	ScenePhysics::VehicleState state;
+	if (const ScenePhysics* physics = GetGamePhysics(); physics && physics->GetVehicleState(entity, state))
+	{
+		int onGround = 0;
+		for (uint32_t w = 0; w < state.Wheels && w < 32; w++)
+		{
+			onGround += (state.WheelsOnGround >> w) & 1u;
+		}
+		ImGui::TextDisabled("%.1f km/h, gear %d, %.0f rpm, %d of %u wheels on the ground", state.Speed * 3.6f, state.Gear, state.Rpm, onGround,
+			state.Wheels);
+		ImGui::TextDisabled("Throttle %.2f, steering %.2f, brake %.2f, handbrake %.2f", state.Applied.Forward, state.Applied.Steer,
+			state.Applied.Brake, state.Applied.Handbrake);
+	}
+}
+
 // The model's physics (docs/engine/Game_Engine_Runtime_Guide.html, 3.4): its collider (alone: a static body, as a floor or
 // a wall) and its rigid body (it moves). The bodies are made when the game starts.
 static void PhysicsControls(EnvMapVulkanEntityID model)
@@ -715,7 +895,41 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 			"moves by asking for a velocity, as the Input Test does. It stops at walls and slides along them, walks up\n"
 			"gentle slopes and steps, slides down steep slopes, stands on things and pushes dynamic models.");
 	}
-	if (IsPlaying() && (hasCollider || hasBody || isCharacter))
+	ImGui::SameLine();
+	bool isVehicle = s_Scene.Has<VehicleComponent>(model);
+	if (ImGui::Checkbox("Vehicle", &isVehicle))
+	{
+		if (isVehicle)
+		{
+			// A car: its wheels from the models named "Wheel..." under it, a dynamic body of a car's weight, and a collider
+			// around the rest (the body's model)
+			VehicleComponent& vehicle = s_Scene.Add<VehicleComponent>(model);
+			ScenePhysics::FitWheels(s_Scene, model, vehicle);
+			RigidBodyComponent& rigidBody = s_Scene.Has<RigidBodyComponent>(model) ? s_Scene.Get<RigidBodyComponent>(model) : s_Scene.Add<RigidBodyComponent>(model);
+			rigidBody.Type = RigidBodyComponent::BodyType::Dynamic;
+			if (rigidBody.Mass <= 1.0f)
+			{
+				rigidBody.Mass = 1200.0f;
+			}
+			if (!s_Scene.Has<ColliderComponent>(model))
+			{
+				ScenePhysics::FitCollider(s_Scene, model, s_Scene.Add<ColliderComponent>(model));
+			}
+		}
+		else
+		{
+			s_Scene.Remove<VehicleComponent>(model);
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("A wheeled vehicle: its body rides on wheels with springs, an engine drives them, the front ones steer.\n"
+			"Put it on an Empty with the body's model and the wheels' models (named \"Wheel...\") as children: the wheels\n"
+			"are found from those, and it gets a Dynamic Rigid Body of 1200 kg and a Collider around the body.");
+	}
+	hasBody = s_Scene.Has<RigidBodyComponent>(model);
+	hasCollider = s_Scene.Has<ColliderComponent>(model);
+	if (IsPlaying() && (hasCollider || hasBody || isCharacter || isVehicle))
 	{
 		ImGui::TextDisabled("Changes count from the next Play (the bodies are made at Play)");
 	}
@@ -918,6 +1132,10 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 				ImGui::TextDisabled("Ground slope %.0f deg", glm::degrees(std::acos(glm::clamp(state.GroundNormal.y, -1.0f, 1.0f))));
 			}
 		}
+	}
+	if (VehicleComponent* vehicle = s_Scene.TryGet<VehicleComponent>(model))
+	{
+		VehicleControls(model, *vehicle);
 	}
 	ImGui::PopID();
 }
@@ -1358,6 +1576,25 @@ void OnImGuiRenderInspector()
 
 	switch (kind)
 	{
+		case EntityKind::Empty:
+		{
+			if (ImGui::Button("Delete Empty"))
+			{
+				DeleteEntity(entity);
+				ImGui::End();
+				return;
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("With its children");
+			}
+			TransformComponent& transform = s_Scene.Get<TransformComponent>(entity);
+			ImGui::DragFloat3("Translation", &transform.Translation.x, 0.1f);
+			ImGui::DragFloat3("Rotation", &transform.Rotation.x, 1.0f);
+			ScaleDragScalingChildLights("Scale", entity, transform.Scale);
+			PhysicsControls(entity);
+			break;
+		}
 		case EntityKind::Model:
 			ModelPropertiesControls(entity);
 			break;

@@ -108,6 +108,8 @@ public:
 
 private:
 	void Start(bool keepClock);
+	// The player's input to the vehicles it drives (VehicleComponent::ControlMode::Player), each fixed step
+	void DrivePlayerVehicles();
 
 	EnvMapVulkanScene* m_Scene = nullptr;
 	InputSystem* m_Input = nullptr;

@@ -6,6 +6,8 @@
 #include "EnvMapVulkan/EnvMapVulkanComponents.h"
 
 #include <Jolt/Physics/Character/CharacterVirtual.h>
+#include <Jolt/Physics/Vehicle/VehicleCollisionTester.h>
+#include <Jolt/Physics/Vehicle/VehicleConstraint.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -33,6 +35,11 @@ class ScenePhysicsContactListener;
  * asked for (SetCharacterVelocity), stopped and guided by what they touch, and written back like the dynamic bodies (their
  * position only: the entity's rotation stays the game's). Each has an inner body, so falling boxes and other characters
  * collide with it.
+ *
+ * Vehicles (VehicleComponent, the vehicle scene's part B) are dynamic bodies with a Jolt VehicleConstraint: wheels on springs
+ * cast down from the body, driven by an engine through an automatic gearbox. The game gives each its driver's input
+ * (SetVehicleInput: the player's actions, or a script's); the wheels' models are placed where the wheels are, as the
+ * bodies are written (WriteTransforms).
  *
  * Events and queries (3.6): bodies that start and stop touching, and what enters and leaves a trigger, are reported once
  * each after the step they happen in (GetEvents); Raycast, SphereCast and the Overlap functions ask what is where, between
@@ -93,6 +100,26 @@ public:
 	bool SetLinearVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity);
 	bool SetAngularVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity);
 
+	// ---- Vehicles: the driver's input, kept until the game sets another. Forward: -1 (full reverse) to 1 (full throttle);
+	// asking for the other way while it still rolls brakes first. Steer: -1 (left) to 1 (right). Brake and Handbrake: 0 to 1.
+	// False: the entity isn't a running vehicle
+	struct VehicleInput
+	{
+		float Forward = 0.0f, Steer = 0.0f, Brake = 0.0f, Handbrake = 0.0f;
+	};
+	bool SetVehicleInput(EnvMapVulkanEntityID entity, const VehicleInput& input);
+	struct VehicleState
+	{
+		float Speed = 0.0f;         // meters per second along its forward (negative: backward)
+		float Rpm = 0.0f;           // the engine's revolutions per minute
+		int Gear = 0;               // 1, 2... forward, -1 reverse, 0 neutral
+		uint32_t Wheels = 0;
+		uint32_t WheelsOnGround = 0; // a bit per wheel: it touches something
+		VehicleInput Input;         // as set by the game
+		VehicleInput Applied;       // as given to the wheels in the last step (reversing: brakes first)
+	};
+	bool GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& state) const;
+
 	// ---- Events (3.6)
 
 	// Bodies that started or stopped touching (Collision), or a body that entered or left a trigger (Trigger: Entity is the
@@ -137,7 +164,7 @@ public:
 	// ---- Debug views and statistics (3.6)
 
 	// A line of a debug view, in the world. Kind is what it shows (the editor picks the colors)
-	enum class DebugLineKind { Static, Active, Sleeping, Trigger, Character, Contact };
+	enum class DebugLineKind { Static, Active, Sleeping, Trigger, Character, Contact, Wheel, WheelOnGround };
 	struct DebugLine
 	{
 		glm::vec3 A, B;
@@ -148,14 +175,15 @@ public:
 	// maxTriangles triangles in all (a large model's would be more lines than they show)
 	void GetDebugLines(bool colliders, bool contacts, std::vector<DebugLine>& lines, uint32_t maxTriangles = 5000) const;
 	// The colliders of a scene that isn't running (the editor's), from its components, as Start would make them: Box, Sphere,
-	// Capsule and the characters' capsules (mesh shapes are made at Start, so they show only while the game runs)
+	// Capsule, the characters' capsules and the vehicles' wheels (mesh shapes are made at Start, so they show only while the
+	// game runs)
 	static void GetColliderLines(const EnvMapVulkanScene& scene, std::vector<DebugLine>& lines);
 	// Contacts are kept for GetDebugLines only while asked for (they cost a little in every step)
 	void SetCollectContacts(bool collect);
 
 	struct Stats
 	{
-		uint32_t Static = 0, Kinematic = 0, Dynamic = 0, Triggers = 0, Characters = 0;
+		uint32_t Static = 0, Kinematic = 0, Dynamic = 0, Triggers = 0, Characters = 0, Vehicles = 0;
 		uint32_t Awake = 0;          // bodies (characters' inner bodies too) that aren't sleeping
 		uint32_t TouchingPairs = 0;  // pairs of bodies that touch (sleeping ones too)
 		uint64_t Steps = 0;
@@ -170,6 +198,10 @@ public:
 	// A character's capsule that fits around a model entity's meshes, at its scale: as tall as the model, as wide as its
 	// wider side (X or Z), around its center
 	static bool FitCharacter(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, CharacterControllerComponent& character);
+	// A vehicle's wheels from its children named "Wheel..." (and their children) that have a model: each one's center, radius
+	// and width from its meshes (the wheel turns around the model's axis closest to the vehicle's X), steering when in the
+	// front half, the handbrake on the back ones, all driven. False: none found (the wheels stay as they were)
+	static bool FitWheels(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, VehicleComponent& vehicle);
 
 private:
 	struct Body
@@ -207,6 +239,31 @@ private:
 	// A terrain's static height field (its heights made first, when the renderer hasn't yet)
 	bool CreateTerrainBody(Body& body, TerrainComponent& terrain);
 	void CreateCharacter(Character& character, const CharacterControllerComponent& settings);
+
+	struct Vehicle
+	{
+		EnvMapVulkanEntityID Entity = NoEntity;
+		JPH::BodyID Body;
+		JPH::Ref<JPH::VehicleConstraint> Constraint;
+		JPH::Ref<JPH::VehicleCollisionTester> Tester;
+		VehicleInput Input, Applied;
+		float Direction = 1.0f; // the way it was last asked to go: asking for the other one brakes until it stops
+		// A wheel's model: its axes (the wheel's turning axis and up, in the model's own space, from its rotation at the start)
+		// and its scale, kept as it rolls and steers
+		struct WheelModel
+		{
+			EnvMapVulkanEntityID Entity = NoEntity;
+			JPH::Vec3 Right = JPH::Vec3::sAxisX(), Up = JPH::Vec3::sAxisY();
+			glm::vec3 Scale = glm::vec3(1.0f);
+		};
+		std::vector<WheelModel> Wheels;
+	};
+	// The vehicle of a dynamic body just made (false: its settings can't make one; the body stays a plain one)
+	bool CreateVehicle(Vehicle& vehicle, const VehicleComponent& settings);
+	void RemoveVehicle(Vehicle& vehicle);
+	const Vehicle* FindVehicle(EnvMapVulkanEntityID entity) const;
+	// The wheels' models where the wheels are, on the body at its place for this frame
+	void WriteWheels(const Vehicle& vehicle, const glm::vec3& position, const glm::quat& rotation);
 	void SetEntityPosition(EnvMapVulkanEntityID entity, const glm::vec3& position); // the translation only
 	// The bodies and characters of entities that are gone (destroyed by the game, deleted in the editor): out of the world,
 	// and what was near them awake, so what stood on them falls
@@ -226,6 +283,7 @@ private:
 	std::unique_ptr<PhysicsWorld> m_World;
 	std::vector<Body> m_Bodies;
 	std::vector<Character> m_Characters;
+	std::vector<Vehicle> m_Vehicles;
 
 	// What each body is: its entity, a trigger or not (by the body ID's index and sequence number)
 	struct BodyInfo

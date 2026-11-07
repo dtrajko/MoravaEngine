@@ -64,7 +64,7 @@ static const UIElementRect* FindElementRect(const UIDrawList& list, EnvMapVulkan
 static EnvMapVulkanEntityID GetUIParentForNewElement()
 {
 	const EnvMapVulkanEntityID selected = s_EditorSelection.GetPrimary();
-	const EntityKind kind = s_Scene.Exists(selected) ? GetEntityKind(selected) : EntityKind::Other;
+	const EntityKind kind = s_Scene.Exists(selected) ? GetEntityKind(selected) : EntityKind::Empty;
 	if (kind == EntityKind::UICanvas || kind == EntityKind::UIElement)
 	{
 		return selected;

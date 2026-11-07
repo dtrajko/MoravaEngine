@@ -138,6 +138,11 @@ namespace Morava
         public delegate* unmanaged<ulong, NativeUIDropdown*, int> UIDropdown_Set;
         public delegate* unmanaged<ulong, char*, int, int> UIDropdown_GetOptions;
         public delegate* unmanaged<ulong, char*, int, int> UIDropdown_SetOptions;
+
+        public delegate* unmanaged<ulong, NativeVehicleInput*, int> Vehicle_SetInput;
+        public delegate* unmanaged<ulong, NativeVehicleState*, int> Vehicle_GetState;
+        public delegate* unmanaged<ulong, int*, int> Vehicle_GetControls;
+        public delegate* unmanaged<ulong, int, int> Vehicle_SetControls;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -155,6 +160,21 @@ namespace Morava
         public Vector3 GroundNormal;
         public Vector3 GroundVelocity;
         public Vector3 GroundAngularVelocity;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeVehicleInput
+    {
+        public float Forward, Steer, Brake, Handbrake;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeVehicleState
+    {
+        public float Speed, Rpm;
+        public int Gear;
+        public uint Wheels, WheelsOnGround;
+        public NativeVehicleInput Applied;
     }
 
     [StructLayout(LayoutKind.Sequential)]
