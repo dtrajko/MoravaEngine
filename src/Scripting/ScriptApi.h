@@ -34,6 +34,20 @@ struct ScriptCharacterState
 	glm::vec3 GroundAngularVelocity = glm::vec3(0.0f); // radians per second: what it stands on turns
 };
 
+// A vehicle's driver input (Vehicle.SetInput) and what it does now (ScenePhysics::VehicleInput, VehicleState)
+struct ScriptVehicleInput
+{
+	float Forward = 0.0f, Steer = 0.0f, Brake = 0.0f, Handbrake = 0.0f;
+};
+
+struct ScriptVehicleState
+{
+	float Speed = 0.0f, Rpm = 0.0f;
+	int32_t Gear = 0;
+	uint32_t Wheels = 0, WheelsOnGround = 0; // WheelsOnGround: a bit per wheel
+	ScriptVehicleInput Applied;              // as given to the wheels in the last step (reversing: brakes first)
+};
+
 struct ScriptRaycastHit
 {
 	uint64_t Entity = 0;
@@ -160,7 +174,7 @@ struct ScriptFieldReport
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
-	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12 };
+	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -356,6 +370,13 @@ struct ScriptNativeApi
 	int32_t (*UIDropdown_Set)(uint64_t entity, const ScriptUIDropdown* value);
 	int32_t (*UIDropdown_GetOptions)(uint64_t entity, char16_t* buffer, int capacity);
 	int32_t (*UIDropdown_SetOptions)(uint64_t entity, const char16_t* options, int length);
+
+	// Vehicle (the vehicle scene, part B): SetInput and GetState 0 when the entity isn't a running vehicle; Controls (the
+	// component's: 0 Player, 1 Script) 0 when it has no VehicleComponent
+	int32_t (*Vehicle_SetInput)(uint64_t entity, const ScriptVehicleInput* input);
+	int32_t (*Vehicle_GetState)(uint64_t entity, ScriptVehicleState* out);
+	int32_t (*Vehicle_GetControls)(uint64_t entity, int32_t* out);
+	int32_t (*Vehicle_SetControls)(uint64_t entity, int32_t controls);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

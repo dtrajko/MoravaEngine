@@ -291,6 +291,11 @@ const char* RigidBodyComponent::GetTypeName(BodyType type)
 	return "Dynamic";
 }
 
+const char* VehicleComponent::GetControlName(ControlMode mode)
+{
+	return mode == ControlMode::Script ? "Script" : "Player";
+}
+
 // UISliderComponent
 
 float UISliderComponent::Constrain(float value) const
@@ -550,6 +555,13 @@ void EnvMapVulkanScene::RemapEntityReferences(EnvMapVulkanEntityID entity, const
 	if (UIDropdownComponent* dropdown = TryGet<UIDropdownComponent>(entity))
 	{
 		remap(dropdown->OnValueChangedTarget);
+	}
+	if (VehicleComponent* vehicle = TryGet<VehicleComponent>(entity))
+	{
+		for (VehicleComponent::Wheel& wheel : vehicle->Wheels)
+		{
+			remap(wheel.Entity);
+		}
 	}
 }
 

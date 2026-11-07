@@ -40,7 +40,7 @@ bool Contains(const std::vector<T>& values, const T& value)
 }
 
 // What an entity is, by its components (see GetEntityKind)
-enum class EntityKind { Other, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Terrain, Model, Part, Sound, UICanvas, UIElement };
+enum class EntityKind { Empty, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Terrain, Model, Part, Sound, UICanvas, UIElement };
 
 // A map assigned or removed in the Material Editor (button or drag & drop), applied at the start of the next frame (see EditorPreFrame)
 struct PendingMaterialTexture
@@ -458,6 +458,9 @@ void OnImGuiRenderContentBrowser();
 
 // A sound alone (Scene Hierarchy: Add > Sound): an entity with an Audio Source where the camera looks, selected
 void AddSoundAtView();
+// An Empty: a transform only, where the camera looks. It groups children (a vehicle's body and wheels) and can have physics
+// and a script
+void AddEmptyAtView();
 
 // New lights and the water go where the camera looks (see GetLightSpawnTarget), selected
 void AddPointLightAtView();

@@ -443,9 +443,9 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 				texturesMayBeUnused = true; // its material may have no other users
 			}
 		}
-		else if (s_Scene.Has<ModelComponent>(entity))
+		else if (s_Scene.Has<ModelComponent>(entity) || GetEntityKind(entity) == EntityKind::Empty)
 		{
-			// The model's buffers and descriptor sets may still be used by frames in flight
+			// The model's buffers and descriptor sets (an Empty's: its children's) may still be used by frames in flight
 			EnvMapVulkanRenderer::WaitIdle();
 			s_Scene.DestroyEntity(entity);
 			s_EditorSelection.Sync(); // the model and its parts leave the selection

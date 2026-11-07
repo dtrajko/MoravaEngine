@@ -11,7 +11,7 @@ namespace Morava
 
         // The engine's numbers for the kinds (ScriptComponent in src/Scripting/ScriptApi.h)
         internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5, Animator = 6,
-            UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12 }
+            UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13 }
 
         internal static Kind KindOf(Type type)
         {
@@ -28,6 +28,7 @@ namespace Morava
             if (type == typeof(UIButton)) return Kind.UIButton;
             if (type == typeof(UISlider)) return Kind.UISlider;
             if (type == typeof(UIDropdown)) return Kind.UIDropdown;
+            if (type == typeof(Vehicle)) return Kind.Vehicle;
             throw new ArgumentException($"{type.Name} is not a component of the engine");
         }
 
@@ -137,6 +138,74 @@ namespace Morava
         /// the Y part (AnimatedCharacter does).
         /// </summary>
         public Vector3 GroundAngularVelocity => State.GroundAngularVelocity;
+    }
+
+    /// <summary>Who drives a vehicle (Vehicle.Controls). The engine's numbers (VehicleComponent::ControlMode).</summary>
+    public enum VehicleControls
+    {
+        /// <summary>The player, from the input's actions: Accelerate, Brake, Steer and Handbrake (without them: Move and Jump).</summary>
+        Player = 0,
+        /// <summary>A script, with SetInput: an AI driver, a cutscene, a car the player gets into.</summary>
+        Script = 1,
+    }
+
+    /// <summary>
+    /// A wheeled vehicle (Inspector: Vehicle): a dynamic body on wheels with springs, driven by an engine through an
+    /// automatic gearbox. Its forward is the entity's -Z. The player drives it, or a script (Controls).
+    /// </summary>
+    public sealed unsafe class Vehicle : Component
+    {
+        /// <summary>
+        /// The driver's input, kept until set again; used while Controls is Script. forward: -1 (full reverse) to 1 (full
+        /// throttle): asking for the other way while it still rolls brakes first. steer: -1 left to 1 right. brake and
+        /// handbrake: 0 to 1.
+        /// </summary>
+        public void SetInput(float forward, float steer, float brake = 0.0f, float handbrake = 0.0f)
+        {
+            NativeVehicleInput input = new NativeVehicleInput { Forward = forward, Steer = steer, Brake = brake, Handbrake = handbrake };
+            if (Interop.Game->Vehicle_SetInput(Entity.Id, &input) == 0) throw Missing("vehicle");
+        }
+
+        /// <summary>Who drives it. A script that takes over sets Script, then SetInput each fixed step.</summary>
+        public VehicleControls Controls
+        {
+            get { int value; if (Interop.Game->Vehicle_GetControls(Entity.Id, &value) == 0) throw Missing("vehicle"); return (VehicleControls)value; }
+            set { if (Interop.Game->Vehicle_SetControls(Entity.Id, (int)value) == 0) throw Missing("vehicle"); }
+        }
+
+        NativeVehicleState State
+        {
+            get
+            {
+                NativeVehicleState state;
+                if (Interop.Game->Vehicle_GetState(Entity.Id, &state) == 0) throw Missing("vehicle");
+                return state;
+            }
+        }
+
+        /// <summary>How fast it goes along its forward, in meters per second (negative: backward). Times 3.6: km/h.</summary>
+        public float Speed => State.Speed;
+
+        /// <summary>The engine's revolutions per minute: for an engine sound's pitch, a rev counter.</summary>
+        public float EngineRpm => State.Rpm;
+
+        /// <summary>The gear it is in: 1, 2... forward, -1 reverse, 0 neutral.</summary>
+        public int Gear => State.Gear;
+
+        /// <summary>How many wheels it has.</summary>
+        public int WheelCount => (int)State.Wheels;
+
+        /// <summary>The wheel (in the Inspector's order) touches something.</summary>
+        public bool IsWheelOnGround(int wheel) => wheel >= 0 && wheel < 32 && (State.WheelsOnGround & (1u << wheel)) != 0;
+
+        /// <summary>All its wheels are off the ground: it jumps, or lies on its side.</summary>
+        public bool IsInAir => State.WheelsOnGround == 0;
+
+        /// <summary>The throttle the wheels got in the last step (0 while it brakes before reversing).</summary>
+        public float AppliedForward => State.Applied.Forward;
+
+        /// <summary>The brake the wheels got in the last step (also when reversing brakes first).</summary>
+        public float AppliedBrake => State.Applied.Brake;
     }
 
     /// <summary>A physics shape (Inspector: Collider): alone it is a static body, like a floor or a wall.</summary>

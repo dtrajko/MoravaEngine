@@ -249,13 +249,13 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 			StartRenaming(entity);
 		}
 		if (ImGui::MenuItem("Move to Top Level", nullptr, false, CanBeReparented(kind) && s_Scene.GetParent(entity) != NoEntity &&
-			CanBeChildOf(kind, EntityKind::Other)))
+			CanBeChildOf(kind, EntityKind::Empty)))
 		{
 			requests.Reparent = entity;
 			requests.NewParent = NoEntity;
 		}
 		ImGui::Separator();
-		if (ImGui::MenuItem("Save as Prefab...", nullptr, false, CanBeReparented(kind) || kind == EntityKind::Other))
+		if (ImGui::MenuItem("Save as Prefab...", nullptr, false, CanBeReparented(kind) || kind == EntityKind::Empty))
 		{
 			SaveAsPrefabWithDialog(entity);
 		}
@@ -345,6 +345,15 @@ void OnImGuiRenderSceneHierarchy()
 	}
 	if (ImGui::BeginPopup("##AddEntity"))
 	{
+		if (ImGui::MenuItem("Empty"))
+		{
+			AddEmptyAtView();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("A transform only, where the camera looks: it groups the entities dragged under it and moves them\n"
+				"together. It can have physics and a script: a vehicle is an Empty with its body and wheels as children.");
+		}
 		if (ImGui::MenuItem("Model..."))
 		{
 			std::string filepath = FileDialogs::OpenFile({}, GetAssetFolderForDialog());
@@ -509,7 +518,7 @@ void OnImGuiRenderSceneHierarchy()
 	{
 		const ImGuiPayload* dragged = ImGui::GetDragDropPayload();
 		const bool allowed = !dragged || !dragged->IsDataType(s_EntityPayload) ||
-			CanBeChildOf(GetEntityKind(*(const EnvMapVulkanEntityID*)dragged->Data), EntityKind::Other);
+			CanBeChildOf(GetEntityKind(*(const EnvMapVulkanEntityID*)dragged->Data), EntityKind::Empty);
 		if (const ImGuiPayload* payload = allowed ? ImGui::AcceptDragDropPayload(s_EntityPayload) : nullptr)
 		{
 			requests.Reparent = *(const EnvMapVulkanEntityID*)payload->Data;

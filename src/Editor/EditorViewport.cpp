@@ -1136,6 +1136,35 @@ static void ManipulatePrimarySelection()
 		return;
 	}
 
+	// An Empty: the gizmo moves, turns and scales it (and so its children), as a model
+	if (const EnvMapVulkanEntityID primary = s_EditorSelection.GetPrimary(); s_Scene.Exists(primary) && GetEntityKind(primary) == EntityKind::Empty)
+	{
+		if (Scene::s_ImGuizmoType != -1 && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
+			float snapValues[3] = { 0.5f, 0.5f, 0.5f };
+			if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE)
+			{
+				snapValues[0] = snapValues[1] = snapValues[2] = 45.0f;
+			}
+			glm::mat4 world = s_Scene.GetWorldTransform(primary);
+			if (ImGuizmo::Manipulate(
+				glm::value_ptr((*s_Camera).GetViewMatrix()),
+				glm::value_ptr((*s_Camera).GetProjectionMatrix()),
+				(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+				ImGuizmo::WORLD,
+				glm::value_ptr(world),
+				nullptr,
+				Input::IsKeyPressed(KeyH2M::LeftControl) ? snapValues : nullptr))
+			{
+				s_Scene.SetWorldTransform(primary, world);
+			}
+		}
+		return;
+	}
+
 	// A sound alone or a game camera: translate moves it (a sound has no size, and only its place is heard); rotate aims a
 	// camera (pitch and yaw only: it isn't rolled)
 	if (const EnvMapVulkanEntityID primary = s_EditorSelection.GetPrimary(); s_Scene.Exists(primary) &&
@@ -1295,6 +1324,7 @@ static EnvMapVulkanEntityID GetMovedEntity(EnvMapVulkanEntityID entity)
 {
 	switch (GetEntityKind(entity))
 	{
+		case EntityKind::Empty:
 		case EntityKind::Model:
 		case EntityKind::PointLight:
 		case EntityKind::SpotLight:

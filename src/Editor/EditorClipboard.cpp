@@ -79,7 +79,7 @@ struct ClipboardComponents
 };
 
 // How an entity plays: copied with any entity, whatever its kind
-using ClipboardGame = ClipboardComponents<TagComponent, ColliderComponent, RigidBodyComponent, CharacterControllerComponent,
+using ClipboardGame = ClipboardComponents<TagComponent, ColliderComponent, RigidBodyComponent, CharacterControllerComponent, VehicleComponent,
 	ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, InputTestComponent>;
 
 struct ClipboardEntity
@@ -94,7 +94,7 @@ struct ClipboardEntity
 		std::vector<ClipboardEntity> Children;
 	};
 
-	EntityKind Kind = EntityKind::Other;
+	EntityKind Kind = EntityKind::Empty;
 	std::string Name;
 	TransformComponent Local;               // a child's transform, relative to its parent
 	glm::mat4 World = glm::mat4(1.0f);      // a copied (top) entity's place: pasted there
@@ -118,7 +118,7 @@ struct ClipboardEntity
 
 bool CanBeCopied(EntityKind kind)
 {
-	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
+	return kind == EntityKind::Empty || kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
 		kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
 }
 
@@ -217,6 +217,8 @@ static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity)
 			break;
 		case EntityKind::SpotLight:
 			copy.SpotLight = s_Scene.Get<SpotLightComponent>(entity);
+			break;
+		case EntityKind::Empty:
 			break;
 		case EntityKind::UICanvas:
 		case EntityKind::UIElement:
@@ -351,11 +353,18 @@ static EnvMapVulkanEntityID PasteModel(const ClipboardEntity& copy, EnvMapVulkan
 	return entity;
 }
 
+// The copies made by a paste, by the entity they were copied from: references among the copied entities (a vehicle's
+// wheels, a script's entity fields, a button's target) go to the copies
+static std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanEntityID> s_PastedCopies;
+
 static EnvMapVulkanEntityID PasteEntity(const ClipboardEntity& copy, EnvMapVulkanEntityID parent, PasteLightCounts& lights)
 {
 	EnvMapVulkanEntityID entity = NoEntity;
 	switch (copy.Kind)
 	{
+		case EntityKind::Empty:
+			entity = s_Scene.CreateEntity(copy.Name, parent);
+			break;
 		case EntityKind::Model:
 			entity = PasteModel(copy, parent, lights);
 			break;
@@ -407,6 +416,7 @@ static EnvMapVulkanEntityID PasteEntity(const ClipboardEntity& copy, EnvMapVulka
 	}
 	if (entity != NoEntity)
 	{
+		s_PastedCopies[copy.Source] = entity;
 		copy.Game.Paste(entity);
 		PasteChildren(copy.Children, entity, lights);
 	}
@@ -427,6 +437,7 @@ void PasteClipboard()
 	});
 
 	std::vector<EnvMapVulkanEntityID> pasted;
+	s_PastedCopies.clear();
 	for (const ClipboardEntity& copy : s_Clipboard)
 	{
 		const EnvMapVulkanEntityID parent = s_Scene.Exists(copy.SourceParent) ? copy.SourceParent : NoEntity;
@@ -457,6 +468,11 @@ void PasteClipboard()
 		}
 		pasted.push_back(entity);
 	}
+	for (const auto& [source, copy] : s_PastedCopies)
+	{
+		s_Scene.RemapEntityReferences(copy, s_PastedCopies);
+	}
+	s_PastedCopies.clear();
 	if (pasted.empty())
 	{
 		return;

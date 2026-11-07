@@ -293,6 +293,41 @@ static void GetCameraGroundAxes(EnvMapVulkanScene& scene, glm::vec3& forward, gl
 	right = glm::vec3(std::cos(yaw), 0.0f, -std::sin(yaw));
 }
 
+void GameSystems::DrivePlayerVehicles()
+{
+	// The project's vehicle actions: Accelerate and Brake (buttons or triggers: Brake held while it rolls forward brakes,
+	// then reverses), Steer (an axis: -1 left, 1 right) and Handbrake. A project without them drives with Move (forward
+	// and back, left and right) and Jump (the handbrake), as a new project has them
+	const InputMap& map = m_Input->GetMap();
+	// The action's value (its axis: 0 x, 1 y), or the fallback's, or 0 when the project has neither
+	auto value = [&](const char* action, const char* fallback, int axis) -> float
+	{
+		if (map.Find(action))
+		{
+			return m_Input->Get(action).Value[axis];
+		}
+		return fallback && map.Find(fallback) ? m_Input->Get(fallback).Value[axis] : 0.0f;
+	};
+	ScenePhysics::VehicleInput input;
+	if (map.Find("Accelerate") || map.Find("Brake"))
+	{
+		input.Forward = value("Accelerate", nullptr, 0) - value("Brake", nullptr, 0);
+	}
+	else
+	{
+		input.Forward = value("Move", nullptr, 1);
+	}
+	input.Steer = map.Find("Steer") ? value("Steer", nullptr, 0) : value("Move", nullptr, 0);
+	input.Handbrake = value("Handbrake", "Jump", 0);
+	m_Scene->Each<VehicleComponent>([&](EnvMapVulkanEntityID entity, VehicleComponent& vehicle)
+	{
+		if (vehicle.Controls == VehicleComponent::ControlMode::Player)
+		{
+			m_Physics.SetVehicleInput(entity, input);
+		}
+	});
+}
+
 void GameSystems::FixedUpdate(float fixedStep)
 {
 	m_ScriptContext.InFixedStep = true;
@@ -356,6 +391,12 @@ void GameSystems::FixedUpdate(float fixedStep)
 				}
 			}
 		});
+	}
+
+	// The vehicles the player drives (VehicleComponent, Controls: Player): before the scripts, so one can still take over
+	if (m_Scene && m_Input)
+	{
+		DrivePlayerVehicles();
 	}
 
 	m_Scripts.FixedUpdate(fixedStep);

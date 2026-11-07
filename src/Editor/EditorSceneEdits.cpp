@@ -586,7 +586,7 @@ EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 	{
 		return EntityKind::UIElement;
 	}
-	return EntityKind::Other;
+	return EntityKind::Empty;
 }
 
 const char* GetEntityKindName(EntityKind kind)
@@ -606,6 +606,7 @@ const char* GetEntityKindName(EntityKind kind)
 		case EntityKind::Sound:       return "Sound";
 		case EntityKind::UICanvas:    return "UI Canvas";
 		case EntityKind::UIElement:   return "UI Element";
+		case EntityKind::Empty:       return "Empty";
 		default:                      return "Entity";
 	}
 }
@@ -633,16 +634,16 @@ ImU32 GetEntityKindColor(EntityKind kind)
 
 // Entities that can be dragged under another entity, and the ones that can take children. A part stays in its model, the
 // environment, the sun and the water stay at the top (the water is always level: a parent could tilt it). UI elements are
-// laid out in their parent's rectangle: a canvas and UI elements take them.
+// laid out in their parent's rectangle: a canvas and UI elements take them. An Empty (a transform only) groups anything.
 bool CanBeReparented(EntityKind kind)
 {
-	return kind == EntityKind::Model || kind == EntityKind::PointLight || kind == EntityKind::SpotLight || kind == EntityKind::Sound ||
+	return kind == EntityKind::Empty || kind == EntityKind::Model || kind == EntityKind::PointLight || kind == EntityKind::SpotLight || kind == EntityKind::Sound ||
 		kind == EntityKind::Camera || kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
 }
 
 bool CanHaveChildren(EntityKind kind)
 {
-	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
+	return kind == EntityKind::Empty || kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
 		kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
 }
 
@@ -659,7 +660,7 @@ bool CanBeChildOf(EntityKind child, EntityKind parent)
 
 bool CanBeDeleted(EntityKind kind)
 {
-	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
+	return kind == EntityKind::Empty || kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
 		kind == EntityKind::Water || kind == EntityKind::ProbeVolume || kind == EntityKind::Sound || kind == EntityKind::Camera ||
 		kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
 }
@@ -670,6 +671,7 @@ void DeleteEntity(EnvMapVulkanEntityID entity)
 {
 	switch (GetEntityKind(entity))
 	{
+		case EntityKind::Empty: // its children may be models
 		case EntityKind::Model:
 		case EntityKind::Part:
 			s_PendingRemoveEntities.push_back(entity);
@@ -699,6 +701,13 @@ void DeleteEntity(EnvMapVulkanEntityID entity)
 }
 
 // A sound alone (5.3): an entity with an Audio Source, where the camera looks, selected. Its clip is chosen in the Inspector
+void AddEmptyAtView()
+{
+	const EnvMapVulkanEntityID entity = s_Scene.CreateEntity("Empty");
+	s_Scene.Get<TransformComponent>(entity).Translation = GetLightSpawnTarget();
+	s_EditorSelection.SetPrimary(entity);
+}
+
 void AddSoundAtView()
 {
 	const EnvMapVulkanEntityID entity = s_Scene.CreateEntity("Sound");

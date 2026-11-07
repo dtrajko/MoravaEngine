@@ -1,0 +1,1356 @@
+Scene:
+  Version: 1
+  Name: Vehicle
+EditorCamera:
+  Translation: [-150, 60.6, 210.5]
+  Rotation: [12, 0, 0]
+  FieldOfView: 60
+Entities:
+  - ID: 1001
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [-150, 60.6, 210.5]
+      Rotation: [12, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 60
+      NearClip: 0.1
+      FarClip: 3000
+    Script:
+      Class: Sample.VehicleCamera
+      Fields:
+        Target: {Entity: 2001}
+  - ID: 1002
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/citrus_orchard_road_2k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 1003
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-35, 30, 0]
+      Scale: [1, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 1
+      FollowEnvironmentRotation: false
+      CastShadows: true
+      IconPlaced: false
+  - ID: 1004
+    Name: Terrain
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Terrain:
+      Seed: 12345
+      FlatCenter: [-150, 200]
+      Layers:
+        Sand: {ID: 5100000000000000002, File: Assets/Materials/Terrain_Sand.mmat}
+        Grass: {ID: 5100000000000000001, File: Assets/Materials/Terrain_Grass.mmat}
+        Rock: {ID: 5100000000000000003, File: Assets/Materials/Terrain_Rock.mmat}
+  - ID: 2001
+    Name: Car
+    Parent: 0
+    Transform:
+      Translation: [-150, 58.4, 204]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 0.2, 0]
+      HalfExtents: [0.9, 0.35, 2]
+    RigidBody:
+      Type: Dynamic
+      Mass: 1200
+    Vehicle:
+      Controls: Player
+      Wheels:
+        - {Entity: 2003, Position: [-0.95, -0.15, -1.3], Radius: 0.35, Width: 0.24, Steers: true, Driven: true, Handbrake: false}
+        - {Entity: 2004, Position: [0.95, -0.15, -1.3], Radius: 0.35, Width: 0.24, Steers: true, Driven: true, Handbrake: false}
+        - {Entity: 2005, Position: [-0.95, -0.15, 1.3], Radius: 0.35, Width: 0.24, Steers: false, Driven: true, Handbrake: true}
+        - {Entity: 2006, Position: [0.95, -0.15, 1.3], Radius: 0.35, Width: 0.24, Steers: false, Driven: true, Handbrake: true}
+  - ID: 2002
+    Name: Body
+    Parent: 2001
+    Transform:
+      Translation: [0, 0.2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.9, 0.35, 2]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 2003
+    Name: Wheel FL
+    Parent: 2001
+    Transform:
+      Translation: [-0.95, -0.15, -1.3]
+      Rotation: [0, 0, 90]
+      Scale: [0.35, 0.12, 0.35]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 2004
+    Name: Wheel FR
+    Parent: 2001
+    Transform:
+      Translation: [0.95, -0.15, -1.3]
+      Rotation: [0, 0, 90]
+      Scale: [0.35, 0.12, 0.35]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 2005
+    Name: Wheel RL
+    Parent: 2001
+    Transform:
+      Translation: [-0.95, -0.15, 1.3]
+      Rotation: [0, 0, 90]
+      Scale: [0.35, 0.12, 0.35]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 2006
+    Name: Wheel RR
+    Parent: 2001
+    Transform:
+      Translation: [0.95, -0.15, 1.3]
+      Rotation: [0, 0, 90]
+      Scale: [0.35, 0.12, 0.35]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 7310000000000000310
+    Name: Pause Menu
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Sample.PauseMenu
+      Fields:
+        Menu: {Entity: 7310000000000000311}
+        ResumeButton: {Entity: 7310000000000000313}
+        RestartButton: {Entity: 7310000000000000315}
+        Title: {Entity: 7310000000000000312}
+        SettingsScreen: {Entity: 7310000000000008001}
+        SettingsButton: {Entity: 7310000000000000320}
+        MainMenuButton: {Entity: 7310000000000000322}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 10}
+  - ID: 7310000000000000311
+    Name: Pause Panel
+    Parent: 7310000000000000310
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.01, 0.015, 0.03, 0.6]}
+  - ID: 7310000000000000312
+    Name: Title
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -300], Size: [900, 140], Visible: true}
+    UIText:
+      Text: Paused
+      Font: ""
+      Size: 110
+      Color: [1, 0.86, 0.3, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000313
+    Name: Resume Button
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -150], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Resume}
+  - ID: 7310000000000000314
+    Name: Label
+    Parent: 7310000000000000313
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Resume
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000315
+    Name: Restart Button
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -40], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+  - ID: 7310000000000000316
+    Name: Label
+    Parent: 7310000000000000315
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Restart
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000320
+    Name: Settings Button
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 70], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+  - ID: 7310000000000000321
+    Name: Label
+    Parent: 7310000000000000320
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Settings
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000322
+    Name: Main Menu Button
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 180], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+  - ID: 7310000000000000323
+    Name: Label
+    Parent: 7310000000000000322
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Main Menu
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000318
+    Name: Quit Button
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 290], Size: [440, 92], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Quit}
+  - ID: 7310000000000000319
+    Name: Label
+    Parent: 7310000000000000318
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: Quit
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000000317
+    Name: Hint
+    Parent: 7310000000000000311
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -60], Size: [1400, 60], Visible: true}
+    UIText:
+      Text: "Arrow keys or D-pad, Enter or A. Escape or Start: back to the game"
+      Font: ""
+      Size: 34
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008001
+    Name: Settings Menu
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Sample.SettingsMenu
+      Fields:
+        Panel: {Entity: 7310000000000008002}
+        MusicSlider: {Entity: 7310000000000008011}
+        EffectsSlider: {Entity: 7310000000000008021}
+        MouseSlider: {Entity: 7310000000000008031}
+        MusicValue: {Entity: 7310000000000008012}
+        EffectsValue: {Entity: 7310000000000008022}
+        MouseValue: {Entity: 7310000000000008032}
+        QualityDropdown: {Entity: 7310000000000008041}
+        DisplayDropdown: {Entity: 7310000000000008051}
+        ResolutionDropdown: {Entity: 7310000000000008061}
+        VSyncDropdown: {Entity: 7310000000000008071}
+        ApplyButton: {Entity: 7310000000000008093}
+        ControlsPanel: {Entity: 7310000000000008100}
+        ForwardKey: {Entity: 7310000000000008111}
+        BackKey: {Entity: 7310000000000008121}
+        LeftKey: {Entity: 7310000000000008131}
+        RightKey: {Entity: 7310000000000008141}
+        JumpKey: {Entity: 7310000000000008151}
+        JumpPad: {Entity: 7310000000000008152}
+        CameraKey: {Entity: 7310000000000008161}
+        CameraPad: {Entity: 7310000000000008162}
+        ControlsHint: {Entity: 7310000000000008180}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 20}
+  - ID: 7310000000000008002
+    Name: Settings Panel
+    Parent: 7310000000000008001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.01, 0.015, 0.03, 0.82]}
+  - ID: 7310000000000008003
+    Name: Title
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -440], Size: [900, 120], Visible: true}
+    UIText:
+      Text: Settings
+      Font: ""
+      Size: 84
+      Color: [1, 0.82, 0.3, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008010
+    Name: Music Label
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -330], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Music
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008011
+    Name: Music Slider
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -330], Size: [560, 16], Visible: true}
+    UIImage: {Texture: "", Color: [0.12, 0.13, 0.17, 0.9]}
+    UISlider:
+      Value: 0.6
+      Min: 0
+      Max: 1
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.16, 0.42, 0.78, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [32, 52]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 0.85, 0.3, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7310000000000008012
+    Name: Music Value
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -330], Size: [180, 70], Visible: true}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 40
+      Color: [1, 1, 1, 0.8]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008020
+    Name: Effects Label
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -245], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Effects
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008021
+    Name: Effects Slider
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -245], Size: [560, 16], Visible: true}
+    UIImage: {Texture: "", Color: [0.12, 0.13, 0.17, 0.9]}
+    UISlider:
+      Value: 1
+      Min: 0
+      Max: 1
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.16, 0.42, 0.78, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [32, 52]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 0.85, 0.3, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7310000000000008022
+    Name: Effects Value
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -245], Size: [180, 70], Visible: true}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 40
+      Color: [1, 1, 1, 0.8]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008030
+    Name: Mouse sensitivity Label
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -160], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Mouse sensitivity
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008031
+    Name: Mouse sensitivity Slider
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -160], Size: [560, 16], Visible: true}
+    UIImage: {Texture: "", Color: [0.12, 0.13, 0.17, 0.9]}
+    UISlider:
+      Value: 1
+      Min: 0.25
+      Max: 3
+      WholeNumbers: false
+      Step: 0.25
+      Interactable: true
+      FillColor: [0.16, 0.42, 0.78, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [32, 52]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 0.85, 0.3, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7310000000000008032
+    Name: Mouse sensitivity Value
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -160], Size: [180, 70], Visible: true}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 40
+      Color: [1, 1, 1, 0.8]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008040
+    Name: Quality Label
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -75], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Quality
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008041
+    Name: Quality Dropdown
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -75], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIDropdown:
+      Options: [Automatic, Low, Medium, High, Ultra]
+      Value: 0
+      Interactable: true
+      ListColor: [0.07, 0.08, 0.11, 0.97]
+      ItemHighlight: [0.16, 0.42, 0.78, 1]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008050
+    Name: Display Label
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 10], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Display
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008051
+    Name: Display Dropdown
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 10], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIDropdown:
+      Options: [Fullscreen, Window]
+      Value: 0
+      Interactable: true
+      ListColor: [0.07, 0.08, 0.11, 0.97]
+      ItemHighlight: [0.16, 0.42, 0.78, 1]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008060
+    Name: Resolution Label
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 95], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Resolution
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008061
+    Name: Resolution Dropdown
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 95], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIDropdown:
+      Options: []
+      Value: 0
+      Interactable: true
+      ListColor: [0.07, 0.08, 0.11, 0.97]
+      ItemHighlight: [0.16, 0.42, 0.78, 1]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008070
+    Name: VSync Label
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 180], Size: [420, 70], Visible: true}
+    UIText:
+      Text: VSync
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008071
+    Name: VSync Dropdown
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 180], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIDropdown:
+      Options: [Off, On]
+      Value: 0
+      Interactable: true
+      ListColor: [0.07, 0.08, 0.11, 0.97]
+      ItemHighlight: [0.16, 0.42, 0.78, 1]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008090
+    Name: Controls Button
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: OpenControls}
+    UIText:
+      Text: Controls
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008093
+    Name: Apply Button
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: false
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Apply}
+    UIText:
+      Text: Apply
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008091
+    Name: Back Button
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Back}
+    UIText:
+      Text: Back
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008092
+    Name: Hint
+    Parent: 7310000000000008002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -50], Size: [1700, 60], Visible: true}
+    UIText:
+      Text: "Up and down: the next setting. Left and right: a slider. Enter or A: open a list, choose, then Apply. Escape or Start: back"
+      Font: ""
+      Size: 30
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008100
+    Name: Controls Panel
+    Parent: 7310000000000008001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.01, 0.015, 0.03, 0.82]}
+  - ID: 7310000000000008101
+    Name: Title
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -440], Size: [900, 120], Visible: true}
+    UIText:
+      Text: Controls
+      Font: ""
+      Size: 84
+      Color: [1, 0.82, 0.3, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008102
+    Name: Keyboard Header
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -350], Size: [380, 60], Visible: true}
+    UIText:
+      Text: Keyboard and mouse
+      Font: ""
+      Size: 38
+      Color: [1, 0.82, 0.3, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008103
+    Name: Gamepad Header
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -350], Size: [380, 60], Visible: true}
+    UIText:
+      Text: Gamepad
+      Font: ""
+      Size: 38
+      Color: [1, 0.82, 0.3, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008110
+    Name: Forward Label
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -270], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Forward
+      Font: ""
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008111
+    Name: Forward Key
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -270], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008112
+    Name: Stick
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -150], Size: [380, 64], Visible: true}
+    UIText:
+      Text: Left Stick
+      Font: ""
+      Size: 38
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008120
+    Name: Back Label
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -190], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Back
+      Font: ""
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008121
+    Name: Back Key
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -190], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008130
+    Name: Left Label
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -110], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Left
+      Font: ""
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008131
+    Name: Left Key
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -110], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008140
+    Name: Right Label
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -30], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Right
+      Font: ""
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008141
+    Name: Right Key
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -30], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008150
+    Name: Jump Label
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, 50], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Jump
+      Font: ""
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008151
+    Name: Jump Key
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, 50], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008152
+    Name: Jump Pad
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, 50], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008160
+    Name: Switch camera Label
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, 130], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Switch camera
+      Font: ""
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008161
+    Name: Switch camera Key
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, 130], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008162
+    Name: Switch camera Pad
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, 130], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008180
+    Name: Hint
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 230], Size: [1400, 60], Visible: true}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 34
+      Color: [1, 1, 1, 0.8]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008181
+    Name: Reset Button
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-240, 330], Size: [440, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: ResetControls}
+    UIText:
+      Text: Reset
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008182
+    Name: Back Button
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [240, 330], Size: [440, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.42, 0.78, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.1
+      OnClick: {Target: 0, Method: Back}
+    UIText:
+      Text: Back
+      Font: ""
+      Size: 44
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7310000000000008183
+    Name: Hint
+    Parent: 7310000000000008100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -50], Size: [1700, 60], Visible: true}
+    UIText:
+      Text: "Escape or Start: back to Settings"
+      Font: ""
+      Size: 30
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1

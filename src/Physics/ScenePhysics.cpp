@@ -21,14 +21,18 @@
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
 #include <Jolt/Physics/Collision/Shape/HeightFieldShape.h>
 #include <Jolt/Physics/Collision/Shape/MeshShape.h>
+#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Vehicle/WheeledVehicleController.h>
 
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <algorithm>
 #include <array>
+#include <cctype>
+#include <cfloat>
 #include <chrono>
 #include <cmath>
 #include <limits>
@@ -179,10 +183,56 @@ static bool GetModelBounds(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID 
 	return true;
 }
 
+// The entities a vehicle draws as its wheels (VehicleComponent::Wheel::Entity) of the vehicle entity, or of any (NoEntity)
+static bool IsVehicleWheel(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, EnvMapVulkanEntityID vehicleEntity = NoEntity)
+{
+	bool found = false;
+	scene.Each<VehicleComponent>([&](EnvMapVulkanEntityID owner, const VehicleComponent& vehicle)
+	{
+		if (vehicleEntity == NoEntity || owner == vehicleEntity)
+		{
+			for (const VehicleComponent::Wheel& wheel : vehicle.Wheels)
+			{
+				found |= wheel.Entity == entity;
+			}
+		}
+	});
+	return found;
+}
+
+// The box around the models under an entity without a model of its own (an Empty: a vehicle's root, its body a child),
+// in the entity's own space; a vehicle's wheels aren't in it (they aren't its body). False: no models under it
+static bool GetChildModelBounds(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, glm::vec3& boundsMin, glm::vec3& boundsMax)
+{
+	const glm::mat4 toEntity = glm::inverse(scene.GetWorldTransform(entity));
+	boundsMin = glm::vec3(std::numeric_limits<float>::max());
+	boundsMax = glm::vec3(-std::numeric_limits<float>::max());
+	bool any = false;
+	for (EnvMapVulkanEntityID child : scene.GetSubtree(entity))
+	{
+		glm::vec3 childMin, childMax;
+		if (child == entity || IsVehicleWheel(scene, child, entity) || !GetModelBounds(scene, child, childMin, childMax))
+		{
+			continue;
+		}
+		const glm::mat4 transform = toEntity * scene.GetWorldTransform(child);
+		for (int c = 0; c < 8; c++)
+		{
+			const glm::vec3 corner((c & 1) ? childMax.x : childMin.x, (c & 2) ? childMax.y : childMin.y, (c & 4) ? childMax.z : childMin.z);
+			const glm::vec3 position = glm::vec3(transform * glm::vec4(corner, 1.0f));
+			boundsMin = glm::min(boundsMin, position);
+			boundsMax = glm::max(boundsMax, position);
+		}
+		any = true;
+	}
+	return any;
+}
+
 bool ScenePhysics::FitCollider(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, ColliderComponent& collider)
 {
 	glm::vec3 boundsMin, boundsMax;
-	if (!GetModelBounds(scene, entity, boundsMin, boundsMax))
+	const bool ownModel = (bool)EnvMapVulkanSceneData::GetModel(scene, entity);
+	if (ownModel ? !GetModelBounds(scene, entity, boundsMin, boundsMax) : !GetChildModelBounds(scene, entity, boundsMin, boundsMax))
 	{
 		return false;
 	}
@@ -375,6 +425,16 @@ bool ScenePhysics::CreateBody(Body& body, const ColliderComponent& collider, con
 	{
 		return false;
 	}
+	// A vehicle's mass sits lower than its shape's middle (VehicleComponent::CenterOfMassOffset): it doesn't roll over in turns
+	if (const VehicleComponent* vehicle = m_Scene->TryGet<VehicleComponent>(body.Entity);
+		vehicle && body.Motion == JPH::EMotionType::Dynamic && !collider.IsTrigger && vehicle->CenterOfMassOffset != glm::vec3(0.0f))
+	{
+		JPH::ShapeSettings::ShapeResult offset = JPH::OffsetCenterOfMassShapeSettings(ToJolt(vehicle->CenterOfMassOffset), shape).Create();
+		if (!offset.HasError())
+		{
+			shape = offset.Get();
+		}
+	}
 
 	// A trigger that doesn't move by itself is kinematic and never sleeps: a static sensor loses what is in it when that goes
 	// to sleep (a character standing still in it would leave), and only a kinematic one senses kinematic bodies (a
@@ -458,6 +518,326 @@ void ScenePhysics::CreateCharacter(Character& character, const CharacterControll
 	character.Written = m_Scene->Get<TransformComponent>(character.Entity).Translation;
 }
 
+// ---- Vehicles
+
+// A vehicle's forward and up in its own space: forward is -Z, as a camera looks (and so its right is +X, its left -X)
+static const JPH::Vec3 VehicleForward(0.0f, 0.0f, -1.0f), VehicleUp(0.0f, 1.0f, 0.0f);
+
+// The wheels across from each other among some of a vehicle's wheels (indices): pairs at about the same Z on opposite sides,
+// the left (-X) one first; a wheel without a partner is alone (second: -1)
+static std::vector<std::pair<int, int>> GetAxles(const std::vector<VehicleComponent::Wheel>& wheels, const std::vector<int>& indices)
+{
+	std::vector<std::pair<int, int>> axles;
+	std::vector<bool> used(wheels.size(), false);
+	for (int i : indices)
+	{
+		if (used[i])
+		{
+			continue;
+		}
+		used[i] = true;
+		int partner = -1;
+		float closest = FLT_MAX;
+		for (int j : indices)
+		{
+			const float dz = std::abs(wheels[j].Position.z - wheels[i].Position.z);
+			if (!used[j] && (wheels[j].Position.x < 0.0f) != (wheels[i].Position.x < 0.0f) && dz < closest && dz < std::max(wheels[i].Radius, 0.1f))
+			{
+				closest = dz;
+				partner = j;
+			}
+		}
+		if (partner < 0)
+		{
+			axles.push_back({ i, -1 });
+			continue;
+		}
+		used[partner] = true;
+		axles.push_back(wheels[i].Position.x < wheels[partner].Position.x ? std::make_pair(i, partner) : std::make_pair(partner, i));
+	}
+	return axles;
+}
+
+static glm::mat4 ToGlm(const JPH::Mat44& m)
+{
+	glm::mat4 result;
+	for (int c = 0; c < 4; c++)
+	{
+		const JPH::Vec4 column = m.GetColumn4(c);
+		result[c] = glm::vec4(column.GetX(), column.GetY(), column.GetZ(), column.GetW());
+	}
+	return result;
+}
+
+bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& settings)
+{
+	const std::string& name = m_Scene->Get<NameComponent>(vehicle.Entity).Name;
+	if (settings.Wheels.empty())
+	{
+		Log::GetLogger()->warn("Physics: the vehicle '{0}' has no wheels: a plain body (Fit Wheels in the Inspector)", name);
+		return false;
+	}
+
+	JPH::VehicleConstraintSettings constraint;
+	constraint.mUp = VehicleUp;
+	constraint.mForward = VehicleForward;
+	constraint.mMaxPitchRollAngle = glm::radians(glm::clamp(settings.MaxTilt, 1.0f, 180.0f));
+
+	// The wheels. Jolt's wheel hangs from where its spring starts (mPosition), the spring's full length above its center
+	// when fully out: the place the wheel has in the editor
+	const float travel = std::max(settings.SuspensionTravel, 0.01f);
+	for (const VehicleComponent::Wheel& wheel : settings.Wheels)
+	{
+		JPH::Ref<JPH::WheelSettingsWV> joltWheel = new JPH::WheelSettingsWV();
+		joltWheel->mPosition = ToJolt(wheel.Position) + VehicleUp * travel;
+		joltWheel->mSuspensionDirection = -VehicleUp;
+		joltWheel->mSteeringAxis = VehicleUp;
+		joltWheel->mWheelUp = VehicleUp;
+		joltWheel->mWheelForward = VehicleForward;
+		joltWheel->mSuspensionMinLength = 0.0f;
+		joltWheel->mSuspensionMaxLength = travel;
+		joltWheel->mSuspensionSpring.mFrequency = std::max(settings.SuspensionFrequency, 0.1f);
+		joltWheel->mSuspensionSpring.mDamping = std::max(settings.SuspensionDamping, 0.0f);
+		joltWheel->mRadius = std::max(wheel.Radius, 0.01f);
+		joltWheel->mWidth = std::max(wheel.Width, 0.01f);
+		// A 20 kg wheel, as Jolt's defaults are (0.9 kg m^2 at 0.3 m): a solid disc
+		joltWheel->mInertia = 0.5f * 20.0f * joltWheel->mRadius * joltWheel->mRadius;
+		joltWheel->mMaxSteerAngle = wheel.Steers ? glm::radians(glm::clamp(settings.MaxSteerAngle, 0.0f, 89.0f)) : 0.0f;
+		joltWheel->mMaxBrakeTorque = std::max(settings.BrakeTorque, 0.0f);
+		joltWheel->mMaxHandBrakeTorque = wheel.Handbrake ? std::max(settings.HandbrakeTorque, 0.0f) : 0.0f;
+		constraint.mWheels.push_back(JPH::Ref<JPH::WheelSettings>(joltWheel.GetPtr()));
+	}
+
+	// The engine through an automatic gearbox to the driven wheels: a differential per axle, the torque shared evenly
+	JPH::Ref<JPH::WheeledVehicleControllerSettings> controller = new JPH::WheeledVehicleControllerSettings();
+	controller->mEngine.mMaxTorque = std::max(settings.EngineTorque, 0.0f);
+	controller->mEngine.mMaxRPM = std::max(settings.MaxRpm, controller->mEngine.mMinRPM + 500.0f);
+	std::vector<int> all, driven;
+	for (int w = 0; w < (int)settings.Wheels.size(); w++)
+	{
+		all.push_back(w);
+		if (settings.Wheels[w].Driven)
+		{
+			driven.push_back(w);
+		}
+	}
+	const std::vector<std::pair<int, int>> drivenAxles = GetAxles(settings.Wheels, driven);
+	for (const auto& [left, right] : drivenAxles)
+	{
+		JPH::VehicleDifferentialSettings differential;
+		differential.mLeftWheel = left;
+		differential.mRightWheel = right;
+		differential.mEngineTorqueRatio = 1.0f / (float)drivenAxles.size();
+		controller->mDifferentials.push_back(differential);
+	}
+	if (drivenAxles.empty())
+	{
+		Log::GetLogger()->warn("Physics: the vehicle '{0}' has no driven wheels: it only rolls", name);
+	}
+	constraint.mController = controller;
+
+	// Anti-roll bars: an axle's two wheels pull each other down, so it leans less in a turn
+	if (settings.AntiRollBars)
+	{
+		for (const auto& [left, right] : GetAxles(settings.Wheels, all))
+		{
+			if (right >= 0)
+			{
+				JPH::VehicleAntiRollBar bar;
+				bar.mLeftWheel = left;
+				bar.mRightWheel = right;
+				constraint.mAntiRollBars.push_back(bar);
+			}
+		}
+	}
+
+	{
+		JPH::BodyLockWrite lock(m_World->GetSystem().GetBodyLockInterface(), vehicle.Body);
+		if (!lock.Succeeded())
+		{
+			return false;
+		}
+		vehicle.Constraint = new JPH::VehicleConstraint(lock.GetBody(), constraint);
+	}
+	// The wheels find the ground with a cylinder of their size (a ray would fall into the gaps of a height field), against
+	// what the vehicle's body collides with
+	vehicle.Tester = new JPH::VehicleCollisionTesterCastCylinder(ObjectLayers::Dynamic);
+	vehicle.Constraint->SetVehicleCollisionTester(vehicle.Tester);
+	// As in Jolt's samples: its tires were tuned with ten times this grip along the wheel (a fix made later in Jolt)
+	static_cast<JPH::WheeledVehicleController*>(vehicle.Constraint->GetController())->SetTireMaxImpulseCallback(
+		[](JPH::uint, float& longitudinal, float& lateral, float suspensionImpulse, float longitudinalFriction, float lateralFriction, float, float, float)
+		{
+			longitudinal = 10.0f * longitudinalFriction * suspensionImpulse;
+			lateral = lateralFriction * suspensionImpulse;
+		});
+	m_World->GetSystem().AddConstraint(vehicle.Constraint);
+	m_World->GetSystem().AddStepListener(vehicle.Constraint);
+
+	// The wheels' models: their axes at rest, from how they are turned in the vehicle now
+	glm::vec3 position, scale;
+	glm::quat rotation;
+	DecomposeWorld(m_Scene->GetWorldTransform(vehicle.Entity), position, rotation, scale);
+	for (const VehicleComponent::Wheel& wheel : settings.Wheels)
+	{
+		Vehicle::WheelModel model;
+		if (wheel.Entity != NoEntity && m_Scene->Exists(wheel.Entity) && wheel.Entity != vehicle.Entity)
+		{
+			glm::vec3 wheelPosition;
+			glm::quat wheelRotation;
+			DecomposeWorld(m_Scene->GetWorldTransform(wheel.Entity), wheelPosition, wheelRotation, model.Scale);
+			const glm::quat toModel = glm::inverse(glm::inverse(rotation) * wheelRotation); // the vehicle's space to the model's
+			model.Entity = wheel.Entity;
+			model.Right = ToJolt(toModel * glm::vec3(1.0f, 0.0f, 0.0f));
+			model.Up = ToJolt(toModel * glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+		vehicle.Wheels.push_back(model);
+	}
+	if (std::abs(scale.x - 1.0f) > 0.01f || std::abs(scale.y - 1.0f) > 0.01f || std::abs(scale.z - 1.0f) > 0.01f)
+	{
+		Log::GetLogger()->warn("Physics: the vehicle '{0}' is scaled: its wheels' models are stretched as they turn (scale a child that "
+			"holds the body's model instead)", name);
+	}
+	return true;
+}
+
+void ScenePhysics::RemoveVehicle(Vehicle& vehicle)
+{
+	if (vehicle.Constraint)
+	{
+		m_World->GetSystem().RemoveStepListener(vehicle.Constraint);
+		m_World->GetSystem().RemoveConstraint(vehicle.Constraint);
+	}
+}
+
+const ScenePhysics::Vehicle* ScenePhysics::FindVehicle(EnvMapVulkanEntityID entity) const
+{
+	for (const Vehicle& vehicle : m_Vehicles)
+	{
+		if (vehicle.Entity == entity)
+		{
+			return &vehicle;
+		}
+	}
+	return nullptr;
+}
+
+bool ScenePhysics::SetVehicleInput(EnvMapVulkanEntityID entity, const VehicleInput& input)
+{
+	Vehicle* vehicle = const_cast<Vehicle*>(FindVehicle(entity));
+	if (!vehicle)
+	{
+		return false;
+	}
+	const auto clamp = [](float value, float low) { return std::isfinite(value) ? glm::clamp(value, low, 1.0f) : 0.0f; };
+	vehicle->Input.Forward = clamp(input.Forward, -1.0f);
+	vehicle->Input.Steer = clamp(input.Steer, -1.0f);
+	vehicle->Input.Brake = clamp(input.Brake, 0.0f);
+	vehicle->Input.Handbrake = clamp(input.Handbrake, 0.0f);
+	return true;
+}
+
+bool ScenePhysics::GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& state) const
+{
+	const Vehicle* vehicle = m_World ? FindVehicle(entity) : nullptr;
+	if (!vehicle)
+	{
+		return false;
+	}
+	const JPH::BodyInterface& bodies = m_World->GetSystem().GetBodyInterface();
+	const JPH::Vec3 velocity = bodies.GetRotation(vehicle->Body).Conjugated() * bodies.GetLinearVelocity(vehicle->Body);
+	state.Speed = velocity.Dot(VehicleForward);
+	const JPH::WheeledVehicleController* controller = static_cast<const JPH::WheeledVehicleController*>(vehicle->Constraint->GetController());
+	state.Rpm = controller->GetEngine().GetCurrentRPM();
+	state.Gear = controller->GetTransmission().GetCurrentGear();
+	state.Wheels = (uint32_t)vehicle->Constraint->GetWheels().size();
+	state.WheelsOnGround = 0;
+	for (uint32_t w = 0; w < state.Wheels && w < 32; w++)
+	{
+		if (vehicle->Constraint->GetWheel(w)->HasContact())
+		{
+			state.WheelsOnGround |= 1u << w;
+		}
+	}
+	state.Input = vehicle->Input;
+	state.Applied = vehicle->Applied;
+	return true;
+}
+
+void ScenePhysics::WriteWheels(const Vehicle& vehicle, const glm::vec3& position, const glm::quat& rotation)
+{
+	const glm::mat4 body = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
+	for (uint32_t w = 0; w < (uint32_t)vehicle.Wheels.size(); w++)
+	{
+		const Vehicle::WheelModel& model = vehicle.Wheels[w];
+		if (model.Entity == NoEntity || !m_Scene->Exists(model.Entity))
+		{
+			continue;
+		}
+		// The wheel's place in the vehicle (its spring's length, its steering, how far it has rolled), with the model's axes
+		const glm::mat4 wheel = ToGlm(vehicle.Constraint->GetWheelLocalTransform(w, model.Right, model.Up));
+		m_Scene->SetWorldTransform(model.Entity, body * wheel * glm::scale(glm::mat4(1.0f), model.Scale));
+	}
+}
+
+bool ScenePhysics::FitWheels(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, VehicleComponent& vehicle)
+{
+	glm::vec3 position, scale;
+	glm::quat rotation;
+	DecomposeWorld(scene.GetWorldTransform(entity), position, rotation, scale);
+	const glm::quat toVehicle = glm::inverse(rotation);
+
+	std::vector<VehicleComponent::Wheel> wheels;
+	for (EnvMapVulkanEntityID child : scene.GetSubtree(entity))
+	{
+		std::string name = scene.Get<NameComponent>(child).Name;
+		std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+		glm::vec3 boundsMin, boundsMax;
+		if (child == entity || name.find("wheel") == std::string::npos || !GetModelBounds(scene, child, boundsMin, boundsMax))
+		{
+			continue;
+		}
+		glm::vec3 wheelPosition, wheelScale;
+		glm::quat wheelRotation;
+		DecomposeWorld(scene.GetWorldTransform(child), wheelPosition, wheelRotation, wheelScale);
+		// It turns around its axis closest to the vehicle's X: as wide as the model along it, as round as the larger of the
+		// other two
+		const glm::vec3 size = (boundsMax - boundsMin) * glm::abs(wheelScale);
+		int axle = 0;
+		float best = -1.0f;
+		for (int a = 0; a < 3; a++)
+		{
+			glm::vec3 axis(0.0f);
+			axis[a] = 1.0f;
+			const float alignment = std::abs((toVehicle * wheelRotation * axis).x);
+			if (alignment > best)
+			{
+				best = alignment;
+				axle = a;
+			}
+		}
+		VehicleComponent::Wheel wheel;
+		wheel.Entity = child;
+		wheel.Position = toVehicle * (wheelPosition - position); // the model's origin: its center, the wheel's
+		wheel.Width = std::max(size[axle], 0.01f);
+		wheel.Radius = std::max(0.5f * std::max(size[(axle + 1) % 3], size[(axle + 2) % 3]), 0.01f);
+		wheel.Steers = wheel.Position.z < 0.0f; // the front half (forward is -Z)
+		wheel.Handbrake = !wheel.Steers;
+		wheel.Driven = true;
+		wheels.push_back(wheel);
+	}
+	if (wheels.empty())
+	{
+		return false;
+	}
+	// Front to back, left to right
+	std::sort(wheels.begin(), wheels.end(), [](const VehicleComponent::Wheel& a, const VehicleComponent::Wheel& b)
+	{
+		return std::abs(a.Position.z - b.Position.z) > 0.01f ? a.Position.z < b.Position.z : a.Position.x < b.Position.x;
+	});
+	vehicle.Wheels = wheels;
+	return true;
+}
+
 void ScenePhysics::Start(EnvMapVulkanScene& scene, const PhysicsCollisionMatrix& collisions)
 {
 	Stop();
@@ -495,12 +875,20 @@ void ScenePhysics::Start(EnvMapVulkanScene& scene, const PhysicsCollisionMatrix&
 			AddEntity(entity, counts);
 		}
 	});
+	scene.Each<VehicleComponent>([&](EnvMapVulkanEntityID entity, VehicleComponent&)
+	{
+		if (!scene.Has<ColliderComponent>(entity))
+		{
+			Log::GetLogger()->warn("Physics: the vehicle '{0}' has no Collider: no vehicle (its body needs a shape)", scene.Get<NameComponent>(entity).Name);
+		}
+	});
 
 	// The bodies added one by one: the broad phase's trees are rebuilt once, for a first step as fast as the next ones
 	m_World->GetSystem().OptimizeBroadPhase();
-	Log::GetLogger()->info("Physics: {0} bodies ({1} dynamic, {2} kinematic, {3} static, {4} trigger{5}), {6} character{7}{8}", m_Bodies.size(),
-		counts.Motions[(int)JPH::EMotionType::Dynamic], counts.Motions[(int)JPH::EMotionType::Kinematic], counts.Motions[(int)JPH::EMotionType::Static],
-		counts.Triggers, counts.Triggers == 1 ? "" : "s", m_Characters.size(), m_Characters.size() == 1 ? "" : "s",
+	Log::GetLogger()->info("Physics: {0} bodies ({1} dynamic, {2} kinematic, {3} static, {4} trigger{5}), {6} character{7}, {8} vehicle{9}{10}",
+		m_Bodies.size(), counts.Motions[(int)JPH::EMotionType::Dynamic], counts.Motions[(int)JPH::EMotionType::Kinematic],
+		counts.Motions[(int)JPH::EMotionType::Static], counts.Triggers, counts.Triggers == 1 ? "" : "s", m_Characters.size(),
+		m_Characters.size() == 1 ? "" : "s", m_Vehicles.size(), m_Vehicles.size() == 1 ? "" : "s",
 		counts.Failed > 0 ? ", " + std::to_string(counts.Failed) + " could not be made" : std::string());
 }
 
@@ -536,6 +924,12 @@ void ScenePhysics::AddEntity(EnvMapVulkanEntityID entity, AddCounts& counts)
 		return;
 	}
 	const ColliderComponent* collider = scene.TryGet<ColliderComponent>(entity);
+	// A vehicle's wheel is only drawn (its wheel is the vehicle's): a body there would be in the wheel's way
+	if ((collider || scene.Has<RigidBodyComponent>(entity)) && IsVehicleWheel(scene, entity))
+	{
+		Log::GetLogger()->warn("Physics: '{0}' is a vehicle's wheel: its Collider and Rigid Body aren't used", scene.Get<NameComponent>(entity).Name);
+		return;
+	}
 	if (const CharacterControllerComponent* settings = scene.TryGet<CharacterControllerComponent>(entity))
 	{
 		if (collider || scene.Has<RigidBodyComponent>(entity))
@@ -574,6 +968,22 @@ void ScenePhysics::AddEntity(EnvMapVulkanEntityID entity, AddCounts& counts)
 	}
 	m_BodyInfo[body.ID.GetIndexAndSequenceNumber()] = { entity, body.Trigger };
 	m_Bodies.push_back(body);
+
+	if (const VehicleComponent* settings = scene.TryGet<VehicleComponent>(entity))
+	{
+		if (body.Motion != JPH::EMotionType::Dynamic || body.Trigger)
+		{
+			Log::GetLogger()->warn("Physics: the vehicle '{0}' needs a dynamic Rigid Body (not a trigger): no vehicle", scene.Get<NameComponent>(entity).Name);
+			return;
+		}
+		Vehicle vehicle;
+		vehicle.Entity = entity;
+		vehicle.Body = body.ID;
+		if (CreateVehicle(vehicle, *settings))
+		{
+			m_Vehicles.push_back(std::move(vehicle));
+		}
+	}
 }
 
 void ScenePhysics::Stop()
@@ -586,6 +996,11 @@ void ScenePhysics::Stop()
 	m_StepCount = 0;
 	m_StepSeconds = 0.0;
 	m_LastStepMs = 0.0f;
+	for (Vehicle& vehicle : m_Vehicles)
+	{
+		RemoveVehicle(vehicle); // before their bodies
+	}
+	m_Vehicles.clear();
 	m_Characters.clear(); // before the world: they remove their inner bodies from it
 	m_Bodies.clear();
 	m_World.reset();
@@ -679,6 +1094,38 @@ void ScenePhysics::Step(float fixedStep)
 		character.Moved = (character.Position - character.PreviousPosition) / fixedStep;
 	}
 
+	// The vehicles: each with its driver's input
+	for (Vehicle& vehicle : m_Vehicles)
+	{
+		VehicleInput applied = vehicle.Input;
+		// Asked for the other way while it still rolls: it brakes until it stops, then goes (as Jolt's samples drive)
+		if (applied.Forward != 0.0f && (applied.Forward > 0.0f) != (vehicle.Direction > 0.0f))
+		{
+			const JPH::Vec3 velocity = bodies.GetRotation(vehicle.Body).Conjugated() * bodies.GetLinearVelocity(vehicle.Body);
+			const float speed = velocity.Dot(VehicleForward);
+			if ((applied.Forward > 0.0f && speed < -0.1f) || (applied.Forward < 0.0f && speed > 0.1f))
+			{
+				applied.Brake = std::max(applied.Brake, std::abs(applied.Forward));
+				applied.Forward = 0.0f;
+			}
+			else
+			{
+				vehicle.Direction = applied.Forward > 0.0f ? 1.0f : -1.0f;
+			}
+		}
+		if (applied.Handbrake > 0.0f)
+		{
+			applied.Forward = 0.0f; // the handbrake lets go of the throttle
+		}
+		vehicle.Applied = applied;
+		static_cast<JPH::WheeledVehicleController*>(vehicle.Constraint->GetController())->SetDriverInput(applied.Forward, applied.Steer,
+			applied.Brake, applied.Handbrake);
+		if (applied.Forward != 0.0f || applied.Steer != 0.0f || applied.Brake != 0.0f || applied.Handbrake != 0.0f)
+		{
+			bodies.ActivateBody(vehicle.Body); // a parked vehicle sleeps: the driver wakes it
+		}
+	}
+
 	if (m_Listener->Collect)
 	{
 		m_Listener->Contacts.clear(); // the listener isn't called between the steps: no lock needed
@@ -719,6 +1166,16 @@ void ScenePhysics::RemoveDestroyedEntities()
 		m_BodyInfo.erase(id.GetIndexAndSequenceNumber());
 	};
 
+	for (auto vehicle = m_Vehicles.begin(); vehicle != m_Vehicles.end();)
+	{
+		if (m_Scene->Exists(vehicle->Entity))
+		{
+			++vehicle;
+			continue;
+		}
+		RemoveVehicle(*vehicle); // before its body
+		vehicle = m_Vehicles.erase(vehicle);
+	}
 	for (auto body = m_Bodies.begin(); body != m_Bodies.end();)
 	{
 		if (m_Scene->Exists(body->Entity))
@@ -939,6 +1396,17 @@ void ScenePhysics::WriteTransforms(float alpha)
 		// In the world: a body under a parent stays where physics puts it, wherever the parent goes
 		m_Scene->SetWorldTransform(body.Entity, ComposeWorld(position, rotation, body.Scale));
 		body.Written = m_Scene->Get<TransformComponent>(body.Entity);
+	}
+	// The wheels' models on their vehicles, where those are drawn now
+	for (const Vehicle& vehicle : m_Vehicles)
+	{
+		if (m_Scene->Exists(vehicle.Entity))
+		{
+			glm::vec3 position, scale;
+			glm::quat rotation;
+			DecomposeWorld(m_Scene->GetWorldTransform(vehicle.Entity), position, rotation, scale);
+			WriteWheels(vehicle, position, rotation);
+		}
 	}
 }
 
@@ -1292,6 +1760,13 @@ static void AddShapeLines(DebugLines& lines, const JPH::Shape& shape, const glm:
 			AddShapeLines(lines, *moved.GetInnerShape(), transform * glm::mat4_cast(ToGlm(moved.GetRotation())), kind, triangleBudget);
 			return;
 		}
+		case JPH::EShapeSubType::OffsetCenterOfMass:
+		{
+			// Its inner shape's center of mass is the offset away from its own
+			const JPH::OffsetCenterOfMassShape& offset = static_cast<const JPH::OffsetCenterOfMassShape&>(shape);
+			AddShapeLines(lines, *offset.GetInnerShape(), transform * glm::translate(glm::mat4(1.0f), -ToGlm(offset.GetOffset())), kind, triangleBudget);
+			return;
+		}
 		case JPH::EShapeSubType::Box:
 			AddBoxLines(lines, transform, ToGlm(static_cast<const JPH::BoxShape&>(shape).GetHalfExtent()), kind);
 			return;
@@ -1370,6 +1845,18 @@ void ScenePhysics::SetCollectContacts(bool collect)
 	}
 }
 
+// A wheel: its two rims (transform: the wheel's center, X along its axle), its axle and a spoke that shows it turn
+static void AddWheelLines(DebugLines& lines, const glm::mat4& transform, float radius, float width, ScenePhysics::DebugLineKind kind)
+{
+	const float full = glm::two_pi<float>();
+	for (float side : { -0.5f * width, 0.5f * width })
+	{
+		AddArc(lines, transform, glm::vec3(side, 0.0f, 0.0f), AxisY, AxisZ, radius, 0.0f, full, 24, kind);
+	}
+	AddLine(lines, transform, glm::vec3(0.0f), glm::vec3(0.0f, radius, 0.0f), kind);
+	AddLine(lines, transform, glm::vec3(-0.5f * width, 0.0f, 0.0f), glm::vec3(0.5f * width, 0.0f, 0.0f), kind);
+}
+
 void ScenePhysics::GetDebugLines(bool colliders, bool contacts, std::vector<DebugLine>& lines, uint32_t maxTriangles) const
 {
 	if (!m_World)
@@ -1410,6 +1897,27 @@ void ScenePhysics::GetDebugLines(bool colliders, bool contacts, std::vector<Debu
 			const glm::vec3 position = glm::mix(character.PreviousPosition, character.Position, m_Alpha) +
 				ToGlm(controller.GetShapeOffset() + controller.GetShape()->GetCenterOfMass());
 			AddShapeLines(lines, *controller.GetShape(), glm::translate(glm::mat4(1.0f), position), DebugLineKind::Character, triangleBudget);
+		}
+		// The vehicles' wheels where they are (touching the ground or not), each with its spring: from where it hangs to its center
+		for (const Vehicle& vehicle : m_Vehicles)
+		{
+			if (!m_Scene->Exists(vehicle.Entity))
+			{
+				continue;
+			}
+			glm::vec3 position, scale;
+			glm::quat rotation;
+			DecomposeWorld(m_Scene->GetWorldTransform(vehicle.Entity), position, rotation, scale);
+			const glm::mat4 body = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
+			for (uint32_t w = 0; w < (uint32_t)vehicle.Constraint->GetWheels().size(); w++)
+			{
+				const JPH::Wheel& wheel = *vehicle.Constraint->GetWheel(w);
+				const JPH::WheelSettings& settings = *wheel.GetSettings();
+				const DebugLineKind kind = wheel.HasContact() ? DebugLineKind::WheelOnGround : DebugLineKind::Wheel;
+				const glm::mat4 local = ToGlm(vehicle.Constraint->GetWheelLocalTransform(w, JPH::Vec3::sAxisX(), JPH::Vec3::sAxisY()));
+				AddWheelLines(lines, body * local, settings.mRadius, settings.mWidth, kind);
+				AddLine(lines, body, ToGlm(settings.mPosition), glm::vec3(local[3]), kind);
+			}
 		}
 	}
 	if (contacts && m_Listener)
@@ -1472,6 +1980,20 @@ void ScenePhysics::GetColliderLines(const EnvMapVulkanScene& scene, std::vector<
 		AddCapsuleLines(lines, glm::translate(glm::mat4(1.0f), position), std::max(character.Height * 0.5f - radius, 0.0f), radius,
 			DebugLineKind::Character);
 	});
+	// The vehicles' wheels as placed (their springs fully out), each with its spring's travel above it
+	scene.Each<VehicleComponent>([&](EnvMapVulkanEntityID entity, const VehicleComponent& vehicle)
+	{
+		glm::vec3 position, scale;
+		glm::quat rotation;
+		DecomposeWorld(scene.GetWorldTransform(entity), position, rotation, scale);
+		const glm::mat4 body = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
+		for (const VehicleComponent::Wheel& wheel : vehicle.Wheels)
+		{
+			AddWheelLines(lines, body * glm::translate(glm::mat4(1.0f), wheel.Position), std::max(wheel.Radius, 0.01f), std::max(wheel.Width, 0.01f),
+				DebugLineKind::Wheel);
+			AddLine(lines, body, wheel.Position, wheel.Position + glm::vec3(0.0f, std::max(vehicle.SuspensionTravel, 0.01f), 0.0f), DebugLineKind::Wheel);
+		}
+	});
 }
 
 ScenePhysics::Stats ScenePhysics::GetStats() const
@@ -1501,6 +2023,7 @@ ScenePhysics::Stats ScenePhysics::GetStats() const
 		}
 	}
 	stats.Characters = (uint32_t)m_Characters.size();
+	stats.Vehicles = (uint32_t)m_Vehicles.size();
 	stats.Awake = m_World->GetActiveBodyCount();
 	stats.TouchingPairs = (uint32_t)m_Touching.size();
 	stats.Steps = m_StepCount;

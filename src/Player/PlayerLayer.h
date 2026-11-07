@@ -81,7 +81,7 @@ private:
 	GameSystems m_Systems;
 	InputSystem m_Input;
 	bool m_Playing = false; // the scene is open
-	bool m_EnterDown = false, m_F11Down = false, m_EscapeDown = false, m_F3Down = false; // last frame's, for the keys' presses
+	bool m_EnterDown = false, m_F11Down = false, m_EscapeDown = false, m_F3Down = false, m_F1Down = false; // last frame's, for the keys' presses
 	bool m_DebugOverlay = false;
 	PlayerResolution m_Resolution; // the player's choice: fullscreen's display mode, a window's size (0 x 0: none chosen)
 	std::vector<PlayerResolution> m_Resolutions;

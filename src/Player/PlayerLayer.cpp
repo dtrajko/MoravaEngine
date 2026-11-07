@@ -482,9 +482,20 @@ void PlayerLayer::UpdateFullscreenKeys(GLFWwindow* window)
 	const bool enter = WasPressed(window, GLFW_KEY_ENTER, m_EnterDown);
 	const bool f11 = WasPressed(window, GLFW_KEY_F11, m_F11Down);
 	const bool escape = WasPressed(window, GLFW_KEY_ESCAPE, m_EscapeDown);
+	const bool shift = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS;
+	const bool shiftF1 = WasPressed(window, GLFW_KEY_F1, m_F1Down) && shift;
 	if ((alt && enter) || f11)
 	{
 		SetFullscreen(window, !fullscreen);
+	}
+	else if (shiftF1)
+	{
+		// Always the mouse back to the user, whatever the game binds (as in the editor): a game that binds Escape and has
+		// no pause menu to free the cursor would otherwise keep it. A click in the window gives it to the game again
+		if (m_Input.IsMouseCaptured())
+		{
+			m_Input.ReleaseMouseUntilClick();
+		}
 	}
 	else if (escape && !m_Input.GetMap().BindsKey(GLFW_KEY_ESCAPE))
 	{

@@ -2526,8 +2526,20 @@ static void BeginShadowPass(VkCommandBuffer commandBuffer, const EnvMapVulkanSha
 	vkCmdSetDepthBias(commandBuffer, depthBias, 0.0f, slopeBias);
 }
 
-// Draws the submitted models into the current shadow pass: the models whose bounds are in the pass's view (as for the
-// main view, see CullMainView; the sun's cascades reach back behind every caster, so a caster outside the camera's view
+// Whether a mesh's box, turned with the mesh into the world, is outside a frustum: the box's center moved with the mesh,
+// its half size along each world axis
+static bool IsMeshOutsideFrustum(const glm::vec4 planes[6], const glm::mat4& transform, const H2M::AABB_H2M& box)
+{
+	const glm::vec3 center = glm::vec3(transform * glm::vec4((box.Min + box.Max) * 0.5f, 1.0f));
+	const glm::vec3 localHalf = (box.Max - box.Min) * 0.5f;
+	const glm::vec3 half = glm::abs(glm::vec3(transform[0])) * localHalf.x + glm::abs(glm::vec3(transform[1])) * localHalf.y +
+		glm::abs(glm::vec3(transform[2])) * localHalf.z;
+	return IsBoxOutsideFrustum(planes, center, half);
+}
+
+// Draws the submitted models into the current shadow pass: the models whose bounds are in the pass's view, and of those
+// the meshes whose boxes are (as for the main view, see CullMainView: a terrain is one model of many chunks, and a
+// cascade sees few of them; the sun's cascades reach back behind every caster, so a caster outside the camera's view
 // still casts into it). With a light sphere (center, radius), only the models whose bounds reach into it: a spot or point
 // light can't shadow anything beyond its range. The shadow pipelines were built for the sun's render pass; the spot and
 // point light passes are compatible with it (one depth attachment of the same format). Returns the number of models drawn.
@@ -2584,6 +2596,11 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 			{
 				continue;
 			}
+			const glm::mat4 meshTransform = EnvMapVulkanSceneData::GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform);
+			if (!skinned && s_ViewOptions.FrustumCulling && IsMeshOutsideFrustum(planes, meshTransform, mesh->BoundingBox))
+			{
+				continue;
+			}
 			// A cutout material: its holes let the light through. Its pipeline has the PBR layout: the per-frame set (the
 			// material entries, the samplers), the bones as set 2, the material's maps and values as in the scene pass
 			H2M::RefH2M<EnvMapVulkanMaterial> material = s < materials.size() ? materials[s] : H2M::RefH2M<EnvMapVulkanMaterial>();
@@ -2605,7 +2622,6 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 				}
 				boundPipeline = &pipeline;
 			}
-			const glm::mat4 meshTransform = EnvMapVulkanSceneData::GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform);
 			if (cutout)
 			{
 				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, H2M::VulkanShaderH2M::MaterialDescriptorSet, 1,
@@ -2900,14 +2916,9 @@ static void CullMainView()
 			{
 				continue;
 			}
-			// The box in the world: its center moved with the mesh, its half size along each world axis
 			const H2M::AABB_H2M& box = meshes[s]->BoundingBox;
 			const glm::mat4 transform = EnvMapVulkanSceneData::GetMeshTransform(submitted.Model, meshes[s], submitted.Transform);
-			const glm::vec3 center = glm::vec3(transform * glm::vec4((box.Min + box.Max) * 0.5f, 1.0f));
-			const glm::vec3 localHalf = (box.Max - box.Min) * 0.5f;
-			const glm::vec3 half = glm::abs(glm::vec3(transform[0])) * localHalf.x + glm::abs(glm::vec3(transform[1])) * localHalf.y +
-				glm::abs(glm::vec3(transform[2])) * localHalf.z;
-			if (IsBoxOutsideFrustum(planes, center, half) && submitted.FirstDraw + s < s_MeshInView.size())
+			if (IsMeshOutsideFrustum(planes, transform, box) && submitted.FirstDraw + s < s_MeshInView.size())
 			{
 				s_MeshInView[submitted.FirstDraw + s] = 0;
 				s_CullingStats.Culled++;

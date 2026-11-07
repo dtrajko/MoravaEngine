@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Driving School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: an engineering manual. One readable text column (48rem); diagrams, tables and code break out to the full 72rem width. */
+:root {
+  --bg: #f5f7fa; --surface: #ffffff; --ink: #1a2130; --muted: #5a6478; --line: #d6dce6; --code-bg: #eef1f6;
+  --accent: #2d5fc4; --accent-soft: #e6edfb; --warn: #b4581a; --warn-soft: #fbefe4; --ok: #24814f; --ok-soft: #e5f3ea;
+  /* diagram kinds */
+  --k-rp: #2d5fc4; --k-rp-bg: #eef3fd; --k-rp-hd: #dbe6fa;
+  --k-cs: #1f7d52; --k-cs-bg: #edf7f1; --k-cs-hd: #d6efe1;
+  --k-tr: #7553b8; --k-tr-bg: #f3effb; --k-tr-hd: #e5dcf6;
+  --k-img: #56637a; --k-img-bg: #f7f8fa; --k-img-hd: #e7ebf1;
+  --k-set: #a3378f; --k-set-bg: #fbeff8; --k-set-hd: #f4dcee;
+  --k-cpu: #6b7280; --k-cpu-bg: #f6f6f7; --k-cpu-hd: #e8e9ec;
+  --k-as: #8f6d0b; --k-as-bg: #fbf6e6; --k-as-hd: #f2e8c4;
+  --k-sh: #0d7884; --k-sh-bg: #ebf7f8; --k-sh-hd: #cfecef;
+  --k-key: #c2334f; --k-key-bg: #fdf0f2; --k-key-hd: #f8d9df;
+  --e-write: #d0481c; --e-read: #4d576b; --e-bind: #a3378f; --e-cpu: #7c8494; --e-copy: #7553b8; --e-inc: #0d7884;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", Consolas, "Cascadia Mono", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11151c; --surface: #171c25; --ink: #dfe5ef; --muted: #98a2b5; --line: #2c3442; --code-bg: #1c222d;
+  --accent: #82a8ff; --accent-soft: #1b2640; --warn: #f0a160; --warn-soft: #2c2016; --ok: #6fd19c; --ok-soft: #15281e;
+  --k-rp: #82a8ff; --k-rp-bg: #161f33; --k-rp-hd: #1f2c4a;
+  --k-cs: #64cf98; --k-cs-bg: #13241b; --k-cs-hd: #1a3426;
+  --k-tr: #b9a0f2; --k-tr-bg: #1f1a2e; --k-tr-hd: #2b2342;
+  --k-img: #a7b4c9; --k-img-bg: #1a1f28; --k-img-hd: #242b37;
+  --k-set: #e98ad8; --k-set-bg: #2a1726; --k-set-hd: #3a1f35;
+  --k-cpu: #a3aab6; --k-cpu-bg: #1c1f25; --k-cpu-hd: #272b33;
+  --k-as: #e3c35e; --k-as-bg: #262012; --k-as-hd: #352d18;
+  --k-sh: #58c6d3; --k-sh-bg: #12262a; --k-sh-hd: #19353a;
+  --k-key: #ff8099; --k-key-bg: #2d171c; --k-key-hd: #422029;
+  --e-write: #ff8a5c; --e-read: #a4adbf; --e-bind: #e98ad8; --e-cpu: #8b93a3; --e-copy: #b9a0f2; --e-inc: #58c6d3;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #171c25; --ink: #dfe5ef; --muted: #98a2b5; --line: #2c3442; --code-bg: #1c222d;
+  --accent: #82a8ff; --accent-soft: #1b2640; --warn: #f0a160; --warn-soft: #2c2016; --ok: #6fd19c; --ok-soft: #15281e;
+  --k-rp: #82a8ff; --k-rp-bg: #161f33; --k-rp-hd: #1f2c4a;
+  --k-cs: #64cf98; --k-cs-bg: #13241b; --k-cs-hd: #1a3426;
+  --k-tr: #b9a0f2; --k-tr-bg: #1f1a2e; --k-tr-hd: #2b2342;
+  --k-img: #a7b4c9; --k-img-bg: #1a1f28; --k-img-hd: #242b37;
+  --k-set: #e98ad8; --k-set-bg: #2a1726; --k-set-hd: #3a1f35;
+  --k-cpu: #a3aab6; --k-cpu-bg: #1c1f25; --k-cpu-hd: #272b33;
+  --k-as: #e3c35e; --k-as-bg: #262012; --k-as-hd: #352d18;
+  --k-sh: #58c6d3; --k-sh-bg: #12262a; --k-sh-hd: #19353a;
+  --k-key: #ff8099; --k-key-bg: #2d171c; --k-key-hd: #422029;
+  --e-write: #ff8a5c; --e-read: #a4adbf; --e-bind: #e98ad8; --e-cpu: #8b93a3; --e-copy: #b9a0f2; --e-inc: #58c6d3;
+  color-scheme: dark; }
+
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-body); }
+main { max-width: 72rem; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; }
+main > section { padding-block: 26px 10px; border-top: 1px solid var(--line); }
+main > section > * { max-width: 48rem; }
+main > section > figure, main > section > .wide { max-width: none; }
+h1, h2, h3, h4 { font-family: var(--f-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 14px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+h3 { font-size: 1.2rem; font-weight: 600; margin: 22px 0 8px; color: var(--accent); }
+h4 { font-size: 1.02rem; font-weight: 600; margin: 14px 0 4px; }
+p { margin: 0 0 10px; }
+ul, ol { margin: 0 0 12px; padding-left: 1.3rem; }
+li { margin-bottom: 4px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font: 0.86em var(--f-mono); background: var(--code-bg); padding: 0.05em 0.3em; border-radius: 3px; overflow-wrap: anywhere; }
+pre { font: 12.5px/1.5 var(--f-mono); background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin: 6px 0 14px; overflow-x: auto; }
+pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+.c { color: var(--muted); }
+.table-wrap { overflow-x: auto; margin: 6px 0 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { border: 1px solid var(--line); padding: 6px 9px; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); font-weight: 600; }
+td { background: var(--surface); }
+.box { border-radius: 6px; padding: 10px 14px; margin: 8px 0 14px; border: 1px solid var(--line); }
+.box > b:first-child { display: block; margin-bottom: 3px; font-family: var(--f-display); font-size: 1.02rem; }
+.box ul { margin-bottom: 0; }
+.note { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); }
+.ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); }
+.warn > b:first-child { color: var(--warn); } .ok > b:first-child { color: var(--ok); } .note > b:first-child { color: var(--accent); }
+.tag { font: 600 0.8rem var(--f-mono); color: var(--surface); background: var(--accent); border-radius: 4px; padding: 2px 8px; position: relative; top: -3px; }
+.eq { text-align: center; font-size: 1.05rem; margin: 8px 0 12px; }
+
+header.hero { padding-block: 18px 26px; display: grid; gap: 14px; }
+.kicker { font: 600 0.78rem var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.12rem; color: var(--muted); max-width: 48rem; }
+.meta { font-size: 0.86rem; color: var(--muted); max-width: 48rem; }
+nav.toc ol { columns: 2 18rem; column-gap: 32px; padding-left: 0; list-style: none; } /* no automatic numbers: each entry names its phase */
+nav.toc li { break-inside: avoid; }
+
+/* diagrams */
+figure { margin: 10px 0 22px; }
+figure .scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+figure svg { display: block; height: auto; max-width: 100%; }
+figcaption { font-size: 0.86rem; color: var(--muted); margin-top: 6px; max-width: 48rem; }
+svg .nb { stroke-width: 1.3; }
+svg .nt { font: 600 12px var(--f-body); fill: var(--ink); }
+svg .nl { font: 10.5px var(--f-mono); fill: var(--ink); }
+svg .nk { font: 600 8.5px var(--f-mono); letter-spacing: 0.06em; }
+svg .el { font: 10px var(--f-body); fill: var(--muted); }
+svg .elb { fill: var(--surface); }
+svg .e path { fill: none; }
+svg .e-w path { stroke: var(--e-write); stroke-width: 2; } svg .e-w polygon { fill: var(--e-write); }
+svg .e-r path { stroke: var(--e-read); stroke-width: 1.4; } svg .e-r polygon { fill: var(--e-read); }
+svg .e-b path { stroke: var(--e-bind); stroke-width: 1.4; stroke-dasharray: 5 3; } svg .e-b polygon { fill: var(--e-bind); }
+svg .e-c path { stroke: var(--e-cpu); stroke-width: 1.4; stroke-dasharray: 2 3; } svg .e-c polygon { fill: var(--e-cpu); }
+svg .e-x path { stroke: var(--e-copy); stroke-width: 2; } svg .e-x polygon { fill: var(--e-copy); }
+svg .e-i path { stroke: var(--e-inc); stroke-width: 1.4; stroke-dasharray: 1 3; stroke-linecap: round; } svg .e-i polygon { fill: var(--e-inc); }
+svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { fill: var(--e-read); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.84rem; margin: 8px 0 4px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 12px; border-radius: 3px; border: 1.5px solid; display: inline-block; }
+.ln { width: 26px; height: 0; border-top: 2px solid; display: inline-block; }
+@media (max-width: 640px) { body { font-size: 14.5px; } h2 { font-size: 1.45rem; } pre { font-size: 11.5px; } }
+</style>
+</head>
+
+<body>
+
+<main>
+<header class="hero">
+  <div class="kicker">MoravaEngine · a game on the engine</div>
+  <h1>Driving School</h1>
+  <p class="lede">The plan for a basic driving school simulator: a car with a manual gearbox (1–5, R, N), three pedals (clutch, brake, gas), a speedometer and a tachometer, a handbrake and an engine switch, driven from the driver's seat or from behind. It is made for a learner taking driving lessons, so the rules a driving school teaches come before racing effects. A vehicle physics playground (casual racing from behind the car, front-, rear- and all-wheel drive, oversteer, understeer) follows later, in the same project.</p>
+  <p class="meta">Agreed November 7, 2026, after the vehicle work (the vehicle scene, parts A and B, and the start of part C: <a href="../engine/Game_Engine_Runtime_Guide.html#vehicle">the engine guide</a>). Names that exist in the code are written as they are. Names of new classes, files and settings are proposals.</p>
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#decisions">The decisions</a></li>
+      <li><a href="#phase-0">Phase 0: before the new branch</a></li>
+      <li><a href="#phase-1">Phase 1: manual gearbox and engine switch</a></li>
+      <li><a href="#phase-2">Phase 2: the project and the car</a></li>
+      <li><a href="#phase-3">Phase 3: cameras</a></li>
+      <li><a href="#phase-4">Phase 4: speedometer, tachometer, HUD</a></li>
+      <li><a href="#phase-5">Phase 5: menus, settings, quality</a></li>
+      <li><a href="#later">Later</a></li>
+      <li><a href="#verify">How each phase is checked</a></li>
+    </ol>
+  </nav>
+</header>
+
+<section id="decisions">
+  <h2>The decisions</h2>
+  <ul>
+    <li><b>The clutch needs no physics.</b> A gear can only be changed while the clutch is pressed. A pressed clutch disconnects the engine from the wheels; a released clutch connects it in the chosen gear. Slip isn't modeled.</li>
+    <li><b>Controls: keyboard and mouse first</b>, the gamepad second. There is no steering wheel set (none at hand, none planned).</li>
+    <li><b>The car is made of primitives first</b>, with a cabin: body, pillars and roof with open windows, seats, a dashboard, a steering wheel and gauge needles. A real model can replace it later without changing the scripts.</li>
+    <li><b>The ground is the terrain of part A</b> for now. A practice course and roads come later.</li>
+    <li><b>One project, <code>Projects/DrivingSchool</code>, two scenes</b>: Driving School now, Playground later. The car, menus, settings and input are shared (projects can't share scripts). Sample stays the coin collector, with its vehicle demo scene.</li>
+    <li><b>Why the graphics looked low:</b> not the scene. Sample's <code>Library/Settings.yaml</code> has <code>Quality: Low</code>, saved while testing Coin Collector's Settings screen, and the editor's Play uses that file. The new project defaults to High (Phase 5 measures it).</li>
+  </ul>
+</section>
+
+<section id="phase-0">
+  <h2>Phase 0: before the new branch</h2>
+  <ul>
+    <li>On <code>vehicle</code>: the user tests the vehicle work (keyboard and gamepad driving, the Vehicle box, Fit Wheels, copy and paste of a car), commits and merges it.</li>
+    <li>Master updated: the branch <code>driving-school</code>. This page goes with it and is kept up to date with "As built", "Checked" and "Not done" boxes, as the engine guide is.</li>
+  </ul>
+</section>
+
+<section id="phase-1">
+  <h2>Phase 1: manual gearbox and engine switch <span class="tag">engine</span></h2>
+  <p>Files: <code>src/EnvMapVulkan/EnvMapVulkanComponents.h</code> (VehicleComponent), <code>src/Physics/ScenePhysics.h/.cpp</code>, <code>src/EnvMapVulkan/EnvMapVulkanSceneSerializer.cpp</code>, <code>src/Editor/EditorInspectorPanel.cpp</code> (VehicleControls), <code>src/Scripting/ScriptApi.h</code>, <code>src/Scripting/ScriptBindings.cpp</code>, <code>ScriptCore/NativeApi.cs</code>, <code>ScriptCore/Components.cs</code>.</p>
+  <ul>
+    <li><b>VehicleComponent</b> gains these settings, saved in the scene and shown in the Inspector:
+      <ul>
+        <li><code>Transmission</code>: Automatic or Manual</li>
+        <li><code>GearRatios</code>: 5 by default, 2.66, 1.78, 1.3, 1.0, 0.74 (Jolt's)</li>
+        <li><code>ReverseRatio</code>: −2.9</li>
+        <li><code>IdleRpm</code>: Jolt's <code>mMinRPM</code></li>
+        <li><code>ClutchBitePoint</code>: 0.5, the clutch is engaged below it</li>
+        <li><code>Stalls</code>: the stalling rule below</li>
+      </ul></li>
+    <li><b>Manual in ScenePhysics:</b> Jolt's <code>ETransmissionMode::Manual</code>. Each step sets <code>transmission.Set(gear, engaged ? 1 : 0)</code>, where gear 0 is neutral and −1 is reverse. <code>VehicleInput</code> gains <code>Clutch</code> (0..1).</li>
+    <li><b>The clutch rule:</b> <code>RequestGear(entity, gear)</code> returns false and changes nothing when the clutch isn't pressed (the pedal at or past the bite point) or the gear doesn't exist. The engine enforces it, so a script, the Player controls and any later controller all behave the same.</li>
+    <li><b>The engine switch:</b> <code>SetEngineRunning(entity, on)</code>. Starting is refused in gear with the clutch released, as a learner is taught. Off, the engine is disconnected, the throttle is ignored and the rpm is 0.</li>
+    <li><b>Stalling, a rule, not physics:</b> it applies with the clutch engaged in gear, when the rpm the wheels imply (wheel speed × gear ratio × differential ratio) stays below about half of idle for 0.3 s. Then the engine stops, for example on releasing the clutch in 5th from a standstill. Without the rule, Jolt holds the engine at idle and the car would be pushed along. <code>Stalls</code> is on by default.</li>
+    <li>Automatic keeps reversing by braking (part B). In Manual, Brake is only a brake.</li>
+    <li><b>VehicleState</b> gains <code>SelectedGear</code>, <code>ClutchEngaged</code>, <code>EngineRunning</code>, <code>Stalled</code> and <code>ShiftRefused</code> (counters, for the HUD's messages), and <code>MaxRpm</code> and <code>IdleRpm</code> (for the gauges' scales).</li>
+    <li><b>C# <code>Vehicle</code>:</b>
+      <ul>
+        <li><code>SetInput(forward, steer, brake, handbrake, clutch)</code>, with forward 0..1 in Manual</li>
+        <li><code>bool ShiftTo(int gear)</code></li>
+        <li><code>SelectedGear</code>, <code>EngineRunning</code> (its set can be refused), <code>Transmission</code>, <code>ClutchEngaged</code>, <code>MaxRpm</code></li>
+        <li>the stall and refused-shift counters</li>
+      </ul>
+      New API entries are appended at the end of <code>ScriptNativeApi</code> and <code>NativeApi</code>, in the same order.</li>
+    <li><b>Debug view:</b> the Inspector's live readout shows the gear, the clutch, the engine and the stalls.</li>
+  </ul>
+</section>
+
+<section id="phase-2">
+  <h2>Phase 2: the project and the car <span class="tag">game</span></h2>
+  <ul>
+    <li><b><code>Projects/DrivingSchool</code>:</b>
+      <ul>
+        <li><code>DrivingSchool.mproject</code>: windowed while it is developed, <code>DefaultQuality: High</code>, its own <code>ProductName</code></li>
+        <li><code>Settings/Input.minput</code></li>
+        <li><code>Scripts/DrivingSchool.csproj</code>, as <code>Projects/Sample/Scripts/Sample.csproj</code></li>
+        <li>the terrain's materials from <code>Projects/Sample/Assets/Materials/Terrain_*.mmat</code></li>
+      </ul></li>
+    <li><b><code>Scenes/DrivingSchool.mscene</code>:</b> the terrain, the sun, the environment and the car.</li>
+    <li><b>The car</b> is an Empty with a Collider, a Dynamic body, a Manual Vehicle and the controller script. Its children:
+      <ul>
+        <li>the lower body</li>
+        <li>four pillars and the roof, with the windows open so the driver's view sees out</li>
+        <li>seats and the dashboard</li>
+        <li>the steering wheel, a flat cylinder that turns with the steering</li>
+        <li>two dials with needles: 3D entities the script turns, which works today</li>
+        <li>four wheels, placed with Fit Wheels</li>
+      </ul></li>
+    <li><b><code>CarController.cs</code></b> (Controls: Script). The input of a driving school belongs to the game, not the engine:
+      <ul>
+        <li><b>Pedals:</b> a held key moves its pedal gradually. Gas comes up in about 0.6 s, the clutch is released in about 0.8 s, and all pedals let go quickly. A gamepad's analog value is used as it is.</li>
+        <li><b>Keyboard steering</b> turns the wheel gradually and brings it back to center when A and D are let go, faster the faster the car goes, as a real wheel centers itself. Keys can't steer finely, so this matters most.</li>
+        <li><b>Mouse steering</b> is an option in Settings, off by default. The mouse's X moves the wheel; a sensitivity setting and a center key (the middle mouse button or Home) go with it. Looking around then takes the right mouse button held.</li>
+        <li><b>The mouse, by default,</b> looks around in the driver's view: at the mirrors, over the shoulder when reversing, at crossings. Its wheel zooms the view from behind.</li>
+        <li><b>Shifting:</b> 1–5, R, and N or 0, or gear up and down. A refused shift shows "Press the clutch to change gear".</li>
+        <li>The ignition, the handbrake and the steering.</li>
+      </ul></li>
+  </ul>
+  <table>
+    <tr><th>Action</th><th>Keyboard and mouse</th><th>Gamepad</th></tr>
+    <tr><td>Gas</td><td>W, Up</td><td>right trigger</td></tr>
+    <tr><td>Brake</td><td>S, Down</td><td>left trigger</td></tr>
+    <tr><td>Clutch</td><td>Left Shift</td><td>left bumper (smoothed)</td></tr>
+    <tr><td>Steer</td><td>A, D; Left, Right (or the mouse's X, an option)</td><td>left stick X</td></tr>
+    <tr><td>Gear up, down</td><td>E, Q</td><td>right bumper, X</td></tr>
+    <tr><td>Gears</td><td>1–5, R, N or 0</td><td>–</td></tr>
+    <tr><td>Handbrake</td><td>Space</td><td>B</td></tr>
+    <tr><td>Ignition</td><td>I</td><td>Back</td></tr>
+    <tr><td>Look around</td><td>mouse (right button held with mouse steering)</td><td>right stick</td></tr>
+    <tr><td>Camera</td><td>C</td><td>Y</td></tr>
+    <tr><td>Zoom (from behind)</td><td>mouse wheel</td><td>D-pad up, down</td></tr>
+    <tr><td>Pause</td><td>Escape</td><td>Start</td></tr>
+  </table>
+  <p class="meta">These bindings are proposals, and the player can change them in the Controls screen.</p>
+</section>
+
+<section id="phase-3">
+  <h2>Phase 3: cameras <span class="tag">game</span></h2>
+  <p><code>CarCamera.cs</code>, with two views; C (the gamepad's Y) switches between them with a short glide.</p>
+  <ul>
+    <li><b>Driver:</b> the camera at the driver's head, following the car every frame. Look turns the head within limits and brings it back when let go. Near clip 0.05 for the cabin.</li>
+    <li><b>Behind:</b> the chase camera of <code>Projects/Sample/Scripts/VehicleCamera.cs</code>. It turns after the car's heading, can look around and zoom, and is pulled closer by hills and walls.</li>
+  </ul>
+</section>
+
+<section id="phase-4">
+  <h2>Phase 4: speedometer, tachometer, HUD <span class="tag">engine</span> <span class="tag">game</span></h2>
+  <ul>
+    <li><b>Engine: <code>UIRectComponent.Rotation</code></b> (degrees around its pivot), for needles and ticks, and useful in general.
+      <ul>
+        <li>The UI renderer and its hit testing (a button's hits in the turned rectangle), the serializer, the Inspector and the C# <code>UIRect</code> all take it.</li>
+        <li>It is documented in the engine guide's UI section.</li>
+      </ul></li>
+    <li><b><code>DrivingHud.cs</code></b> draws:
+      <ul>
+        <li>a round speedometer (km/h) and a tachometer, with ticks made of turned thin rectangles (no textures)</li>
+        <li>the gear (R N 1–5)</li>
+        <li>engine, handbrake and stall lights</li>
+        <li>bars for the clutch, brake and gas, so a learner sees the keyboard's pedals</li>
+        <li>messages</li>
+      </ul></li>
+    <li>In the driver's view the dashboard's 3D needles move too. A setting can hide the HUD's gauges there.</li>
+  </ul>
+</section>
+
+<section id="phase-5">
+  <h2>Phase 5: menus, settings, quality <span class="tag">game</span></h2>
+  <ul>
+    <li><b>Main menu:</b> Driving School, Playground (disabled until its plan), Settings and Quit, adapted from Sample's <code>MainMenu.cs</code>.</li>
+    <li><b>Settings and pause menus:</b> <code>SettingsMenu.cs</code> (with its drop-down lists), <code>PauseMenu.cs</code> and <code>GameOptions.cs</code>, copied from <code>Projects/Sample/Scripts</code> and adapted.</li>
+    <li><b>Quality:</b> High by default. Measure Release at High and Ultra (the pass table of <code>--debug-overlay</code>) before deciding. The known remaining cost is the terrain with no level of detail: about 4.5 ms each for the scene pass and the G-buffer prepass in Debug.</li>
+  </ul>
+</section>
+
+<section id="later">
+  <h2>Later</h2>
+  <p>Each gets a plan of its own when its turn comes:</p>
+  <ul>
+    <li>the Playground scene: drivetrain presets, limited-slip differentials, tire grip, weight distribution, a debug view of each wheel's slip and load</li>
+    <li>the rear-view and side mirrors (render textures)</li>
+    <li>a practice course: cones, parking spaces, a slope for hill starts</li>
+    <li>roads and signs</li>
+    <li>a real car model</li>
+    <li>the terrain's level of detail</li>
+  </ul>
+</section>
+
+<section id="verify">
+  <h2>How each phase is checked</h2>
+  <ul>
+    <li><b>Builds:</b>
+      <ul>
+        <li>Debug and Release, editor and player</li>
+        <li>the GCC check of the changed C++ files (<code>Tools/Testing/gcc-check.sh</code>)</li>
+        <li><code>dotnet build</code> of ScriptCore and the project's scripts</li>
+      </ul></li>
+    <li><b>Unattended runs</b> (<code>Tools/Testing/Run-Engine.ps1</code>) show no validation messages and no problems. A scripted driver in <code>D:\Workspace\Temp\DrivingSchoolTest</code> checks from the log:
+      <ul>
+        <li>a shift with the clutch released is refused</li>
+        <li>starting in gear is refused</li>
+        <li>neutral, then 1 to 5 with the clutch, then R</li>
+        <li>a release in 5th from a standstill stalls</li>
+        <li>with the engine off, the rpm is 0 and nothing drives</li>
+        <li>the keyboard's pedal and steering rates, and the wheel returning to center</li>
+      </ul></li>
+    <li><b>Captures</b> of both views and the HUD; the driver's view sees the ground through the windows.</li>
+    <li><b>The player:</b> a pack (<code>--build-pack</code>) run in MoravaPlayer.</li>
+    <li><b>FPS:</b> at High in Release, with the overlay.</li>
+    <li><b>The user</b> tries each phase in the editor's Play.</li>
+  </ul>
+</section>
+</main>
+</body>
+</html>

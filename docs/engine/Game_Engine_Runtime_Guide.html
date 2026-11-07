@@ -152,6 +152,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><a href="#phase-12">Phase 12: later</a></li>
       <li><a href="#phase-13">Phase 13: editing a model's meshes</a></li>
       <li><a href="#terrain">Terrain (the vehicle scene, part A)</a></li>
+      <li><a href="#vehicle">Vehicles (the vehicle scene, part B)</a></li>
       <li><a href="#final">Milestones and checklist</a></li>
       <li><a href="#refs">Glossary and references</a></li>
     </ol>
@@ -474,7 +475,7 @@ Actions:
 };</code></pre>
 
   <h3>2.3 In the editor</h3>
-  <p>During Play, game input is read only while the Viewport panel is focused, and the mouse is captured (cursor hidden, relative motion) only when the game asks for it. <b>Escape</b> (or Shift+F1, if the game uses Escape) always gives the mouse back to the editor. The player has no such rule: the window is the game.</p>
+  <p>During Play, game input is read only while the Viewport panel is focused, and the mouse is captured (cursor hidden, relative motion) only when the game asks for it. <b>Escape</b> (or Shift+F1, if the game uses Escape) always gives the mouse back to the editor. In the player, Escape gives the mouse back when the game doesn't bind it, and <b>Shift+F1 always does</b> (added 2026-11-07: a game that binds Escape and has no pause menu to free the cursor kept it); a click in the window gives it to the game again.</p>
   <div class="box note"><b>Debug view: Input</b>
   A panel listing every action with its live value, the binding that produced it, and the connected gamepads. It answers the most common beginner question ("why doesn't my character move?") at a glance.</div>
   <div class="box note"><b>As built: input actions</b>
@@ -1541,6 +1542,46 @@ Build:
     <li><b>Checked</b> in a test scene (<code>D:/Workspace/Temp/TerrainTest</code>, three layer materials from the repository's textures): drawn without validation messages, the direct and indirect light, the normals and the roughness views, a ball dropped in Play coming to rest on the flat area (Stop: the edited scene back, unchanged). Debug and Release builds, the GCC check.</li>
     <li><b>Found:</b> at roughness 0.9 the grass showed white streaks along the slopes seen at a grazing angle: the environment's reflection at high roughness still has the sky's detail (not the terrain's: the same on other skies, gone at roughness 1). The layer materials are made fully rough (natural ground is); the renderer's filtering of rough reflections is a fix of its own, later.</li>
     <li><b>Not done:</b> rays and probes see the whole terrain as its grass layer (the material buffer has one material per mesh). The Material Library counts no use for a layer's material. No levels of detail (all 2.1 million triangles are drawn when in view; the chunks are culled). The rock texture of the test repeats visibly on long slopes (a texture for part C). Not checked: Build Game with a terrain (the pack finds the layers' materials as it finds a part's, from the scene's <code>ID</code> and <code>File</code>), the Inspector by hand, Linux and macOS (CI).</li>
+  </ul></div>
+</section>
+
+<section id="vehicle">
+  <h2>Vehicles (the vehicle scene, part B)</h2>
+  <p><b>Goal:</b> a car the player drives over the terrain of part A: Jolt's wheeled vehicle, the car made of primitives first (a box and four cylinders), wheeled vehicles only. Part C puts it in a sample scene.</p>
+
+  <div class="box ok"><b>As built (2026-11-07): vehicles, part B</b>
+  <ul>
+    <li><b>The Empty</b> (Scene Hierarchy: Add &gt; Empty), chosen by the user: an entity with a transform only, which groups children, moves with the gizmo (move, turn, scale), and can have physics and a script. What the hierarchy used to call "Other" (an entity of no other kind, a script's game manager) is now this. It is copied and pasted, deleted with its children, saved as a prefab. A car is an Empty: its body's model is a scaled child, its wheels' models are children. A car whose root were the scaled box would stretch its wheels' models as they roll and steer (a child of a parent scaled differently per axis can't turn without being sheared).</li>
+    <li><b>VehicleComponent</b> (Inspector: the physics row's Vehicle box), on an entity with a Collider and a Dynamic Rigid Body (its mass: checking Vehicle gives 1200 kg and a collider fitted around the body, leaving out the wheels). Its forward is the entity's -Z, as a camera looks. Saved as <code>Vehicle:</code> in the scene, the wheels with their models' entity IDs (pasting and prefabs point them to the copies).</li>
+    <li><b>The wheels</b>: a place (the wheel's center with its spring fully out, in the vehicle's space), a radius, a width, and whether it steers, is driven and has the handbrake. <b>Fit Wheels</b> finds them from the models under the vehicle with "Wheel" in their name: the place is the model's origin (its center), the width along the model's axis closest to the vehicle's X, the radius from the other two; the front ones steer, the back ones have the handbrake, all are driven. A wheel's model is only drawn: while the game runs the engine puts it where the wheel is, turned as it rolls and steers from the rotation it has in the editor (a cylinder lying on its side stays so). A Collider on a wheel's model isn't used (it would be in the wheel's way).</li>
+    <li><b>Physics</b> (<code>ScenePhysics</code>): a Jolt <code>VehicleConstraint</code> with a <code>WheeledVehicleController</code> on the body. Each wheel hangs from a spring (Suspension Travel, Frequency, Damping) and finds the ground with a cylinder cast (a ray would fall into the height field's gaps). The engine (Engine Torque, Max RPM) drives the driven wheels through an automatic gearbox, a differential per axle (wheels across from each other), the torque shared evenly; anti-roll bars on each axle; Max Tilt keeps it from rolling over; the body's center of mass is moved down (Center of Mass, -0.3 m). As in Jolt's samples, the tires get ten times the grip along the wheel (Jolt's car was tuned with that). A parked vehicle sleeps; the driver's input wakes it.</li>
+    <li><b>Driving</b>: the input is throttle (-1 reverse to 1), steering (-1 left to 1 right), brake and handbrake. Asking for the other way while it still rolls brakes until it stops, then goes (as Jolt's samples drive); the handbrake lets go of the throttle. <b>Controls: Player</b> reads the project's actions <code>Accelerate</code>, <code>Brake</code>, <code>Steer</code> (an Axis1D) and <code>Handbrake</code>; a project without them drives with <code>Move</code> (W/S, A/D, the left stick) and <code>Jump</code> (the handbrake), so any project can drive a car at once. The default input map doesn't get the four actions: a game without cars would list them in its Controls screen. <b>Controls: Script</b>: a script drives it.</li>
+    <li><b>C#</b>: <code>GetComponent&lt;Vehicle&gt;()</code>: <code>SetInput(forward, steer, brake, handbrake)</code>, <code>Controls</code> (Player or Script: a script that takes over sets Script), <code>Speed</code> (meters per second along its forward), <code>EngineRpm</code>, <code>Gear</code>, <code>WheelCount</code>, <code>IsWheelOnGround(i)</code>, <code>IsInAir</code>, <code>AppliedForward</code>, <code>AppliedBrake</code>.</li>
+    <li><b>Debug views</b> (Physics panel, Colliders): the wheels as two rims, an axle and a spoke, with their springs; in the editor where they are placed (with the travel above them), while the game runs where they are, brighter when they touch the ground. The panel counts the vehicles; the Inspector shows the speed, gear, rpm, the wheels on the ground and the input given to them.</li>
+    <li><b>Fixed with it: the sun's shadows of a terrain.</b> The shadow passes culled whole models against each cascade, and a terrain is one model of many chunks: any cascade that saw a corner of it drew all of it (four times a frame). They now cull each mesh, as the main view does. The terrain test scene went from 20 to 48 FPS (Debug), its GPU time from 34 to 10 ms, Sun Shadows from 24.4 to 0.45 ms, 10.6 M triangles a frame to 2.4 M.</li>
+  </ul></div>
+
+  <div class="box ok"><b>Part C started (2026-11-07): the sample's vehicle scene</b>
+  <ul>
+    <li><code>Projects/Sample/Scenes/Vehicle.mscene</code> (the user chose Sample over a project of its own): the terrain of part A (its materials in <code>Assets/Materials/Terrain_*.mmat</code>), the primitive car, a camera following it.</li>
+    <li>Sample's input map gets <code>Accelerate</code> (W, Up, the right trigger), <code>Brake</code> (S, Down, the left trigger), <code>Steer</code> (A and D, Left and Right, the left stick's X) and <code>Handbrake</code> (Space, the gamepad's B).</li>
+    <li><code>VehicleCamera.cs</code>: a chase camera behind and above the car, turning after its heading (smoothed; it stays behind while it reverses). The mouse and Orbit look around it, gliding back behind it after 1.5 s; Zoom brings it closer or farther; a hill or a wall between brings it closer at once.</li>
+    <li>The scene has Level 1's pause menu and Settings screen (Escape: pause, its Main Menu button back to the main menu, its Settings screen the game's settings). In the player, Shift+F1 now always gives the mouse back, whatever the game binds.</li>
+    <li>Fixed: without the vehicle actions, the throttle read Move's x (A and D) instead of its y (W and S): A and D steered and drove, W and S did nothing (reported by the user).</li>
+  </ul></div>
+
+  <div class="box"><b>Checked (2026-11-07)</b>
+  <ul>
+    <li>Debug and Release build (editor and player); the GCC check of the changed files; no Vulkan validation messages.</li>
+    <li>A primitive car on the terrain (an Empty, a box body, four cylinder wheels; a test project in a temporary folder): it lands on its four wheels and sleeps; seen from the side, the wheels' models sit at its corners, on the ground.</li>
+    <li>A C# script driving it (Controls set to Script from the script): throttle (20 m/s in 4 s, gears 1 to 3), steering right (to +X), into the hills and through the air, the brake, reverse (it brakes, then gear -1, to the engine's 6000 rpm), the handbrake (it stops). The state the script reads (speed, rpm, gear, the wheels on the ground, in the air, the applied input) follows. The same in the player, from a pack.</li>
+  </ul></div>
+
+  <div class="box"><b>Not done yet</b>
+  <ul>
+    <li>Driving with the keyboard and a gamepad (Controls: Player), the editor's Vehicle box, Fit Wheels and the wheel list, copy and paste of a car, the wheel debug lines: tried in the editor by the user.</li>
+    <li>Part C: the sample scene's other pieces (a speedometer, a way back to the main menu), its place in the Project panel's scenes.</li>
+    <li>A terrain's level of detail: its chunks are drawn at full density however far they are (the scene and the G-buffer prepass take about 4.5 ms each in the test scene).</li>
   </ul></div>
 </section>
 

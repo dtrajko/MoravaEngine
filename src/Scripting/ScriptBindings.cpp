@@ -293,6 +293,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::UISlider:          return scene->Has<UISliderComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::UIDropdown:        return scene->Has<UIDropdownComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Animator:          return scene->Has<AnimatorComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::Vehicle:           return scene->Has<VehicleComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -579,6 +580,55 @@ static int32_t CharacterGetState(uint64_t entity, ScriptCharacterState* out)
 	out->GroundNormal = state.GroundNormal;
 	out->GroundVelocity = state.GroundVelocity;
 	out->GroundAngularVelocity = state.GroundAngularVelocity;
+	return 1;
+}
+
+// ---- Vehicle
+
+static int32_t VehicleSetInput(uint64_t entity, const ScriptVehicleInput* input)
+{
+	ScenePhysics* physics = GetPhysics();
+	return physics && physics->SetVehicleInput(entity, { input->Forward, input->Steer, input->Brake, input->Handbrake }) ? 1 : 0;
+}
+
+static int32_t VehicleGetState(uint64_t entity, ScriptVehicleState* out)
+{
+	ScenePhysics* physics = GetPhysics();
+	ScenePhysics::VehicleState state;
+	if (!physics || !physics->GetVehicleState(entity, state))
+	{
+		return 0;
+	}
+	out->Speed = state.Speed;
+	out->Rpm = state.Rpm;
+	out->Gear = state.Gear;
+	out->Wheels = state.Wheels;
+	out->WheelsOnGround = state.WheelsOnGround;
+	out->Applied = { state.Applied.Forward, state.Applied.Steer, state.Applied.Brake, state.Applied.Handbrake };
+	return 1;
+}
+
+static int32_t VehicleGetControls(uint64_t entity, int32_t* out)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	const VehicleComponent* vehicle = scene ? scene->TryGet<VehicleComponent>(entity) : nullptr;
+	if (!vehicle)
+	{
+		return 0;
+	}
+	*out = (int32_t)vehicle->Controls;
+	return 1;
+}
+
+static int32_t VehicleSetControls(uint64_t entity, int32_t controls)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	VehicleComponent* vehicle = scene ? scene->TryGet<VehicleComponent>(entity) : nullptr;
+	if (!vehicle)
+	{
+		return 0;
+	}
+	vehicle->Controls = controls == 1 ? VehicleComponent::ControlMode::Script : VehicleComponent::ControlMode::Player;
 	return 1;
 }
 
@@ -1661,6 +1711,10 @@ namespace ScriptBindings
 		api.UIDropdown_Set = UIDropdownSet;
 		api.UIDropdown_GetOptions = UIDropdownGetOptions;
 		api.UIDropdown_SetOptions = UIDropdownSetOptions;
+		api.Vehicle_SetInput = VehicleSetInput;
+		api.Vehicle_GetState = VehicleGetState;
+		api.Vehicle_GetControls = VehicleGetControls;
+		api.Vehicle_SetControls = VehicleSetControls;
 	}
 
 	void SetContext(ScriptContext* context)
