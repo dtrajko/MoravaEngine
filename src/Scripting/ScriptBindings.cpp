@@ -605,7 +605,27 @@ static int32_t VehicleGetState(uint64_t entity, ScriptVehicleState* out)
 	out->Wheels = state.Wheels;
 	out->WheelsOnGround = state.WheelsOnGround;
 	out->Applied = { state.Applied.Forward, state.Applied.Steer, state.Applied.Brake, state.Applied.Handbrake };
+	out->LateralSlip = state.LateralSlip;
+	out->LongitudinalSlip = state.LongitudinalSlip;
 	return 1;
+}
+
+static int32_t VehicleSetGrip(uint64_t entity, float front, float rear)
+{
+	ScenePhysics* physics = GetPhysics();
+	return physics && physics->SetVehicleGrip(entity, front, rear) ? 1 : 0;
+}
+
+// A project's text file: a path as the project's files write them (Assets/Tracks/X.json), found in the project's folder or
+// the game's pack (AssetFiles). Its text is read again on each call: once for its length when the buffer is small
+static int32_t AssetReadText(const char16_t* path, int length, char16_t* buffer, int capacity)
+{
+	std::string text;
+	if (!AssetFiles::ReadText(ProjectPaths::Resolve(ToUtf8(path, length)), text))
+	{
+		return -2;
+	}
+	return CopyString(text, buffer, capacity);
 }
 
 static int32_t VehicleGetControls(uint64_t entity, int32_t* out)
@@ -1715,6 +1735,8 @@ namespace ScriptBindings
 		api.Vehicle_GetState = VehicleGetState;
 		api.Vehicle_GetControls = VehicleGetControls;
 		api.Vehicle_SetControls = VehicleSetControls;
+		api.Vehicle_SetGrip = VehicleSetGrip;
+		api.Asset_ReadText = AssetReadText;
 	}
 
 	void SetContext(ScriptContext* context)

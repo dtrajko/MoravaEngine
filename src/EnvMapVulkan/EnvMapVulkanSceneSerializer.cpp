@@ -380,6 +380,11 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "AntiRollBars" << YAML::Value << vehicle->AntiRollBars;
 			out << YAML::Key << "MaxTilt" << YAML::Value << vehicle->MaxTilt;
 			WriteVec3(out, "CenterOfMassOffset", vehicle->CenterOfMassOffset);
+			out << YAML::Key << "FrontGrip" << YAML::Value << vehicle->FrontGrip;
+			out << YAML::Key << "RearGrip" << YAML::Value << vehicle->RearGrip;
+			out << YAML::Key << "TopSpeed" << YAML::Value << vehicle->TopSpeed;
+			out << YAML::Key << "ShiftTime" << YAML::Value << vehicle->ShiftTime;
+			out << YAML::Key << "ShiftUpRpm" << YAML::Value << vehicle->ShiftUpRpm;
 			out << YAML::Key << "Wheels" << YAML::Value << YAML::BeginSeq;
 			for (const VehicleComponent::Wheel& wheel : vehicle->Wheels)
 			{
@@ -860,6 +865,11 @@ namespace EnvMapVulkanSceneSerializer
 			Read(vehicleNode, "AntiRollBars", vehicle.AntiRollBars);
 			Read(vehicleNode, "MaxTilt", vehicle.MaxTilt);
 			ReadVec3(vehicleNode["CenterOfMassOffset"], vehicle.CenterOfMassOffset);
+			Read(vehicleNode, "FrontGrip", vehicle.FrontGrip);
+			Read(vehicleNode, "RearGrip", vehicle.RearGrip);
+			Read(vehicleNode, "TopSpeed", vehicle.TopSpeed);
+			Read(vehicleNode, "ShiftTime", vehicle.ShiftTime);
+			Read(vehicleNode, "ShiftUpRpm", vehicle.ShiftUpRpm);
 			if (YAML::Node wheels = vehicleNode["Wheels"]; wheels && wheels.IsSequence())
 			{
 				for (const YAML::Node& wheelNode : wheels)

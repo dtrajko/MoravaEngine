@@ -612,6 +612,8 @@ bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& setti
 	JPH::Ref<JPH::WheeledVehicleControllerSettings> controller = new JPH::WheeledVehicleControllerSettings();
 	controller->mEngine.mMaxTorque = std::max(settings.EngineTorque, 0.0f);
 	controller->mEngine.mMaxRPM = std::max(settings.MaxRpm, controller->mEngine.mMinRPM + 500.0f);
+	controller->mTransmission.mSwitchTime = glm::clamp(settings.ShiftTime, 0.0f, 2.0f);
+	controller->mTransmission.mShiftUpRPM = glm::clamp(settings.ShiftUpRpm, controller->mTransmission.mShiftDownRPM + 100.0f, controller->mEngine.mMaxRPM);
 	std::vector<int> all, driven;
 	for (int w = 0; w < (int)settings.Wheels.size(); w++)
 	{
@@ -622,12 +624,27 @@ bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& setti
 		}
 	}
 	const std::vector<std::pair<int, int>> drivenAxles = GetAxles(settings.Wheels, driven);
+	// The final drive for a top speed: the wheels' turning speed at it, and the engine's at Max RPM in the top gear
+	float finalDrive = JPH::VehicleDifferentialSettings().mDifferentialRatio;
+	if (settings.TopSpeed > 0.0f && !driven.empty() && !controller->mTransmission.mGearRatios.empty())
+	{
+		float radius = 0.0f;
+		for (int w : driven)
+		{
+			radius += std::max(settings.Wheels[w].Radius, 0.01f);
+		}
+		radius /= (float)driven.size();
+		const float wheelRadiansPerSecond = settings.TopSpeed / radius;
+		const float engineRadiansPerSecond = controller->mEngine.mMaxRPM * JPH::JPH_PI / 30.0f;
+		finalDrive = std::max(engineRadiansPerSecond / (wheelRadiansPerSecond * controller->mTransmission.mGearRatios.back()), 0.1f);
+	}
 	for (const auto& [left, right] : drivenAxles)
 	{
 		JPH::VehicleDifferentialSettings differential;
 		differential.mLeftWheel = left;
 		differential.mRightWheel = right;
 		differential.mEngineTorqueRatio = 1.0f / (float)drivenAxles.size();
+		differential.mDifferentialRatio = finalDrive;
 		controller->mDifferentials.push_back(differential);
 	}
 	if (drivenAxles.empty())
@@ -663,13 +680,28 @@ bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& setti
 	// what the vehicle's body collides with
 	vehicle.Tester = new JPH::VehicleCollisionTesterCastCylinder(ObjectLayers::Dynamic);
 	vehicle.Constraint->SetVehicleCollisionTester(vehicle.Tester);
+	// The tires' sideways grip per wheel (FrontGrip, RearGrip; SetVehicleGrip): front is ahead of the vehicle's middle
+	vehicle.FrontGrip = std::max(settings.FrontGrip, 0.0f);
+	vehicle.RearGrip = std::max(settings.RearGrip, 0.0f);
+	vehicle.WheelGrip = std::make_shared<std::vector<float>>();
+	for (const VehicleComponent::Wheel& wheel : settings.Wheels)
+	{
+		vehicle.FrontWheel.push_back(wheel.Position.z < 0.0f);
+		vehicle.WheelGrip->push_back(wheel.Position.z < 0.0f ? vehicle.FrontGrip : vehicle.RearGrip);
+	}
 	// As in Jolt's samples: its tires were tuned with ten times this grip along the wheel (a fix made later in Jolt)
+	std::shared_ptr<std::vector<float>> wheelGrip = vehicle.WheelGrip;
 	static_cast<JPH::WheeledVehicleController*>(vehicle.Constraint->GetController())->SetTireMaxImpulseCallback(
-		[](JPH::uint, float& longitudinal, float& lateral, float suspensionImpulse, float longitudinalFriction, float lateralFriction, float, float, float)
+		[wheelGrip](JPH::uint wheel, float& longitudinal, float& lateral, float suspensionImpulse, float longitudinalFriction, float lateralFriction, float, float, float)
 		{
 			longitudinal = 10.0f * longitudinalFriction * suspensionImpulse;
-			lateral = lateralFriction * suspensionImpulse;
+			lateral = lateralFriction * suspensionImpulse * (wheel < wheelGrip->size() ? (*wheelGrip)[wheel] : 1.0f);
 		});
+	if (settings.TopSpeed > 0.0f)
+	{
+		Log::GetLogger()->info("Physics: the vehicle '{0}': final drive {1:.2f} for {2:.0f} km/h at {3:.0f} rpm in the top gear", name, finalDrive,
+			settings.TopSpeed * 3.6f, controller->mEngine.mMaxRPM);
+	}
 	m_World->GetSystem().AddConstraint(vehicle.Constraint);
 	m_World->GetSystem().AddStepListener(vehicle.Constraint);
 
@@ -736,6 +768,22 @@ bool ScenePhysics::SetVehicleInput(EnvMapVulkanEntityID entity, const VehicleInp
 	return true;
 }
 
+bool ScenePhysics::SetVehicleGrip(EnvMapVulkanEntityID entity, float front, float rear)
+{
+	Vehicle* vehicle = const_cast<Vehicle*>(FindVehicle(entity));
+	if (!vehicle || !vehicle->WheelGrip)
+	{
+		return false;
+	}
+	const auto factor = [](float value) { return std::isfinite(value) ? glm::clamp(value, 0.0f, 10.0f) : 1.0f; };
+	// Between the steps (scripts run before them): the callback reads these in the next one
+	for (size_t w = 0; w < vehicle->WheelGrip->size() && w < vehicle->FrontWheel.size(); w++)
+	{
+		(*vehicle->WheelGrip)[w] = vehicle->FrontWheel[w] ? vehicle->FrontGrip * factor(front) : vehicle->RearGrip * factor(rear);
+	}
+	return true;
+}
+
 bool ScenePhysics::GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& state) const
 {
 	const Vehicle* vehicle = m_World ? FindVehicle(entity) : nullptr;
@@ -751,11 +799,15 @@ bool ScenePhysics::GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& st
 	state.Gear = controller->GetTransmission().GetCurrentGear();
 	state.Wheels = (uint32_t)vehicle->Constraint->GetWheels().size();
 	state.WheelsOnGround = 0;
+	state.LateralSlip = state.LongitudinalSlip = 0.0f;
 	for (uint32_t w = 0; w < state.Wheels && w < 32; w++)
 	{
 		if (vehicle->Constraint->GetWheel(w)->HasContact())
 		{
 			state.WheelsOnGround |= 1u << w;
+			const JPH::WheelWV* wheel = static_cast<const JPH::WheelWV*>(vehicle->Constraint->GetWheel(w));
+			state.LateralSlip = std::max(state.LateralSlip, glm::degrees(std::abs(wheel->mLateralSlip)));
+			state.LongitudinalSlip = std::max(state.LongitudinalSlip, std::abs(wheel->mLongitudinalSlip));
 		}
 	}
 	state.Input = vehicle->Input;

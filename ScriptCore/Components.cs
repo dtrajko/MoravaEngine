@@ -206,6 +206,24 @@ namespace Morava
 
         /// <summary>The brake the wheels got in the last step (also when reversing brakes first).</summary>
         public float AppliedBrake => State.Applied.Brake;
+
+        /// <summary>
+        /// Degrees: the most a wheel on the ground slides sideways (the angle between where it points and where it goes): a
+        /// few in a turn, 10 and more in a drift. For tire sounds and drift effects.
+        /// </summary>
+        public float LateralSlip => State.LateralSlip;
+
+        /// <summary>The most a wheel on the ground spins or locks: 0 rolling, 1 locked (or spinning twice as fast as it rolls).</summary>
+        public float LongitudinalSlip => State.LongitudinalSlip;
+
+        /// <summary>
+        /// The tires' sideways grip, front and rear, times the Inspector's (Front Grip, Rear Grip): 1, 1 as set there. A drift
+        /// lowers the rear's for a moment. Kept until set again.
+        /// </summary>
+        public void SetGrip(float front, float rear)
+        {
+            if (Interop.Game->Vehicle_SetGrip(Entity.Id, front, rear) == 0) throw Missing("vehicle");
+        }
     }
 
     /// <summary>A physics shape (Inspector: Collider): alone it is a static body, like a floor or a wall.</summary>

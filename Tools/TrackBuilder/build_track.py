@@ -7,7 +7,8 @@
 #   <Models>/Track_<Name>_Road.glb       the driven surface: the road, the curbs, the start line (a grippy collider)
 #   <Models>/Track_<Name>_Walls.glb      the side walls (a slippery collider: the car scrapes along them)
 #   <Models>/Track_<Name>_Structure.glb  the road's sides and underside and the supports (drawn only, no collider)
-#   <Tracks>/<Name>.centerline.json      the center line every few meters, the start: for scripts (test driver, race)
+#   <Assets>/Tracks/<Name>.centerline.json  the center line every few meters, the start: for scripts (Assets.ReadText:
+#                                        the test driver, the race), in the Assets folder so a built game has it
 # Each model is cut into chunks along the track (ChunkLength meters), so the engine culls it chunk by chunk.
 #
 # Coordinates in the data and the outputs are the engine's: meters, Y up, a car looks along -Z. Blender's are Z up; the
@@ -458,7 +459,10 @@ def main():
         # the engine's rotation around Y in degrees (0 looks along -Z, positive turns to the left)
         "Yaw": round(math.degrees(math.atan2(-forward[0], -forward[2])), 2),
     }
-    centerline_path = os.path.join(track_dir, "%s.centerline.json" % name)
+    # In the project's Assets folder: a built game's pack holds it, and scripts read it there (Assets.ReadText)
+    centerline_dir = os.path.normpath(os.path.join(track_dir, data.get("CenterlineDirectory", "../Assets/Tracks")))
+    os.makedirs(centerline_dir, exist_ok=True)
+    centerline_path = os.path.join(centerline_dir, "%s.centerline.json" % name)
     with open(centerline_path, "w", encoding="utf-8", newline="\n") as f:
         # One point per line: readable, and a change of the track shows as changed lines. Start before Points
         f.write("{\n")
