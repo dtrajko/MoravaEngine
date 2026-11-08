@@ -46,6 +46,8 @@ struct ScriptVehicleState
 	int32_t Gear = 0;
 	uint32_t Wheels = 0, WheelsOnGround = 0; // WheelsOnGround: a bit per wheel
 	ScriptVehicleInput Applied;              // as given to the wheels in the last step (reversing: brakes first)
+	float LateralSlip = 0.0f;                // degrees, the most of a wheel on the ground
+	float LongitudinalSlip = 0.0f;           // the most of a wheel on the ground (0 rolling, 1 locked)
 };
 
 struct ScriptRaycastHit
@@ -377,6 +379,12 @@ struct ScriptNativeApi
 	int32_t (*Vehicle_GetState)(uint64_t entity, ScriptVehicleState* out);
 	int32_t (*Vehicle_GetControls)(uint64_t entity, int32_t* out);
 	int32_t (*Vehicle_SetControls)(uint64_t entity, int32_t controls);
+
+	// The racing game (Phase 3): a vehicle's tires' sideways grip times the component's (0: not a running vehicle); a
+	// project's text file (UTF-8, from the project's folder or the game's pack): its length in UTF-16 units, -1 when the
+	// buffer is too small, -2 when there is no such file
+	int32_t (*Vehicle_SetGrip)(uint64_t entity, float front, float rear);
+	int32_t (*Asset_ReadText)(const char16_t* path, int length, char16_t* buffer, int capacity);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

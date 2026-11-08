@@ -348,6 +348,15 @@ struct VehicleComponent
 	float MaxTilt = 60.0f;
 	// The center of its mass, moved from the body shape's: lower is steadier (a real car's engine sits low)
 	glm::vec3 CenterOfMassOffset = glm::vec3(0.0f, -0.3f, 0.0f);
+	// Racing (the racing game, Phase 3): the tires' sideways grip, front (the wheels ahead of the vehicle's middle) and rear,
+	// times their usual grip (a script can change them while it drives: Vehicle.SetGrip, a drift); its top speed in meters
+	// per second (the engine at MaxRpm in the top gear: the final drive is chosen for it; 0: Jolt's usual final drive); the
+	// automatic gearbox's shifts
+	float FrontGrip = 1.0f;
+	float RearGrip = 1.0f;
+	float TopSpeed = 0.0f;
+	float ShiftTime = 0.5f;                 // seconds a gear change takes
+	float ShiftUpRpm = 4000.0f;             // the engine's speed at which it shifts up
 
 	static const char* GetControlName(ControlMode mode);
 };

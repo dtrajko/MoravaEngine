@@ -723,6 +723,35 @@ static void VehicleControls(EnvMapVulkanEntityID entity, VehicleComponent& vehic
 	{
 		ImGui::SetTooltip("Moved from the middle of its collider, in meters: lower is steadier (a real car's engine sits low)");
 	}
+	ImGui::DragFloat("Front Grip", &vehicle.FrontGrip, 0.01f, 0.0f, 10.0f, "%.2fx", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The sideways grip of the tires ahead of its middle, times their usual (1). More than the rear's:\n"
+			"it turns in sharply and may spin (oversteer); less: it pushes wide in turns (understeer).\n"
+			"A script changes both while it drives: Vehicle.SetGrip (a drift: the rear's lower for a moment)");
+	}
+	ImGui::DragFloat("Rear Grip", &vehicle.RearGrip, 0.01f, 0.0f, 10.0f, "%.2fx", ImGuiSliderFlags_AlwaysClamp);
+	float topSpeed = vehicle.TopSpeed * 3.6f;
+	if (ImGui::DragFloat("Top Speed", &topSpeed, 1.0f, 0.0f, 1000.0f, topSpeed > 0.0f ? "%.0f km/h" : "Jolt's gearing", ImGuiSliderFlags_AlwaysClamp))
+	{
+		vehicle.TopSpeed = topSpeed / 3.6f;
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The speed at which the engine reaches Max RPM in its top gear: the final drive is chosen for it.\n"
+			"Whether it gets there depends on the engine's torque against the air (the body's Linear Damping).\n"
+			"0: Jolt's usual final drive (3.42)");
+	}
+	ImGui::DragFloat("Shift Time", &vehicle.ShiftTime, 0.01f, 0.0f, 2.0f, "%.2f s", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How long a gear change takes (the engine's pull is cut meanwhile): 0.5 a road car, 0.1 a race car");
+	}
+	ImGui::DragFloat("Shift Up RPM", &vehicle.ShiftUpRpm, 50.0f, 500.0f, 20000.0f, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The automatic gearbox shifts up when the engine turns this fast (near Max RPM: the most acceleration)");
+	}
 
 	// The wheels
 	if (ImGui::Button("Fit Wheels"))

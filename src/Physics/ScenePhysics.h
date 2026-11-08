@@ -108,6 +108,9 @@ public:
 		float Forward = 0.0f, Steer = 0.0f, Brake = 0.0f, Handbrake = 0.0f;
 	};
 	bool SetVehicleInput(EnvMapVulkanEntityID entity, const VehicleInput& input);
+	// The tires' sideways grip, front and rear, times the component's (FrontGrip, RearGrip): a drift lowers the rear's for a
+	// while. 1, 1: as the component has them. False: not a running vehicle
+	bool SetVehicleGrip(EnvMapVulkanEntityID entity, float front, float rear);
 	struct VehicleState
 	{
 		float Speed = 0.0f;         // meters per second along its forward (negative: backward)
@@ -117,6 +120,9 @@ public:
 		uint32_t WheelsOnGround = 0; // a bit per wheel: it touches something
 		VehicleInput Input;         // as set by the game
 		VehicleInput Applied;       // as given to the wheels in the last step (reversing: brakes first)
+		float LateralSlip = 0.0f;   // degrees: the most a wheel on the ground slides sideways (the angle between where it
+		                            // points and where it goes): a few in a turn, 10 and more in a drift
+		float LongitudinalSlip = 0.0f; // the most a wheel on the ground spins or locks: 0 rolling, 1 locked or spinning twice as fast
 	};
 	bool GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& state) const;
 
@@ -248,6 +254,11 @@ private:
 		JPH::Ref<JPH::VehicleCollisionTester> Tester;
 		VehicleInput Input, Applied;
 		float Direction = 1.0f; // the way it was last asked to go: asking for the other one brakes until it stops
+		// The tires' sideways grip: each wheel's multiplier, read by the tire callback in Jolt's step (shared: the callback
+		// keeps it while the vehicle moves in m_Vehicles). The component's front and rear grip, times the script's
+		std::shared_ptr<std::vector<float>> WheelGrip;
+		std::vector<bool> FrontWheel;
+		float FrontGrip = 1.0f, RearGrip = 1.0f;
 		// A wheel's model: its axes (the wheel's turning axis and up, in the model's own space, from its rotation at the start)
 		// and its scale, kept as it rolls and steers
 		struct WheelModel

@@ -319,12 +319,23 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li><b>The test driver</b> (<code>TestDriver.cs</code>) along the center line.</li>
     <li><b>Checked:</b> the test driver laps the test track with no wall stops or flips; the user drives it in the editor's Play.</li>
   </ul>
+  <div class="box ok"><b>As built (2026-11-08)</b>
+  <ul>
+    <li><b>Engine</b> (the engine guide's vehicle section, "As built 2026-11-08"): VehicleComponent's Front Grip, Rear Grip, Top Speed, Shift Time, Shift Up RPM; C# <code>Vehicle.SetGrip</code>, <code>LateralSlip</code>, <code>LongitudinalSlip</code>; C# <code>Assets.ReadText</code>, for the center line. The track builder now writes the center line into <code>Assets/Tracks/</code> (a game's pack holds the Assets folder).</li>
+    <li><b><code>CarController.cs</code></b> (on the car; the Vehicle's Controls: Script): keys turn the wheel gradually and let it return faster; less steering the faster it goes (20% at 250 km/h and above); downforce growing with the square of the speed (1.5 g at 300 km/h); the handbrake above 60 km/h drifts (the rear grip at 50% while held, back over 0.6 s, the throttle stays on), below it is a handbrake; <b>ABS</b> (added after the test showed locked wheels in hard braking: the brake eases while a wheel locks); in the air, the throttle and brake pitch it, the steering turns it, and a damped spring rights it. Every assist has its fields in the Inspector.</li>
+    <li><b>The car's numbers</b> (the scene): 900 Nm, 6000 rpm, Top Speed 360 km/h (final drive 5.09: the real top is about 345, the tires slip a little), shifts in 0.15 s at 5600 rpm, brakes 2500 Nm a wheel, springs 3 Hz with 0.25 m of travel, Front Grip 1.3, Rear Grip 1.4, the center of mass 0.4 m lower, air drag (Linear Damping) 0.015, Angular Damping 0.3.</li>
+    <li><b><code>TestDriver.cs</code></b>: a plain class the car controller drives with when its Test Driver field is on (scripts can't reach each other's instances): it follows the center line (read with <code>Assets.ReadText</code>), slows for the curves ahead (sideways 14 m/s&sup2;, braking 20 m/s&sup2;) and logs its laps, 0&ndash;100 and 0&ndash;200 km/h.</li>
+    <li><b>Measured:</b> 0&ndash;100 km/h in 2.0 s, 0&ndash;200 in 6.3 s; on a scratch 3.2 km straight (a drag strip made with the track builder) 344 km/h and still climbing; the test track's laps from 39 s (the stand-in's) to 26.3 s, 164 km/h on average, at most 4.3 m from the center line. In the air (dropped from 30 m, rolled 50&deg;) it rights itself and lands level. Release player, the driver lapping: <b>Medium 212 fps, 1% low 165; High 176, 1% low 142</b>; no frame under 120.</li>
+    <li><b>Not checked by a script:</b> the drift and the keyboard's steering (the test driver neither drifts nor uses keys): the user's test in the editor's Play.</li>
+  </ul></div>
 </section>
 
 <section id="phase-4">
   <h2>Phase 4: race logic <span class="tag">game</span></h2>
   <ul>
     <li><b><code>RaceManager.cs</code>:</b> a 3-2-1-Go countdown (the car held), checkpoints in order (triggers; a lap with a missed one doesn't count), three laps, lap and race timers, a split at each checkpoint against the best lap (green faster, red slower), respawn at the last checkpoint (on the gate, facing along the track, speed zero), restart, finish.</li>
+    <li><b>Fallen off</b> (the user's request, 2026-11-08: a car that left the track could drive on the terrain below it): an automatic respawn at the last checkpoint, no key needed, when the car is more than a few meters below the road or well outside its edge (from the center line: its height and width there) for about a second, or touches the terrain (the track never runs on it).</li>
+    <li><b>Wrong way</b> (the user's request, 2026-11-08): a warning while the car drives against the track's direction. From the center line (read with <code>Assets.ReadText</code>): the track's direction at the nearest point against the car's velocity, more than about 100&deg; apart at more than about 15 km/h for more than about 1 s (a spin or a quick turn doesn't set it off); gone as soon as it drives the right way. A large "Wrong way" text in the middle of the screen; Phase 5 styles it with the HUD.</li>
     <li><b>Medals:</b> bronze, silver, gold and author times per track, set from test laps.</li>
     <li>The best lap, the best race and the medals saved with SaveData.</li>
     <li><b>Checked:</b> a scripted race of three laps finishes with the right times; respawn and restart from every checkpoint.</li>
@@ -332,9 +343,11 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 </section>
 
 <section id="phase-5">
-  <h2>Phase 5: HUD and menus <span class="tag">game</span></h2>
+  <h2>Phase 5: HUD and menus <span class="tag">engine</span> <span class="tag">game</span></h2>
   <ul>
-    <li><b>HUD:</b> speed (km/h), lap 1/3, the current and best lap, the split popup, a big countdown, the finish screen (times, medal, new record).</li>
+    <li><b>Engine: <code>UIRectComponent.Rotation</code></b> (degrees around its pivot): for needles and tick marks; the UI renderer, its hit testing (a button's turned rectangle), the scene file, the Inspector and C#'s <code>UIRect</code> take it.</li>
+    <li><b>Analog dials</b> (the user's choice, 2026-11-08): a round speedometer (km/h, to 360) and tachometer (to the engine's Max RPM, the red zone above the shift point), their tick marks and needles turned rectangles (no textures), the speed and the gear as numbers in the dials; from <code>Vehicle.Speed</code>, <code>EngineRpm</code> and <code>Gear</code>, and the car's own scale: <b>engine:</b> C# <code>Vehicle.MaxRpm</code> (the rev limit, the Inspector's Max RPM) and <code>Vehicle.ShiftUpRpm</code> (where the red zone starts), read-only, so the dial fits whichever car it shows.</li>
+    <li><b>HUD:</b> lap 1/3, the current and best lap, the split popup, a big countdown, the wrong-way warning, the finish screen (times, medal, new record).</li>
     <li><b>Menus:</b> main (Race, Settings, Quit) and pause (Resume, Restart, Settings, Main Menu), adapted from Sample's menus and <code>SettingsMenu.cs</code>.</li>
   </ul>
 </section>
@@ -343,7 +356,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   <h2>Phase 6: camera, sound and feel <span class="tag">game</span></h2>
   <ul>
     <li><b>A chase camera for racing</b> (from <code>VehicleCamera.cs</code>): lower and tighter, a field of view that widens with speed, a small dip on landing, looking ahead in turns.</li>
-    <li><b>Sounds (CC0):</b> an engine loop pitched by the rpm, tire squeal from the wheels' slip, wall scrape, checkpoint chime, countdown beeps, finish.</li>
+    <li><b>Sounds (CC0):</b> the engine: two loops (low and high revs) crossfaded and pitched by <code>Vehicle.EngineRpm</code>, louder with the throttle; the tires: a squeal from the wheels' slip (<code>LongitudinalSlip</code> braking hard, <code>LateralSlip</code> cornering and drifting); wall scrape (the car's collisions with the walls); the start: a beep at each light of the countdown and a higher one at Go; checkpoint chime; finish.</li>
   </ul>
 </section>
 
@@ -351,6 +364,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   <h2>Phase 7: the real circuit <span class="tag">game</span></h2>
   <ul>
     <li>About 2–2.5 km, 35–45 s a lap at up to 350 km/h: a long downhill straight, a climb with a blind crest, two or three steep banked turns, a hairpin, a fast S; 20–30 m between the lowest and the highest point.</li>
+    <li><b>Walls that hold:</b> a wall height per point in the track builder's data (the 1 m walls can be jumped at speed over a crest or on a banked turn), taller on the outside of fast turns and after crests.</li>
     <li>Scenery: the terrain's hills around, a start and finish gantry, lighting and reflections tuned.</li>
     <li>Medal times from the test driver and the user's laps.</li>
   </ul>

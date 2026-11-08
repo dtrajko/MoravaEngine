@@ -131,9 +131,31 @@ Entities:
     RigidBody:
       Type: Dynamic
       Mass: 800
+      LinearDamping: 0.015
+      AngularDamping: 0.3
       ContinuousCollision: true
+    Script:
+      Class: Racing.CarController
+      Fields:
+        Track: {Entity: 3000}
     Vehicle:
-      Controls: Player
+      Controls: Script
+      EngineTorque: 900
+      MaxRpm: 6000
+      MaxSteerAngle: 30
+      BrakeTorque: 2500
+      HandbrakeTorque: 4000
+      SuspensionTravel: 0.25
+      SuspensionFrequency: 3
+      SuspensionDamping: 0.6
+      AntiRollBars: true
+      MaxTilt: 60
+      CenterOfMassOffset: [0, -0.4, 0]
+      FrontGrip: 1.3
+      RearGrip: 1.4
+      TopSpeed: 100
+      ShiftTime: 0.15
+      ShiftUpRpm: 5600
       Wheels:
         - {Entity: 2012, Position: [-1.05, 0, -1.28], Radius: 0.6, Width: 0.9, Steers: true, Driven: true, Handbrake: false}
         - {Entity: 2013, Position: [1.05, 0, -1.28], Radius: 0.6, Width: 0.9, Steers: true, Driven: true, Handbrake: false}
