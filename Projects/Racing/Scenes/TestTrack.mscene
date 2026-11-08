@@ -58,6 +58,7 @@ Entities:
   - ID: 1004
     Name: Terrain
     Parent: 0
+    Tags: [Terrain]
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -97,6 +98,7 @@ Entities:
   - ID: 3002
     Name: Walls
     Parent: 3000
+    Tags: [Wall]
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -215,3 +217,93 @@ Entities:
       Scale: [2.7, 2, 2]
     Model:
       File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 4000
+    Name: Race
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.RaceManager
+      Fields:
+        Car: {Entity: 2001}
+        Track: {Entity: 3000}
+        StartLights: {Entity: 4001}
+        WrongWayText: {Entity: 4010}
+        AuthorTime: {Float: 81}
+        GoldTime: {Float: 86}
+        SilverTime: {Float: 98}
+        BronzeTime: {Float: 122}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
+  - ID: 4001
+    Name: Start Lights
+    Parent: 4000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0], AnchorMax: [0.5, 0], Pivot: [0.5, 0], Position: [0, 40], Size: [620, 136], Visible: true}
+    UIImage: {Texture: "", Color: [0.03, 0.03, 0.035, 0.85]}
+  - ID: 4002
+    Name: Light 1
+    Parent: 4001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-240, 0], Size: [96, 96], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/StartLight.png, Color: [0.16, 0.03, 0.03, 1]}
+  - ID: 4003
+    Name: Light 2
+    Parent: 4001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-120, 0], Size: [96, 96], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/StartLight.png, Color: [0.16, 0.03, 0.03, 1]}
+  - ID: 4004
+    Name: Light 3
+    Parent: 4001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [96, 96], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/StartLight.png, Color: [0.16, 0.03, 0.03, 1]}
+  - ID: 4005
+    Name: Light 4
+    Parent: 4001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [120, 0], Size: [96, 96], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/StartLight.png, Color: [0.16, 0.03, 0.03, 1]}
+  - ID: 4006
+    Name: Light 5
+    Parent: 4001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [240, 0], Size: [96, 96], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/StartLight.png, Color: [0.16, 0.03, 0.03, 1]}
+  - ID: 4010
+    Name: Wrong Way
+    Parent: 4000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -140], Size: [1400, 200], Visible: false}
+    UIText:
+      Text: WRONG WAY
+      Font: ""
+      Size: 140
+      Color: [1, 0.22, 0.12, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1.1

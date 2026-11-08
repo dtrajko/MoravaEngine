@@ -16,8 +16,11 @@ namespace Racing
     /// - ABS: braking hard, the brake eases while a wheel locks, so it stops sooner and still steers.
     /// - In the air: the throttle and brake pitch it, the steering turns it, and it rights itself gently, so it lands on its
     ///   wheels.
+    /// - Walls: touching one (its tag: WallTag), it scrapes along it instead of bouncing off and spinning.
     /// Each assist has its fields to tune in the Inspector. With TestDriver on, the test driver drives (TestDriver.cs: it
     /// follows the track's center line) through the same assists, for checks without a player.
+    /// The race (RaceManager.cs, Phase 4) holds it at the start (Held), puts it back on the track (Respawn) and asks
+    /// whether it touched the terrain (TouchedTerrain): through Current, the car of the running game.
     /// </summary>
     public class CarController : Entity
     {
@@ -52,6 +55,20 @@ namespace Racing
         /// </summary>
         public float AbsSlip = 0.15f;
 
+        // ---- Walls
+        /// <summary>The tag of the walls (the track's Walls entity has it): touching one, the car scrapes along it.</summary>
+        public string WallTag = "Wall";
+        /// <summary>The share of its speed the car keeps per second while it scrapes a wall.</summary>
+        public float WallSpeedKept = 0.85f;
+        /// <summary>Degrees per second it may still turn while it scrapes a wall (its spin from the hit beyond this goes).</summary>
+        public float WallMaxTurn = 60.0f;
+        /// <summary>
+        /// The tag of the terrain: on it, the car has fallen off the track (the race puts it back). Found by a short ray down
+        /// (standing on its wheels the car's body doesn't touch the ground: the wheels are casts, not bodies) or by its
+        /// body touching it.
+        /// </summary>
+        public string TerrainTag = "Terrain";
+
         // ---- In the air
         /// <summary>Degrees per second squared the throttle and brake pitch it in the air.</summary>
         public float AirPitch = 120.0f;
@@ -70,12 +87,26 @@ namespace Racing
         /// <summary>m/s^2 the test driver allows itself sideways in turns (higher: braver).</summary>
         public float TestDriverCornering = 14.0f;
 
+        /// <summary>The car of the running game (the race's: one car).</summary>
+        public static CarController? Current { get; private set; }
+
+        /// <summary>Held at the start: brakes on, the throttle ignored (the race, until the lights go out).</summary>
+        public bool Held { get; set; }
+
+        /// <summary>The test driver drives it (TestDriver on, and the center line found).</summary>
+        public bool TestDriving => driver != null;
+
+        /// <summary>It touched the terrain since the last time this was read (and cleared): it has fallen off the track.</summary>
+        public bool TouchedTerrain { get; set; }
+
         Vehicle? vehicle;
         Rigidbody? body;
         TestDriver? driver;
         float steer;          // the wheel, -1 left to 1 right, before the speed's share
         float rearGrip = 1.0f;
         float absShare = 1.0f;   // the share of the brake ABS lets through
+        float wallTime;          // seconds the wall assist still holds after the last touch
+        Vector3 wallNormal;      // towards the wall, level
 
         protected override void OnCreate()
         {
@@ -87,11 +118,48 @@ namespace Racing
                 return;
             }
             vehicle.Controls = VehicleControls.Script;
+            Current = this;
             if (TestDriver)
             {
                 driver = Racing.TestDriver.Load(Centerline, Track != null ? Track.WorldPosition : Vector3.Zero, TestDriverCornering);
                 if (driver == null)
                     Log.Error($"CarController: the test driver has no center line ('{Centerline}' not found)");
+            }
+        }
+
+        /// <summary>
+        /// Puts the car here, standing still, its steering straight and its tires gripping (a respawn, the start); its
+        /// body follows at the next physics step.
+        /// </summary>
+        public void Respawn(Vector3 position, Quaternion rotation)
+        {
+            Translation = position;
+            Rotation = rotation;
+            if (body != null)
+            {
+                body.LinearVelocity = Vector3.Zero;
+                body.AngularVelocity = Vector3.Zero;
+            }
+            steer = 0.0f;
+            rearGrip = 1.0f;
+            absShare = 1.0f;
+            wallTime = 0.0f;
+            TouchedTerrain = false;
+        }
+
+        protected override void OnCollisionEnter(Collision collision)
+        {
+            if (!string.IsNullOrEmpty(TerrainTag) && collision.Other.HasTag(TerrainTag))
+                TouchedTerrain = true;
+            if (collision.Other.HasTag(WallTag))
+            {
+                Vector3 normal = collision.Normal;
+                normal.Y = 0.0f;
+                if (normal.LengthSquared() > 1e-4f)
+                {
+                    wallNormal = Vector3.Normalize(normal);
+                    wallTime = 0.3f;
+                }
             }
         }
 
@@ -102,10 +170,15 @@ namespace Racing
             float speed = vehicle.Speed;                 // m/s along the car
             float kmh = MathF.Abs(speed) * 3.6f;
 
+            // On the terrain: a ray down a little past the wheels
+            if (!string.IsNullOrEmpty(TerrainTag) && Physics.Raycast(WorldPosition, -Vector3.UnitY, 1.8f, out RaycastHit ground, PhysicsLayers.Static) &&
+                ground.Entity.HasTag(TerrainTag))
+                TouchedTerrain = true;
+
             // The driver: the player's actions, or the test driver's
             float throttle, brake, steerTarget;
             bool drift;
-            if (driver != null)
+            if (driver != null && !Held) // held at the start: its clock starts with the race
             {
                 TestDriver.Controls c = driver.Drive(WorldPosition, Forward, Right, speed, dt);
                 (throttle, brake, steerTarget, drift) = (c.Throttle, c.Brake, c.Steer, c.Drift);
@@ -144,7 +217,25 @@ namespace Racing
             // Forward or back: brake is the reverse once it stops (the engine's own rule); the handbrake only when slow
             float forward = throttle > 0.0f ? throttle : -brake;
             float handbrake = drift && !drifting ? 1.0f : 0.0f;
-            vehicle.SetInput(forward, steer * share, throttle > 0.0f ? brake : 0.0f, handbrake);
+            if (Held)
+                vehicle.SetInput(0.0f, 0.0f, 1.0f, 1.0f); // the start: still, brakes on
+            else
+                vehicle.SetInput(forward, steer * share, throttle > 0.0f ? brake : 0.0f, handbrake);
+
+            // Scraping a wall: no speed into it, its spin, roll and pitch from the hit taken away, a little speed lost
+            if (wallTime > 0.0f)
+            {
+                wallTime -= dt;
+                Vector3 velocity = body.LinearVelocity;
+                float into = Vector3.Dot(velocity, wallNormal);
+                if (into > 0.0f)
+                    velocity -= wallNormal * into;
+                velocity *= MathF.Pow(Math.Clamp(WallSpeedKept, 0.0f, 1.0f), dt);
+                body.LinearVelocity = velocity;
+                Vector3 angular = body.AngularVelocity;
+                float maxTurn = WallMaxTurn * MathF.PI / 180.0f;
+                body.AngularVelocity = new Vector3(angular.X * 0.2f, Math.Clamp(angular.Y, -maxTurn, maxTurn), angular.Z * 0.2f);
+            }
 
             // Downforce: along the car's down, the square of its speed
             if (!vehicle.IsInAir)

@@ -333,13 +333,26 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 <section id="phase-4">
   <h2>Phase 4: race logic <span class="tag">game</span></h2>
   <ul>
-    <li><b><code>RaceManager.cs</code>:</b> a 3-2-1-Go countdown (the car held), checkpoints in order (triggers; a lap with a missed one doesn't count), three laps, lap and race timers, a split at each checkpoint against the best lap (green faster, red slower), respawn at the last checkpoint (on the gate, facing along the track, speed zero), restart, finish.</li>
+    <li><b><code>RaceManager.cs</code>:</b> F1-style start lights (below), checkpoints in order (triggers; a lap with a missed one doesn't count), three laps, lap and race timers, a split at each checkpoint against the best lap (green faster, red slower), respawn at the last checkpoint (on the gate, facing along the track, speed zero), restart, finish.</li>
+    <li><b>F1-style start lights</b> (the user's choice, 2026-11-08): five red lights at the top of the screen come on one per second, stay on for a random 0.2&ndash;1 s, and all go out together: Go. The car is held (brakes on, no throttle) until then; the race timer starts at lights out. The lights are UI images of a generated circle texture on a dark panel; Phase 6 adds a beep at each light and another at lights out; Phase 7 may add the lights to a start gantry over the track.</li>
     <li><b>Fallen off</b> (the user's request, 2026-11-08: a car that left the track could drive on the terrain below it): an automatic respawn at the last checkpoint, no key needed, when the car is more than a few meters below the road or well outside its edge (from the center line: its height and width there) for about a second, or touches the terrain (the track never runs on it).</li>
     <li><b>Wrong way</b> (the user's request, 2026-11-08): a warning while the car drives against the track's direction. From the center line (read with <code>Assets.ReadText</code>): the track's direction at the nearest point against the car's velocity, more than about 100&deg; apart at more than about 15 km/h for more than about 1 s (a spin or a quick turn doesn't set it off); gone as soon as it drives the right way. A large "Wrong way" text in the middle of the screen; Phase 5 styles it with the HUD.</li>
     <li><b>Medals:</b> bronze, silver, gold and author times per track, set from test laps.</li>
     <li>The best lap, the best race and the medals saved with SaveData.</li>
     <li><b>Checked:</b> a scripted race of three laps finishes with the right times; respawn and restart from every checkpoint.</li>
   </ul>
+  <div class="box ok"><b>As built (2026-11-08)</b>
+  <ul>
+    <li><b>Walls first</b> (the user's report: a wall hit bounced the car off and turned it around): the test track's walls are now 2 m high and 1 m thick (the track data's <code>WallHeight</code>, <code>WallThickness</code>; the 1 m walls were lower than the car's body, whose corner caught on their top and levered it over), and <code>CarController.cs</code> has a wall assist: touching an entity tagged <code>Wall</code> (the track's Walls entity), for 0.3 s its speed into the wall goes, 15% of its speed per second is lost, its turn is held under 60&deg;/s and its roll and pitch from the hit are damped (fields WallTag, WallSpeedKept, WallMaxTurn). Scratch tests: 12&deg; into a wall at 200 km/h, 183 km/h after and flat; 30&deg;, 152 km/h and along the wall in 0.5 s.</li>
+    <li><b><code>RaceManager.cs</code></b> on a <b>Race</b> entity (its UI canvas holds the start lights and the wrong-way text): everything about the track comes from its <b>center line</b> (<code>Centerline.cs</code>, shared with the test driver). <b>Checkpoints are distances along it</b>, not triggers: Sectors (4) parts of equal length, a checkpoint passed when the car's nearest point on the line moves over it, in order (a lap with one missed doesn't count, logged); nothing to place in the scene, and nothing a car at 350 km/h (1.6 m a physics step) can jump through. The car starts behind the line: the timer starts at lights out and the first lap ends at the second time over the line.</li>
+    <li><b>Start lights:</b> five UI images of a generated circle (<code>Assets/Textures/UI/StartLight.png</code>) on a dark panel at the top: the first after 1 s, one a second, all out after a random 0.2&ndash;1 s; the car held (<code>CarController.Held</code>: brakes on, the throttle ignored, the test driver waits) until then; the panel hides 1 s after.</li>
+    <li><b>Splits:</b> at each checkpoint and the line, the time in the lap against the best lap's there (logged; <code>LastSplit</code>, <code>LastSplitDelta</code> for the HUD).</li>
+    <li><b>Respawn</b> (Backspace, B): on the last checkpoint passed (the line, or the start before it), 2 m past it, 1 m above the road, facing along it, standing still; the timer runs on. <b>Restart</b> (Enter, Back): the car behind the line, the lights again. The car's script does the move (<code>CarController.Respawn</code>); the race reaches the car's script through <code>CarController.Current</code> (scripts of one game share their static fields).</li>
+    <li><b>Fallen off:</b> respawned when more than 3 m below the road or 2 m outside its walls for 1 s, or at once on the terrain (tagged <code>Terrain</code>): a short ray down from the car (standing on its wheels its body doesn't touch the ground: Jolt's wheels are casts, not bodies), or its body touching it.</li>
+    <li><b>Wrong way:</b> the car's velocity (along the road) more than 100&deg; from the track's direction at its nearest point, above 15 km/h, for 1 s: a big red "WRONG WAY" in the middle of the screen; gone as soon as it drives the right way above 15 km/h.</li>
+    <li><b>Medals</b> (the race's time): author 1:21, gold 1:26, silver 1:38, bronze 2:02, from the test driver's race (1:21.8); Phase 7 sets the real circuit's. <b>Saved</b> (SaveData, by track name): <code>TestTrack.BestLap</code>, <code>BestLapSplits</code>, <code>BestRace</code>, <code>Medal</code>. Pause waits for Phase 5's menu.</li>
+    <li><b>Checked</b> (scratch copy, the test driver racing, a scratch probe script): a race of three laps (29.37, 26.32, 26.14 s; 1:21.820; the splits against the best lap; the records saved and read at the next start); a respawn 1 s after every checkpoint and the line in two laps, then a restart (the lights again); the car put beside the track (respawned for the fall), far beside it, and set down on the terrain (respawned at once); pushed backwards for 2.5 s (the warning after 1 s, gone when it drove on). Screenshots of the lights and the warning in the player. Release player, the driver racing: <b>Medium 206 fps, 1% low 163; High 172, 1% low 141</b>; no frame under 120. No engine change in this phase.</li>
+  </ul></div>
 </section>
 
 <section id="phase-5">
@@ -356,7 +369,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   <h2>Phase 6: camera, sound and feel <span class="tag">game</span></h2>
   <ul>
     <li><b>A chase camera for racing</b> (from <code>VehicleCamera.cs</code>): lower and tighter, a field of view that widens with speed, a small dip on landing, looking ahead in turns.</li>
-    <li><b>Sounds (CC0):</b> the engine: two loops (low and high revs) crossfaded and pitched by <code>Vehicle.EngineRpm</code>, louder with the throttle; the tires: a squeal from the wheels' slip (<code>LongitudinalSlip</code> braking hard, <code>LateralSlip</code> cornering and drifting); wall scrape (the car's collisions with the walls); the start: a beep at each light of the countdown and a higher one at Go; checkpoint chime; finish.</li>
+    <li><b>Sounds (CC0):</b> the engine: two loops (low and high revs) crossfaded and pitched by <code>Vehicle.EngineRpm</code>, louder with the throttle; the tires: a squeal from the wheels' slip (<code>LongitudinalSlip</code> braking hard, <code>LateralSlip</code> cornering and drifting); wall scrape (the car's collisions with the walls); the start: a beep as each of the five start lights comes on and another at lights out; checkpoint chime; finish.</li>
   </ul>
 </section>
 
@@ -365,7 +378,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   <ul>
     <li>About 2–2.5 km, 35–45 s a lap at up to 350 km/h: a long downhill straight, a climb with a blind crest, two or three steep banked turns, a hairpin, a fast S; 20–30 m between the lowest and the highest point.</li>
     <li><b>Walls that hold:</b> a wall height per point in the track builder's data (the 1 m walls can be jumped at speed over a crest or on a banked turn), taller on the outside of fast turns and after crests.</li>
-    <li>Scenery: the terrain's hills around, a start and finish gantry, lighting and reflections tuned.</li>
+    <li>Scenery: the terrain's hills around, a start and finish gantry (perhaps with the start lights on it), lighting and reflections tuned.</li>
     <li>Medal times from the test driver and the user's laps.</li>
   </ul>
 </section>
