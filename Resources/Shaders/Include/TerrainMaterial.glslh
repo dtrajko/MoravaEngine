@@ -30,7 +30,7 @@ layout (push_constant) uniform TerrainUniforms
 	float RockSlopeStart;                    // 1 - the normal's y where rock begins, and where it is all rock
 	float RockSlopeEnd;
 	float MapToggles;                        // bit 2 * layer: its albedo map, bit 2 * layer + 1: its normal map
-	float Padding0;
+	float LodTint;                           // the debug view Show Terrain LOD: the chunk's level of detail (negative: off)
 	float Padding1;
 	float Padding2;
 	float Padding3;
@@ -143,6 +143,13 @@ vec3 MaterialAlbedo(vec2 texCoord)
 		{
 			albedo += TerrainAlbedo(layer, texCoord) * t_Weights[layer];
 		}
+	}
+	// Show Terrain LOD: each level its color (every height: green, then yellow, orange, red, purple, blue, gray: every 64th)
+	if (u_Terrain.LodTint >= 0.0)
+	{
+		const vec3 levelColors[7] = vec3[7](vec3(0.1, 0.8, 0.2), vec3(0.9, 0.9, 0.1), vec3(1.0, 0.5, 0.0), vec3(0.9, 0.1, 0.1),
+			vec3(0.6, 0.2, 0.9), vec3(0.1, 0.4, 1.0), vec3(0.5, 0.5, 0.5));
+		albedo = mix(albedo, levelColors[min(uint(u_Terrain.LodTint + 0.5), 6u)], 0.7);
 	}
 	return albedo;
 }

@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Android Export</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: an engineering manual. One readable text column (48rem); diagrams, tables and code break out to the full 72rem width. */
+:root {
+  --bg: #f5f7fa; --surface: #ffffff; --ink: #1a2130; --muted: #5a6478; --line: #d6dce6; --code-bg: #eef1f6;
+  --accent: #2d5fc4; --accent-soft: #e6edfb; --warn: #b4581a; --warn-soft: #fbefe4; --ok: #24814f; --ok-soft: #e5f3ea;
+  /* diagram kinds */
+  --k-rp: #2d5fc4; --k-rp-bg: #eef3fd; --k-rp-hd: #dbe6fa;
+  --k-cs: #1f7d52; --k-cs-bg: #edf7f1; --k-cs-hd: #d6efe1;
+  --k-tr: #7553b8; --k-tr-bg: #f3effb; --k-tr-hd: #e5dcf6;
+  --k-img: #56637a; --k-img-bg: #f7f8fa; --k-img-hd: #e7ebf1;
+  --k-set: #a3378f; --k-set-bg: #fbeff8; --k-set-hd: #f4dcee;
+  --k-cpu: #6b7280; --k-cpu-bg: #f6f6f7; --k-cpu-hd: #e8e9ec;
+  --k-as: #8f6d0b; --k-as-bg: #fbf6e6; --k-as-hd: #f2e8c4;
+  --k-sh: #0d7884; --k-sh-bg: #ebf7f8; --k-sh-hd: #cfecef;
+  --k-key: #c2334f; --k-key-bg: #fdf0f2; --k-key-hd: #f8d9df;
+  --e-write: #d0481c; --e-read: #4d576b; --e-bind: #a3378f; --e-cpu: #7c8494; --e-copy: #7553b8; --e-inc: #0d7884;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", Consolas, "Cascadia Mono", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11151c; --surface: #171c25; --ink: #dfe5ef; --muted: #98a2b5; --line: #2c3442; --code-bg: #1c222d;
+  --accent: #82a8ff; --accent-soft: #1b2640; --warn: #f0a160; --warn-soft: #2c2016; --ok: #6fd19c; --ok-soft: #15281e;
+  --k-rp: #82a8ff; --k-rp-bg: #161f33; --k-rp-hd: #1f2c4a;
+  --k-cs: #64cf98; --k-cs-bg: #13241b; --k-cs-hd: #1a3426;
+  --k-tr: #b9a0f2; --k-tr-bg: #1f1a2e; --k-tr-hd: #2b2342;
+  --k-img: #a7b4c9; --k-img-bg: #1a1f28; --k-img-hd: #242b37;
+  --k-set: #e98ad8; --k-set-bg: #2a1726; --k-set-hd: #3a1f35;
+  --k-cpu: #a3aab6; --k-cpu-bg: #1c1f25; --k-cpu-hd: #272b33;
+  --k-as: #e3c35e; --k-as-bg: #262012; --k-as-hd: #352d18;
+  --k-sh: #58c6d3; --k-sh-bg: #12262a; --k-sh-hd: #19353a;
+  --k-key: #ff8099; --k-key-bg: #2d171c; --k-key-hd: #422029;
+  --e-write: #ff8a5c; --e-read: #a4adbf; --e-bind: #e98ad8; --e-cpu: #8b93a3; --e-copy: #b9a0f2; --e-inc: #58c6d3;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #171c25; --ink: #dfe5ef; --muted: #98a2b5; --line: #2c3442; --code-bg: #1c222d;
+  --accent: #82a8ff; --accent-soft: #1b2640; --warn: #f0a160; --warn-soft: #2c2016; --ok: #6fd19c; --ok-soft: #15281e;
+  --k-rp: #82a8ff; --k-rp-bg: #161f33; --k-rp-hd: #1f2c4a;
+  --k-cs: #64cf98; --k-cs-bg: #13241b; --k-cs-hd: #1a3426;
+  --k-tr: #b9a0f2; --k-tr-bg: #1f1a2e; --k-tr-hd: #2b2342;
+  --k-img: #a7b4c9; --k-img-bg: #1a1f28; --k-img-hd: #242b37;
+  --k-set: #e98ad8; --k-set-bg: #2a1726; --k-set-hd: #3a1f35;
+  --k-cpu: #a3aab6; --k-cpu-bg: #1c1f25; --k-cpu-hd: #272b33;
+  --k-as: #e3c35e; --k-as-bg: #262012; --k-as-hd: #352d18;
+  --k-sh: #58c6d3; --k-sh-bg: #12262a; --k-sh-hd: #19353a;
+  --k-key: #ff8099; --k-key-bg: #2d171c; --k-key-hd: #422029;
+  --e-write: #ff8a5c; --e-read: #a4adbf; --e-bind: #e98ad8; --e-cpu: #8b93a3; --e-copy: #b9a0f2; --e-inc: #58c6d3;
+  color-scheme: dark; }
+
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-body); }
+main { max-width: 72rem; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; }
+main > section { padding-block: 26px 10px; border-top: 1px solid var(--line); }
+main > section > * { max-width: 48rem; }
+main > section > figure, main > section > .wide { max-width: none; }
+h1, h2, h3, h4 { font-family: var(--f-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 14px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+h3 { font-size: 1.2rem; font-weight: 600; margin: 22px 0 8px; color: var(--accent); }
+h4 { font-size: 1.02rem; font-weight: 600; margin: 14px 0 4px; }
+p { margin: 0 0 10px; }
+ul, ol { margin: 0 0 12px; padding-left: 1.3rem; }
+li { margin-bottom: 4px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font: 0.86em var(--f-mono); background: var(--code-bg); padding: 0.05em 0.3em; border-radius: 3px; overflow-wrap: anywhere; }
+pre { font: 12.5px/1.5 var(--f-mono); background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin: 6px 0 14px; overflow-x: auto; }
+pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+.c { color: var(--muted); }
+.table-wrap { overflow-x: auto; margin: 6px 0 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { border: 1px solid var(--line); padding: 6px 9px; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); font-weight: 600; }
+td { background: var(--surface); }
+.box { border-radius: 6px; padding: 10px 14px; margin: 8px 0 14px; border: 1px solid var(--line); }
+.box > b:first-child { display: block; margin-bottom: 3px; font-family: var(--f-display); font-size: 1.02rem; }
+.box ul { margin-bottom: 0; }
+.note { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); }
+.ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); }
+.warn > b:first-child { color: var(--warn); } .ok > b:first-child { color: var(--ok); } .note > b:first-child { color: var(--accent); }
+.tag { font: 600 0.8rem var(--f-mono); color: var(--surface); background: var(--accent); border-radius: 4px; padding: 2px 8px; position: relative; top: -3px; }
+.tag.ios { background: var(--k-tr); } .tag.ed { background: var(--k-cs); } .tag.spike { background: var(--warn); }
+.eq { text-align: center; font-size: 1.05rem; margin: 8px 0 12px; }
+
+header.hero { padding-block: 18px 26px; display: grid; gap: 14px; }
+.kicker { font: 600 0.78rem var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.12rem; color: var(--muted); max-width: 48rem; }
+.meta { font-size: 0.86rem; color: var(--muted); max-width: 48rem; }
+nav.toc ol { columns: 2 18rem; column-gap: 32px; padding-left: 0; list-style: none; } /* no automatic numbers: each entry names its phase */
+nav.toc li { break-inside: avoid; }
+
+/* diagrams */
+figure { margin: 10px 0 22px; }
+figure .scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+figure svg { display: block; height: auto; max-width: 100%; min-width: 760px; }
+figcaption { font-size: 0.86rem; color: var(--muted); margin-top: 6px; max-width: 48rem; }
+svg .nb { stroke-width: 1.3; }
+svg .nt { font: 600 12px var(--f-body); fill: var(--ink); }
+svg .nl { font: 10.5px var(--f-mono); fill: var(--ink); }
+svg .nk { font: 600 8.5px var(--f-mono); letter-spacing: 0.06em; }
+svg .el { font: 10px var(--f-body); fill: var(--muted); }
+svg .e path { fill: none; }
+svg .e-r path { stroke: var(--e-read); stroke-width: 1.4; } svg .e-r polygon { fill: var(--e-read); }
+svg .e-b path { stroke: var(--e-bind); stroke-width: 1.4; stroke-dasharray: 5 3; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.84rem; margin: 8px 0 4px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 12px; border-radius: 3px; border: 1.5px solid; display: inline-block; }
+@media (max-width: 640px) { body { font-size: 14.5px; } h2 { font-size: 1.45rem; } pre { font-size: 11.5px; } }
+</style>
+</head>
+
+<body>
+
+<main>
+<header class="hero">
+  <div class="kicker">MoravaEngine · a platform for the player</div>
+  <h1>Android Export</h1>
+  <p class="lede">The plan for building a MoravaEngine game as an Android app: MoravaPlayer, the Vulkan renderer and the game's C# scripts running natively on a phone, built from the editor's Build Game like the Windows, Linux and macOS games. It is laid out so that an iOS export later is mostly a new platform backend, not a second port.</p>
+  <p class="meta">Drafted November 7, 2026, from the code on <code>master</code>. Names that exist in the code are written as they are. Names of new classes, files, folders and settings are proposals. Decisions marked <i>default</i> were left open and can be changed before their phase starts.</p>
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#decisions">The decisions</a></li>
+      <li><a href="#today">What blocks Android today</a></li>
+      <li><a href="#architecture">The shape of the port</a></li>
+      <li><a href="#phase-0">Phase 0: spikes</a></li>
+      <li><a href="#phase-1">Phase 1: platform seams, on the desktop</a></li>
+      <li><a href="#phase-2">Phase 2: the first frame on a phone</a></li>
+      <li><a href="#phase-3">Phase 3: scripts and input</a></li>
+      <li><a href="#phase-4">Phase 4: mobile textures and rendering</a></li>
+      <li><a href="#phase-5">Phase 5: touch controls and the app's life</a></li>
+      <li><a href="#phase-6">Phase 6: Build Game for Android</a></li>
+      <li><a href="#phase-7">Phase 7: Play Store release</a></li>
+      <li><a href="#ios">iOS later</a></li>
+      <li><a href="#risks">Risks and open questions</a></li>
+      <li><a href="#verify">How each phase is checked</a></li>
+    </ol>
+  </nav>
+</header>
+
+<section id="decisions">
+  <h2>The decisions</h2>
+  <ul>
+    <li><b>The player stays C++.</b> Android runs the same MoravaCore and PlayerLayer, started from a GameActivity (Android Game Development Kit) instead of GLFW. There is no Java or Kotlin game code. A small <code>MoravaActivity</code> subclass only loads the native libraries and sets fullscreen.</li>
+    <li><b>Vulkan only.</b> OpenGL, DirectX 11, the older scenes, the editor, ImGui and the legacy Mono code aren't built for Android.</li>
+    <li><b>C# scripts: NativeAOT</b> <i>(default)</i>. ScriptCore and the game's scripts are compiled per game into one native library, <code>libMoravaGame.so</code>. hostfxr and loading a <code>.dll</code> at runtime aren't available on Android or iOS. NativeAOT is the path iOS will need too, and the engine's interop is already a table of blittable C function pointers (<code>NativeApi</code>), which NativeAOT handles well. Phase 0 checks it before anything depends on it. The fallback is an embedded Mono runtime (<a href="#risks">Risks</a>).</li>
+    <li><b>hostfxr stays in the editor.</b> It gives hot reload (<code>GameLoadContext</code>), normal C# debugging and the Inspector's reflection over a freshly built <code>.dll</code>. Whether shipped desktop games also switch to NativeAOT is decided after Phase 3. The main cost is that a Windows editor could no longer build a Linux game's scripts without WSL or CI, which <code>GameBuilder::CanBuildFor</code> allows today.</li>
+    <li><b>Textures: BC on the desktop, ASTC on mobile.</b> NVIDIA and AMD desktop GPUs have no ASTC, and Intel Macs have no ASTC, so BC5 and BC7 stay for Windows, Linux and macOS. The cooker writes the format per target pack (Phase 4). Basis Universal (one pack for every platform) was considered and not chosen: lower quality and a conversion at every load.</li>
+    <li><b>The target: most Android devices in use today</b>, not one phone. Google's <a href="https://developer.android.com/about/dashboards">distribution dashboard</a> (handheld devices, November 2025) reports these shares:
+      <ul>
+        <li>no Vulkan: 7.4%</li>
+        <li>Vulkan 1.0: 3.9%</li>
+        <li>Vulkan 1.1: 62.1%</li>
+        <li>Vulkan 1.3: 26.0%</li>
+        <li>Vulkan 1.4: 0.7%</li>
+      </ul>
+      Android reports no 1.2 level, so today's Vulkan 1.2 requirement is only guaranteed on about 27% of phones.</li>
+    <li><b>Vulkan 1.1 is the Android minimum.</b> With ray tracing off, the renderer appears to need little from Vulkan 1.2 beyond how its shaders are compiled, and Phase 0 confirms it. 1.1 reaches about 89% of phones. Ray tracing, and the features it turns on, stay above that line on every platform.</li>
+    <li><b>A device matrix, not a test phone.</b> One phone per GPU family the market uses: Arm Mali, Qualcomm Adreno, and a budget PowerVR (Imagination) or older Mali. Each at the low end of what is common, plus one recent mid-range phone. The Redmi Note 13 Pro (Helio G99-Ultra, Mali-G57 MC2, 2400×1080) is the Mali at hand. The others are borrowed or run in a cloud device lab (Firebase Test Lab). Success means 30 fps at the lowest tier on the low-end phones, not on the Redmi alone.</li>
+    <li><b>30 fps</b> is the default frame cap on Android. <b>Both orientations</b> are supported, following the phone's sensor unless a project locks one. <b>Package names</b> start with <code>com.dtrajko</code>. <b>Play Store</b> publishing waits until it is needed (Phase 7).</li>
+    <li><b>ABI and versions</b>: <code>arm64-v8a</code> only (plus <code>x86_64</code> for the emulator if it proves useful), and <code>minSdk 29</code> (Android 10). Android 10 is also the version from which new 64-bit devices must have Vulkan 1.1, and Android 9 and older are a few percent of active devices. Phones with only 32-bit ARM, mostly low-cost Android Go phones, are left out, a small and shrinking share. A phone that fails <code>VulkanSupport::ChooseDevice</code> gets its message as an Android dialog.</li>
+    <li><b>Input</b> <i>(default)</i>: all three, in this order: gamepad (free through the existing action system), a raw touch API for C#, then engine on-screen controls (a virtual stick and buttons) mapped to <code>.minput</code> actions.</li>
+    <li><b>Output</b> <i>(default)</i>: a debug-signed APK built from the Windows editor first (and from the Linux editor, which shares the code). A signed Play Store AAB comes last, in Phase 7.</li>
+    <li><b>No Gradle on the game maker's machine.</b> CI builds an Android player template with Gradle, the same way it builds the other platforms' templates (<code>cmake/PlayerTemplate.cmake</code>, <code>Tools/Get-PlayerTemplates.ps1</code>). The editor assembles the APK from it with the Android SDK's command-line tools: <code>aapt2</code>, <code>zipalign</code> and <code>apksigner</code>.</li>
+    <li><b>iOS isn't built yet</b>: there is no Mac and no Apple Developer Program membership ($99 a year). Every phase still puts platform code behind the seams of Phase 1, so iOS later is a backend. The existing <code>macos.yml</code> workflow also shows that iOS can be compile-checked on GitHub's macOS runners without owning a Mac.</li>
+  </ul>
+</section>
+
+<section id="today">
+  <h2>What blocks Android today</h2>
+  <p>A survey of <code>master</code>. Most of the engine (Jolt, miniaudio, entt, yaml-cpp, the Vulkan renderer, packs) is portable C++. The problems are a handful of seams where the desktop leaks in.</p>
+  <div class="table-wrap wide">
+  <table>
+    <tr><th>Area</th><th>Today</th><th>On Android</th></tr>
+    <tr><td>Window and events</td><td><code>Window</code> is an interface, but <code>Platform/GLFW/GLFWWindow</code> is its only backend. <code>PlayerLayer.cpp</code> and <code>EnvMapVulkanRenderer.cpp</code> (around line 4146) call GLFW monitors and video modes for resolution and fullscreen.</td><td>A GameActivity window that is always fullscreen, can be destroyed and recreated while the app runs, and can rotate.</td></tr>
+    <tr><td>Vulkan surface</td><td><code>VulkanContextH2M.cpp</code> asks GLFW for instance extensions (<code>glfwGetRequiredInstanceExtensions</code>). <code>VulkanSwapChainH2M.cpp:64</code> calls <code>glfwCreateWindowSurface</code>.</td><td><code>VK_KHR_android_surface</code> on an <code>ANativeWindow</code>. The surface is lost on pause, and the swapchain needs pre-rotation.</td></tr>
+    <tr><td>Input</td><td><code>Input/InputSystem.cpp</code> polls GLFW directly (19 calls: keys, mouse, gamepads).</td><td>Touch, the Back button and gamepads come as GameActivity events, not polling.</td></tr>
+    <tr><td>Clock and size</td><td><code>Core/Timer.cpp</code> uses <code>glfwGetTime</code>. <code>Core/Application.cpp:608</code> uses <code>glfwGetFramebufferSize</code>.</td><td><code>std::chrono::steady_clock</code>; the size comes from the window backend.</td></tr>
+    <tr><td>C# scripting</td><td><code>Scripting/ScriptHost.cpp</code> starts .NET 10 through hostfxr and loads the game's assembly into a collectible <code>GameLoadContext</code> (hot reload). <code>Interop.cs</code> and <code>ScriptFields.cs</code> use <code>Activator.CreateInstance</code> and <code>GetTypes()</code>.</td><td>No hostfxr. On iOS no JIT and no loading of assemblies. Scripts must be compiled ahead of time, and reflection must keep the game's types.</td></tr>
+    <tr><td>Files</td><td>Packs open through <code>AssetPack::Open(std::unique_ptr&lt;std::istream&gt;)</code> from a file beside the player. Settings and save data are written beside the game.</td><td>The pack is inside the APK, reached through <code>AAssetManager</code>. Writable data goes to the app's internal storage.</td></tr>
+    <tr><td>Textures</td><td><code>Assets/TextureCook.cpp</code> cooks BC7, BC7 sRGB and BC5 only.</td><td>Most phone GPUs have no BC formats. ASTC is the standard (and Apple GPUs support it, for iOS later).</td></tr>
+    <tr><td>Shaders</td><td>Cooked to SPIR-V into the pack by <code>VulkanShaderH2M::Cook</code> (<code>PackBuilder.cpp:478</code>). The player doesn't compile GLSL.</td><td>Works as it is. No shaderc in the Android player.</td></tr>
+    <tr><td>GPU features</td><td><code>VulkanSupport::ChooseDevice</code> rejects devices below Vulkan 1.2. <code>ShaderCompile.cpp:74</code> compiles every shader for Vulkan 1.2, which produces SPIR-V 1.5, and a Vulkan 1.1 driver can't load that. Descriptor indexing, buffer device address and ray queries are only turned on when ray tracing is supported. 28 shaders in <code>Resources/Shaders</code> use <code>nonuniformEXT</code>.</td><td>Ray tracing is off on phones. Shaders the non-ray-traced path loads are compiled for Vulkan 1.1 (SPIR-V 1.3). Phase 0 confirms what that path needs.</td></tr>
+    <tr><td>Build</td><td>One CMake project with Windows, Linux and macOS branches. <code>MoravaCore</code> links shaderc and assimp, and <code>Mesh/Model.h</code>, <code>Mesh/SkinnedMesh.h</code> and <code>Core/Math.h</code> include assimp headers. 10 non-editor files include <code>windows.h</code>, mostly guarded.</td><td>An Android branch with the NDK toolchain that leaves out the editor, OpenGL, DX11, Mono and shaderc. Phase 2 measures whether assimp can stay for now.</td></tr>
+  </table>
+  </div>
+</section>
+
+<section id="architecture">
+  <h2>The shape of the port</h2>
+  <p>The work splits into one layer of seams (Phase 1) and one backend per platform behind it. Everything above the seams is shared by desktop, Android and later iOS.</p>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 1000 430" role="img" aria-label="MoravaCore and the player sit on platform seams; GLFW, Android and later iOS backends implement them">
+      <defs>
+        <marker id="arch-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--e-read)"/></marker>
+      </defs>
+      <!-- player -->
+      <rect class="nb" x="20" y="16" width="960" height="54" rx="8" fill="var(--k-rp-bg)" stroke="var(--k-rp)"/>
+      <text class="nk" x="34" y="34" fill="var(--k-rp)">SHARED</text>
+      <text class="nt" x="34" y="54">MoravaPlayer · PlayerLayer · PlayerProduct</text>
+      <text class="nl" x="420" y="54">starts the pack's start scene, quality tier, settings, game messages</text>
+      <!-- core -->
+      <rect class="nb" x="20" y="84" width="960" height="78" rx="8" fill="var(--k-rp-bg)" stroke="var(--k-rp)"/>
+      <text class="nk" x="34" y="102" fill="var(--k-rp)">SHARED · MoravaCore</text>
+      <text class="nl" x="34" y="124">EnvMapVulkan renderer · H2M Vulkan · Jolt physics · miniaudio · UI · animation</text>
+      <text class="nl" x="34" y="144">AssetPack (istream) · AssetFiles · ScriptBindings (NativeApi table) · QualityTier</text>
+      <!-- seams -->
+      <rect class="nb" x="20" y="180" width="960" height="70" rx="8" fill="var(--k-as-bg)" stroke="var(--k-as)"/>
+      <text class="nk" x="34" y="198" fill="var(--k-as)">PHASE 1 · PLATFORM SEAMS (new interfaces)</text>
+      <text class="nl" x="34" y="220">Window · InputBackend · Clock · VulkanSurfaceProvider · FileSystem roots + pack stream</text>
+      <text class="nl" x="34" y="238">AppLifecycle (pause, resume, surface lost/created, low memory) · SafeArea · ScriptHost backend</text>
+      <!-- backends -->
+      <rect class="nb" x="20" y="290" width="300" height="122" rx="8" fill="var(--k-cpu-bg)" stroke="var(--k-cpu)"/>
+      <text class="nk" x="34" y="308" fill="var(--k-cpu)">DESKTOP · EXISTS</text>
+      <text class="nt" x="34" y="328">Platform/GLFW</text>
+      <text class="nl" x="34" y="350">Windows, Linux, macOS</text>
+      <text class="nl" x="34" y="368">ScriptHostHostfxr (hot reload)</text>
+      <text class="nl" x="34" y="386">files beside the player</text>
+
+      <rect class="nb" x="350" y="290" width="300" height="122" rx="8" fill="var(--k-cs-bg)" stroke="var(--k-cs)"/>
+      <text class="nk" x="364" y="308" fill="var(--k-cs)">ANDROID · PHASES 2–5</text>
+      <text class="nt" x="364" y="328">Platform/Android</text>
+      <text class="nl" x="364" y="350">GameActivity · VK_KHR_android_surface</text>
+      <text class="nl" x="364" y="368">ScriptHostAot → libMoravaGame.so</text>
+      <text class="nl" x="364" y="386">AAsset pack stream · internal storage</text>
+
+      <rect class="nb" x="680" y="290" width="300" height="122" rx="8" fill="var(--k-tr-bg)" stroke="var(--k-tr)" stroke-dasharray="5 3"/>
+      <text class="nk" x="694" y="308" fill="var(--k-tr)">iOS · LATER</text>
+      <text class="nt" x="694" y="328">Platform/iOS</text>
+      <text class="nl" x="694" y="350">UIKit · CAMetalLayer · MoltenVK</text>
+      <text class="nl" x="694" y="368">ScriptHostAot → static library</text>
+      <text class="nl" x="694" y="386">app bundle · Documents folder</text>
+
+      <g class="e e-r">
+        <path d="M170 290V252" marker-end="url(#arch-arrow)"/>
+        <path d="M500 290V252" marker-end="url(#arch-arrow)"/>
+      </g>
+      <g class="e e-b"><path d="M830 290V252"/></g>
+      <text class="el" x="180" y="276">implements</text>
+      <text class="el" x="510" y="276">implements</text>
+      <text class="el" x="840" y="276">implements, later</text>
+    </svg>
+    </div>
+    <figcaption>Only the bottom row is platform code. A desktop build after Phase 1 behaves exactly as today, through the GLFW backend.</figcaption>
+  </figure>
+
+  <h3>Proposed layout</h3>
+<pre><code>src/Core/Platform.h               <span class="c">the seams: Clock, FileSystem roots, AppLifecycle events, SafeArea</span>
+src/Input/InputBackend.h          <span class="c">what InputSystem reads, instead of glfwGetKey and friends</span>
+src/H2M/Platform/Vulkan/VulkanSurfaceProvider.h  <span class="c">instance extensions + surface creation</span>
+src/Platform/GLFW/...             <span class="c">today's code, moved behind the seams</span>
+src/Platform/Android/
+    AndroidMain.cpp               <span class="c">android_main: GameActivity loop → Application</span>
+    AndroidWindow.cpp/.h          <span class="c">ANativeWindow, rotation, insets</span>
+    AndroidInput.cpp/.h           <span class="c">touch, keys, Back, gamepad axes</span>
+    AndroidFiles.cpp/.h           <span class="c">AAsset streambuf for AssetPack, internal storage paths</span>
+src/Scripting/ScriptHostHostfxr.cpp  <span class="c">today's ScriptHost body</span>
+src/Scripting/ScriptHostAot.cpp      <span class="c">calls the game library's exported entry point</span>
+Platforms/Android/                <span class="c">Gradle project for the player template: manifest, MoravaActivity, icons</span>
+cmake/Android.cmake               <span class="c">NDK settings, what the Android build leaves out</span>
+ScriptCore/Aot/MoravaGameAot.csproj.in  <span class="c">template GameBuilder fills in per game</span>
+Tools/Testing/Run-Android.ps1     <span class="c">install, start, read logcat, like Run-Engine.ps1</span></code></pre>
+</section>
+
+<section id="phase-0">
+  <h2>Phase 0: spikes <span class="tag spike">de-risk</span></h2>
+  <p>Three small experiments, each on a throwaway branch, before the engine is changed. Their results are written into this page in an "As found" box.</p>
+  <ul>
+    <li><b>NativeAOT on Android.</b>
+      <ul>
+        <li>Publish ScriptCore plus <code>Projects/Sample/Scripts</code> as one shared library: <code>PublishAot</code>, <code>NativeLib=Shared</code>, <code>RuntimeIdentifier=linux-bionic-arm64</code>, linked with NDK r27 or newer. Uno Platform's documentation reports <a href="https://platform.uno/docs/articles/features/native-aot.html">NativeAOT Android apps on .NET 10</a> with NDK r27+ and an experimental-status warning (XA1040).</li>
+        <li>Find out whether a Windows machine can produce it. NativeAOT generally doesn't compile across operating systems; if Windows can't, the step runs in WSL2 (already used for the Linux builds) or through the .NET for Android workload's toolchain.</li>
+        <li>Load it from a minimal NDK app, call an <code>[UnmanagedCallersOnly(EntryPoint = "morava_script_init")]</code> export that returns the Interop table, and call one function in each direction.</li>
+        <li>Check that <code>Activator.CreateInstance</code>, <code>GetTypes()</code> and the script-field reflection work with the game assembly rooted (<code>TrimmerRootAssembly</code>). Record the size of the <code>.so</code>.</li>
+      </ul></li>
+    <li><b>What the renderer needs below ray tracing.</b> On the desktop, with <code>--no-ray-tracing</code>, list every shader the Mobile and Low tiers load, every extension and feature the device is created with, and every Vulkan 1.2 call. The result is the engine's Android feature list. It is checked against the Vulkan 1.1 Android Baseline profile and against the <a href="https://vulkan.gpuinfo.org/">gpuinfo.org</a> reports of common phone GPUs: Mali-G52, Mali-G57, Adreno 610, Adreno 618 and PowerVR GE8320. Anything that phones commonly lack becomes optional or gets a fallback in Phase 1.</li>
+    <li><b>The phones at hand.</b> <code>vulkaninfo</code> (or the Khronos hardware capability viewer) on the Redmi Note 13 Pro and any phone you can borrow records:
+      <ul>
+        <li>the Vulkan version and whether the 1.2 core features are reported</li>
+        <li><code>textureCompressionASTC_LDR</code>, max image size, memory heaps</li>
+        <li>the core features <code>VulkanContextH2M</code> turns on without checking: <code>fillModeNonSolid</code> (wireframe) and <code>samplerAnisotropy</code>. If a phone lacks either one, device creation fails, so Phase 1 makes them conditional.</li>
+      </ul> Then check which of the 28 <code>nonuniformEXT</code> shaders the renderer loads with ray tracing off; any that load without descriptor indexing enabled is a bug on desktop GPUs too.</li>
+    <li><b>ASTC encoding.</b> Build Arm's <code>astc-encoder</code> (Apache 2.0) into the cooking tools. Time it on Sample's textures at 6×6 and 4×4, and compare quality with the BC7 output.</li>
+  </ul>
+  <div class="box note"><b>Done when</b>each spike has a yes or no, a number (library size, cook time) and the chosen route written here. A "no" on NativeAOT switches Phase 3 to the Mono route before Phase 1 starts.</div>
+</section>
+
+<section id="phase-1">
+  <h2>Phase 1: platform seams, on the desktop <span class="tag">engine</span></h2>
+  <p>The whole of this phase is done and tested on Windows and Linux. Nothing Android-specific is added yet, so CI's existing smoke tests prove nothing broke. This is the phase that makes iOS cheap later.</p>
+  <ul>
+    <li><b>Clock:</b> <code>Core/Timer.cpp</code> uses <code>std::chrono::steady_clock</code> instead of <code>glfwGetTime</code>.</li>
+    <li><b>Window:</b> <code>Application.cpp</code> gets the framebuffer size from <code>Window</code>. Monitor and video-mode code in <code>PlayerLayer.cpp</code> and <code>EnvMapVulkanRenderer.cpp</code> moves behind <code>Window</code> (<code>GetDisplayModes</code>, <code>SetFullscreen</code>), and a mobile window reports one mode.</li>
+    <li><b>Vulkan surface:</b> a <code>VulkanSurfaceProvider</code> gives <code>VulkanContextH2M</code> its instance extensions and gives <code>VulkanSwapChainH2M</code> its surface. The GLFW implementation keeps today's calls.</li>
+    <li><b>Vulkan 1.1 when ray tracing isn't used:</b>
+      <ul>
+        <li><code>VulkanSupport::ChooseDevice</code> accepts a Vulkan 1.1 device and turns ray tracing off on it</li>
+        <li>the instance and device are created with the lower of the device's version and 1.2</li>
+        <li><code>ShaderCompile</code> compiles shaders for Vulkan 1.1 (SPIR-V 1.3), and for Vulkan 1.2 only those that need 1.2 (the ray-traced ones)</li>
+        <li>the pack stores both forms where they differ</li>
+        <li>on the desktop, tested by forcing the 1.1 path with a command-line switch</li>
+      </ul></li>
+    <li><b>Optional device features:</b> <code>VulkanContextH2M</code> turns on <code>fillModeNonSolid</code> and <code>samplerAnisotropy</code> only when the device reports them, as it already does for <code>wideLines</code>. Without wireframe support, the wireframe debug view is hidden.</li>
+    <li><b>Swapchain lifetime:</b> the swapchain can be destroyed and recreated around a lost surface. On the desktop this is tested by minimizing and restoring, and with a debug key that forces it.</li>
+    <li><b>Input:</b> <code>InputSystem</code> reads keys, buttons, axes and gamepads from an <code>InputBackend</code>. The GLFW backend wraps today's polling. Touch is part of the interface from the start (empty on the desktop) so the C# API in Phase 3 has a single source.</li>
+    <li><b>Files:</b> one place answers where the pack is (<code>OpenPackStream()</code>) and where writable data goes (<code>GetWritableFolder()</code>). <code>GameSettings.cpp</code>, <code>StoredValues</code> and save data use it.</li>
+    <li><b>Lifecycle:</b> <code>AppLifecycle</code> events (Pause, Resume, SurfaceLost, SurfaceCreated, LowMemory) reach <code>Application</code>. Pause stops game time and audio. On the desktop they come from focus and minimize.</li>
+    <li><b>Script host:</b> <code>ScriptHost</code> is split into an interface with two backends. <code>ScriptHostHostfxr</code> is today's code. <code>ScriptHostAot</code> loads a library and calls <code>morava_script_init</code>, and it runs on the desktop too, against a NativeAOT build of Sample's scripts (win-x64 or linux-x64). Running the AOT path on the desktop first means scripts are known to work before a phone is involved.</li>
+    <li><b>C#:</b> <code>Interop.cs</code> gets the exported entry point. The hot-reload <code>GameLoadContext</code> stays, but only the hostfxr build uses it (<code>#if !MORAVA_AOT</code>).</li>
+  </ul>
+  <div class="box note"><b>Done when</b>the Windows and Linux CI jobs pass unchanged, Sample plays in the editor and in MoravaPlayer, and MoravaPlayer also plays Sample with its scripts from a desktop NativeAOT library.</div>
+</section>
+
+<section id="phase-2">
+  <h2>Phase 2: the first frame on a phone <span class="tag">engine</span> <span class="tag">android</span></h2>
+  <ul>
+    <li><b>CMake:</b> <code>cmake/Android.cmake</code>, chosen when <code>CMAKE_SYSTEM_NAME</code> is <code>Android</code> (the NDK's <code>android.toolchain.cmake</code>, ABI <code>arm64-v8a</code>, platform <code>android-29</code>, <code>c++_shared</code>). It forces <code>MORAVA_VULKAN</code> on and OpenGL, DX11 and <code>MORAVA_MONO</code> off. It builds only <code>MoravaCore</code> and the player, the player as <code>libMoravaPlayer.so</code> instead of an executable, without shaderc. Native libraries are linked with <code>-Wl,-z,max-page-size=16384</code> for 16 KB page devices.</li>
+    <li><b><code>Platforms/Android</code>:</b> a Gradle project that depends on <code>androidx.games:games-activity</code> and calls the CMake build through <code>externalNativeBuild</code>. It is used by CI to make the template and by you for debugging in Android Studio. The manifest asks for the sensor's orientation (<code>fullSensor</code>, with orientation and screen-size changes handled by the app instead of restarting it), fullscreen and the Vulkan feature (<code>android.hardware.vulkan.version</code> 1.1, <code>0x401000</code>), so stores hide the game from phones without it.</li>
+    <li><b><code>AndroidMain.cpp</code>:</b> GameActivity's <code>android_main</code> drives <code>Application</code>'s loop, handles <code>APP_CMD_INIT_WINDOW</code> and <code>APP_CMD_TERM_WINDOW</code> through the Phase 1 lifecycle, and passes command-line style arguments from the launch intent (<code>--scene</code>, <code>--exit-after-seconds</code>) so tests can drive it.</li>
+    <li><b>Surface:</b> <code>VK_KHR_android_surface</code>. Pre-rotation: the swapchain uses the surface's <code>currentTransform</code>, and the projection is rotated to match, so the compositor doesn't rotate every frame.</li>
+    <li><b>Logging:</b> spdlog's <code>android_sink</code>, so <code>MORAVA_CORE_*</code> and <code>H2M_*</code> appear in logcat under the tag <code>Morava</code>.</li>
+    <li><b>Pack:</b> <code>Game.mpak</code> is stored uncompressed in the APK's <code>assets/</code>. <code>AndroidFiles</code> opens it with <code>AAsset_openFileDescriptor64</code> and gives <code>AssetPack::Open</code> a stream reading from that descriptor and offset. Nothing is copied out, and the pack format doesn't change.</li>
+    <li><b>Textures for now:</b> a <code>PackBuilder</code> option that stores textures uncompressed (RGBA8), so the first frame doesn't wait for Phase 4.</li>
+    <li><b>Quality:</b> start at <code>Low</code>, with ray tracing off (the device has none, or <code>--no-ray-tracing</code>).</li>
+    <li><b>Validation:</b> Debug builds package the Khronos validation layer, so its messages show up in logcat.</li>
+  </ul>
+  <div class="box note"><b>Done when</b>Sample's start scene renders on the Redmi Note 13 Pro and on one Adreno phone (borrowed or in the device lab) without scripts, rotates and survives Home and back without a crash, with no validation messages. Frame time is noted for Phase 4.</div>
+</section>
+
+<section id="phase-3">
+  <h2>Phase 3: scripts and input <span class="tag">engine</span> <span class="tag">android</span></h2>
+  <ul>
+    <li><b>Scripts:</b> <code>ScriptHostAot</code> on Android loads <code>libMoravaGame.so</code> with <code>dlopen</code> (it sits beside <code>libMoravaPlayer.so</code> in <code>lib/arm64-v8a</code>). For now it is built by hand with the Phase 0 command. The engine side doesn't change: the same <code>ScriptNativeApi</code> table, the same <code>InvokeMethod</code> entries.</li>
+    <li><b>Gamepad:</b> GameActivity's key and motion events go into <code>AndroidInput</code>, mapped to the same gamepad buttons and axes the GLFW backend reports. The existing <code>.minput</code> bindings work unchanged.</li>
+    <li><b>Back button:</b> reported as the <code>Escape</code> key and the gamepad's <code>Start</code>, so the games' existing Pause bindings open the pause menu. A Back press in the main menu asks to quit.</li>
+    <li><b>Touch for C#:</b> new entries appended at the end of <code>ScriptNativeApi</code> and <code>NativeApi</code>, in the same order (<code>Input_GetTouchCount</code>, <code>Input_GetTouch</code>). In <code>ScriptCore/Input.cs</code>:
+      <ul>
+        <li><code>Input.TouchCount</code> and <code>Input.GetTouch(int)</code>, returning a <code>Touch</code> with <code>Id</code>, <code>Phase</code> (Began, Moved, Stationary, Ended, Canceled), <code>Position</code> and <code>Delta</code> in pixels</li>
+        <li><code>Application.IsMobile</code>, so a script can show touch hints instead of key names</li>
+      </ul>
+      The desktop reports no touches, except in an optional "mouse as touch" mode for testing in the editor.</li>
+    <li><b>UI:</b> a touch on a UI button counts as a click, so the menus work with a finger.</li>
+  </ul>
+  <div class="box note"><b>Done when</b>Coin Collector plays on the phone with a Bluetooth gamepad, its menus work by touch, and a test script logs touches with their phases.</div>
+</section>
+
+<section id="phase-4">
+  <h2>Phase 4: mobile textures and rendering <span class="tag">engine</span></h2>
+  <ul>
+    <li><b>Packs per platform:</b> <code>PackBuilder</code> gets a target platform. Desktop packs keep BC7 and BC5; Android packs get ASTC. The cooked-texture cache is kept per format.</li>
+    <li><b>ASTC formats</b> <i>(to confirm in Phase 0)</i>: color maps 6×6 sRGB, other maps 6×6, normal maps 4×4 with the two-channel encoding. A device without <code>textureCompressionASTC_LDR</code> gets textures decoded to RGBA8 at load, slower but correct.</li>
+    <li><b>Mobile quality tiers:</b> phones range far more widely than desktop GPUs, so there are two tiers below Low, decided after measuring:
+      <ul>
+        <li><b>Mobile:</b> no ray tracing, probe GI updates or path tracer; smaller shadow maps, half-resolution GTAO, a cheaper bloom, a render scale around 0.75</li>
+        <li><b>Mobile Low:</b> no GTAO, one shadow-casting light, a render scale around 0.5</li>
+      </ul>
+      Both scale up to the screen. On Android, <code>QualityTier</code> chooses between them from the GPU family, its core count, the device's memory and a two-second benchmark at the first start, kept until the player changes it in Settings.</li>
+    <li><b>Tile-based GPUs:</b> check every render pass's load and store operations (clear or don't-care instead of load where possible). Use lazily allocated, transient attachments for depth and G-buffer targets that aren't read later. Remove copies between full-screen passes where they can be merged. Android GPU Inspector or RenderDoc shows where bandwidth goes.</li>
+    <li><b>Frame pacing:</b> a frame cap (30 or 60, a setting) with FIFO presentation. Android's frame pacing library (Swappy) is added only if the cap alone stutters.</li>
+    <li><b>Memory:</b> respond to the LowMemory lifecycle event by dropping cached, unused assets. Record peak memory on each phone, and keep it within what a 3 GB phone allows an app.</li>
+  </ul>
+  <div class="box warn"><b>The low end decides the renderer</b>The common phone GPUs are small: two to four cores (Mali-G52, Mali-G57, Adreno 610), often on 3–4 GB of RAM and screens of 2400×1080 or more. A deferred G-buffer, GTAO and bloom leave them little to spare. If Phase 2's frame times on the low-end phones are far from 33 ms even at a render scale of 0.5, a forward path for Mobile Low moves from "Risks" into this phase.</div>
+  <div class="box note"><b>Done when</b>Coin Collector runs at 30 fps for 15 minutes on every phone in the matrix at the tier <code>QualityTier</code> picks for it, without thermal throttling bringing it under 25 fps. The APK size, peak memory and the tier and render scale each phone got are written here.</div>
+</section>
+
+<section id="phase-5">
+  <h2>Phase 5: touch controls and the app's life <span class="tag">engine</span> <span class="tag">game</span></h2>
+  <ul>
+    <li><b>On-screen controls:</b> a <code>TouchControlsComponent</code> (UI), shown only when <code>Application.IsMobile</code> and no gamepad is in use. Its parts:
+      <ul>
+        <li>a virtual stick that drives a 2D action (move)</li>
+        <li>a look area (drag on the right half) that drives a 2D action (look)</li>
+        <li>buttons, each bound to a button action (jump, interact, pause)</li>
+      </ul>
+      The bindings go in the project's <code>.minput</code>, so a script reads <code>Input.GetAction("Move")</code> whatever the device. The Inspector edits their placement and size.</li>
+    <li><b>Safe area:</b> a <code>Screen.SafeArea</code> for C#, and UI anchors that keep controls out of camera cutouts and gesture bars.</li>
+    <li><b>Orientation:</b> a project setting: Any (following the sensor, the default), Landscape or Portrait. A rotation changes the swapchain and the camera's aspect ratio, and the UI's anchors place the touch controls for each orientation. Every test scene is checked in both.</li>
+    <li><b>Pause and resume:</b> game time, physics and audio pause when the app goes to the background. The swapchain is recreated on return, and settings and save data are written on pause, because Android may kill a paused app without warning.</li>
+    <li><b>Audio:</b> miniaudio's AAudio backend, paused and resumed with the app.</li>
+    <li><b>Keep the screen on</b> while a game is playing.</li>
+  </ul>
+  <div class="box note"><b>Done when</b>Coin Collector plays by touch alone, and 20 cycles of Home, back, rotate and screen-off/on run without a crash, a leak (memory after cycle 20 within a few percent of cycle 1) or a validation message.</div>
+</section>
+
+<section id="phase-6">
+  <h2>Phase 6: Build Game for Android <span class="tag ed">editor</span></h2>
+  <ul>
+    <li><b>CI template:</b> a new Android job in <code>.github/workflows/build.yml</code> (Ubuntu, the NDK, the Android SDK, a JDK) builds <code>Platforms/Android</code> in Release. It uploads the player template <code>PlayerTemplates/android-arm64</code>: <code>libMoravaPlayer.so</code>, <code>libc++_shared.so</code>, the compiled <code>classes.dex</code> of <code>MoravaActivity</code> and GameActivity, a manifest template, resources and the license notices. <code>Tools/Get-PlayerTemplates.ps1</code> fetches it like the others.</li>
+    <li><b>GameBuilder:</b> <code>android-arm64</code> appears in <code>GetPlatforms()</code> when the template and the tools are found. <code>FindAndroidSdk()</code> looks in <code>ANDROID_HOME</code>, then Android Studio's default folder, and a missing tool is named in the log. The build steps:
+      <ol>
+        <li>cook the Android pack (ASTC textures)</li>
+        <li>publish the game's scripts with NativeAOT into <code>libMoravaGame.so</code> (from <code>ScriptCore/Aot/MoravaGameAot.csproj.in</code>; in WSL if Phase 0 says so)</li>
+        <li>fill in the manifest (package name, version, app name, orientation) and link it with the icon using <code>aapt2</code></li>
+        <li>zip the template, the pack (stored uncompressed), and the libraries; then <code>zipalign</code> and <code>apksigner</code></li>
+      </ol></li>
+    <li><b>Signing:</b> a debug keystore is created on first use in the user's folder, as Android Studio does.</li>
+    <li><b>Project settings</b> (an <code>Android</code> block in the <code>.mproject</code>, shown in the editor's Project Settings): <code>PackageName</code> (for example <code>com.dtrajko.coincollector</code>), <code>VersionCode</code>, <code>VersionName</code>, <code>Orientation</code>, an icon, <code>DefaultQuality</code>.</li>
+    <li><b>Build and Run:</b> when <code>adb</code> sees a phone, the editor installs and starts the game and streams its logcat into the editor's log.</li>
+    <li><b>Command line:</b> <code>--build-game &lt;project&gt; --platform android-arm64</code>, as for the other platforms, for CI and the tests.</li>
+  </ul>
+  <div class="box note"><b>Done when</b>a fresh Windows machine with the editor, the template, the Android SDK and the NDK builds Coin Collector into an APK from Build Game, and the APK installs and plays on the phone. The same command works from the Linux editor.</div>
+</section>
+
+<section id="phase-7">
+  <h2>Phase 7: Play Store release <span class="tag ed">editor</span></h2>
+  <p>Not scheduled: done when a game is ready to publish.</p>
+  <ul>
+    <li>A release keystore chosen in Project Settings. Its passwords aren't saved in the project.</li>
+    <li>An Android App Bundle (<code>.aab</code>): <code>aapt2 link --proto-format</code> and <code>bundletool</code>, beside the APK.</li>
+    <li>A check of Google Play's current requirements when this phase starts: the target API level, 16 KB page alignment of native libraries (already linked for it in Phase 2), and the data-safety form.</li>
+    <li>Optionally, Play Asset Delivery for packs larger than the base module's size limit.</li>
+  </ul>
+</section>
+
+<section id="ios">
+  <h2>iOS later <span class="tag ios">ios</span></h2>
+  <p>What each phase leaves ready, and what iOS still needs on its own.</p>
+  <div class="table-wrap wide">
+  <table>
+    <tr><th>Carries over unchanged</th><th>New for iOS</th></tr>
+    <tr><td>
+      <ul>
+        <li>the platform seams (Phase 1)</li>
+        <li><code>ScriptHostAot</code> and the exported entry point; iOS links the game as a static library instead of <code>dlopen</code></li>
+        <li>ASTC packs (Apple GPUs support ASTC)</li>
+        <li>the Mobile quality tier and the tile-friendly render passes</li>
+        <li>the touch API, the on-screen controls, the safe area, the lifecycle handling</li>
+        <li>GameBuilder's per-platform steps</li>
+      </ul></td>
+    <td>
+      <ul>
+        <li><code>Platform/iOS</code>: a UIKit view with a <code>CAMetalLayer</code>, touch and lifecycle events</li>
+        <li>MoltenVK (as on macOS today), linked statically. Its support for the Vulkan 1.2 features the renderer uses needs checking.</li>
+        <li>an Xcode project from CMake (<code>-G Xcode</code>, <code>CMAKE_SYSTEM_NAME=iOS</code>)</li>
+        <li>signing, provisioning, TestFlight and the App Store: these need the $99-a-year membership and a Mac (or a cloud Mac)</li>
+      </ul></td></tr>
+  </table>
+  </div>
+  <div class="box note"><b>Without a Mac</b>An <code>ios.yml</code> workflow on GitHub's macOS runners can compile the iOS backend and run it in the iOS Simulator. Compiling needs no Apple membership; only installing on a device and publishing do.</div>
+</section>
+
+<section id="risks">
+  <h2>Risks and open questions</h2>
+  <ul>
+    <li><b>NativeAOT on Android is still marked experimental</b> by Microsoft (the XA1040 warning). If Phase 0 fails, or it breaks later: embed the Mono runtime from the .NET for Android packs, which allows JIT and runtime loading of the game's <code>.dll</code> on Android. That route needs no per-game native compile but uses more memory and starts more slowly. iOS would then use Mono's full AOT, which also needs a Mac.</li>
+    <li><b>Building NativeAOT for Android from Windows</b> may not be possible. If so, the editor calls WSL for that step, or CI builds the scripts.</li>
+    <li><b>Driver variety.</b> Android Vulkan drivers vary more than desktop ones, between vendors and between driver versions of the same GPU. Other projects report, for example, that the Mali-G57 lacks clip distances, which MoravaEngine's shaders don't use. The device matrix covers each GPU family, and logcat reports from the cloud device lab catch device-specific crashes before a game is shared.</li>
+    <li><b>Vulkan 1.1 may need more than shaders.</b> If Phase 0 finds that the non-ray-traced path depends on a Vulkan 1.2 feature many phones lack, it gets a fallback in Phase 1. Otherwise the minimum stays at 1.2 and reaches fewer phones.</li>
+    <li><b>Phones without Vulkan</b> (about 7% of handhelds) can't run the game. An OpenGL ES renderer isn't planned.</li>
+    <li><b>Deferred rendering costs bandwidth</b> on tile-based GPUs. If Phase 4 can't reach the target, a forward path for Mobile Low becomes its own plan.</li>
+    <li><b>Emulator Vulkan</b> may lack features the renderer needs. A real phone is the reference; the emulator is only for the lifecycle and input logic.</li>
+    <li><b>Package size:</b> the runtime in the NativeAOT library plus the engine's <code>.so</code>. Measured in Phase 0 and Phase 4.</li>
+  </ul>
+  <h3>Left for the spikes</h3>
+  <ul>
+    <li>Whether NativeAOT on Android holds up (Phase 0). If not, Phase 3 takes the Mono route.</li>
+    <li>Whether Windows can build the Android script library, or that step goes through WSL.</li>
+    <li>The renderer's feature list below ray tracing, and whether Vulkan 1.1 is enough for it.</li>
+    <li>Which phones beyond the Redmi make up the device matrix.</li>
+    <li>The ASTC block sizes, from quality and cook time.</li>
+    <li>After Phase 3: whether shipped desktop games also switch to NativeAOT.</li>
+  </ul>
+</section>
+
+<section id="verify">
+  <h2>How each phase is checked</h2>
+  <ul>
+    <li><b>Desktop builds</b>, for every phase:
+      <ul>
+        <li>Debug and Release, editor and player</li>
+        <li>the GCC check of the changed C++ files (<code>Tools/Testing/gcc-check.sh</code>)</li>
+        <li><code>dotnet build</code> of ScriptCore and Sample's scripts</li>
+        <li>the existing CI smoke tests (player, animator, Erika, collector)</li>
+      </ul></li>
+    <li><b>Android builds</b> from Phase 2: the CI Android job builds the player and the template, and fails on new compiler warnings.</li>
+    <li><b>Setting up the Redmi:</b> in Developer options, turn on USB debugging, "Install via USB" and "USB debugging (Security settings)". On HyperOS the last two need you signed in to a Xiaomi account, and without them <code>adb install</code> and input injection are refused.</li>
+    <li><b>On the phone</b> (<code>Tools/Testing/Run-Android.ps1</code>): it installs the APK, starts it with <code>--scene</code> and <code>--exit-after-seconds</code> through the launch intent, and saves logcat to a file. The same checks as <code>Run-Engine.ps1</code> then apply: no validation messages, no errors, the scene loaded, the scripts started.</li>
+    <li><b>Captures:</b> <code>adb exec-out screencap</code> of each test scene, compared by eye with the desktop at the same quality.</li>
+    <li><b>The device matrix:</b> from Phase 2, each Android build runs Sample's test scenes on every phone in the matrix, local or in the cloud device lab. A crash, a validation message or a black frame on any of them fails the phase.</li>
+    <li><b>Performance:</b> the debug overlay's pass table at each mobile tier, plus frame times over 15 minutes from logcat, per phone.</li>
+    <li><b>You</b> try each phase on the phone.</li>
+  </ul>
+</section>
+</main>
+</body>
+</html>

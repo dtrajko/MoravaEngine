@@ -1,0 +1,182 @@
+Scene:
+  Version: 1
+  Name: TestTrack
+EditorCamera:
+  Translation: [60, 105, 160]
+  Rotation: [20, 30, 0]
+  FieldOfView: 60
+Entities:
+  - ID: 1001
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0.4, 52, 108.5]
+      Rotation: [12, 3, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 65
+      NearClip: 0.1
+      FarClip: 3000
+    Script:
+      Class: Racing.VehicleCamera
+      Fields:
+        Target: {Entity: 2001}
+  - ID: 1002
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/citrus_orchard_road_2k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 1003
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-35, 30, 0]
+      Scale: [1, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 1
+      FollowEnvironmentRotation: false
+      CastShadows: true
+      IconPlaced: false
+  - ID: 1004
+    Name: Terrain
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Terrain:
+      Seed: 12345
+      Size: 1024
+      FlatCenter: [-80, -25]
+      FlatRadius: 290
+      FlatBlend: 150
+      LodTolerance: 2
+      Layers:
+        Sand: {ID: 5100000000000000002, File: Assets/Materials/Terrain_Sand.mmat}
+        Grass: {ID: 5100000000000000001, File: Assets/Materials/Terrain_Grass.mmat}
+        Rock: {ID: 5100000000000000003, File: Assets/Materials/Terrain_Rock.mmat}
+  - ID: 3000
+    Name: Track
+    Parent: 0
+    Transform:
+      Translation: [0, 45.78, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - ID: 3001
+    Name: Road
+    Parent: 3000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Track_TestTrack_Road.glb
+    Collider:
+      Shape: TriangleMesh
+      Friction: 1
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3002
+    Name: Walls
+    Parent: 3000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Track_TestTrack_Walls.glb
+    Collider:
+      Shape: TriangleMesh
+      Friction: 0.05
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3003
+    Name: Structure
+    Parent: 3000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Track_TestTrack_Structure.glb
+  - ID: 2001
+    Name: Car
+    Parent: 0
+    Transform:
+      Translation: [0.36, 50, 102]
+      Rotation: [0, 3, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 0.2, 0]
+      HalfExtents: [0.9, 0.35, 2]
+    RigidBody:
+      Type: Dynamic
+      Mass: 1200
+      ContinuousCollision: true
+    Vehicle:
+      Controls: Player
+      Wheels:
+        - {Entity: 2003, Position: [-0.95, -0.15, -1.3], Radius: 0.35, Width: 0.24, Steers: true, Driven: true, Handbrake: false}
+        - {Entity: 2004, Position: [0.95, -0.15, -1.3], Radius: 0.35, Width: 0.24, Steers: true, Driven: true, Handbrake: false}
+        - {Entity: 2005, Position: [-0.95, -0.15, 1.3], Radius: 0.35, Width: 0.24, Steers: false, Driven: true, Handbrake: true}
+        - {Entity: 2006, Position: [0.95, -0.15, 1.3], Radius: 0.35, Width: 0.24, Steers: false, Driven: true, Handbrake: true}
+  - ID: 2002
+    Name: Body
+    Parent: 2001
+    Transform:
+      Translation: [0, 0.2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.9, 0.35, 2]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 2003
+    Name: Wheel FL
+    Parent: 2001
+    Transform:
+      Translation: [-0.95, -0.15, -1.3]
+      Rotation: [0, 0, 90]
+      Scale: [0.35, 0.12, 0.35]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 2004
+    Name: Wheel FR
+    Parent: 2001
+    Transform:
+      Translation: [0.95, -0.15, -1.3]
+      Rotation: [0, 0, 90]
+      Scale: [0.35, 0.12, 0.35]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 2005
+    Name: Wheel RL
+    Parent: 2001
+    Transform:
+      Translation: [-0.95, -0.15, 1.3]
+      Rotation: [0, 0, 90]
+      Scale: [0.35, 0.12, 0.35]
+    Model:
+      File: Models/Primitives/cylinder.obj
+  - ID: 2006
+    Name: Wheel RR
+    Parent: 2001
+    Transform:
+      Translation: [0.95, -0.15, 1.3]
+      Rotation: [0, 0, 90]
+      Scale: [0.35, 0.12, 0.35]
+    Model:
+      File: Models/Primitives/cylinder.obj

@@ -209,6 +209,10 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 	Tooltip("Slopes steeper than this are rock");
 	ImGui::DragFloat("Rock Height", &t.RockHeight, 0.5f, 0.0f, 2000.0f, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
 	Tooltip("Rock above this height (from the terrain's lowest point): bare peaks");
+	ImGui::DragFloat("LOD Tolerance", &t.LodTolerance, 0.05f, 0.0f, 20.0f, "%.2f m per 100 m", ImGuiSliderFlags_AlwaysClamp);
+	Tooltip("How far the drawn ground may stray from the true heights, per 100 m from the camera: each chunk is drawn\n"
+		"with as few heights as keep it within this (flat ground: two triangles). Larger is fewer triangles, 0 every height.\n"
+		"Physics always has every height. Renderer Stats: Show Terrain LOD tints the chunks by level");
 
 	ImGui::SeparatorText("Physics");
 	ImGui::SliderFloat("Friction", &t.Friction, 0.0f, 2.0f, "%.2f");

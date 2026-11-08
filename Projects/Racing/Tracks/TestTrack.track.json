@@ -1,0 +1,25 @@
+{
+  "Name": "TestTrack",
+  "Comment": "Phase 1's test track: an oval of about 1.2 km with a climb, a crest into a banked left turn, a drop and a flat left turn. Engine coordinates (Y up, the start line is in the middle of the straight along -Z), relative to the track entities in the scene. Built by Tools/TrackBuilder/build_track.py.",
+  "ModelsDirectory": "../Assets/Models",
+  "StartDistance": 12,
+  "Settings": { "GroundHeight": 0 },
+  "Defaults": { "Width": 16, "Bank": 0, "Walls": true, "Curbs": false, "Supports": true },
+  "Points": [
+    { "Position": [0, 3, 90] },
+    { "Position": [0, 3, 30] },
+    { "Position": [0, 10, -60] },
+    { "Position": [0, 14, -200], "Curbs": true },
+    { "Position": [-23, 14, -257], "Bank": -22, "Curbs": true },
+    { "Position": [-80, 14, -280], "Bank": -28, "Curbs": true },
+    { "Position": [-137, 14, -257], "Bank": -22, "Curbs": true },
+    { "Position": [-160, 14, -200], "Bank": -5 },
+    { "Position": [-160, 8, -80] },
+    { "Position": [-160, 3, 40] },
+    { "Position": [-160, 3, 150], "Curbs": true },
+    { "Position": [-137, 3, 207], "Bank": -8, "Curbs": true },
+    { "Position": [-80, 3, 230], "Bank": -10, "Curbs": true },
+    { "Position": [-23, 3, 207], "Bank": -8, "Curbs": true },
+    { "Position": [0, 3, 150] }
+  ]
+}

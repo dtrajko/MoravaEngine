@@ -87,6 +87,11 @@ struct EnvMapVulkanViewOptions
 	bool FreezeCulling = false;
 	bool ShowCulled = false;
 
+	// Terrains' levels of detail (TerrainLods): off draws every chunk with every height (to compare); Show Terrain LOD tints
+	// each chunk by its level (every height green, then yellow, orange, red, purple, blue, gray)
+	bool TerrainLod = true;
+	bool ShowTerrainLod = false;
+
 	bool Grid = false;
 	float GridScale = 16.025f; // cells across the grid (it spans 32 x 32 units)
 	float GridSize = 0.025f;   // line width, as a fraction of a cell

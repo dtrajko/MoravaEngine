@@ -2140,6 +2140,18 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_Data = VulkanRendererData();
 }
 
+// A terrain chunk at its level of detail: its triangles and the skirt that hides the gaps to its neighbors' levels
+static void DrawTerrainChunk(VkCommandBuffer commandBuffer, const EnvMapVulkanTerrain::ChunkDraw& chunk, uint32_t baseVertex, uint32_t firstInstance)
+{
+	vkCmdDrawIndexed(commandBuffer, chunk.Surface.IndexCount, 1, chunk.Surface.BaseIndex, (int32_t)baseVertex, firstInstance);
+	EnvMapVulkanProfiler::CountDraw(chunk.Surface.IndexCount / 3);
+	if (chunk.Skirt.IndexCount > 0)
+	{
+		vkCmdDrawIndexed(commandBuffer, chunk.Skirt.IndexCount, 1, chunk.Skirt.BaseIndex, (int32_t)baseVertex, firstInstance);
+		EnvMapVulkanProfiler::CountDraw(chunk.Skirt.IndexCount / 3);
+	}
+}
+
 void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
 	MeshPass pass, uint32_t firstDraw)
 {
@@ -2273,8 +2285,12 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
 		glm::mat4 meshTransform = EnvMapVulkanSceneData::GetMeshTransform(model, mesh, transform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &meshTransform);
+		// A terrain's chunk: its level of detail for its distance from the camera (see EnvMapVulkanTerrain::ChooseChunk)
+		EnvMapVulkanTerrain::ChunkDraw chunk;
+		const bool lod = terrain && s_ViewOptions.TerrainLod && EnvMapVulkanTerrain::ChooseChunk(model.Raw(), s, meshTransform, chunk);
 		if (terrain)
 		{
+			terrainUniforms.LodTint = lod && s_ViewOptions.ShowTerrainLod ? (float)chunk.Level : -1.0f;
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(terrainUniforms), &terrainUniforms);
 		}
 		else
@@ -2283,6 +2299,11 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		}
 		// The prepass reads the mesh's previous transform per instance: the instance index picks it (see EnvMapVulkanGBuffer)
 		uint32_t firstInstance = pass == MeshPass::GBuffer ? firstDraw + (uint32_t)s : 0;
+		if (lod)
+		{
+			DrawTerrainChunk(commandBuffer, chunk, mesh->BaseVertex, firstInstance);
+			continue;
+		}
 		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, firstInstance);
 		EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
 	}
@@ -2635,6 +2656,13 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 			{
 				glm::mat4 matrices[2] = { viewProjection, meshTransform };
 				vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
+			}
+			// A terrain's chunk: the level the camera's view has, so the shadows fall on the ground that is drawn
+			EnvMapVulkanTerrain::ChunkDraw chunk;
+			if (!skinned && s_ViewOptions.TerrainLod && EnvMapVulkanTerrain::ChooseChunk(model.Raw(), s, meshTransform, chunk))
+			{
+				DrawTerrainChunk(commandBuffer, chunk, mesh->BaseVertex, 0);
+				continue;
 			}
 			vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
 			EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
@@ -4639,8 +4667,10 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	ExtractLights();
 	ExtractWater();
 	ExtractProbeVolume();
-	// The terrains' chunks and layers (made again when a shape's settings changed), before the models are listed below
+	// The terrains' chunks and layers (made again when a shape's settings changed), before the models are listed below;
+	// their levels of detail from this camera, in every pass
 	EnvMapVulkanTerrain::Update(*s_Scene);
+	EnvMapVulkanTerrain::SetViewPosition(glm::vec3(glm::inverse(camera->GetViewMatrix())[3]));
 
 	// Shadow map resolutions that differ from the settings (changed in the panel, a scene opened): the maps are recreated
 	// before any command buffer of this frame is recorded (their descriptors in set 0 can't change while a recorded frame

@@ -12,6 +12,7 @@
 #include "Core/Window.h"
 
 #include <memory>
+#include <vector>
 
 
 namespace H2M
@@ -56,6 +57,7 @@ struct ApplicationCommandLine
 	bool Simulate = false;         // --simulate: the editor starts Simulate (physics only) once the startup scene is open
 	bool SaveScene = false;        // --save-scene: the editor saves the open scene when it closes (after a Play's Stop)
 	bool DebugOverlay = false;     // --debug-overlay: the debug overlay (7.4) shown at startup
+	float FrameStatsWarmup = -1.0f; // --frame-stats [seconds]: log frame-time statistics at exit, the first seconds left out (default 5; -1: off)
 
 	static ApplicationCommandLine Parse(int argc, char** argv);
 };
@@ -148,6 +150,7 @@ public:
 private:
 	bool OnWindowClose(H2M::WindowCloseEventH2M& e);
 	bool OnWindowResize(H2M::WindowResizeEventH2M& e);
+	static void LogFrameStats(std::vector<float> frameTimes, float warmup); // --frame-stats, at exit
 
 private:
 	static Application* s_Instance;

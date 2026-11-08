@@ -46,6 +46,11 @@ struct TerrainSettings
 
 	float Friction = 0.8f;        // physics: what drives and walks on it
 
+	// The detail (drawing only: physics always has every height): each chunk is drawn with as few of its heights as keep
+	// its shape within this many meters of the true one per 100 m of distance from the camera (0.5: half a meter at 100 m,
+	// two meters at 400 m). Flat ground is a few triangles at any distance; larger is fewer triangles
+	float LodTolerance = 1.0f;
+
 	static constexpr float ChunkSize = 64.0f; // meters: the terrain is drawn in squares of this size (culled one by one)
 	static constexpr float Spacing = 1.0f;    // meters between two heights
 	static constexpr float MinSize = 128.0f, MaxSize = 4096.0f;
@@ -77,6 +82,32 @@ struct TerrainHeights
 	bool Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, float& t) const;
 };
 
+// The chunks' levels of detail (BuildModelData): each chunk's triangles with every height (level 0, the mesh's own) and with
+// every 2nd, 4th... 64th height (levels 1 to 6, in the model's index buffer after the meshes' own triangles; level 6 is a
+// 64 m chunk as two triangles), each level's error (how far its triangles stray from the heights), and for each level a
+// skirt: a strip hanging down from the chunk's edges (both sides facing out), which hides the gaps where two chunks of
+// different levels meet. A level's triangles and its skirt are drawn together
+struct TerrainLods
+{
+	static constexpr uint32_t LevelCount = 7;
+	struct Range
+	{
+		uint32_t BaseIndex = 0;  // the first index (as a mesh's BaseIndex: indices, not triangles)
+		uint32_t IndexCount = 0;
+	};
+	struct Chunk
+	{
+		Range Surface[LevelCount]; // level 0: the mesh's own range
+		Range Skirt[LevelCount];
+		float Error[LevelCount] = {}; // meters: the most a level's triangles are above or below a height (level 0: none)
+	};
+	std::vector<Chunk> Chunks; // as the model's meshes
+
+	// The coarsest level of a chunk whose error is within the tolerance (TerrainSettings::LodTolerance) at this distance
+	// from the camera (meters, to the nearest point of its box)
+	static uint32_t LevelAt(const Chunk& chunk, float distance, float tolerance);
+};
+
 namespace Terrain
 {
 	// The heights the settings give (on several threads: about 1 s in Debug for 1024 m)
@@ -85,7 +116,8 @@ namespace Terrain
 	// The meshes: one per chunk (ChunkSize meters square), with normals from the heights, tangents along +x, texture
 	// coordinates in meters (x, z of the terrain's space: a material's tiling is then repeats per meter) and one material.
 	// The triangles of each square split it as physics does (from its corner at -x -z to the one at +x +z)
-	ModelData BuildModelData(const TerrainHeights& heights);
+	// lods (optional): the chunks' levels of detail, written into the model's indices after the meshes' own (see TerrainLods)
+	ModelData BuildModelData(const TerrainHeights& heights, TerrainLods* lods = nullptr);
 
 	// A random seed for Randomize (any of the 32-bit numbers but 0)
 	uint32_t RandomSeed();
