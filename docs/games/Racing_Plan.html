@@ -167,7 +167,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li><b>Top speed about 350 km/h.</b></li>
     <li><b>Curbs on the inner side of a turn only</b>, not on both sides (2026-11-08).</li>
     <li><b>The terrain is only a backdrop:</b> as few triangles as possible; it just has to hide the sky map's lower half (2026-11-08).</li>
-    <li><b>Trees and foliage outside the track, Trackmania style:</b> real trunks and branches near the camera with leaves on textured cards, 2D impostors at a distance (Phase 8). The trees are CC0 models (for example from Poly Haven), simplified in Blender to game size.</li>
+    <li><b>Trees and foliage outside the track, Trackmania style:</b> real trunks and branches near the camera with leaves on textured cards, 2D billboards at a distance (impostors: Phase 8). The trees are CC0 models (for example from Poly Haven), simplified in Blender to game size.</li>
   </ul>
   <h3>Proposed and accepted</h3>
   <ul>
@@ -201,7 +201,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li><b>A budget check in every phase.</b> The test driver laps the track at Medium and High and logs the frame times (average, 1% low, the worst frame), with the GPU profiler's time for each pass. A phase isn't done while a tier is below its target, so a cost is seen in the phase that adds it.</li>
     <li><b>Phase 1 measures the baseline</b> (the test track, the car, the terrain) before anything else is added.</li>
     <li><b>Known costs, fixed early:</b> the terrain had no level of detail and took about 6.6 ms of the frame; it got levels of detail in Phase 1 (done 2026-11-08). The track is exported in chunks of about 100 m, so it is culled chunk by chunk in the view and in each shadow cascade.</li>
-    <li><b>The foliage is built for the budget</b> (Phase 8): instancing, impostors at a distance, culling per instance, and a density and draw distance per tier.</li>
+    <li><b>The foliage is built for the budget</b> (Phase 8): instancing, billboards (impostors) at a distance, culling per instance, and a density and draw distance per tier.</li>
     <li><b>Frame pacing:</b> an FPS cap in Settings (60, 120, 144, 180, none) with VSync on or off, if Settings lacks it. Physics stays at a fixed 60 Hz, and the drawing is interpolated between the steps (the game loop does this already).</li>
     <li><b>Render scale</b> (drawing smaller and upscaling with TAA, planned in the quality tiers) only if Medium can't reach the target without it.</li>
   </ul>
@@ -298,6 +298,16 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>Its license note in <code>Projects/Racing/Assets</code> and in the game build's license notices.</li>
     <li><b>Checked:</b> the wheels spin and steer without shearing (the model's parts are under an unscaled parent); shadows and materials look right.</li>
   </ul>
+  <div class="box ok"><b>As built (2026-11-08)</b>
+  <ul>
+    <li><b>The car:</b> the body of <code>race.glb</code> of Kenney's Car Kit 3.1 (CC0, an open-wheel race car) and four <code>wheel-racing</code> wheels of the same kit (the user's pick: wider, orange rims), in <code>Projects/Racing/Assets/Models/KenneyCarKit/</code> with the kit's texture (<code>Textures/colormap.png</code>, the palette all its models share; the engine reads it beside a model, not embedded) and its <code>License.txt</code>.</li>
+    <li><b>In the scene:</b> the Empty <code>Car</code> (Vehicle, a box Collider, a Dynamic body of 800 kg with continuous collision) holds the child <code>Model</code>, <code>race.glb</code> with only its Body part (the scene leaves its own wheels out): turned 180° (the kit's cars face +Z, the engine's −Z) and scaled 2× (the kit is toy-sized: now 5.1 m long). The four wheels are children of <code>Car</code>, each a <code>wheel-racing-flat.glb</code> model and the Vehicle's wheel entity; the left ones turned 180° so their rims face out.</li>
+    <li><b>Wider wheels</b> (the user's wish, F1-like): 0.6 m radius, each wheel scaled along its axle to 0.9 m wide at the front and 1.08 m at the rear, their inner faces 0.6 m from the middle; the physics widths and the box (3.3 m wide) match. A wheel's own scale is safe: the vehicle keeps a wheel's world scale as it places it.</li>
+    <li><b>Flat treads</b> (<code>Tools/TrackBuilder/flatten_tires.py</code>, plain Python): the kit's tires are full round only across the middle of their width and chamfer down at both sides, so a widened wheel touched the road with its middle only (the user saw it). The tool writes <code>wheel-racing-flat.glb</code> from <code>wheel-racing.glb</code>: the tread flat across 86% of the width, narrow chamfers, the moved faces' normals made again.</li>
+    <li><b>Chase camera:</b> farther and higher for the larger car (Distance 9, Height 1.6).</li>
+    <li><b>Checked:</b> the test driver's laps as with the box car (39.15 s, about 110 km/h on average, 160 km/h at most, at most 2.9 m from the center line); the wheels steer and roll without stretching in the banked turn; the treads on the road across their width; the car's shadow; no validation messages.</li>
+    <li><b>Not done:</b> the built game's license notices are the engine's (<code>cmake/ThirdPartyNotices.cmake</code>): the project's assets go into them in Phase 10. The car's handling is still part B's defaults (Phase 3).</li>
+  </ul></div>
 </section>
 
 <section id="phase-3">
@@ -349,9 +359,9 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 <section id="phase-8">
   <h2>Phase 8: trees and foliage <span class="tag">engine</span> <span class="tag">tools</span></h2>
   <ul>
-    <li><b>Assets:</b> three or four CC0 tree species and one or two bushes, simplified by a Blender script (<code>Tools/TrackBuilder/prepare_tree.py</code>): trunks and branches of a few thousand triangles, leaf cards with alpha (the Cutout surface). The script also bakes each tree's impostor atlas (albedo with alpha and normals, seen from 8–16 directions around it).</li>
+    <li><b>Assets:</b> three or four CC0 tree species and one or two bushes, simplified by a Blender script (<code>Tools/TrackBuilder/prepare_tree.py</code>): trunks and branches of a few thousand triangles, leaf cards with alpha (the Cutout surface). The script also bakes each tree's billboard atlas, its impostor (albedo with alpha and normals, seen from 8–16 directions around it).</li>
     <li><b>Engine, a Foliage component:</b> a list of species, density, seed, slope and height limits, a keep-out distance from the track (its center line) and from the supports; it scatters instances over the terrain.</li>
-    <li><b>Engine, instanced drawing</b> of many copies of one mesh (scene pass, G-buffer prepass, shadow cascades), culled per instance. Distance levels: the mesh near, the impostor farther (a camera-facing card showing the nearest baked view), nothing beyond, with a dithered cross-fade between them that TAA smooths. A debug view colors the instances by level.</li>
+    <li><b>Engine, instanced drawing</b> of many copies of one mesh (scene pass, G-buffer prepass, shadow cascades), culled per instance. Distance levels: the mesh near, a billboard farther: the impostor, a card that turns to face the camera around the vertical axis only (trees stay upright seen from a crest or a jump) and shows the baked view nearest to the camera's direction, lit with its baked normals, nothing beyond, with a dithered cross-fade between them that TAA smooths. A debug view colors the instances by level.</li>
     <li><b>A known limit to check:</b> ray tracing (AO, reflections, probes) sees cutout leaves as opaque cards. If it shows, alpha in the ray tracing passes becomes a step of this phase.</li>
     <li><b>Checked:</b> the frame time with thousands of trees (before and after), no pop at a level switch, no tree on or over the road.</li>
   </ul>

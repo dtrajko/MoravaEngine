@@ -31,8 +31,7 @@ jobs:
             cxx: g++
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
             smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20 --play --debug-view 21
-            # A project (Projects/Sample): its start scene, its own materials, its window
-            player-smoke-test: --pack $SAMPLE_PROJECT_DIR/Build/Game.mpak --scene Scenes/RollABall.mscene --exit-after 20
+            player-smoke-test: true # the sample's pack, the player's smoke tests (Erika, Level 2) and the built game
           # Without -fno-pch-timestamp Clang rejects a precompiled header that ccache restored (its file time differs)
           - name: Clang Vulkan
             cc: clang
@@ -144,70 +143,6 @@ jobs:
             exit 1
           fi
 
-      # The player (MoravaPlayer, without the editor) plays the sample's RollABall scene (named, not the start scene: its
-      # sounds are checked) the same way, and fails on the same things, and on the project's files that could not be found
-      - name: Player smoke test
-        if: matrix.player-smoke-test
-        run: |
-          set -o pipefail
-          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 build/MoravaPlayer ${{ matrix.player-smoke-test }} 2>&1 | tee player-smoke-test.log
-          if grep -q VulkanDebugCallback player-smoke-test.log; then
-            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
-            exit 1
-          fi
-          if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read" player-smoke-test.log; then
-            echo "::error::Files that could not be found or loaded"
-            exit 1
-          fi
-          if ! grep -q "C# scripting: .NET" player-smoke-test.log; then
-            echo "::error::C# scripting: .NET didn't start from the private folder next to the executable"
-            exit 1
-          fi
-          if grep -E "Scene: .*(not found|could not be loaded)|could not be opened|Input file .* could not be loaded|binding of .* is left out" player-smoke-test.log; then
-            echo "::error::The project, its scene, its input file, or a model or material of the scene could not be found or opened"
-            exit 1
-          fi
-          # The sample's C# scripts (built by CMake): loaded, their instances made, and none of them threw
-          if ! grep -q "Scripts: [1-9][0-9]* instance(s)" player-smoke-test.log || grep -E "Script error:|Scripts: .*(isn't in the game's assembly|no game assembly)" player-smoke-test.log; then
-            echo "::error::The sample's C# scripts didn't load or run, or one of them threw an exception (see the log)"
-            exit 1
-          fi
-          # The engine's self-tests at the renderer's start: the scene (subtree copies) and prefabs (6.1)
-          if grep -q "self-test failed" player-smoke-test.log; then
-            echo "::error::An engine self-test failed (see the log)"
-            exit 1
-          fi
-          # Audio (5.1): miniaudio started (a runner has no sound card: the null device), the sample's sounds were made
-          if ! grep -q "Audio: miniaudio" player-smoke-test.log || ! grep -q "Audio: [1-9][0-9]* sound(s)" player-smoke-test.log || grep -E "Audio: .*can't be played|Audio: miniaudio could not start" player-smoke-test.log; then
-            echo "::error::Audio didn't start, or a sound of the sample couldn't be loaded (see the log)"
-            exit 1
-          fi
-          # The game UI (7.2): the HUD's font made into an atlas (or read from its cache), its text and images drawn
-          if ! grep -E -q "UI font: '.*' (made|from the cache)" player-smoke-test.log || grep -E "UI font: (can't|FreeType)|UI font: .*(isn't a font|has none of the characters|didn't fit)|UI image: can't" player-smoke-test.log; then
-            echo "::error::The game UI's font or an image of the HUD could not be loaded (see the log)"
-            exit 1
-          fi
-
-      # The animator (6.4): the sample's Character scene, its character posed by its controller (clips from three files
-      # of one rig), the script that sets the parameters running
-      - name: Animator smoke test
-        if: matrix.player-smoke-test
-        run: |
-          set -o pipefail
-          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 build/MoravaPlayer --pack $SAMPLE_PROJECT_DIR/Build/Game.mpak --scene Scenes/Character.mscene --exit-after 10 2>&1 | tee animator-smoke-test.log
-          if grep -q VulkanDebugCallback animator-smoke-test.log; then
-            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
-            exit 1
-          fi
-          if ! grep -q "Animation: 1 animator(s), 1 animating" animator-smoke-test.log || grep -E "Animator of |Animator '.*' could not be loaded|Animation: .*(could not be read|doesn't exist|has no animations)" animator-smoke-test.log; then
-            echo "::error::The Character scene's animator didn't start, or a controller or clip of it couldn't be loaded (see the log)"
-            exit 1
-          fi
-          if ! grep -q "Scripts: [1-9][0-9]* instance(s)" animator-smoke-test.log || grep -q "Script error:" animator-smoke-test.log; then
-            echo "::error::The Character scene's scripts didn't run, or one of them threw an exception (see the log)"
-            exit 1
-          fi
-
       # The sample's Erika scene: cutout eyelashes, a controller with Footstep events, her sounds' files
       - name: Erika smoke test
         if: matrix.player-smoke-test
@@ -240,14 +175,15 @@ jobs:
             test -f "$SAMPLE_PROJECT_DIR/Assets/Audio/$sound.wav" || { echo "::error::Erika's sound $sound.wav is missing"; exit 1; }
           done
 
-      # The coin collector (Milestone 2): the project's start scene (the main menu, its saved settings applied), then Level 2
-      # (the sea, the moving platforms, the coins, the gate) with the debug overlay
+      # The player (MoravaPlayer, without the editor) plays the coin collector's Level 2 (Milestone 2: the sea, the moving
+      # platforms, the coins, the gate, its sounds and HUD) with the debug overlay. The project's start scene (the main menu)
+      # is played by the built game below. This run also checks what every scene needs: the private .NET, the scripts,
+      # the engine's self-tests, audio and the game UI's font
       - name: Collector smoke test
         if: matrix.player-smoke-test
         run: |
           set -o pipefail
-          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 build/MoravaPlayer --pack $SAMPLE_PROJECT_DIR/Build/Game.mpak --exit-after 8 2>&1 | tee collector-smoke-test.log
-          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 build/MoravaPlayer --pack $SAMPLE_PROJECT_DIR/Build/Game.mpak --scene Scenes/Level2.mscene --exit-after 10 --debug-overlay 2>&1 | tee -a collector-smoke-test.log
+          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 build/MoravaPlayer --pack $SAMPLE_PROJECT_DIR/Build/Game.mpak --scene Scenes/Level2.mscene --exit-after 10 --debug-overlay 2>&1 | tee collector-smoke-test.log
           if grep -q VulkanDebugCallback collector-smoke-test.log; then
             echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
             exit 1
@@ -256,12 +192,41 @@ jobs:
             echo "::error::A model, texture, material or scene of the collector could not be found or loaded"
             exit 1
           fi
-          if ! grep -q "Playing scene 'MainMenu'" collector-smoke-test.log || ! grep -q "C#: Options: " collector-smoke-test.log; then
-            echo "::error::The project didn't start with its main menu, or the menu's script didn't run (see the log)"
+          if ! grep -q "C# scripting: .NET" collector-smoke-test.log; then
+            echo "::error::C# scripting: .NET didn't start from the private folder next to the executable"
             exit 1
           fi
-          if ! grep -q "Level 2: collect the 15 coins, then reach the goal" collector-smoke-test.log || grep -q "Script error:" collector-smoke-test.log; then
-            echo "::error::Level 2's scripts didn't start as expected, or one of them threw an exception (see the log)"
+          if grep -E "Scene: .*(not found|could not be loaded)|Input file .* could not be loaded" collector-smoke-test.log; then
+            echo "::error::The project, its scene or its input file could not be found or opened"
+            exit 1
+          fi
+          # The sample's C# scripts (built by CMake): loaded, their instances made, none of them threw, Level 2's started
+          if ! grep -q "Scripts: [1-9][0-9]* instance(s)" collector-smoke-test.log || grep -E "Script error:|Scripts: .*(isn't in the game's assembly|no game assembly)" collector-smoke-test.log; then
+            echo "::error::The sample's C# scripts didn't load or run, or one of them threw an exception (see the log)"
+            exit 1
+          fi
+          if ! grep -q "Level 2: collect the 15 coins, then reach the goal" collector-smoke-test.log; then
+            echo "::error::Level 2's scripts didn't start as expected (see the log)"
+            exit 1
+          fi
+          # The engine's self-tests at the renderer's start: the scene (subtree copies) and prefabs (6.1)
+          if grep -q "self-test failed" collector-smoke-test.log; then
+            echo "::error::An engine self-test failed (see the log)"
+            exit 1
+          fi
+          # Audio (5.1): miniaudio started (a runner has no sound card: the null device), the level's sounds were made
+          if ! grep -q "Audio: miniaudio" collector-smoke-test.log || ! grep -q "Audio: [1-9][0-9]* sound(s)" collector-smoke-test.log || grep -E "Audio: .*can't be played|Audio: miniaudio could not start" collector-smoke-test.log; then
+            echo "::error::Audio didn't start, or a sound of the level couldn't be loaded (see the log)"
+            exit 1
+          fi
+          # The game UI (7.2): the HUD's font made into an atlas (or read from its cache), its text and images drawn
+          if ! grep -E -q "UI font: '.*' (made|from the cache)" collector-smoke-test.log || grep -E "UI font: (can't|FreeType)|UI font: .*(isn't a font|has none of the characters|didn't fit)|UI image: can't" collector-smoke-test.log; then
+            echo "::error::The game UI's font or an image of the HUD could not be loaded (see the log)"
+            exit 1
+          fi
+          # Played with the debug overlay (F3, 7.4) over it
+          if ! grep -q "Debug overlay: shown" collector-smoke-test.log; then
+            echo "::error::The player didn't show the debug overlay (--debug-overlay)"
             exit 1
           fi
 
@@ -334,8 +299,6 @@ jobs:
           name: smoke-test-log-linux-${{ strategy.job-index }}
           path: |
             smoke-test.log
-            player-smoke-test.log
-            animator-smoke-test.log
             erika-smoke-test.log
             collector-smoke-test.log
             build-game.log

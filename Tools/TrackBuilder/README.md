@@ -59,3 +59,14 @@ triangles.
 
 The models carry plain materials (Road, Curb_Red, Curb_White, Wall, Structure, Support, Line_White, Line_Black) with a
 base color and roughness. The engine imports them as they are; the project's own materials can replace them per part.
+
+## Flat tire treads (`flatten_tires.py`)
+
+Plain Python, no Blender. Kenney's Car Kit tires are full round only across the middle of their width; widened (a wheel
+scaled along its axle) they look as if only their middle touched the road. This writes a copy with the tread flat across
+most of the width (the meshes named `wheel...`; the rest of the file as it is):
+
+```powershell
+python Tools/TrackBuilder/flatten_tires.py Projects/Racing/Assets/Models/KenneyCarKit/wheel-racing.glb `
+    Projects/Racing/Assets/Models/KenneyCarKit/wheel-racing-flat.glb   # [edge]: the chamfer, 0.07 of the width
+```
