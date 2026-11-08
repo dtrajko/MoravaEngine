@@ -3,7 +3,7 @@
   "Comment": "Phase 1's test track: an oval of about 1.2 km with a climb, a crest into a banked left turn, a drop and a flat left turn. Engine coordinates (Y up, the start line is in the middle of the straight along -Z), relative to the track entities in the scene. Built by Tools/TrackBuilder/build_track.py.",
   "ModelsDirectory": "../Assets/Models",
   "StartDistance": 12,
-  "Settings": { "GroundHeight": 0 },
+  "Settings": { "GroundHeight": 0, "WallHeight": 2, "WallThickness": 1 },
   "Defaults": { "Width": 16, "Bank": 0, "Walls": true, "Curbs": false, "Supports": true },
   "Points": [
     { "Position": [0, 3, 90] },
