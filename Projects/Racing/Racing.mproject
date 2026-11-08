@@ -1,0 +1,18 @@
+Project:
+  Version: 1
+  Name: Racing
+  StartScene: Scenes/TestTrack.mscene
+  AssetDirectory: Assets
+  InputMap: Settings/Input.minput
+  ScriptAssembly: Scripts/bin/Racing.dll
+  ScriptProject: Scripts/Racing.csproj
+  Window: {Width: 1600, Height: 900, Fullscreen: false, VSync: false, Title: Racing}
+  Physics: {Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, Dynamic-Character, Dynamic-Trigger, Character-Character, Character-Trigger]}
+  Audio: {Master: 1, Music: 0.5, Effects: 1, UI: 0.7}
+  Build:
+    ProductName: Racing
+    Company: Morava Games
+    Version: 0.1.0
+    DefaultQuality: Medium
+    Scenes:
+      - {File: Scenes/TestTrack.mscene}

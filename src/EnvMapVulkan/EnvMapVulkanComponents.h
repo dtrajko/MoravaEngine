@@ -184,6 +184,7 @@ struct TerrainComponent
 	// Runtime: made from the settings, shared by the copies of the scene (Play)
 	std::shared_ptr<const TerrainHeights> Heights;
 	H2M::RefH2M<H2M::ModelH2M> Model; // the chunks
+	std::shared_ptr<const TerrainLods> Lods; // the chunks' levels of detail (in the model's index buffer)
 };
 
 // A game camera (docs/engine/Game_Engine_Runtime_Guide.html, 6.3): the game is seen through the primary one (the first

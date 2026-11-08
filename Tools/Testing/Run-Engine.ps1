@@ -20,8 +20,8 @@
 #>
 param(
     [switch]$Editor,               # the editor (MoravaEngine.exe); else the player
-    [string]$Project,              # --project
-    [string]$Scene,                # --scene
+    [string]$Project,              # --project: a file, or a project's name (Racing)
+    [string]$Scene,                # --scene: a file, or a scene's name (TestTrack)
     [int]$Seconds = 20,            # --exit-after: the time in the main loop, after the startup
     [switch]$Play,                 # the editor: --play
     [switch]$Simulate,             # the editor: --simulate
@@ -53,8 +53,16 @@ if (-not (Test-Path $exe)) { throw "Not built: $exe" }
 $Log = if ($Log) { Get-FullPath $Log (Get-Location) } else { Join-Path $outputFolder "$exeName.log" }
 
 $arguments = @()
-if ($Project) { $arguments += "--project", "`"$(Get-FullPath $Project (Get-Location))`"" }
-if ($Scene) { $arguments += "--scene", "`"$(Get-FullPath $Scene (Get-Location))`"" }
+# A file here is passed with its full path; anything else as it is, for the engine to find by name (--project Racing
+# --scene TestTrack: Projects/Racing/Scenes/TestTrack.mscene, see ResolveProjectName in src/Core/Application.cpp)
+function Get-EnginePath([string]$path)
+{
+    $full = Get-FullPath $path (Get-Location)
+    if (Test-Path -LiteralPath $full -PathType Leaf) { return $full }
+    return $path
+}
+if ($Project) { $arguments += "--project", "`"$(Get-EnginePath $Project)`"" }
+if ($Scene) { $arguments += "--scene", "`"$(Get-EnginePath $Scene)`"" }
 if ($Play) { $arguments += "--play" }
 if ($Simulate) { $arguments += "--simulate" }
 if ($DebugOverlay) { $arguments += "--debug-overlay" }

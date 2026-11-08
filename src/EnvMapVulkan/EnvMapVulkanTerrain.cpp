@@ -30,11 +30,14 @@ namespace EnvMapVulkanTerrain
 		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet DescriptorSet;
 		std::array<H2M::RefH2M<H2M::Texture2D_H2M>, BindingCount> Bound; // what each binding has (null: not written yet)
 		const H2M::ModelH2M* Model = nullptr;
+		std::shared_ptr<const TerrainLods> Lods;
+		float LodTolerance = 1.0f;
 		Uniforms Values;
 		bool Seen = false; // in this frame's scene
 	};
 	static std::unordered_map<EnvMapVulkanEntityID, TerrainGPU> s_Terrains;
 	static std::unordered_map<const H2M::ModelH2M*, EnvMapVulkanEntityID> s_ByModel;
+	static glm::vec3 s_ViewPosition = glm::vec3(0.0f);
 
 	static H2M::RefH2M<H2M::VulkanShaderH2M> GetMaterialShader()
 	{
@@ -71,7 +74,7 @@ namespace EnvMapVulkanTerrain
 	static void Generate(TerrainComponent& terrain, const std::string& name)
 	{
 		const uint64_t hash = terrain.Settings.GetShapeHash();
-		if (terrain.Heights && terrain.Heights->ShapeHash == hash && terrain.Model)
+		if (terrain.Heights && terrain.Heights->ShapeHash == hash && terrain.Model && terrain.Lods)
 		{
 			return;
 		}
@@ -80,14 +83,22 @@ namespace EnvMapVulkanTerrain
 			terrain.Heights = Terrain::GenerateHeights(terrain.Settings);
 		}
 		const auto start = std::chrono::steady_clock::now();
-		ModelData data = Terrain::BuildModelData(*terrain.Heights);
-		const size_t chunks = data.Meshes.size(), vertices = data.StaticVertices.size(), triangles = data.Indices.size();
+		auto lods = std::make_shared<TerrainLods>();
+		ModelData data = Terrain::BuildModelData(*terrain.Heights, lods.get());
+		size_t triangles = 0; // the chunks' own (every height), not the levels'
+		for (const ModelMeshData& mesh : data.Meshes)
+		{
+			triangles += mesh.TriangleCount;
+		}
+		const size_t chunks = data.Meshes.size(), vertices = data.StaticVertices.size(), levelTriangles = data.Indices.size() - triangles;
+		terrain.Lods = lods;
 		terrain.Model = H2M::RefH2M<H2M::ModelH2M>::Create("Terrain '" + name + "'", std::move(data));
 		const float meshMilliseconds = std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - start).count();
 		const glm::vec2 flat = terrain.Settings.FlatCenter;
 		Log::GetLogger()->info("Terrain '{0}': {1:.0f} m, seed {2}, heights {3:.1f} to {4:.1f} m, the flat area at {5:.1f} m: {6} chunks, {7} vertices, "
-			"{8} triangles (heights in {9:.0f} ms, meshes in {10:.0f} ms)", name, terrain.Heights->Size, terrain.Settings.Seed, terrain.Heights->MinHeight,
-			terrain.Heights->MaxHeight, terrain.Heights->GetHeight(flat.x, flat.y), chunks, vertices, triangles, terrain.Heights->Milliseconds, meshMilliseconds);
+			"{8} triangles and {9} more in the levels of detail (heights in {10:.0f} ms, meshes in {11:.0f} ms)", name, terrain.Heights->Size, terrain.Settings.Seed,
+			terrain.Heights->MinHeight, terrain.Heights->MaxHeight, terrain.Heights->GetHeight(flat.x, flat.y), chunks, vertices, triangles, levelTriangles,
+			terrain.Heights->Milliseconds, meshMilliseconds);
 	}
 
 	static float MaterialValue(H2M::RefH2M<EnvMapVulkanMaterial> material, const char* name)
@@ -120,6 +131,8 @@ namespace EnvMapVulkanTerrain
 			TerrainGPU& gpu = s_Terrains[entity];
 			gpu.Seen = true;
 			gpu.Model = terrain.Model.Raw();
+			gpu.Lods = terrain.Lods;
+			gpu.LodTolerance = terrain.Settings.LodTolerance;
 			s_ByModel[gpu.Model] = entity;
 			if (gpu.DescriptorSet.DescriptorSets.empty())
 			{
@@ -167,6 +180,7 @@ namespace EnvMapVulkanTerrain
 				}
 			}
 			values.MapToggles = (float)toggles;
+			values.LodTint = -1.0f;
 			const H2M::RefH2M<EnvMapVulkanMaterial>& grass = terrain.Layers[TerrainComponent::Grass].Material;
 			values.MaterialIndex = grass ? MaterialValue(grass, "u_MaterialUniforms.MaterialIndex") :
 				MaterialValue(EnvMapVulkanMaterialLibrary::GetDefaultMaterial(), "u_MaterialUniforms.MaterialIndex");
@@ -192,6 +206,37 @@ namespace EnvMapVulkanTerrain
 	{
 		s_Terrains.clear();
 		s_ByModel.clear();
+	}
+
+	void SetViewPosition(const glm::vec3& worldPosition)
+	{
+		s_ViewPosition = worldPosition;
+	}
+
+	bool ChooseChunk(const H2M::ModelH2M* model, size_t meshIndex, const glm::mat4& meshTransform, ChunkDraw& draw)
+	{
+		auto entity = s_ByModel.find(model);
+		if (entity == s_ByModel.end())
+		{
+			return false;
+		}
+		auto gpu = s_Terrains.find(entity->second);
+		if (gpu == s_Terrains.end() || !gpu->second.Lods || meshIndex >= gpu->second.Lods->Chunks.size() || meshIndex >= model->GetMeshes().size())
+		{
+			return false;
+		}
+		// The distance from the camera to the chunk's box in the world (the box turned and scaled with the terrain)
+		const H2M::AABB_H2M& box = model->GetMeshes()[meshIndex]->BoundingBox;
+		const glm::vec3 center = glm::vec3(meshTransform * glm::vec4((box.Min + box.Max) * 0.5f, 1.0f));
+		const glm::vec3 half = (box.Max - box.Min) * 0.5f;
+		const glm::vec3 extent = glm::abs(glm::vec3(meshTransform[0])) * half.x + glm::abs(glm::vec3(meshTransform[1])) * half.y +
+			glm::abs(glm::vec3(meshTransform[2])) * half.z;
+		const float distance = glm::length(glm::max(glm::abs(s_ViewPosition - center) - extent, glm::vec3(0.0f)));
+		const TerrainLods::Chunk& chunk = gpu->second.Lods->Chunks[meshIndex];
+		draw.Level = TerrainLods::LevelAt(chunk, distance, gpu->second.LodTolerance);
+		draw.Surface = chunk.Surface[draw.Level];
+		draw.Skirt = chunk.Skirt[draw.Level];
+		return true;
 	}
 
 	bool Find(const H2M::ModelH2M* model, VkDescriptorSet& descriptorSet, Uniforms& uniforms)

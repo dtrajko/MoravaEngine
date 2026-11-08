@@ -445,6 +445,20 @@ void OnImGuiRenderRendererStats()
 	{
 		ImGui::SetTooltip("The bounding boxes of the culled meshes in red, and the frozen view's frustum in yellow");
 	}
+	ImGui::Checkbox("Terrain LOD", &s_ViewOptions.TerrainLod);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Terrains' levels of detail: each chunk is drawn with as few of its heights as keep its shape within the\n"
+			"terrain's LOD Tolerance at its distance (every 2nd height up to every 64th; physics always has every height).\n"
+			"Off: every chunk with every height, to compare the frame times and the look");
+	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Show Terrain LOD", &s_ViewOptions.ShowTerrainLod);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Each terrain chunk tinted by its level: every height green, then yellow, orange, red, purple, blue,\n"
+			"and gray for every 64th height (a chunk as two triangles)");
+	}
 	uint32_t shadowedPointLights = 0, shadowedSpotLights = 0;
 	EnvMapVulkanRenderer::GetShadowedLightCounts(shadowedPointLights, shadowedSpotLights);
 	ImGui::Text("%zu point lights (%u with shadows), %zu spot lights (%u with shadows)", s_Lights.PointLights.size(), shadowedPointLights,

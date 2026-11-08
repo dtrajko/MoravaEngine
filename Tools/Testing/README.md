@@ -54,8 +54,8 @@ scripts. The whole log is in `Output/MoravaPlayer.log` (or `MoravaEngine.log`).
 | Parameter | Meaning |
 |---|---|
 | `-Editor` | The editor (`MoravaEngine.exe`); without it, the player (`MoravaPlayer.exe`) |
-| `-Project <file>` | A `.mproject`: the player plays its start scene, the editor opens it |
-| `-Scene <file>` | An `.mscene`: this scene instead of the project's start scene |
+| `-Project <file>` | A `.mproject`: the player plays its start scene, the editor opens it. Or a project's name (`Racing`): see below |
+| `-Scene <file>` | An `.mscene`: this scene instead of the project's start scene. Or a scene's name (`TestTrack`): see below |
 | `-Seconds <n>` | How long it runs after starting up (default 20) |
 | `-Play`, `-Simulate` | The editor starts Play or Simulate once the scene is open |
 | `-DebugOverlay` | Starts with the debug overlay (F3) shown |
@@ -97,6 +97,8 @@ What `-Extra` can pass (both executables read them; `src/Core/Application.cpp` h
 
 | Option | Meaning |
 |---|---|
+| `--project <file or name>` | Opens the project (the player: plays it). A name is a project in the repository's `Projects` folder: `--project Racing` is `Projects/Racing/Racing.mproject` (or the only `.mproject` in `Projects/Racing`). A file is used as it is |
+| `--scene <file or name>` | Opens this scene instead of the project's start scene. A name (without `.mscene`, or with a subfolder: `Levels/Level1`) is looked for in the project's folder and its `Scenes` folder, without `--project` in the repository's `Scenes` folder (`--scene Old_Stove_Corner`). The log says what a name became, or where it looked |
 | `--debug-view <n>` | Starts with entry n of the Environment panel's Debug View list (0 Off, 7 Diffuse Surface Shading, 8 Probe Irradiance Only, 10 Ambient Occlusion, 18 Path Traced) |
 | `--no-ray-tracing` | Vulkan without the ray tracing extensions, as on a GPU that has none |
 | `--no-texture-compression` | Material maps as on a GPU without BC formats: from their images, or decoded from a pack's cooked maps |
@@ -108,6 +110,7 @@ What `-Extra` can pass (both executables read them; `src/Core/Application.cpp` h
 | `--crash-test <kind>` | The player crashes, to check what is left behind: `start` (before its window), `abort`, `terminate`, `overflow`, `frame` (in its first frame) |
 | `--quality <tier>` | The player draws with this quality tier (`Low`, `Medium`, `High`, `Ultra`; `Auto`: the GPU's), whatever the player chose; the choice in the settings file stays |
 | `--select <name>` | Selects the entity of that name (to capture the selection outline or the gizmo) |
+| `--frame-stats [seconds]` | At exit, logs the frames' times: the average frame rate, the median, the 1% low (the frame rate of the slowest 1% of frames), the worst frame, and the share of frames slower than 120 and 60 fps. The first seconds (default 5) are left out. For the racing game's budget (Medium: 120 fps, never under 60), e.g. `-Config Release -Extra "--pack ...\Game.mpak --quality Medium --frame-stats 8"` |
 | `--save-scene` | The editor saves the open scene when it closes (a scene opened and saved unattended) |
 
 ## Capture-Window.ps1

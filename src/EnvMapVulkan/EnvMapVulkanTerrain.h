@@ -48,10 +48,24 @@ namespace EnvMapVulkanTerrain
 		float RockSlopeStart = 0.0f;                       // 1 - the normal's y where rock starts, and where it is all rock
 		float RockSlopeEnd = 0.0f;
 		float MapToggles = 0.0f;                           // bit 2 * layer: its albedo map, bit 2 * layer + 1: its normal map
-		float Padding[7] = {};
+		float LodTint = -1.0f;                             // the debug view Show Terrain LOD: the chunk's level (-1: off)
+		float Padding[6] = {};
 	};
 	static_assert(sizeof(Uniforms) == 64, "the terrain block of Include/TerrainMaterial.glslh is 64 bytes");
 
 	// The terrain a model is (the chunks of one): its set and values for this frame. False: the model isn't a terrain's
 	bool Find(const H2M::ModelH2M* model, VkDescriptorSet& descriptorSet, Uniforms& uniforms);
+
+	// Levels of detail (TerrainLods): a chunk farther from the camera is drawn with fewer of its heights. The levels are
+	// chosen from the main view's camera in every pass (the shadow maps too), so the passes see the same ground
+	void SetViewPosition(const glm::vec3& worldPosition); // each frame, before the passes are recorded
+
+	// What a terrain's chunk draws: its level's triangles and skirt
+	struct ChunkDraw
+	{
+		TerrainLods::Range Surface, Skirt;
+		uint32_t Level = 0;
+	};
+	// False: the model isn't a terrain's with levels (draw the mesh as it is). meshTransform: the chunk's, in the world
+	bool ChooseChunk(const H2M::ModelH2M* model, size_t meshIndex, const glm::mat4& meshTransform, ChunkDraw& draw);
 }

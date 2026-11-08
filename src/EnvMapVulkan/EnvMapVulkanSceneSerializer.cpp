@@ -561,6 +561,7 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "RockSlope" << YAML::Value << t.RockSlope;
 			out << YAML::Key << "RockHeight" << YAML::Value << t.RockHeight;
 			out << YAML::Key << "Friction" << YAML::Value << t.Friction;
+			out << YAML::Key << "LodTolerance" << YAML::Value << t.LodTolerance;
 			// Each layer's material by ID (and its file, as a part's material is written)
 			out << YAML::Key << "Layers" << YAML::Value << YAML::BeginMap;
 			for (uint32_t layer = 0; layer < TerrainComponent::LayerCount; layer++)
@@ -747,6 +748,7 @@ namespace EnvMapVulkanSceneSerializer
 			Read(terrainNode, "RockSlope", t.RockSlope);
 			Read(terrainNode, "RockHeight", t.RockHeight);
 			Read(terrainNode, "Friction", t.Friction);
+			Read(terrainNode, "LodTolerance", t.LodTolerance);
 			t.Clamp();
 			if (YAML::Node layersNode = terrainNode["Layers"])
 			{

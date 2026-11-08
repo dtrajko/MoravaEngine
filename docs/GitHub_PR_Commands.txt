@@ -17,3 +17,35 @@ $body | gh pr create --base master --head input-actions --title "Input actions a
 
 gh pr checks --watch # follows the PR's CI checks live in the terminal
 gh pr view --web # opens the PR's page on GitHub in the default browser
+
+------------------------------------------------------------------------------
+
+git add -A
+
+$branch = "vehicle"
+
+$title = "Vehicles: Jolt wheeled vehicles, the Empty entity, a vehicle demo in Sample (vehicle scene, part B)"
+
+$body = @'
+- VehicleComponent (Inspector: the physics row's Vehicle box): Jolt VehicleConstraint with a WheeledVehicleController, engine, automatic gearbox, a differential per axle, anti-roll bars, springs, max tilt, a lowered center of mass
+- Wheels with a place, radius, width, steering, drive and handbrake; Fit Wheels finds them from child models named "Wheel"; the engine places the wheel models as they roll and steer
+- Driving: Controls Player reads Accelerate, Brake, Steer and Handbrake (else Move and Jump); reverse brakes first; Controls Script for C#
+- C# Vehicle: SetInput, Controls, Speed, EngineRpm, Gear, WheelCount, IsWheelOnGround, IsInAir, AppliedForward, AppliedBrake
+- Debug view: wheels and springs in the Physics panel's Colliders view, brighter on the ground; vehicle state in the Inspector
+- Add > Empty: a transform-only entity that groups children and can have physics and a script (was "Other"); move, turn and scale with the gizmo, copy, paste, delete, prefabs
+- Paste points references among the pasted entities to the copies (wheels, script entity fields, button targets)
+- Shadows: each mesh culled against each cascade, not each model: a terrain was drawn whole into every cascade (terrain scene 20 -> 48 FPS)
+- Player: Shift+F1 always gives the mouse back, also when the game binds Escape
+- Sample: Vehicle scene (terrain, a primitive car, pause and settings menus), VehicleCamera.cs chase camera, vehicle input actions, terrain materials
+- Docs: the guide's vehicle section; docs/games/DrivingSchool_Plan.html, the Driving School plan
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+'@
+
+"$title`n`n$body" | git commit -F -
+
+git push origin HEAD
+
+$body | gh pr create --base master --head $branch --title "$title" --body-file -
+
+------------------------------------------------------------------------------

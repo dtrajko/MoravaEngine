@@ -1,0 +1,50 @@
+# The racing game's actions and their bindings (src/Input/InputMap.h lists the names of keys and gamepad controls)
+Actions:
+  - Name: Accelerate    # Axis1D, 0 to 1: the car's throttle (the engine reads it for a vehicle with Controls: Player)
+    Type: Axis1D
+    Bindings: [ { Key: W }, { Key: Up }, { Gamepad: RightTrigger } ]
+  - Name: Brake         # Axis1D, 0 to 1: the car brakes, and once it stops, reverses
+    Type: Axis1D
+    Bindings: [ { Key: S }, { Key: Down }, { Gamepad: LeftTrigger } ]
+  - Name: Steer         # Axis1D: -1 left, 1 right
+    Type: Axis1D
+    Bindings:
+      - { Composite: AD, Negative: A, Positive: D }
+      - { Composite: Arrows, Negative: Left, Positive: Right }
+      - { Gamepad: LeftStickX, DeadZone: 0.15 }
+  - Name: Handbrake     # held: the drift (the rear wheels lock, the throttle lets go)
+    Type: Button
+    Bindings: [ { Key: Space }, { Gamepad: A } ]
+  - Name: Respawn       # back to the last checkpoint passed, standing still, facing along the track (RaceManager, Phase 4)
+    Type: Button
+    Bindings: [ { Key: Backspace }, { Gamepad: B } ]
+  - Name: Restart       # the race from the start (RaceManager, Phase 4)
+    Type: Button
+    Bindings: [ { Key: Enter }, { Gamepad: Back } ]
+  - Name: Pause         # the pause menu opens or closes (Phase 5)
+    Type: Button
+    Bindings: [ { Key: Escape }, { Gamepad: Start } ]
+  - Name: Look          # Axis2D, a rate: degrees per second: the mouse turns the chase camera's view (VehicleCamera)
+    Type: Axis2D
+    Bindings:
+      - { Mouse: Delta, Scale: 0.1 }
+  - Name: Orbit         # Axis2D, degrees per second: turns the chase camera's view around the car (VehicleCamera)
+    Type: Axis2D
+    Bindings:
+      - { Composite: QERF, Up: R, Down: F, Left: Q, Right: E, Scale: 120 }
+      - { Gamepad: RightStick, Scale: 180, DeadZone: 0.15 }
+  - Name: Zoom          # Axis1D, notches this frame: the chase camera closer or farther (VehicleCamera)
+    Type: Axis1D
+    Bindings:
+      - { Mouse: Wheel }
+      - { Gamepad: DPadUp }
+      - { Gamepad: DPadDown, Scale: -1 }
+  - Name: UI_Navigate   # Axis2D: the game UI's selection from button to button (the engine reads it)
+    Type: Axis2D
+    Bindings:
+      - { Composite: Arrows, Up: Up, Down: Down, Left: Left, Right: Right }
+      - { Gamepad: DPad }
+      - { Gamepad: LeftStick, DeadZone: 0.15 }
+  - Name: UI_Submit     # presses the game UI's selected button (the engine reads it)
+    Type: Button
+    Bindings: [ { Key: Enter }, { Gamepad: A } ]

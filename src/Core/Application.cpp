@@ -20,9 +20,12 @@
 #include "Renderer/RendererBasic.h"
 #include "Scene/Scene.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
+#include <set>
+#include <vector>
 
 
 Application* Application::s_Instance = nullptr;
@@ -57,8 +60,12 @@ Application* Application::Get()
 
 // Command line options:
 //   --project <file>        open this project at startup (a .mproject file), and its start scene unless --scene names one
-//                           (the player: the project's start scene, in the project's window)
-//   --scene <file>          open this scene at startup (SceneEnvMapVulkan: an .mscene file, e.g. Scenes/Old_Stove_Corner.mscene)
+//                           (the player: the project's start scene, in the project's window). Or just the project's name,
+//                           for one in the repository's Projects folder: --project Racing is Projects/Racing/Racing.mproject
+//   --scene <file>          open this scene at startup (SceneEnvMapVulkan: an .mscene file, e.g. Scenes/Old_Stove_Corner.mscene).
+//                           Or just its name: with --project, from the project's Scenes folder (--project Racing --scene
+//                           TestTrack is Projects/Racing/Scenes/TestTrack.mscene), without it from the repository's Scenes
+//                           folder (--scene Old_Stove_Corner). See ResolveProjectName and ResolveSceneName
 //   --exit-after <seconds>  close the application after this time in the main loop
 //   --debug-view <number>   start with this debug view (SceneEnvMapVulkan: the entry of the Environment panel's Debug View
 //                           list, 0 = Off, e.g. 8 = Probe Irradiance Only, 10 = Ambient Occlusion)
@@ -72,6 +79,117 @@ Application* Application::Get()
 //   --save-scene            the editor saves the open scene to its file when it closes: with --exit-after, a scene opened
 //                           and saved unattended (what opening it changed: prefab links, a newer file format)
 //   --debug-overlay         start with the debug overlay shown (F3 shows and hides it)
+//   --frame-stats [seconds] at exit, log the frames' times: the average frame rate, the 1% low (the frame rate of the
+//                           slowest 1% of frames), the worst frame and how many frames were slower than 60 and 120 fps;
+//                           the first seconds (default 5: loading, shaders, the first frames) are left out
+// --project and --scene by name, a convenience while developing (run from the repository's root, as the editor and the
+// player are): a value that is a file is used as it is; else it is looked for by the projects' conventions. Each
+// resolved name is logged once (the options are parsed more than once at startup)
+static void LogResolvedName(const char* option, const std::string& value, const std::string& path)
+{
+	static std::set<std::string> logged;
+	if (logged.insert(std::string(option) + value).second)
+	{
+		Log::GetLogger()->info("Command line: {0} {1} is '{2}'", option, value, path);
+	}
+}
+
+static void LogUnresolvedName(const char* option, const std::string& value, const std::vector<std::filesystem::path>& tried)
+{
+	static std::set<std::string> logged;
+	if (!logged.insert(std::string(option) + value).second)
+	{
+		return;
+	}
+	std::string places;
+	for (const std::filesystem::path& path : tried)
+	{
+		places += (places.empty() ? "" : ", ") + path.generic_u8string();
+	}
+	Log::GetLogger()->warn("Command line: {0} {1}: no such file (looked for {2})", option, value, places);
+}
+
+static bool IsFile(const std::filesystem::path& path)
+{
+	std::error_code error;
+	return std::filesystem::is_regular_file(path, error);
+}
+
+// A project by name: Projects/<name>/<name>.mproject, or the only .mproject in Projects/<name>
+static std::string ResolveProjectName(const std::string& value)
+{
+	namespace fs = std::filesystem;
+	const fs::path given = fs::u8path(value);
+	if (value.empty() || IsFile(given))
+	{
+		return value;
+	}
+	const fs::path folder = fs::path("Projects") / given;
+	const fs::path named = folder / fs::u8path(given.filename().u8string() + ".mproject");
+	if (IsFile(named))
+	{
+		LogResolvedName("--project", value, named.generic_u8string());
+		return named.generic_u8string();
+	}
+	std::error_code error;
+	if (fs::is_directory(folder, error))
+	{
+		std::vector<fs::path> projects;
+		for (const fs::directory_entry& entry : fs::directory_iterator(folder, error))
+		{
+			if (entry.is_regular_file(error) && entry.path().extension() == ".mproject")
+			{
+				projects.push_back(entry.path());
+			}
+		}
+		if (projects.size() == 1)
+		{
+			LogResolvedName("--project", value, projects[0].generic_u8string());
+			return projects[0].generic_u8string();
+		}
+	}
+	LogUnresolvedName("--project", value, { given, named });
+	return value; // not found: opening it reports the error, as before
+}
+
+// A scene by name: with a project, in its folder and its Scenes folder; else in the repository's Scenes folder. The
+// .mscene extension may be left out; a subfolder may be named (Levels/Level1)
+static std::string ResolveSceneName(const std::string& value, const std::string& projectPath)
+{
+	namespace fs = std::filesystem;
+	const fs::path given = fs::u8path(value);
+	if (value.empty() || IsFile(given))
+	{
+		return value;
+	}
+	fs::path name = given;
+	if (name.extension() != ".mscene")
+	{
+		name += ".mscene";
+	}
+	std::vector<fs::path> candidates = { name };
+	if (!projectPath.empty())
+	{
+		const fs::path projectFolder = fs::u8path(projectPath).parent_path();
+		candidates.push_back(projectFolder / name);
+		candidates.push_back(projectFolder / "Scenes" / name);
+	}
+	else
+	{
+		candidates.push_back(fs::path("Scenes") / name);
+	}
+	for (const fs::path& candidate : candidates)
+	{
+		if (IsFile(candidate))
+		{
+			LogResolvedName("--scene", value, candidate.generic_u8string());
+			return candidate.generic_u8string();
+		}
+	}
+	LogUnresolvedName("--scene", value, candidates);
+	return value;
+}
+
 ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 {
 	ApplicationCommandLine commandLine;
@@ -163,6 +281,21 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		{
 			commandLine.DebugOverlay = true;
 		}
+		else if (option == "--frame-stats")
+		{
+			commandLine.FrameStatsWarmup = 5.0f;
+			// An optional number of seconds to leave out
+			if (hasValue)
+			{
+				char* end = nullptr;
+				const float seconds = std::strtof(argv[i + 1], &end);
+				if (end != argv[i + 1] && *end == '\0' && seconds >= 0.0f)
+				{
+					commandLine.FrameStatsWarmup = seconds;
+					i++;
+				}
+			}
+		}
 		else if (option == "--no-ray-tracing")
 		{
 			commandLine.NoRayTracing = true;
@@ -192,6 +325,9 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 			Log::GetLogger()->warn("Command line: unknown option '{0}' (ignored)", option);
 		}
 	}
+	// Names for paths (see ResolveProjectName, ResolveSceneName): the project first, the scene is looked for in it
+	commandLine.ProjectPath = ResolveProjectName(commandLine.ProjectPath);
+	commandLine.ScenePath = ResolveSceneName(commandLine.ScenePath, commandLine.ProjectPath);
 	return commandLine;
 }
 
@@ -319,6 +455,7 @@ void Application::Run()
 	// --exit-after: counted from here, after the startup (the shaders may have been compiled)
 	const auto loopStart = std::chrono::steady_clock::now();
 	auto frameStart = loopStart;
+	std::vector<float> frameTimes; // --frame-stats: seconds, after the warmup
 
 	// Loop until window closed
 	while ((m_Running = !m_Window->GetShouldClose()))
@@ -386,9 +523,52 @@ void Application::Run()
 		const auto frameEnd = std::chrono::steady_clock::now();
 		m_TimeStep = std::chrono::duration<float>(frameEnd - frameStart).count();
 		frameStart = frameEnd;
+		if (m_CommandLine.FrameStatsWarmup >= 0.0f && !m_Minimized &&
+			std::chrono::duration<float>(frameEnd - loopStart).count() >= m_CommandLine.FrameStatsWarmup)
+		{
+			frameTimes.push_back(m_TimeStep);
+		}
+	}
+
+	if (m_CommandLine.FrameStatsWarmup >= 0.0f)
+	{
+		LogFrameStats(frameTimes, m_CommandLine.FrameStatsWarmup);
 	}
 
 	OnShutdown();
+}
+
+// --frame-stats: what the frames' times say about smoothness. The 1% low is the frame rate of the slowest 1% of frames
+// (their average time), so a few long frames show even when the average is high
+void Application::LogFrameStats(std::vector<float> frameTimes, float warmup)
+{
+	if (frameTimes.empty())
+	{
+		Log::GetLogger()->info("Frame stats: no frames after the first {0} s", warmup);
+		return;
+	}
+	double total = 0.0;
+	size_t slowerThan60 = 0, slowerThan120 = 0;
+	for (float t : frameTimes)
+	{
+		total += t;
+		slowerThan60 += t > 1.0f / 60.0f ? 1 : 0;
+		slowerThan120 += t > 1.0f / 120.0f ? 1 : 0;
+	}
+	std::sort(frameTimes.begin(), frameTimes.end(), std::greater<float>());
+	const size_t slowest = std::max<size_t>(1, frameTimes.size() / 100);
+	double slowestTotal = 0.0;
+	for (size_t i = 0; i < slowest; i++)
+	{
+		slowestTotal += frameTimes[i];
+	}
+	const double average = total / frameTimes.size();
+	const double low = slowestTotal / slowest;
+	const float median = frameTimes[frameTimes.size() / 2];
+	Log::GetLogger()->info("Frame stats ({0} frames in {1:.1f} s, the first {2} s left out): average {3:.1f} fps ({4:.2f} ms), "
+		"median {5:.2f} ms, 1% low {6:.1f} fps ({7:.2f} ms), worst {8:.2f} ms; slower than 120 fps: {9:.1f}%, than 60 fps: {10:.1f}%",
+		frameTimes.size(), total, warmup, 1.0 / average, average * 1000.0, median * 1000.0f, 1.0 / low, low * 1000.0,
+		frameTimes.front() * 1000.0f, 100.0 * slowerThan120 / frameTimes.size(), 100.0 * slowerThan60 / frameTimes.size());
 }
 
 void Application::OnEvent(H2M::EventH2M& e)

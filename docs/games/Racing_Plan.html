@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Racing Game Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: an engineering manual. One readable text column (48rem); diagrams, tables and code break out to the full 72rem width. */
+:root {
+  --bg: #f5f7fa; --surface: #ffffff; --ink: #1a2130; --muted: #5a6478; --line: #d6dce6; --code-bg: #eef1f6;
+  --accent: #2d5fc4; --accent-soft: #e6edfb; --warn: #b4581a; --warn-soft: #fbefe4; --ok: #24814f; --ok-soft: #e5f3ea;
+  /* diagram kinds */
+  --k-rp: #2d5fc4; --k-rp-bg: #eef3fd; --k-rp-hd: #dbe6fa;
+  --k-cs: #1f7d52; --k-cs-bg: #edf7f1; --k-cs-hd: #d6efe1;
+  --k-tr: #7553b8; --k-tr-bg: #f3effb; --k-tr-hd: #e5dcf6;
+  --k-img: #56637a; --k-img-bg: #f7f8fa; --k-img-hd: #e7ebf1;
+  --k-set: #a3378f; --k-set-bg: #fbeff8; --k-set-hd: #f4dcee;
+  --k-cpu: #6b7280; --k-cpu-bg: #f6f6f7; --k-cpu-hd: #e8e9ec;
+  --k-as: #8f6d0b; --k-as-bg: #fbf6e6; --k-as-hd: #f2e8c4;
+  --k-sh: #0d7884; --k-sh-bg: #ebf7f8; --k-sh-hd: #cfecef;
+  --k-key: #c2334f; --k-key-bg: #fdf0f2; --k-key-hd: #f8d9df;
+  --e-write: #d0481c; --e-read: #4d576b; --e-bind: #a3378f; --e-cpu: #7c8494; --e-copy: #7553b8; --e-inc: #0d7884;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", Consolas, "Cascadia Mono", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11151c; --surface: #171c25; --ink: #dfe5ef; --muted: #98a2b5; --line: #2c3442; --code-bg: #1c222d;
+  --accent: #82a8ff; --accent-soft: #1b2640; --warn: #f0a160; --warn-soft: #2c2016; --ok: #6fd19c; --ok-soft: #15281e;
+  --k-rp: #82a8ff; --k-rp-bg: #161f33; --k-rp-hd: #1f2c4a;
+  --k-cs: #64cf98; --k-cs-bg: #13241b; --k-cs-hd: #1a3426;
+  --k-tr: #b9a0f2; --k-tr-bg: #1f1a2e; --k-tr-hd: #2b2342;
+  --k-img: #a7b4c9; --k-img-bg: #1a1f28; --k-img-hd: #242b37;
+  --k-set: #e98ad8; --k-set-bg: #2a1726; --k-set-hd: #3a1f35;
+  --k-cpu: #a3aab6; --k-cpu-bg: #1c1f25; --k-cpu-hd: #272b33;
+  --k-as: #e3c35e; --k-as-bg: #262012; --k-as-hd: #352d18;
+  --k-sh: #58c6d3; --k-sh-bg: #12262a; --k-sh-hd: #19353a;
+  --k-key: #ff8099; --k-key-bg: #2d171c; --k-key-hd: #422029;
+  --e-write: #ff8a5c; --e-read: #a4adbf; --e-bind: #e98ad8; --e-cpu: #8b93a3; --e-copy: #b9a0f2; --e-inc: #58c6d3;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #171c25; --ink: #dfe5ef; --muted: #98a2b5; --line: #2c3442; --code-bg: #1c222d;
+  --accent: #82a8ff; --accent-soft: #1b2640; --warn: #f0a160; --warn-soft: #2c2016; --ok: #6fd19c; --ok-soft: #15281e;
+  --k-rp: #82a8ff; --k-rp-bg: #161f33; --k-rp-hd: #1f2c4a;
+  --k-cs: #64cf98; --k-cs-bg: #13241b; --k-cs-hd: #1a3426;
+  --k-tr: #b9a0f2; --k-tr-bg: #1f1a2e; --k-tr-hd: #2b2342;
+  --k-img: #a7b4c9; --k-img-bg: #1a1f28; --k-img-hd: #242b37;
+  --k-set: #e98ad8; --k-set-bg: #2a1726; --k-set-hd: #3a1f35;
+  --k-cpu: #a3aab6; --k-cpu-bg: #1c1f25; --k-cpu-hd: #272b33;
+  --k-as: #e3c35e; --k-as-bg: #262012; --k-as-hd: #352d18;
+  --k-sh: #58c6d3; --k-sh-bg: #12262a; --k-sh-hd: #19353a;
+  --k-key: #ff8099; --k-key-bg: #2d171c; --k-key-hd: #422029;
+  --e-write: #ff8a5c; --e-read: #a4adbf; --e-bind: #e98ad8; --e-cpu: #8b93a3; --e-copy: #b9a0f2; --e-inc: #58c6d3;
+  color-scheme: dark; }
+
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-body); }
+main { max-width: 72rem; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; }
+main > section { padding-block: 26px 10px; border-top: 1px solid var(--line); }
+main > section > * { max-width: 48rem; }
+main > section > figure, main > section > .wide { max-width: none; }
+h1, h2, h3, h4 { font-family: var(--f-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 14px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+h3 { font-size: 1.2rem; font-weight: 600; margin: 22px 0 8px; color: var(--accent); }
+h4 { font-size: 1.02rem; font-weight: 600; margin: 14px 0 4px; }
+p { margin: 0 0 10px; }
+ul, ol { margin: 0 0 12px; padding-left: 1.3rem; }
+li { margin-bottom: 4px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font: 0.86em var(--f-mono); background: var(--code-bg); padding: 0.05em 0.3em; border-radius: 3px; overflow-wrap: anywhere; }
+pre { font: 12.5px/1.5 var(--f-mono); background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin: 6px 0 14px; overflow-x: auto; }
+pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+.c { color: var(--muted); }
+.table-wrap { overflow-x: auto; margin: 6px 0 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { border: 1px solid var(--line); padding: 6px 9px; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); font-weight: 600; }
+td { background: var(--surface); }
+.box { border-radius: 6px; padding: 10px 14px; margin: 8px 0 14px; border: 1px solid var(--line); }
+.box > b:first-child { display: block; margin-bottom: 3px; font-family: var(--f-display); font-size: 1.02rem; }
+.box ul { margin-bottom: 0; }
+.note { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); }
+.ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); }
+.warn > b:first-child { color: var(--warn); } .ok > b:first-child { color: var(--ok); } .note > b:first-child { color: var(--accent); }
+.tag { font: 600 0.8rem var(--f-mono); color: var(--surface); background: var(--accent); border-radius: 4px; padding: 2px 8px; position: relative; top: -3px; }
+.eq { text-align: center; font-size: 1.05rem; margin: 8px 0 12px; }
+
+header.hero { padding-block: 18px 26px; display: grid; gap: 14px; }
+.kicker { font: 600 0.78rem var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.12rem; color: var(--muted); max-width: 48rem; }
+.meta { font-size: 0.86rem; color: var(--muted); max-width: 48rem; }
+nav.toc ol { columns: 2 18rem; column-gap: 32px; padding-left: 0; list-style: none; } /* no automatic numbers: each entry names its phase */
+nav.toc li { break-inside: avoid; }
+
+/* diagrams */
+figure { margin: 10px 0 22px; }
+figure .scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+figure svg { display: block; height: auto; max-width: 100%; }
+figcaption { font-size: 0.86rem; color: var(--muted); margin-top: 6px; max-width: 48rem; }
+svg .nb { stroke-width: 1.3; }
+svg .nt { font: 600 12px var(--f-body); fill: var(--ink); }
+svg .nl { font: 10.5px var(--f-mono); fill: var(--ink); }
+svg .nk { font: 600 8.5px var(--f-mono); letter-spacing: 0.06em; }
+svg .el { font: 10px var(--f-body); fill: var(--muted); }
+svg .elb { fill: var(--surface); }
+svg .e path { fill: none; }
+svg .e-w path { stroke: var(--e-write); stroke-width: 2; } svg .e-w polygon { fill: var(--e-write); }
+svg .e-r path { stroke: var(--e-read); stroke-width: 1.4; } svg .e-r polygon { fill: var(--e-read); }
+svg .e-b path { stroke: var(--e-bind); stroke-width: 1.4; stroke-dasharray: 5 3; } svg .e-b polygon { fill: var(--e-bind); }
+svg .e-c path { stroke: var(--e-cpu); stroke-width: 1.4; stroke-dasharray: 2 3; } svg .e-c polygon { fill: var(--e-cpu); }
+svg .e-x path { stroke: var(--e-copy); stroke-width: 2; } svg .e-x polygon { fill: var(--e-copy); }
+svg .e-i path { stroke: var(--e-inc); stroke-width: 1.4; stroke-dasharray: 1 3; stroke-linecap: round; } svg .e-i polygon { fill: var(--e-inc); }
+svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { fill: var(--e-read); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.84rem; margin: 8px 0 4px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 12px; border-radius: 3px; border: 1.5px solid; display: inline-block; }
+.ln { width: 26px; height: 0; border-top: 2px solid; display: inline-block; }
+@media (max-width: 640px) { body { font-size: 14.5px; } h2 { font-size: 1.45rem; } pre { font-size: 11.5px; } }
+</style>
+</head>
+
+<body>
+
+<main>
+<header class="hero">
+  <div class="kicker">MoravaEngine · a game on the engine</div>
+  <h1>Racing</h1>
+  <p class="lede">The plan for a fast, fun arcade racing game on Jolt's vehicle physics, inspired by Trackmania's style but simpler: one closed circuit built in 3D (climbs, drops, banked turns), three laps against the clock and your own best lap, instant restart, respawn at the last checkpoint and medals. It is meant to be fun and not too hard, not a simulation.</p>
+  <p class="meta">Agreed November 8, 2026, after the vehicle work (<a href="../engine/Game_Engine_Runtime_Guide.html#vehicle">the engine guide</a>). It replaces the <a href="DrivingSchool_Plan.html">Driving School plan</a> as the next thing to build; that plan stays here, unbuilt. Names that exist in the code are written as they are. Names of new classes, files and settings are proposals. This page is kept up to date with "As built", "Checked" and "Not done" boxes, as the engine guide is.</p>
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#decisions">The decisions</a></li>
+      <li><a href="#performance">The performance target</a></li>
+      <li><a href="#pipeline">How a track is made</a></li>
+      <li><a href="#phase-0">Phase 0: the branch and Blender</a></li>
+      <li><a href="#phase-1">Phase 1: the project and the track builder</a></li>
+      <li><a href="#phase-2">Phase 2: the car</a></li>
+      <li><a href="#phase-3">Phase 3: arcade handling</a></li>
+      <li><a href="#phase-4">Phase 4: race logic</a></li>
+      <li><a href="#phase-5">Phase 5: HUD and menus</a></li>
+      <li><a href="#phase-6">Phase 6: camera, sound and feel</a></li>
+      <li><a href="#phase-7">Phase 7: the real circuit</a></li>
+      <li><a href="#phase-8">Phase 8: trees and foliage</a></li>
+      <li><a href="#phase-9">Phase 9: the ghost of the best lap</a></li>
+      <li><a href="#phase-10">Phase 10: the game build</a></li>
+      <li><a href="#later">Later</a></li>
+      <li><a href="#verify">How each phase is checked</a></li>
+    </ol>
+  </nav>
+</header>
+
+<section id="decisions">
+  <h2>The decisions</h2>
+  <h3>The user's</h3>
+  <ul>
+    <li><b>Fast, fun, not too hard:</b> arcade handling, not a simulation.</li>
+    <li><b>The track is modeled in Blender, by a script.</b> <code>Tools/TrackBuilder/build_track.py</code> runs in Blender without its window (<code>blender --background --python</code>). It reads the track's data, a closed list of control points, builds the meshes and exports a <code>.glb</code> the engine imports. The data file is the source: a change made by hand in Blender is lost the next time the script runs.</li>
+    <li><b>The first track's elements: slopes and banked turns.</b> Jumps, boost pads and a loop come later.</li>
+    <li><b>Laps on a circuit:</b> three laps, lap times, the best lap and the best race.</li>
+    <li><b>The car is a free CC0 race car model</b> (first choice: Kenney's Car Kit, glTF, with separate wheels), with its license note in the project.</li>
+    <li><b>The project is <code>Projects/Racing</code></b>, next to Sample.</li>
+    <li><b>Top speed about 350 km/h.</b></li>
+    <li><b>Curbs on the inner side of a turn only</b>, not on both sides (2026-11-08).</li>
+    <li><b>The terrain is only a backdrop:</b> as few triangles as possible; it just has to hide the sky map's lower half (2026-11-08).</li>
+    <li><b>Trees and foliage outside the track, Trackmania style:</b> real trunks and branches near the camera with leaves on textured cards, 2D impostors at a distance (Phase 8). The trees are CC0 models (for example from Poly Haven), simplified in Blender to game size.</li>
+  </ul>
+  <h3>Proposed and accepted</h3>
+  <ul>
+    <li><b>Arcade handling in two layers.</b> The engine adds what only C++ can reach in Jolt: tire grip settings (the friction callback is a fixed 10× now), grip per axle that a script can change while driving (for drifting), gear ratios and top speed. A C# <code>CarController</code> adds the assists: downforce that grows with speed (it holds the car on banked turns and over crests), less steering at speed with quick self-centering, a drift on the brake and handbrake (the rear grip drops), air control (tilting in the air, gentle leveling) and slippery walls (the car scrapes along them instead of stopping). Targets: 0–100 km/h in about 2 s, top speed about 350 km/h, full throttle through the banked turns.</li>
+    <li><b>The track's data drives everything.</b> Each control point has a position, a road width, a bank angle and flags (walls, curbs, supports). The script also writes the checkpoint gates and the start grid, and the center line (a point every few meters) into the project. The checkpoints are the respawn points.</li>
+    <li><b>A scripted test driver</b> follows the center line through <code>Vehicle.SetInput</code> (Controls: Script). It checks every change to the track and the handling unattended, and gives the first medal times. Later it is the basis of AI opponents.</li>
+    <li><b>The setting:</b> a raised circuit on supports above wide ground, with the seeded terrain (vehicle part A) as hills around it.</li>
+    <li><b>The ghost of the best lap</b> comes after the core game works (Phase 9).</li>
+  </ul>
+  <table>
+    <tr><th>Action</th><th>Keyboard</th><th>Gamepad</th></tr>
+    <tr><td>Accelerate</td><td>W, Up</td><td>right trigger</td></tr>
+    <tr><td>Brake, reverse</td><td>S, Down</td><td>left trigger</td></tr>
+    <tr><td>Steer</td><td>A, D; Left, Right</td><td>left stick X</td></tr>
+    <tr><td>Drift (handbrake)</td><td>Space</td><td>A</td></tr>
+    <tr><td>Respawn at the last checkpoint</td><td>Backspace</td><td>B</td></tr>
+    <tr><td>Restart the race</td><td>Enter</td><td>Back</td></tr>
+    <tr><td>Pause</td><td>Escape</td><td>Start</td></tr>
+  </table>
+</section>
+
+<section id="performance">
+  <h2>The performance target</h2>
+  <p>On the user's machine: an RTX 3070 Ti, a Ryzen 9 5900X and a 2560×1440 display at 180 Hz.</p>
+  <ul>
+    <li><b>Medium</b> (the game's default tier, no ray tracing) aims at <b>120 fps</b> (8.3 ms a frame) and is <b>never under 60</b> (16.7 ms), counted on the 1% lows, not only the average.</li>
+    <li><b>High</b> (ray tracing) and <b>Ultra</b>: never under 60.</li>
+  </ul>
+  <p>How the plan keeps it:</p>
+  <ul>
+    <li><b>A budget check in every phase.</b> The test driver laps the track at Medium and High and logs the frame times (average, 1% low, the worst frame), with the GPU profiler's time for each pass. A phase isn't done while a tier is below its target, so a cost is seen in the phase that adds it.</li>
+    <li><b>Phase 1 measures the baseline</b> (the test track, the car, the terrain) before anything else is added.</li>
+    <li><b>Known costs, fixed early:</b> the terrain had no level of detail and took about 6.6 ms of the frame; it got levels of detail in Phase 1 (done 2026-11-08). The track is exported in chunks of about 100 m, so it is culled chunk by chunk in the view and in each shadow cascade.</li>
+    <li><b>The foliage is built for the budget</b> (Phase 8): instancing, impostors at a distance, culling per instance, and a density and draw distance per tier.</li>
+    <li><b>Frame pacing:</b> an FPS cap in Settings (60, 120, 144, 180, none) with VSync on or off, if Settings lacks it. Physics stays at a fixed 60 Hz, and the drawing is interpolated between the steps (the game loop does this already).</li>
+    <li><b>Render scale</b> (drawing smaller and upscaling with TAA, planned in the quality tiers) only if Medium can't reach the target without it.</li>
+  </ul>
+</section>
+
+<section id="pipeline">
+  <h2>How a track is made</h2>
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 900 200" width="900" role="img" aria-label="The track data goes into the Blender script, which writes the track model, the center line and the gates; the scene uses them">
+        <g class="nb" fill="var(--k-as-bg)" stroke="var(--k-as)"><rect x="10" y="70" width="170" height="60" rx="6"/></g>
+        <text class="nk" x="20" y="88" fill="var(--k-as)">DATA</text>
+        <text class="nt" x="20" y="106">Circuit.track.json</text>
+        <text class="nl" x="20" y="122">points, width, bank, flags</text>
+
+        <g class="nb" fill="var(--k-cpu-bg)" stroke="var(--k-cpu)"><rect x="250" y="70" width="170" height="60" rx="6"/></g>
+        <text class="nk" x="260" y="88" fill="var(--k-cpu)">BLENDER, HEADLESS</text>
+        <text class="nt" x="260" y="106">build_track.py</text>
+        <text class="nl" x="260" y="122">spline, frames, meshes</text>
+
+        <g class="nb" fill="var(--k-rp-bg)" stroke="var(--k-rp)"><rect x="490" y="10" width="190" height="50" rx="6"/></g>
+        <text class="nt" x="500" y="32">Track .glb</text>
+        <text class="nl" x="500" y="48">road, curbs, walls (chunks)</text>
+        <g class="nb" fill="var(--k-rp-bg)" stroke="var(--k-rp)"><rect x="490" y="75" width="190" height="50" rx="6"/></g>
+        <text class="nt" x="500" y="97">Center line</text>
+        <text class="nl" x="500" y="113">test driver, foliage keep-out</text>
+        <g class="nb" fill="var(--k-rp-bg)" stroke="var(--k-rp)"><rect x="490" y="140" width="190" height="50" rx="6"/></g>
+        <text class="nt" x="500" y="162">Gates and start grid</text>
+        <text class="nl" x="500" y="178">checkpoints = respawns</text>
+
+        <g class="nb" fill="var(--k-cs-bg)" stroke="var(--k-cs)"><rect x="740" y="70" width="150" height="60" rx="6"/></g>
+        <text class="nk" x="750" y="88" fill="var(--k-cs)">ENGINE</text>
+        <text class="nt" x="750" y="106">Track scene</text>
+        <text class="nl" x="750" y="122">mesh colliders</text>
+
+        <g class="e e-r"><path d="M180 100 H244"/><polygon points="250,100 242,96 242,104"/></g>
+        <g class="e e-w"><path d="M420 100 C455 100 455 35 484 35"/><polygon points="490,35 482,31 482,39"/>
+          <path d="M420 100 H484"/><polygon points="490,100 482,96 482,104"/>
+          <path d="M420 100 C455 100 455 165 484 165"/><polygon points="490,165 482,161 482,169"/></g>
+        <g class="e e-r"><path d="M680 35 C712 35 712 100 734 100"/><polygon points="740,100 732,96 732,104"/>
+          <path d="M680 100 H734"/>
+          <path d="M680 165 C712 165 712 100 734 100"/></g>
+      </svg>
+    </div>
+    <figcaption>The data file is the only source; the script makes everything else from it, so a track change is an edit of the data and a run of the script.</figcaption>
+  </figure>
+</section>
+
+<section id="phase-0">
+  <h2>Phase 0: the branch and Blender</h2>
+  <ul>
+    <li>Master updated from origin (the vehicle work is merged): the branch <code>racing</code>.</li>
+    <li>Blender installed by the user (5.2.3 LTS); it runs headless and exports glTF.</li>
+    <li>This page.</li>
+  </ul>
+  <div class="box ok"><b>As built (2026-11-08)</b>
+  <ul>
+    <li>The branch <code>racing</code> from the updated master; Blender 5.2.3 LTS runs headless (<code>--background --factory-startup</code>) and exports glTF.</li>
+  </ul></div>
+</section>
+
+<section id="phase-1">
+  <h2>Phase 1: the project and the track builder <span class="tag">game</span> <span class="tag">tools</span></h2>
+  <ul>
+    <li><b><code>Projects/Racing</code>:</b> <code>Racing.mproject</code>, <code>Settings/Input.minput</code> (the vehicle actions and Respawn, Restart, Pause), <code>Scripts/Racing.csproj</code> built by CMake as Sample's scripts are.</li>
+    <li><b><code>Tools/TrackBuilder/build_track.py</code></b> and a README, with the data in <code>Projects/Racing/Tracks/</code>:
+      <ul>
+        <li>a closed centripetal Catmull-Rom spline through the points, sampled about every meter</li>
+        <li>a frame at each sample: the tangent, the right from the world's up, turned by the bank</li>
+        <li>meshes: the road (UVs along its length), curbs, side walls, supports down to the ground, the start and finish line, in chunks of about 100 m</li>
+        <li>named mesh parts (Road, Curb, Wall, Support), which get the project's materials</li>
+      </ul></li>
+    <li><b>A test track first:</b> an oval with one climb, one drop and one banked turn.</li>
+    <li><b>The scene:</b> the track model with mesh colliders (the road grips, the walls are slippery), the sun, the environment, the terrain and Sample's car as a stand-in, with Sample's chase camera.</li>
+    <li><b>Checked:</b> the stand-in car drives the whole lap; the collider matches the drawn road (the physics debug view).</li>
+    <li><b>The performance baseline</b> at Medium and High; the terrain's level of detail here if the budget needs it.</li>
+  </ul>
+  <div class="box ok"><b>As built (2026-11-08)</b>
+  <ul>
+    <li><b><code>Projects/Racing</code>:</b> <code>Racing.mproject</code> (windowed 1600×900 while it is developed, <code>DefaultQuality: Medium</code>, start scene <code>Scenes/TestTrack.mscene</code>), <code>Settings/Input.minput</code> (Accelerate, Brake, Steer, Handbrake, Respawn, Restart, Pause, the camera's Look, Orbit, Zoom, the UI's actions), <code>Scripts/Racing.csproj</code> with <code>VehicleCamera.cs</code> and <code>GameOptions.cs</code> from Sample, the terrain's materials. CMake builds every project's scripts in a loop now (<code>MoravaSampleScripts</code>, <code>MoravaRacingScripts</code>).</li>
+    <li><b><code>Tools/TrackBuilder/build_track.py</code></b> and its <code>README.md</code>: three models, so the colliders can differ: <code>Track_&lt;Name&gt;_Road.glb</code> (road, curbs, start line: friction 1), <code>_Walls.glb</code> (friction 0.05: the car slides along) and <code>_Structure.glb</code> (the slab's sides and underside, the supports: no collider); and <code>&lt;Name&gt;.centerline.json</code> (every 2 m: position, right, up, width; the start). Chunks of 100 m. Curbs on the inner side of a turn only (its direction measured over 20 m before and after). The models' own materials (base colors) are used for now.</li>
+    <li><b>The test track</b> (<code>Tracks/TestTrack.track.json</code>): 1.2 km, 13 chunks, an 11.6 m climb to a crest, a banked left turn (28°), a drop, a flat left turn; 21 k triangles in all. The scene places it on the terrain's flat area (45.78 m, measured with a ray in Play); the terrain's flat area covers the whole track (Flat Center −80, −25; Flat Radius 290).</li>
+    <li><b>Checked:</b> a scripted driver along the center line (in a scratch copy, the start of Phase 3's test driver) laps the stand-in car again and again: 39–42 s a lap, at most 2.9 m from the center line, never airborne, no flips. No validation messages.</li>
+    <li><b>The baseline</b> (Release player, a 2560×1410 window, the driver lapping, <code>--frame-stats</code>, new in the engine for this): Medium 101 fps, 1% low 69; High 92, 1% low 65. The terrain took about 6.6 ms (without it: 305 fps).</li>
+    <li><b>So the terrain got levels of detail</b> (the engine guide's terrain section, "As built 2026-11-08"): each chunk drawn with as few of its heights as keep it within LOD Tolerance at its distance, from every height to two triangles a chunk, with skirts for the gaps; debug toggles Terrain LOD and Show Terrain LOD in Renderer Stats. The scene uses LOD Tolerance 2. After: <b>Medium 205 fps, 1% low 148; High 172, 1% low 139</b>; no frame under 120 fps in either (Medium had one 47 ms hitch in 42 s, to watch). The frame: 31.5 k triangles, GPU 1.9 ms; the rest of the 4.9 ms is the CPU.</li>
+    <li><b>Not done:</b> the project's own materials for the track (asphalt and the rest: Phase 7's scenery); the CPU's share of the frame (about 3 ms) is not looked into yet.</li>
+  </ul></div>
+</section>
+
+<section id="phase-2">
+  <h2>Phase 2: the car <span class="tag">game</span></h2>
+  <ul>
+    <li>The CC0 race car imported: an Empty root (Vehicle, collider, rigid body), the body model and four wheel entities, placed with Fit Wheels.</li>
+    <li>Its license note in <code>Projects/Racing/Assets</code> and in the game build's license notices.</li>
+    <li><b>Checked:</b> the wheels spin and steer without shearing (the model's parts are under an unscaled parent); shadows and materials look right.</li>
+  </ul>
+</section>
+
+<section id="phase-3">
+  <h2>Phase 3: arcade handling <span class="tag">engine</span> <span class="tag">game</span></h2>
+  <ul>
+    <li><b>Engine:</b> VehicleComponent grip settings (front and rear lateral, longitudinal), gear ratios, top speed; <code>Vehicle.SetGrip</code> for scripts; the wheels' slip in the vehicle's state (for tire sounds and drift detection). In the Inspector and the scene file.</li>
+    <li><b>C#:</b> <code>CarController.cs</code> with the assists of the decisions, each with a public field to tune in the Inspector.</li>
+    <li><b>High speed:</b> 350 km/h is about 1.6 m per physics step. Continuous collision on the car's body so the walls hold; the wheels' ground contact checked over crests and into banked turns at top speed.</li>
+    <li><b>The test driver</b> (<code>TestDriver.cs</code>) along the center line.</li>
+    <li><b>Checked:</b> the test driver laps the test track with no wall stops or flips; the user drives it in the editor's Play.</li>
+  </ul>
+</section>
+
+<section id="phase-4">
+  <h2>Phase 4: race logic <span class="tag">game</span></h2>
+  <ul>
+    <li><b><code>RaceManager.cs</code>:</b> a 3-2-1-Go countdown (the car held), checkpoints in order (triggers; a lap with a missed one doesn't count), three laps, lap and race timers, a split at each checkpoint against the best lap (green faster, red slower), respawn at the last checkpoint (on the gate, facing along the track, speed zero), restart, finish.</li>
+    <li><b>Medals:</b> bronze, silver, gold and author times per track, set from test laps.</li>
+    <li>The best lap, the best race and the medals saved with SaveData.</li>
+    <li><b>Checked:</b> a scripted race of three laps finishes with the right times; respawn and restart from every checkpoint.</li>
+  </ul>
+</section>
+
+<section id="phase-5">
+  <h2>Phase 5: HUD and menus <span class="tag">game</span></h2>
+  <ul>
+    <li><b>HUD:</b> speed (km/h), lap 1/3, the current and best lap, the split popup, a big countdown, the finish screen (times, medal, new record).</li>
+    <li><b>Menus:</b> main (Race, Settings, Quit) and pause (Resume, Restart, Settings, Main Menu), adapted from Sample's menus and <code>SettingsMenu.cs</code>.</li>
+  </ul>
+</section>
+
+<section id="phase-6">
+  <h2>Phase 6: camera, sound and feel <span class="tag">game</span></h2>
+  <ul>
+    <li><b>A chase camera for racing</b> (from <code>VehicleCamera.cs</code>): lower and tighter, a field of view that widens with speed, a small dip on landing, looking ahead in turns.</li>
+    <li><b>Sounds (CC0):</b> an engine loop pitched by the rpm, tire squeal from the wheels' slip, wall scrape, checkpoint chime, countdown beeps, finish.</li>
+  </ul>
+</section>
+
+<section id="phase-7">
+  <h2>Phase 7: the real circuit <span class="tag">game</span></h2>
+  <ul>
+    <li>About 2–2.5 km, 35–45 s a lap at up to 350 km/h: a long downhill straight, a climb with a blind crest, two or three steep banked turns, a hairpin, a fast S; 20–30 m between the lowest and the highest point.</li>
+    <li>Scenery: the terrain's hills around, a start and finish gantry, lighting and reflections tuned.</li>
+    <li>Medal times from the test driver and the user's laps.</li>
+  </ul>
+</section>
+
+<section id="phase-8">
+  <h2>Phase 8: trees and foliage <span class="tag">engine</span> <span class="tag">tools</span></h2>
+  <ul>
+    <li><b>Assets:</b> three or four CC0 tree species and one or two bushes, simplified by a Blender script (<code>Tools/TrackBuilder/prepare_tree.py</code>): trunks and branches of a few thousand triangles, leaf cards with alpha (the Cutout surface). The script also bakes each tree's impostor atlas (albedo with alpha and normals, seen from 8–16 directions around it).</li>
+    <li><b>Engine, a Foliage component:</b> a list of species, density, seed, slope and height limits, a keep-out distance from the track (its center line) and from the supports; it scatters instances over the terrain.</li>
+    <li><b>Engine, instanced drawing</b> of many copies of one mesh (scene pass, G-buffer prepass, shadow cascades), culled per instance. Distance levels: the mesh near, the impostor farther (a camera-facing card showing the nearest baked view), nothing beyond, with a dithered cross-fade between them that TAA smooths. A debug view colors the instances by level.</li>
+    <li><b>A known limit to check:</b> ray tracing (AO, reflections, probes) sees cutout leaves as opaque cards. If it shows, alpha in the ray tracing passes becomes a step of this phase.</li>
+    <li><b>Checked:</b> the frame time with thousands of trees (before and after), no pop at a level switch, no tree on or over the road.</li>
+  </ul>
+</section>
+
+<section id="phase-9">
+  <h2>Phase 9: the ghost of the best lap <span class="tag">game</span></h2>
+  <ul>
+    <li>The car's body and wheel transforms recorded (20 Hz, interpolated), saved with the best lap, replayed on a copy without physics with a see-through material.</li>
+  </ul>
+</section>
+
+<section id="phase-10">
+  <h2>Phase 10: the game build</h2>
+  <ul>
+    <li>Build Game export of Racing: Windows, then Linux and macOS through CI, checked on the player.</li>
+  </ul>
+</section>
+
+<section id="later">
+  <h2>Later</h2>
+  <ul>
+    <li>jumps (air control is already in), boost pads, a loop (upside-down frames in the builder and stronger downforce)</li>
+    <li>more tracks and a track menu (the builder already makes them from data)</li>
+    <li>AI opponents, from the test driver</li>
+    <li>visual: motion blur from the TAA motion vectors, tire smoke (needs Vulkan particles), skid marks</li>
+    <li>a spline track editor in the engine, if editing data files gets slow</li>
+  </ul>
+</section>
+
+<section id="verify">
+  <h2>How each phase is checked</h2>
+  <ul>
+    <li><b>Builds:</b> Debug and Release, editor and player; the GCC check of changed C++ files (<code>Tools/Testing/gcc-check.sh</code>); <code>dotnet build</code> of ScriptCore and the project's scripts.</li>
+    <li><b>Unattended runs</b> (<code>Tools/Testing/Run-Engine.ps1</code>) with no validation messages and no problems, and <code>Capture-Window.ps1</code> screenshots.</li>
+    <li><b>The test driver</b> for anything about driving, with the frame-time log for the budget.</li>
+    <li><b>The user</b> tries each phase in the editor's Play.</li>
+  </ul>
+</section>
+</main>
+</body>
+</html>

@@ -198,9 +198,26 @@ void TerrainSettings::Clamp()
 	FlatBlend = std::clamp(FlatBlend, 0.0f, Size * 0.5f);
 	RockSlope = std::clamp(RockSlope, 0.0f, 90.0f);
 	Friction = std::clamp(Friction, 0.0f, 2.0f);
+	LodTolerance = std::clamp(LodTolerance, 0.0f, 20.0f);
 }
 
 // ---- TerrainHeights
+
+uint32_t TerrainLods::LevelAt(const Chunk& chunk, float distance, float tolerance)
+{
+	// The error allowed grows with the distance (as the size of a meter on the screen shrinks); at least 1 m away, so flat
+	// ground under the camera is still its coarsest level
+	const float allowed = tolerance * std::max(distance, 1.0f) / 100.0f;
+	uint32_t level = 0;
+	for (uint32_t l = 1; l < LevelCount; l++)
+	{
+		if (chunk.Error[l] <= allowed)
+		{
+			level = l;
+		}
+	}
+	return level;
+}
 
 float TerrainHeights::GetHeight(float x, float z) const
 {
@@ -393,7 +410,7 @@ namespace Terrain
 		return heights;
 	}
 
-	ModelData BuildModelData(const TerrainHeights& heights)
+	ModelData BuildModelData(const TerrainHeights& heights, TerrainLods* lods)
 	{
 		ModelData data;
 		const uint32_t count = heights.SampleCount;
@@ -412,8 +429,16 @@ namespace Terrain
 			z = std::clamp(z, 0, (int)count - 1);
 			return heights.Heights[(size_t)z * count + x];
 		};
+		// A level's spacing in heights, when it fits the chunk (else the level before it is used again)
+		auto levelFits = [](uint32_t level, uint32_t w, uint32_t d) { const uint32_t step = 1u << level; return w % step == 0 && d % step == 0; };
 
+		// Sizes first: each chunk's vertices (the grid, then the skirt's lowered copies of its edges) and its own triangles
+		// (level 0); after all of them, the levels' triangles and skirts
 		data.Meshes.resize((size_t)chunks * chunks);
+		if (lods)
+		{
+			lods->Chunks.assign((size_t)chunks * chunks, TerrainLods::Chunk());
+		}
 		size_t vertexTotal = 0, triangleTotal = 0;
 		for (uint32_t cz = 0; cz < chunks; cz++)
 		{
@@ -424,11 +449,40 @@ namespace Terrain
 				mesh.Name = "Chunk " + std::to_string(cx) + ", " + std::to_string(cz);
 				mesh.BaseVertex = (uint32_t)vertexTotal;
 				mesh.BaseIndex = (uint32_t)(triangleTotal * 3);
-				mesh.VertexCount = (w + 1) * (d + 1);
+				mesh.VertexCount = (w + 1) * (d + 1) + (lods ? 2 * (w + 1) + 2 * (d + 1) : 0);
 				mesh.TriangleCount = w * d * 2;
 				mesh.IndexCount = mesh.TriangleCount * 3;
 				vertexTotal += mesh.VertexCount;
 				triangleTotal += mesh.TriangleCount;
+			}
+		}
+		if (lods)
+		{
+			for (size_t c = 0; c < data.Meshes.size(); c++)
+			{
+				const uint32_t cx = (uint32_t)(c % chunks), cz = (uint32_t)(c / chunks);
+				const uint32_t w = std::min(cellsPerChunk, cells - cx * cellsPerChunk), d = std::min(cellsPerChunk, cells - cz * cellsPerChunk);
+				TerrainLods::Chunk& chunk = lods->Chunks[c];
+				chunk.Surface[0] = { data.Meshes[c].BaseIndex, data.Meshes[c].IndexCount };
+				for (uint32_t level = 0; level < TerrainLods::LevelCount; level++)
+				{
+					if (level > 0 && !levelFits(level, w, d))
+					{
+						chunk.Surface[level] = chunk.Surface[level - 1];
+						chunk.Skirt[level] = chunk.Skirt[level - 1];
+						continue;
+					}
+					const uint32_t step = 1u << level;
+					if (level > 0)
+					{
+						const uint32_t triangles = (w / step) * (d / step) * 2;
+						chunk.Surface[level] = { (uint32_t)(triangleTotal * 3), triangles * 3 };
+						triangleTotal += triangles;
+					}
+					const uint32_t skirtTriangles = (2 * (w / step) + 2 * (d / step)) * 4; // a quad per edge segment, both sides
+					chunk.Skirt[level] = { (uint32_t)(triangleTotal * 3), skirtTriangles * 3 };
+					triangleTotal += skirtTriangles;
+				}
 			}
 		}
 		data.StaticVertices.resize(vertexTotal);
@@ -473,6 +527,103 @@ namespace Terrain
 					}
 					mesh.BoundsMin = glm::vec3(-half + x0 * spacing, minY, -half + z0 * spacing);
 					mesh.BoundsMax = glm::vec3(-half + (x0 + w) * spacing, maxY, -half + (z0 + d) * spacing);
+					if (!lods)
+					{
+						continue;
+					}
+
+					// The skirt's vertices: copies of the edges' (a row at z = 0, one at z = d, a column at x = 0, one at
+					// x = w), lowered by the chunk's height range and a meter (no coarser level's edge strays further from
+					// the heights), with the edges' normals so they shade as the ground beside them
+					const float depth = std::max(maxY - minY, 1.0f) + 1.0f;
+					const uint32_t grid = (w + 1) * (d + 1);
+					auto gridIndex = [&](uint32_t x, uint32_t z) { return z * (w + 1) + x; };
+					// The skirt vertex below the grid's (x, z) on an edge (0: z = 0, 1: z = d, 2: x = 0, 3: x = w)
+					auto skirtIndex = [&](uint32_t edge, uint32_t x, uint32_t z)
+					{
+						switch (edge)
+						{
+							case 0: return grid + x;
+							case 1: return grid + (w + 1) + x;
+							case 2: return grid + 2 * (w + 1) + z;
+							default: return grid + 2 * (w + 1) + (d + 1) + z;
+						}
+					};
+					auto edgePoint = [&](uint32_t edge, uint32_t i, uint32_t& x, uint32_t& z)
+					{
+						x = edge < 2 ? i : (edge == 2 ? 0 : w);
+						z = edge < 2 ? (edge == 0 ? 0 : d) : i;
+					};
+					for (uint32_t edge = 0; edge < 4; edge++)
+					{
+						const uint32_t n = edge < 2 ? w : d;
+						for (uint32_t i = 0; i <= n; i++)
+						{
+							uint32_t x, z;
+							edgePoint(edge, i, x, z);
+							H2M::VertexH2M vertex = data.StaticVertices[mesh.BaseVertex + gridIndex(x, z)];
+							vertex.Position.y -= depth;
+							data.StaticVertices[mesh.BaseVertex + skirtIndex(edge, x, z)] = vertex;
+						}
+					}
+					mesh.BoundsMin.y -= depth;
+
+					TerrainLods::Chunk& chunk = lods->Chunks[(size_t)cz * chunks + cx]; // this chunk's only: no other thread writes it
+					for (uint32_t level = 0; level < TerrainLods::LevelCount; level++)
+					{
+						if (level > 0 && !levelFits(level, w, d))
+						{
+							chunk.Error[level] = chunk.Error[level - 1];
+							continue;
+						}
+						const uint32_t step = 1u << level;
+						if (level > 0)
+						{
+							// The level's error: each height against the level's triangle above or below it (each square
+							// split from its corner at -x -z to the one at +x +z, as the triangles are)
+							float error = 0.0f;
+							for (uint32_t z = 0; z <= d; z++)
+							{
+								for (uint32_t x = 0; x <= w; x++)
+								{
+									const uint32_t qx = std::min(x / step * step, w - step), qz = std::min(z / step * step, d - step);
+									const float u = (float)(x - qx) / step, v = (float)(z - qz) / step;
+									const int gx = (int)(x0 + qx), gz = (int)(z0 + qz), gs = (int)step;
+									const float ha = at(gx, gz), hb = at(gx + gs, gz), hc = at(gx, gz + gs), he = at(gx + gs, gz + gs);
+									const float level_h = v >= u ? ha + u * (he - hc) + v * (hc - ha) : ha + u * (hb - ha) + v * (he - hb);
+									error = std::max(error, std::fabs(level_h - at((int)(x0 + x), (int)(z0 + z))));
+								}
+							}
+							chunk.Error[level] = std::max(error, chunk.Error[level - 1]); // never less than a finer level's
+							H2M::Index* surface = &data.Indices[chunk.Surface[level].BaseIndex / 3];
+							for (uint32_t z = 0; z < d; z += step)
+							{
+								for (uint32_t x = 0; x < w; x += step)
+								{
+									const uint32_t a = gridIndex(x, z), b = gridIndex(x + step, z), c = gridIndex(x, z + step), e = gridIndex(x + step, z + step);
+									*surface++ = { a, c, e };
+									*surface++ = { a, e, b };
+								}
+							}
+						}
+						H2M::Index* skirt = &data.Indices[chunk.Skirt[level].BaseIndex / 3];
+						for (uint32_t edge = 0; edge < 4; edge++)
+						{
+							const uint32_t n = edge < 2 ? w : d;
+							for (uint32_t i = 0; i < n; i += step)
+							{
+								uint32_t xa, za, xb, zb;
+								edgePoint(edge, i, xa, za);
+								edgePoint(edge, i + step, xb, zb);
+								const uint32_t t0 = gridIndex(xa, za), t1 = gridIndex(xb, zb);
+								const uint32_t b0 = skirtIndex(edge, xa, za), b1 = skirtIndex(edge, xb, zb);
+								*skirt++ = { t0, b0, b1 }; // one side
+								*skirt++ = { t0, b1, t1 };
+								*skirt++ = { t0, b1, b0 }; // the other
+								*skirt++ = { t0, t1, b1 };
+							}
+						}
+					}
 				}
 			}
 		});
