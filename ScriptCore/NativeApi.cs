@@ -178,6 +178,7 @@ namespace Morava
         public uint Wheels, WheelsOnGround;
         public NativeVehicleInput Applied;
         public float LateralSlip, LongitudinalSlip;
+        public float MaxRpm, ShiftUpRpm;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -213,7 +214,8 @@ namespace Morava
     struct NativeUIRect
     {
         public Vector2 AnchorMin, AnchorMax, Pivot, Position, Size;
-        public int Visible, Reserved;
+        public int Visible;
+        public float Rotation;
     }
 
     [StructLayout(LayoutKind.Sequential)]

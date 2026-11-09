@@ -61,6 +61,34 @@ void UIDrawList::AddOutline(const glm::vec2& min, const glm::vec2& max, float wi
 	AddQuad(glm::vec2(max.x - w, min.y + w), glm::vec2(max.x, max.y - w), glm::vec2(0.0f), glm::vec2(0.0f), color, none);
 }
 
+void UIDrawList::TransformVertices(size_t firstVertex, const UITransform& transform)
+{
+	if (transform.IsIdentity())
+	{
+		return;
+	}
+	for (size_t i = firstVertex; i < Vertices.size(); i++)
+	{
+		Vertices[i].Position = transform.ToView(Vertices[i].Position);
+	}
+}
+
+UITransform UITransform::Rotated(float degrees, const glm::vec2& center) const
+{
+	if (degrees == 0.0f)
+	{
+		return *this;
+	}
+	// y points down: this turn is clockwise on the screen
+	const float radians = glm::radians(degrees);
+	const float c = std::cos(radians), s = std::sin(radians);
+	const glm::mat2 rotation(c, s, -s, c);
+	UITransform result;
+	result.Basis = Basis * rotation;
+	result.Origin = Origin + Basis * (center - rotation * center);
+	return result;
+}
+
 float UILayout::GetCanvasScale(const UICanvasComponent& canvas, const glm::vec2& viewSize)
 {
 	const glm::vec2 reference = glm::max(canvas.ReferenceResolution, glm::vec2(1.0f));
@@ -338,6 +366,7 @@ namespace
 		{
 			return;
 		}
+		const size_t firstVertex = out.Vertices.size();
 		const H2M::RefH2M<H2M::Texture2D_H2M> none;
 		const UITextComponent style = DropdownTextStyle(scene, element.Entity, list.RowHeight, element.Scale);
 		out.AddQuad(list.Min, list.Max, glm::vec2(0.0f), glm::vec2(0.0f), dropdown.ListColor, none);
@@ -362,6 +391,7 @@ namespace
 			AddDropdownText(out, style, dropdown.Options[(size_t)i], rowMin, rowMax, element.Scale);
 		}
 		out.AddOutline(list.Min, list.Max, std::max(1.0f, std::round(element.Scale * 1.5f)), glm::vec4(1.0f, 1.0f, 1.0f, 0.3f));
+		out.TransformVertices(firstVertex, element.Transform); // turned with its element
 	}
 
 	struct LayoutContext
@@ -373,10 +403,13 @@ namespace
 		bool ElementsOnly;
 	};
 
-	void LayoutElement(LayoutContext& context, EnvMapVulkanEntityID entity, const glm::vec2& parentMin, const glm::vec2& parentMax)
+	// parentTransform: where the parent's local points are on the screen (its rotation and its parents')
+	void LayoutElement(LayoutContext& context, EnvMapVulkanEntityID entity, const glm::vec2& parentMin, const glm::vec2& parentMax,
+		const UITransform& parentTransform)
 	{
 		const EnvMapVulkanScene& scene = context.Scene;
 		glm::vec2 min = parentMin, max = parentMax;
+		UITransform transform = parentTransform;
 		if (const UIRectComponent* rect = scene.TryGet<UIRectComponent>(entity))
 		{
 			if (!rect->Visible)
@@ -390,6 +423,7 @@ namespace
 			const glm::vec2 pivot = anchorMin + (anchorMax - anchorMin) * rect->Pivot + rect->Position * context.Scale;
 			min = pivot - rect->Pivot * size;
 			max = min + size;
+			transform = parentTransform.Rotated(rect->Rotation, pivot);
 
 			UIElementRect& element = context.Out.Elements.emplace_back();
 			element.Entity = entity;
@@ -402,7 +436,10 @@ namespace
 			element.AnchorMax = anchorMax;
 			element.Pivot = pivot;
 			element.Scale = context.Scale;
+			element.Transform = transform;
+			element.ParentTransform = parentTransform;
 		}
+		const size_t firstVertex = context.Out.Vertices.size();
 
 		const UIImageComponent* image = context.ElementsOnly ? nullptr : scene.TryGet<UIImageComponent>(entity);
 		if (image)
@@ -471,11 +508,14 @@ namespace
 			}
 		}
 
+		// Its own quads were made in its local space; its children turn theirs on their own
+		context.Out.TransformVertices(firstVertex, transform);
+
 		for (EnvMapVulkanEntityID child : scene.GetChildren(entity))
 		{
 			if (!scene.Has<UICanvasComponent>(child)) // a canvas of its own: drawn with the canvases
 			{
-				LayoutElement(context, child, min, max);
+				LayoutElement(context, child, min, max, transform);
 			}
 		}
 	}
@@ -523,7 +563,7 @@ void UILayout::Build(const EnvMapVulkanScene& scene, const glm::vec2& viewSize, 
 			continue;
 		}
 		LayoutContext context = { scene, out, canvas, GetCanvasScale(scene.Get<UICanvasComponent>(canvas), viewSize), elementsOnly };
-		LayoutElement(context, canvas, glm::vec2(0.0f), viewSize);
+		LayoutElement(context, canvas, glm::vec2(0.0f), viewSize, UITransform());
 	}
 	// An open drop-down's list over every canvas (the elements' rectangles are kept as they were: a copy of each)
 	if (!elementsOnly)
@@ -564,8 +604,9 @@ void UILayout::AddSelectionOverlay(UIDrawList& out, EnvMapVulkanEntityID selecte
 		const glm::vec4 parentColor(1.0f, 1.0f, 1.0f, 0.35f);
 		const glm::vec4 rectColor(1.0f, 0.6f, 0.1f, 1.0f);
 		const glm::vec4 anchorColor(0.3f, 0.8f, 1.0f, 1.0f);
+		// The parent's rectangle and the anchors turned as the parent is, the element's own as it is
+		size_t firstVertex = out.Vertices.size();
 		out.AddOutline(element.ParentMin, element.ParentMax, 1.0f, parentColor);
-		out.AddOutline(element.Min - glm::vec2(1.0f), element.Max + glm::vec2(1.0f), 2.0f, rectColor);
 		// Anchors: a small square at each of the four anchor points (one square when they meet)
 		const glm::vec2 anchors[4] = { element.AnchorMin, glm::vec2(element.AnchorMax.x, element.AnchorMin.y), element.AnchorMax,
 			glm::vec2(element.AnchorMin.x, element.AnchorMax.y) };
@@ -573,8 +614,12 @@ void UILayout::AddSelectionOverlay(UIDrawList& out, EnvMapVulkanEntityID selecte
 		{
 			out.AddQuad(anchor - glm::vec2(4.0f), anchor + glm::vec2(4.0f), glm::vec2(0.0f), glm::vec2(0.0f), anchorColor, none);
 		}
+		out.TransformVertices(firstVertex, element.ParentTransform);
+		firstVertex = out.Vertices.size();
+		out.AddOutline(element.Min - glm::vec2(1.0f), element.Max + glm::vec2(1.0f), 2.0f, rectColor);
 		// The pivot: a ring
 		out.AddOutline(element.Pivot - glm::vec2(5.0f), element.Pivot + glm::vec2(5.0f), 2.0f, glm::vec4(1.0f));
+		out.TransformVertices(firstVertex, element.Transform);
 	}
 }
 
@@ -584,6 +629,7 @@ void UILayout::AddInteractionOverlay(UIDrawList& out, EnvMapVulkanEntityID hover
 	for (size_t i = 0; i < count; i++)
 	{
 		const UIElementRect element = out.Elements[i];
+		const size_t firstVertex = out.Vertices.size();
 		if (element.Entity == selected)
 		{
 			out.AddOutline(element.Min - glm::vec2(3.0f), element.Max + glm::vec2(3.0f), 2.0f, glm::vec4(1.0f, 0.85f, 0.1f, 1.0f));
@@ -592,5 +638,6 @@ void UILayout::AddInteractionOverlay(UIDrawList& out, EnvMapVulkanEntityID hover
 		{
 			out.AddOutline(element.Min - glm::vec2(1.0f), element.Max + glm::vec2(1.0f), 2.0f, glm::vec4(0.2f, 1.0f, 0.4f, 1.0f));
 		}
+		out.TransformVertices(firstVertex, element.Transform);
 	}
 }

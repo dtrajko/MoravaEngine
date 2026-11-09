@@ -36,7 +36,22 @@ struct UIDrawBatch
 	uint32_t IndexCount = 0;
 };
 
-// Where an element ended up (view pixels), for the debug view, the editor and the mouse (UI/SceneUI)
+// Where a rotated element's points are on the screen: view = Origin + Basis * local (no rotation: the same point)
+struct UITransform
+{
+	glm::vec2 Origin = glm::vec2(0.0f);
+	glm::mat2 Basis = glm::mat2(1.0f); // a rotation: its inverse is its transpose
+
+	bool IsIdentity() const { return Origin == glm::vec2(0.0f) && Basis == glm::mat2(1.0f); }
+	glm::vec2 ToView(const glm::vec2& local) const { return Origin + Basis * local; }
+	glm::vec2 ToLocal(const glm::vec2& view) const { return glm::transpose(Basis) * (view - Origin); }
+	// This one turned by degrees (clockwise on the screen) around a point of its local space
+	UITransform Rotated(float degrees, const glm::vec2& center) const;
+};
+
+// Where an element ended up (view pixels), for the debug view, the editor and the mouse (UI/SceneUI). With a Rotation
+// (its own or a parent's) the rectangles are in their local space: Min, Max and Pivot in Transform's, the parent's
+// rectangle and the anchors in ParentTransform's; without one both are the view itself
 struct UIElementRect
 {
 	EnvMapVulkanEntityID Entity = NoEntity;
@@ -49,6 +64,16 @@ struct UIElementRect
 	glm::vec2 AnchorMax = glm::vec2(0.0f);
 	glm::vec2 Pivot = glm::vec2(0.0f);        // the point Position placed
 	float Scale = 1.0f;                       // the canvas's: view pixels per reference pixel
+	UITransform Transform;                    // its own rotation and its parents'
+	UITransform ParentTransform;              // its parents' only
+
+	// The point (view pixels) is in its rectangle, rotated as it is drawn
+	bool Contains(const glm::vec2& point) const
+	{
+		const glm::vec2 local = Transform.ToLocal(point);
+		return local.x >= Min.x && local.y >= Min.y && local.x < Max.x && local.y < Max.y;
+	}
+	glm::vec2 GetCenter() const { return Transform.ToView((Min + Max) * 0.5f); }
 };
 
 // What the UI draws in a frame: quads (four vertices, six indices each) in batches, and the elements' rectangles
@@ -68,6 +93,8 @@ struct UIDrawList
 		const H2M::RefH2M<H2M::Texture2D_H2M>& texture, float mode = 0.0f, float distancePixels = 0.0f);
 	// A rectangle's outline, width pixels wide, inside it
 	void AddOutline(const glm::vec2& min, const glm::vec2& max, float width, const glm::vec4& color);
+	// Moves the vertices from firstVertex on (local points) to where the transform puts them on the screen
+	void TransformVertices(size_t firstVertex, const UITransform& transform);
 };
 
 // Where a slider's parts are in view pixels (UISliderComponent): its handle's center goes from TravelMin to TravelMax (x)
@@ -101,6 +128,9 @@ struct UIDropdownListGeometry
  * over every canvas. An entity under a canvas without a
  * UIRectComponent is a group: its children are laid out in its parent's rectangle. A canvas under another canvas is a
  * canvas of its own (the whole view).
+ *
+ * A UI Rect's Rotation (degrees, clockwise on the screen) turns the element and its children around its pivot: a dial's
+ * needle. Its quads are turned as they are made; the mouse finds it where it is drawn (UIElementRect::Contains).
  */
 namespace UILayout
 {

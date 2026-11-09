@@ -48,6 +48,7 @@ struct ScriptVehicleState
 	ScriptVehicleInput Applied;              // as given to the wheels in the last step (reversing: brakes first)
 	float LateralSlip = 0.0f;                // degrees, the most of a wheel on the ground
 	float LongitudinalSlip = 0.0f;           // the most of a wheel on the ground (0 rolling, 1 locked)
+	float MaxRpm = 0.0f, ShiftUpRpm = 0.0f;  // the component's (a rev counter's scale)
 };
 
 struct ScriptRaycastHit
@@ -100,7 +101,7 @@ struct ScriptUIRect
 	glm::vec2 Position = glm::vec2(0.0f);
 	glm::vec2 Size = glm::vec2(100.0f, 30.0f);
 	int32_t Visible = 1;
-	int32_t Reserved = 0;
+	float Rotation = 0.0f; // degrees, clockwise on the screen
 };
 
 // A UITextComponent's look (UIText's properties; the text and the font come apart, UIText_GetText...)

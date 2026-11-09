@@ -460,6 +460,10 @@ namespace EnvMapVulkanSceneSerializer
 			WriteVec2(out, "Pivot", rect->Pivot);
 			WriteVec2(out, "Position", rect->Position);
 			WriteVec2(out, "Size", rect->Size);
+			if (rect->Rotation != 0.0f)
+			{
+				out << YAML::Key << "Rotation" << YAML::Value << rect->Rotation;
+			}
 			out << YAML::Key << "Visible" << YAML::Value << rect->Visible;
 			out << YAML::EndMap;
 		}
@@ -938,6 +942,7 @@ namespace EnvMapVulkanSceneSerializer
 			ReadVec2(rectNode["Pivot"], rect.Pivot);
 			ReadVec2(rectNode["Position"], rect.Position);
 			ReadVec2(rectNode["Size"], rect.Size);
+			Read(rectNode, "Rotation", rect.Rotation);
 			Read(rectNode, "Visible", rect.Visible);
 		}
 		if (YAML::Node textNode = node["UIText"]; textNode && textNode.IsMap())

@@ -273,10 +273,9 @@ void SceneUI::UpdateOpenDropdown(const InputSystem* input, float unscaledFrameTi
 		return;
 	}
 	const UIDropdownListGeometry list = UILayout::GetDropdownList(*dropdown, element->Min, element->Max, m_ViewSize);
-	const glm::vec2 point = m_Pointer.Position;
+	const glm::vec2 point = element->Transform.ToLocal(m_Pointer.Position); // the list turns with its element
 	const int row = m_Pointer.Inside ? list.RowAt(point) : -1;
-	const bool onElement = m_Pointer.Inside && point.x >= element->Min.x && point.y >= element->Min.y && point.x < element->Max.x &&
-		point.y < element->Max.y;
+	const bool onElement = m_Pointer.Inside && element->Contains(m_Pointer.Position);
 	m_Hovered = m_HoveredButton = row >= 0 || onElement ? m_OpenDropdown : NoEntity;
 	dropdown->HighlightedOption = dropdown->Constrain(dropdown->HighlightedOption);
 
@@ -379,7 +378,7 @@ const UIElementRect* SceneUI::HitTest(const glm::vec2& point) const
 	{
 		const bool catches = m_Scene->Has<UIImageComponent>(it->Entity) || m_Scene->Has<UIButtonComponent>(it->Entity) ||
 			m_Scene->Has<UISliderComponent>(it->Entity) || m_Scene->Has<UIDropdownComponent>(it->Entity);
-		if (catches && point.x >= it->Min.x && point.y >= it->Min.y && point.x < it->Max.x && point.y < it->Max.y)
+		if (catches && it->Contains(point))
 		{
 			return &*it;
 		}
@@ -450,7 +449,7 @@ void SceneUI::Navigate(const glm::ivec2& direction)
 
 void SceneUI::MoveSelection(const glm::vec2& direction)
 {
-	auto center = [](const UIElementRect& element) { return (element.Min + element.Max) * 0.5f; };
+	auto center = [](const UIElementRect& element) { return element.GetCenter(); };
 	const UIElementRect* from = m_Selected != NoEntity ? FindElement(m_Selected) : nullptr;
 
 	const UIElementRect* best = nullptr;
@@ -527,7 +526,8 @@ void SceneUI::DragSlider()
 	// The mouse's x along the handle's travel (beyond its ends: the end)
 	const UISliderGeometry geometry = UILayout::GetSliderGeometry(*slider, element->Min, element->Max, element->Scale);
 	const float travel = geometry.TravelMax - geometry.TravelMin;
-	const float t = travel > 0.0f ? glm::clamp((m_Pointer.Position.x - geometry.TravelMin) / travel, 0.0f, 1.0f) : 0.0f;
+	const float x = element->Transform.ToLocal(m_Pointer.Position).x; // along the slider when it is turned
+	const float t = travel > 0.0f ? glm::clamp((x - geometry.TravelMin) / travel, 0.0f, 1.0f) : 0.0f;
 	SetSliderValue(m_DraggedSlider, slider->Min + (slider->Max - slider->Min) * t);
 }
 

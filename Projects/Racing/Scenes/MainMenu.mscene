@@ -1,0 +1,1414 @@
+Scene:
+  Version: 1
+  Name: MainMenu
+EditorCamera:
+  Translation: [60, 105, 160]
+  Rotation: [20, 30, 0]
+  FieldOfView: 60
+Entities:
+  - ID: 1001
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0.4, 52, 108.5]
+      Rotation: [12, 3, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 65
+      NearClip: 0.1
+      FarClip: 3000
+  - ID: 1002
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/rocky_ridge_puresky_2k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 1003
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-35, 30, 0]
+      Scale: [1, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 1
+      FollowEnvironmentRotation: false
+      CastShadows: true
+      IconPlaced: false
+  - ID: 1004
+    Name: Terrain
+    Parent: 0
+    Tags: [Terrain]
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Terrain:
+      Seed: 12345
+      Size: 1024
+      FlatCenter: [-80, -25]
+      FlatRadius: 290
+      FlatBlend: 150
+      LodTolerance: 2
+      Layers:
+        Sand: {ID: 5100000000000000002, File: Assets/Materials/Terrain_Sand.mmat}
+        Grass: {ID: 5100000000000000001, File: Assets/Materials/Terrain_Grass.mmat}
+        Rock: {ID: 5100000000000000003, File: Assets/Materials/Terrain_Rock.mmat}
+  - ID: 3000
+    Name: Track
+    Parent: 0
+    Transform:
+      Translation: [0, 45.78, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - ID: 3001
+    Name: Road
+    Parent: 3000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Track_TestTrack_Road.glb
+    Collider:
+      Shape: TriangleMesh
+      Friction: 1
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3002
+    Name: Walls
+    Parent: 3000
+    Tags: [Wall]
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Track_TestTrack_Walls.glb
+    Collider:
+      Shape: TriangleMesh
+      Friction: 0.05
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3003
+    Name: Structure
+    Parent: 3000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Track_TestTrack_Structure.glb
+  - ID: 2001
+    Name: Car
+    Parent: 0
+    Transform:
+      Translation: [0.36, 49.8, 102]
+      Rotation: [0, 3, 0]
+      Scale: [1, 1, 1]
+  - ID: 2010
+    Name: Model
+    Parent: 2001
+    Transform:
+      Translation: [0, -0.6, 0]
+      Rotation: [0, 180, 0]
+      Scale: [2, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/race.glb
+  - ID: 2011
+    Name: Body
+    Parent: 2010
+    Transform:
+      Translation: [0, 0.1, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+  - ID: 2012
+    Name: Wheel FL
+    Parent: 2001
+    Transform:
+      Translation: [-1.05, 0, -1.28]
+      Rotation: [0, 180, 0]
+      Scale: [2.25, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2013
+    Name: Wheel FR
+    Parent: 2001
+    Transform:
+      Translation: [1.05, 0, -1.28]
+      Rotation: [0, 0, 0]
+      Scale: [2.25, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2014
+    Name: Wheel RL
+    Parent: 2001
+    Transform:
+      Translation: [-1.14, 0, 1.76]
+      Rotation: [0, 180, 0]
+      Scale: [2.7, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2015
+    Name: Wheel RR
+    Parent: 2001
+    Transform:
+      Translation: [1.14, 0, 1.76]
+      Rotation: [0, 0, 0]
+      Scale: [2.7, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 8000
+    Name: Main Menu
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.MainMenu
+      Fields:
+        Menu: {Entity: 8001}
+        RaceButton: {Entity: 8010}
+        SettingsButton: {Entity: 8011}
+        QuitButton: {Entity: 8012}
+        SettingsScreen: {Entity: 7000}
+        RecordsText: {Entity: 8020}
+        MenuCamera: {Entity: 1001}
+        Center: {Vector3: [-80, 52, -25]}
+        Radius: {Float: 180}
+        Height: {Float: 40}
+        Speed: {Float: 3}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
+  - ID: 8001
+    Name: Menu
+    Parent: 8000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+  - ID: 8002
+    Name: Shade
+    Parent: 8001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 1], Pivot: [0, 0.5], Position: [0, 0], Size: [960, 0], Visible: true}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.5]}
+  - ID: 8003
+    Name: Title
+    Parent: 8001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [110, -300], Size: [900, 170], Visible: true}
+    UIText:
+      Text: RACING
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 170
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 8004
+    Name: Accent
+    Parent: 8001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [116, -196], Size: [380, 8], Visible: true}
+    UIImage: {Texture: "", Color: [0.9, 0.1, 0.14, 1]}
+  - ID: 8005
+    Name: Subtitle
+    Parent: 8001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [114, -150], Size: [900, 60], Visible: true}
+    UIText:
+      Text: Test Track   3 laps
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 8010
+    Name: Race Button
+    Parent: 8001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [110, -20], Size: [440, 90], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Race
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 46
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 8011
+    Name: Settings Button
+    Parent: 8001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [110, 90], Size: [440, 90], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Settings
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 46
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 8012
+    Name: Quit Button
+    Parent: 8001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [110, 200], Size: [440, 90], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Quit
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 46
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 8020
+    Name: Records
+    Parent: 8001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [114, -110], Size: [1400, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 34
+      Color: [1, 0.82, 0.25, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 8021
+    Name: Hint
+    Parent: 8001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [114, -50], Size: [1400, 50], Visible: true}
+    UIText:
+      Text: "Mouse, arrow keys and Enter, or the gamepad"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.65]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7000
+    Name: Settings Menu
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.SettingsMenu
+      Fields:
+        Panel: {Entity: 7001}
+        MusicSlider: {Entity: 7011}
+        EffectsSlider: {Entity: 7021}
+        MouseSlider: {Entity: 7031}
+        MusicValue: {Entity: 7012}
+        EffectsValue: {Entity: 7022}
+        MouseValue: {Entity: 7032}
+        QualityDropdown: {Entity: 7041}
+        DisplayDropdown: {Entity: 7051}
+        ResolutionDropdown: {Entity: 7061}
+        VSyncDropdown: {Entity: 7071}
+        ApplyButton: {Entity: 7091}
+        ControlsPanel: {Entity: 7100}
+        AccelerateKey: {Entity: 7111}
+        AcceleratePad: {Entity: 7112}
+        BrakeKey: {Entity: 7121}
+        BrakePad: {Entity: 7122}
+        SteerLeftKey: {Entity: 7131}
+        SteerRightKey: {Entity: 7141}
+        HandbrakeKey: {Entity: 7151}
+        HandbrakePad: {Entity: 7152}
+        RespawnKey: {Entity: 7161}
+        RespawnPad: {Entity: 7162}
+        ControlsHint: {Entity: 7180}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 20}
+  - ID: 7001
+    Name: Settings Panel
+    Parent: 7000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.01, 0.012, 0.02, 0.9]}
+  - ID: 7002
+    Name: Title
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -440], Size: [900, 120], Visible: true}
+    UIText:
+      Text: SETTINGS
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 84
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7010
+    Name: Music Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -330], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Music
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7011
+    Name: Music Slider
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -330], Size: [560, 14], Visible: true}
+    UIImage: {Texture: "", Color: [0.14, 0.15, 0.19, 0.95]}
+    UISlider:
+      Value: 0.5
+      Min: 0
+      Max: 1
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.9, 0.1, 0.14, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [28, 48]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 0.85, 0.3, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7012
+    Name: Music Value
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -330], Size: [180, 70], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7020
+    Name: Effects Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -245], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Effects
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7021
+    Name: Effects Slider
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -245], Size: [560, 14], Visible: true}
+    UIImage: {Texture: "", Color: [0.14, 0.15, 0.19, 0.95]}
+    UISlider:
+      Value: 1
+      Min: 0
+      Max: 1
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.9, 0.1, 0.14, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [28, 48]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 0.85, 0.3, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7022
+    Name: Effects Value
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -245], Size: [180, 70], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7030
+    Name: Mouse sensitivity Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -160], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Mouse sensitivity
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7031
+    Name: Mouse sensitivity Slider
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -160], Size: [560, 14], Visible: true}
+    UIImage: {Texture: "", Color: [0.14, 0.15, 0.19, 0.95]}
+    UISlider:
+      Value: 1
+      Min: 0.25
+      Max: 3
+      WholeNumbers: false
+      Step: 0.25
+      Interactable: true
+      FillColor: [0.9, 0.1, 0.14, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [28, 48]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 0.85, 0.3, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7032
+    Name: Mouse sensitivity Value
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -160], Size: [180, 70], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7040
+    Name: Quality Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -75], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Quality
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7041
+    Name: Quality Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -75], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [Automatic, Low, Medium, High, Ultra]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7050
+    Name: Display Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 10], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Display
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7051
+    Name: Display Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 10], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [Fullscreen, Window]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7060
+    Name: Resolution Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 95], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Resolution
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7061
+    Name: Resolution Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 95], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: []
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7070
+    Name: VSync Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 180], Size: [420, 70], Visible: true}
+    UIText:
+      Text: VSync
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7071
+    Name: VSync Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 180], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [Off, On]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7090
+    Name: Controls Button
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: OpenControls}
+    UIText:
+      Text: Controls
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7091
+    Name: Apply Button
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: Apply}
+    UIText:
+      Text: Apply
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7092
+    Name: Back Button
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: Back}
+    UIText:
+      Text: Back
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7093
+    Name: Hint
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -50], Size: [1700, 60], Visible: true}
+    UIText:
+      Text: "Up and down: the next setting. Left and right: a slider. Enter or A: open a list, choose, then Apply. Escape or Start: back"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7100
+    Name: Controls Panel
+    Parent: 7000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.01, 0.012, 0.02, 0.9]}
+  - ID: 7101
+    Name: Title
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -440], Size: [900, 120], Visible: true}
+    UIText:
+      Text: CONTROLS
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 84
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7102
+    Name: Keyboard Header
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -350], Size: [380, 60], Visible: true}
+    UIText:
+      Text: Keyboard
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7103
+    Name: Gamepad Header
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -350], Size: [380, 60], Visible: true}
+    UIText:
+      Text: Gamepad
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7110
+    Name: Accelerate Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -270], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Accelerate
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7111
+    Name: Accelerate Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -270], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7112
+    Name: Accelerate Pad
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -270], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7120
+    Name: Brake Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -190], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Brake
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7121
+    Name: Brake Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -190], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7122
+    Name: Brake Pad
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -190], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7130
+    Name: Steer left Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -110], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Steer left
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7131
+    Name: Steer Left Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -110], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7132
+    Name: Stick
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -70], Size: [380, 64], Visible: true}
+    UIText:
+      Text: Left Stick
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7140
+    Name: Steer right Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -30], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Steer right
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7141
+    Name: Steer Right Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -30], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7150
+    Name: Handbrake Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, 50], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Handbrake
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7151
+    Name: Handbrake Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, 50], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7152
+    Name: Handbrake Pad
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, 50], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7160
+    Name: Respawn Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, 130], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Respawn
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7161
+    Name: Respawn Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, 130], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7162
+    Name: Respawn Pad
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, 130], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7180
+    Name: Hint
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 230], Size: [1400, 60], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 32
+      Color: [1, 1, 1, 0.8]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7181
+    Name: Reset Button
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-240, 330], Size: [440, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ResetControls}
+    UIText:
+      Text: Reset
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7182
+    Name: Back Button
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [240, 330], Size: [440, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: Back}
+    UIText:
+      Text: Back
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7183
+    Name: Hint
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -50], Size: [1700, 60], Visible: true}
+    UIText:
+      Text: "Escape or Start: back to Settings"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1

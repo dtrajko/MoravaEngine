@@ -1,7 +1,7 @@
 Project:
   Version: 1
   Name: Racing
-  StartScene: Scenes/TestTrack.mscene
+  StartScene: Scenes/MainMenu.mscene
   AssetDirectory: Assets
   InputMap: Settings/Input.minput
   ScriptAssembly: Scripts/bin/Racing.dll
@@ -15,4 +15,5 @@ Project:
     Version: 0.1.0
     DefaultQuality: Medium
     Scenes:
+      - {File: Scenes/MainMenu.mscene}
       - {File: Scenes/TestTrack.mscene}

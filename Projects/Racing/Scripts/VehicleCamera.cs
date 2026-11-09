@@ -29,7 +29,10 @@ namespace Racing
         /// <summary>How fast the view turns after the vehicle's heading: higher is tighter.</summary>
         public float TurnSmoothing = 3.0f;
 
-        /// <summary>How fast the camera catches up with the vehicle (bumps, a jump): higher is tighter (0: at once).</summary>
+        /// <summary>
+        /// How fast the camera catches up with the vehicle's ups and downs (bumps, a jump): higher is tighter (0: at once).
+        /// Along the ground the point it turns around stays on the vehicle (smoothed, it trailed meters behind at speed).
+        /// </summary>
         public float Smoothing = 12.0f;
 
         /// <summary>The mouse looks around the vehicle (the game captures the cursor while it has the input).</summary>
@@ -84,7 +87,9 @@ namespace Racing
                 started = true;
             }
             yaw += WrapAngle(heading - yaw) * Ease(TurnSmoothing, dt);
-            pivot = Smoothing > 0 ? Vector3.Lerp(pivot, wantedPivot, Ease(Smoothing, dt)) : wantedPivot;
+            // On top of the vehicle: exactly over it along the ground, only its height smoothed
+            float height = Smoothing > 0 ? pivot.Y + (wantedPivot.Y - pivot.Y) * Ease(Smoothing, dt) : wantedPivot.Y;
+            pivot = new Vector3(wantedPivot.X, height, wantedPivot.Z);
 
             // Looking around: the mouse only while it is the game's (a free cursor moves to the editor's panels)
             Vector2 orbit = Input.GetAxis2D("Orbit");

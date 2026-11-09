@@ -607,6 +607,10 @@ static int32_t VehicleGetState(uint64_t entity, ScriptVehicleState* out)
 	out->Applied = { state.Applied.Forward, state.Applied.Steer, state.Applied.Brake, state.Applied.Handbrake };
 	out->LateralSlip = state.LateralSlip;
 	out->LongitudinalSlip = state.LongitudinalSlip;
+	const EnvMapVulkanScene* scene = GetScene();
+	const VehicleComponent* vehicle = scene ? scene->TryGet<VehicleComponent>(entity) : nullptr;
+	out->MaxRpm = vehicle ? vehicle->MaxRpm : 0.0f;
+	out->ShiftUpRpm = vehicle ? vehicle->ShiftUpRpm : 0.0f;
 	return 1;
 }
 
@@ -1048,6 +1052,7 @@ static int32_t UIRectGet(uint64_t entity, ScriptUIRect* out)
 	out->Position = rect->Position;
 	out->Size = rect->Size;
 	out->Visible = rect->Visible ? 1 : 0;
+	out->Rotation = rect->Rotation;
 	return 1;
 }
 
@@ -1064,6 +1069,7 @@ static int32_t UIRectSet(uint64_t entity, const ScriptUIRect* value)
 	rect->Position = value->Position;
 	rect->Size = value->Size;
 	rect->Visible = value->Visible != 0;
+	rect->Rotation = std::isfinite(value->Rotation) ? value->Rotation : 0.0f;
 	return 1;
 }
 

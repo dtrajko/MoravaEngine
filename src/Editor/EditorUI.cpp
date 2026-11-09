@@ -38,6 +38,7 @@ static EnvMapVulkanEntityID s_DraggedElement = NoEntity;
 static glm::vec2 s_DragStartMouse = glm::vec2(0.0f);
 static glm::vec2 s_DragStartPosition = glm::vec2(0.0f);
 static float s_DragScale = 1.0f;
+static glm::mat2 s_DragParentBasis = glm::mat2(1.0f);
 
 static bool HasExtension(const std::filesystem::path& path, std::initializer_list<const char*> extensions)
 {
@@ -381,6 +382,12 @@ static void RectControls(EnvMapVulkanEntityID entity, const UIDrawList& layout)
 	{
 		ImGui::SetTooltip("Reference pixels. Stretched sides: added to the span between the anchors (0: exactly the span,\n"
 			"-20: 10 short of each edge)");
+	}
+	ImGui::DragFloat("Rotation", &rect.Rotation, 0.5f, -360.0f, 360.0f, "%.1f deg");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Turns the element and its children around its pivot, clockwise on the screen (a dial's needle).\n"
+			"The mouse finds it where it is drawn. Scripts: GetComponent<UIRect>().Rotation");
 	}
 	if (placed)
 	{
@@ -947,7 +954,7 @@ static const UIElementRect* PickElement(const UIDrawList& layout, const glm::vec
 	for (auto it = layout.Elements.rbegin(); it != layout.Elements.rend(); ++it)
 	{
 		const bool shows = s_Scene.Has<UIImageComponent>(it->Entity) || s_Scene.Has<UITextComponent>(it->Entity);
-		if (shows && point.x >= it->Min.x && point.y >= it->Min.y && point.x <= it->Max.x && point.y <= it->Max.y)
+		if (shows && it->Contains(point))
 		{
 			return &*it;
 		}
@@ -968,7 +975,9 @@ bool HandleViewportUIMouse(const glm::vec2& mouseInView, bool clicked, bool togg
 		}
 		if (ImGui::IsMouseDragging(ImGuiMouseButton_Left, 2.0f))
 		{
-			rect->Position = glm::round(s_DragStartPosition + (mouseInView - s_DragStartMouse) / s_DragScale);
+			// Position is in the parent's space: a turned parent turns the mouse's move back first
+			const glm::vec2 move = glm::transpose(s_DragParentBasis) * (mouseInView - s_DragStartMouse);
+			rect->Position = glm::round(s_DragStartPosition + move / s_DragScale);
 		}
 		return true;
 	}
@@ -995,6 +1004,7 @@ bool HandleViewportUIMouse(const glm::vec2& mouseInView, bool clicked, bool togg
 		s_DragStartMouse = mouseInView;
 		s_DragStartPosition = rect->Position;
 		s_DragScale = std::max(picked->Scale, 0.0001f);
+		s_DragParentBasis = picked->ParentTransform.Basis;
 	}
 	return true;
 }
