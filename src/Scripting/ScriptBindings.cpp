@@ -611,7 +611,37 @@ static int32_t VehicleGetState(uint64_t entity, ScriptVehicleState* out)
 	const VehicleComponent* vehicle = scene ? scene->TryGet<VehicleComponent>(entity) : nullptr;
 	out->MaxRpm = vehicle ? vehicle->MaxRpm : 0.0f;
 	out->ShiftUpRpm = vehicle ? vehicle->ShiftUpRpm : 0.0f;
+	out->Manual = state.Manual ? 1 : 0;
+	out->Gears = state.Gears;
+	out->RevLimit = state.RevLimit;
 	return 1;
+}
+
+static int32_t VehicleSetManual(uint64_t entity, int32_t manual)
+{
+	ScenePhysics* physics = GetPhysics();
+	return physics && physics->SetVehicleManual(entity, manual != 0) ? 1 : 0;
+}
+
+static int32_t VehicleSetGear(uint64_t entity, int32_t gear)
+{
+	ScenePhysics* physics = GetPhysics();
+	return physics && physics->SetVehicleGear(entity, gear) ? 1 : 0;
+}
+
+static int32_t VehicleShift(uint64_t entity, int32_t direction)
+{
+	ScenePhysics* physics = GetPhysics();
+	if (!physics)
+	{
+		return 0;
+	}
+	switch (physics->ShiftVehicleGear(entity, direction))
+	{
+	case ScenePhysics::ShiftResult::Shifted: return 1;
+	case ScenePhysics::ShiftResult::Refused: return -1;
+	default:                                 return 0;
+	}
 }
 
 static int32_t VehicleSetGrip(uint64_t entity, float front, float rear)
@@ -1743,6 +1773,9 @@ namespace ScriptBindings
 		api.Vehicle_SetControls = VehicleSetControls;
 		api.Vehicle_SetGrip = VehicleSetGrip;
 		api.Asset_ReadText = AssetReadText;
+		api.Vehicle_SetManual = VehicleSetManual;
+		api.Vehicle_Shift = VehicleShift;
+		api.Vehicle_SetGear = VehicleSetGear;
 	}
 
 	void SetContext(ScriptContext* context)

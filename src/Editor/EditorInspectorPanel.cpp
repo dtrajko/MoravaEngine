@@ -791,6 +791,20 @@ static void VehicleControls(EnvMapVulkanEntityID entity, VehicleComponent& vehic
 	{
 		ImGui::SetTooltip("The automatic gearbox shifts up when the engine turns this fast (near Max RPM: the most acceleration)");
 	}
+	ImGui::DragFloat("Engine Braking", &vehicle.EngineBraking, 0.005f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("With the manual gearbox (a script's Vehicle.ManualGearbox): off the throttle in gear, the engine holds\n"
+			"the car back with this share of Engine Torque at Max RPM, less at lower rpm, more in a lower gear.\n"
+			"0: none beyond Jolt's own (weak)");
+	}
+	ImGui::DragFloat("Over-Rev RPM", &vehicle.OverRevRpm, 50.0f, 0.0f, 5000.0f, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How far above Max RPM the engine may turn: the throttle is cut at Max RPM (a rev limiter), so only a\n"
+			"manual downshift takes it there, where it brakes harder (a GT40: 7000, and 1000 more for downshifts).\n"
+			"0: Max RPM is the engine's hard limit");
+	}
 	GearControls(vehicle);
 
 	// The wheels

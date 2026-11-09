@@ -49,6 +49,9 @@ struct ScriptVehicleState
 	float LateralSlip = 0.0f;                // degrees, the most of a wheel on the ground
 	float LongitudinalSlip = 0.0f;           // the most of a wheel on the ground (0 rolling, 1 locked)
 	float MaxRpm = 0.0f, ShiftUpRpm = 0.0f;  // the component's (a rev counter's scale)
+	int32_t Manual = 0;                      // the gearbox is manual (Vehicle_SetManual)
+	int32_t Gears = 0;                       // forward gears
+	float RevLimit = 0.0f;                   // the most the engine turns: Max RPM + Over-Rev RPM
 };
 
 struct ScriptRaycastHit
@@ -386,6 +389,12 @@ struct ScriptNativeApi
 	// buffer is too small, -2 when there is no such file
 	int32_t (*Vehicle_SetGrip)(uint64_t entity, float front, float rear);
 	int32_t (*Asset_ReadText)(const char16_t* path, int length, char16_t* buffer, int capacity);
+
+	// The racing game's manual gears: a vehicle's gearbox manual (1) or automatic (0); a shift up (1) or down (-1) in a
+	// manual one. 0: not a running vehicle; Shift: 1 shifted, -1 refused (ScenePhysics::ShiftVehicleGear)
+	int32_t (*Vehicle_SetManual)(uint64_t entity, int32_t manual);
+	int32_t (*Vehicle_Shift)(uint64_t entity, int32_t direction);
+	int32_t (*Vehicle_SetGear)(uint64_t entity, int32_t gear); // straight into a gear (0: not a running vehicle)
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke
