@@ -357,6 +357,9 @@ struct VehicleComponent
 	float TopSpeed = 0.0f;
 	float ShiftTime = 0.5f;                 // seconds a gear change takes
 	float ShiftUpRpm = 4000.0f;             // the engine's speed at which it shifts up
+	// The forward gears' ratios, first to top (the engine turns this many times per turn of the gearbox's output); empty:
+	// Jolt's five (2.66, 1.78, 1.30, 1.00, 0.74). A longer first gear (a lower ratio) pulls less and reaches a higher speed
+	std::vector<float> GearRatios;
 
 	static const char* GetControlName(ControlMode mode);
 };

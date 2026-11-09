@@ -370,6 +370,15 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   <ul>
     <li><b>A chase camera for racing</b> (from <code>VehicleCamera.cs</code>): lower and tighter, a field of view that widens with speed, a small dip on landing, looking ahead in turns.</li>
     <li><b>Sounds (CC0):</b> the engine: two loops (low and high revs) crossfaded and pitched by <code>Vehicle.EngineRpm</code>, louder with the throttle; the tires: a squeal from the wheels' slip (<code>LongitudinalSlip</code> braking hard, <code>LateralSlip</code> cornering and drifting); wall scrape (the car's collisions with the walls); the start: a beep as each of the five start lights comes on and another at lights out; checkpoint chime; finish.</li>
+    <li><b>Built 2026-11-09</b> (branch <code>racing-feel</code>):
+      <ul>
+        <li><b>Camera:</b> the field of view widens with speed (+12&deg; at 300 km/h), the view looks into turns (the heading's turn rate, a quarter second ahead), dips when the car lands; lower and closer (7.5 m, 1.4 m, 9&deg;); it turns around a point on top of the car (the smoothing had left it meters behind at speed).</li>
+        <li><b>The engine:</b> no CC0 recording held up stretched over the whole rev range, so it is synthesized (<code>Tools/Audio/GenerateEngineSounds.py</code>): a model measured from a reference recording the user gave (a W16 from 0 to 350 km/h; only measurements were taken): a harmonic series at rpm / 30 with a fixed balance of harmonics and a colored noise that fades out toward idle (the user: a clean idle). Loops every 500 rpm from 1000 to 7000, on and off the throttle; <code>RaceAudio.cs</code> cross-fades the two nearest, each pitched only by rpm / its rpm, the banks by the throttle; an upshift dips the engine and clicks.</li>
+        <li><b>Gears</b> (the user: first gear too quick): engine setting <code>VehicleComponent.GearRatios</code> (the Inspector's Own Gears; empty: Jolt's five); the car has the Ford GT40's ZF five-speed, 2.23 / 1.61 / 1.24 / 1.00 / 0.81 (the final drive still from Top Speed): first gear 1000 to 5500 rpm in 1.8 s (was 1.0 s), to 91 km/h.</li>
+        <li><b>Other sounds</b> (<code>Tools/Audio/GenerateRaceSounds.py</code>): start light beeps (red, yellow, green higher), checkpoint chimes (higher when faster than the best lap), the finish, a wall scrape, the tire squeal (narrow wobbling noise bands; chosen by the user from previews). The CC-BY tire recording was not used: the game keeps to CC0.</li>
+        <li><b>Also:</b> the start line is drawn only (it was in the road's collider, a step the car hopped over); more grip in ordinary driving (Driving Grip 1.5); shifting up at 5500 rpm with the rev counter's red zone at 6000&ndash;7000.</li>
+      </ul>
+    </li>
   </ul>
 </section>
 

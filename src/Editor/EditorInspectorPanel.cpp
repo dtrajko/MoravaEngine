@@ -650,6 +650,45 @@ static void InputTestControls(EnvMapVulkanEntityID model)
 }
 
 // A vehicle (VehicleComponent): its wheels, engine, brakes and springs; while the game runs, how it goes
+// The gearbox's forward gears: Jolt's five, or the vehicle's own (as many as wanted, first to top)
+static void GearControls(VehicleComponent& vehicle)
+{
+	static const float s_JoltGears[] = { 2.66f, 1.78f, 1.3f, 1.0f, 0.74f };
+	bool own = !vehicle.GearRatios.empty();
+	if (ImGui::Checkbox("Own Gears", &own))
+	{
+		vehicle.GearRatios.clear();
+		if (own)
+		{
+			vehicle.GearRatios.assign(std::begin(s_JoltGears), std::end(s_JoltGears)); // a start: Jolt's, to change
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Off: Jolt's five gears (2.66, 1.78, 1.30, 1.00, 0.74). On: the vehicle's own ratios, first to top.\n"
+			"A ratio is how many times the engine turns per turn of the gearbox's output. A longer gear (a lower ratio)\n"
+			"pulls less and reaches a higher speed: a first gear 1.41 times longer takes about twice as long through the revs.\n"
+			"Top Speed sets the final drive from the top gear, so the top speed stays as it is.");
+	}
+	if (!own)
+	{
+		return;
+	}
+	int count = (int)vehicle.GearRatios.size();
+	if (ImGui::SliderInt("Gears", &count, 1, 8, "%d", ImGuiSliderFlags_AlwaysClamp))
+	{
+		const float last = vehicle.GearRatios.back();
+		vehicle.GearRatios.resize((size_t)count, last * 0.8f); // a new top gear: a fifth longer than the last
+	}
+	for (size_t i = 0; i < vehicle.GearRatios.size(); i++)
+	{
+		ImGui::PushID((int)i);
+		const std::string label = "Gear " + std::to_string(i + 1);
+		ImGui::DragFloat(label.c_str(), &vehicle.GearRatios[i], 0.01f, 0.1f, 10.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::PopID();
+	}
+}
+
 static void VehicleControls(EnvMapVulkanEntityID entity, VehicleComponent& vehicle)
 {
 	const ImVec4 warningColor(1.0f, 0.8f, 0.3f, 1.0f);
@@ -752,6 +791,7 @@ static void VehicleControls(EnvMapVulkanEntityID entity, VehicleComponent& vehic
 	{
 		ImGui::SetTooltip("The automatic gearbox shifts up when the engine turns this fast (near Max RPM: the most acceleration)");
 	}
+	GearControls(vehicle);
 
 	// The wheels
 	if (ImGui::Button("Fit Wheels"))

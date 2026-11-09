@@ -96,6 +96,9 @@ namespace Racing
         /// <summary>The car of the running game (the race's: one car).</summary>
         public static CarController? Current { get; private set; }
 
+        /// <summary>The car scrapes a wall now (the wall assist holds: for its sound).</summary>
+        public bool TouchingWall => wallTime > 0.0f;
+
         /// <summary>Held at the start: brakes on, the throttle ignored (the race, until the lights go out).</summary>
         public bool Held { get; set; }
 

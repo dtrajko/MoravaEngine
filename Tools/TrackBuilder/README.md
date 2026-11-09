@@ -14,9 +14,9 @@ It writes, for a track named `<Name>`:
 
 | File | What | In the scene |
 |---|---|---|
-| `Assets/Models/Track_<Name>_Road.glb` | the road, the curbs, the start line | Model + Collider TriangleMesh, Friction 1 |
+| `Assets/Models/Track_<Name>_Road.glb` | the road, the curbs | Model + Collider TriangleMesh, Friction 1 |
 | `Assets/Models/Track_<Name>_Walls.glb` | the side walls | Model + Collider TriangleMesh, Friction 0.05 (the car slides along) |
-| `Assets/Models/Track_<Name>_Structure.glb` | the road's sides and underside, the supports | Model only |
+| `Assets/Models/Track_<Name>_Structure.glb` | the road's sides and underside, the supports, the start line (drawn just above the road: not a collider, so it is no step) | Model only |
 | `Assets/Tracks/<Name>.centerline.json` | the center line every 2 m (position, right, up, width), the start | read by scripts with `Assets.ReadText` (the test driver, the race); in `Assets` so a built game's pack has it (`CenterlineDirectory` in the data changes the folder) |
 
 Each model is cut into chunks of about 100 m along the track (separate meshes), so the engine culls it chunk by chunk.
