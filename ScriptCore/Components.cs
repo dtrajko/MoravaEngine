@@ -189,6 +189,12 @@ namespace Morava
         /// <summary>The engine's revolutions per minute: for an engine sound's pitch, a rev counter.</summary>
         public float EngineRpm => State.Rpm;
 
+        /// <summary>The engine's highest revolutions per minute (Inspector: Max RPM): a rev counter's end, its red zone.</summary>
+        public float MaxRpm => State.MaxRpm;
+
+        /// <summary>The revolutions per minute at which it shifts up (Inspector: Shift Up RPM).</summary>
+        public float ShiftUpRpm => State.ShiftUpRpm;
+
         /// <summary>The gear it is in: 1, 2... forward, -1 reverse, 0 neutral.</summary>
         public int Gear => State.Gear;
 

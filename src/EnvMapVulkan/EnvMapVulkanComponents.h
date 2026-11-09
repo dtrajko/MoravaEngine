@@ -453,7 +453,8 @@ struct UIRectComponent
 	glm::vec2 Pivot = glm::vec2(0.5f);
 	glm::vec2 Position = glm::vec2(0.0f);
 	glm::vec2 Size = glm::vec2(100.0f, 30.0f);
-	bool Visible = true; // false hides the element and its children (a closed menu)
+	float Rotation = 0.0f; // degrees, clockwise on the screen, around the pivot; its children turn with it (a dial's needle)
+	bool Visible = true;   // false hides the element and its children (a closed menu)
 };
 
 enum class UITextAlign { Left, Center, Right };

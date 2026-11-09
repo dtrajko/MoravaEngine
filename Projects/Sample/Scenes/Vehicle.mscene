@@ -30,7 +30,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Environment:
-      File: Textures/HDR/citrus_orchard_road_2k.hdr
+      File: Textures/HDR/rocky_ridge_puresky_2k.hdr
       Rotation: 4
       Exposure: 1
       AutoExposure: true

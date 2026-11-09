@@ -64,6 +64,11 @@ namespace Morava
 
         /// <summary>The element's own point that Position places, and that it grows from: (0.5, 0.5) its center.</summary>
         public Vector2 Pivot { get => Rect.Pivot; set { var r = Rect; r.Pivot = value; Rect = r; } }
+
+        /// <summary>
+        /// Degrees, clockwise on the screen, around the pivot; the children turn with it: needle.Rotation = -120 + 240 * t.
+        /// </summary>
+        public float Rotation { get => Rect.Rotation; set { var r = Rect; r.Rotation = value; Rect = r; } }
     }
 
     /// <summary>

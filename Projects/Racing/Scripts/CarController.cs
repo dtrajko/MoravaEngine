@@ -11,6 +11,8 @@ namespace Racing
     ///   (at full speed a fraction of the slow-speed angle), so it doesn't spin out at 300 km/h.
     /// - Downforce: pressed down harder the faster it goes (the square of its speed), along its own down: it holds the road
     ///   in fast turns, on banked turns and over crests.
+    /// - Grip: in ordinary driving the tires grip DrivingGrip times the Inspector's (Front Grip, Rear Grip), so the car
+    ///   doesn't slide under throttle and braking; the handbrake's drift keeps the Inspector's grip (DriftRearGrip at the rear).
     /// - Drift (Handbrake at speed): the rear tires lose grip for as long as it is held and get it back gradually after; the
     ///   throttle stays on. Slow, the handbrake is a handbrake.
     /// - ABS: braking hard, the brake eases while a wheel locks, so it stops sooner and still steers.
@@ -40,10 +42,14 @@ namespace Racing
         /// <summary>km/h of the downforce above (it grows with the square of the speed).</summary>
         public float DownforceSpeed = 300.0f;
 
+        // ---- Grip
+        /// <summary>The tires' grip in ordinary driving, times the Inspector's (1: as set there). The drift doesn't use it.</summary>
+        public float DrivingGrip = 1.5f;
+
         // ---- Drift
         /// <summary>km/h above which the handbrake drifts (below: it is a handbrake).</summary>
         public float DriftMinSpeed = 60.0f;
-        /// <summary>The rear tires' grip while drifting (1: their usual).</summary>
+        /// <summary>The rear tires' grip while drifting, times the Inspector's (the front's is the Inspector's then).</summary>
         public float DriftRearGrip = 0.5f;
         /// <summary>Seconds the rear tires take to get their grip back after a drift.</summary>
         public float DriftRecovery = 0.6f;
@@ -141,7 +147,7 @@ namespace Racing
                 body.AngularVelocity = Vector3.Zero;
             }
             steer = 0.0f;
-            rearGrip = 1.0f;
+            rearGrip = MathF.Max(DrivingGrip, 0.0f);
             absShare = 1.0f;
             wallTime = 0.0f;
             TouchedTerrain = false;
@@ -200,12 +206,14 @@ namespace Racing
             float share = 1.0f - (1.0f - Math.Clamp(FullSpeedSteer, 0.0f, 1.0f)) * Math.Clamp(kmh / MathF.Max(FullSpeedSteerAt, 1.0f), 0.0f, 1.0f);
 
             // Drift: fast, the handbrake lowers the rear grip instead of locking the wheels; the grip comes back gradually
+            // (from DriftRearGrip up to DrivingGrip); the front keeps the Inspector's grip while the handbrake is held
             bool drifting = drift && kmh >= DriftMinSpeed;
+            float driving = MathF.Max(DrivingGrip, 0.0f);
             if (drifting)
                 rearGrip = Math.Clamp(DriftRearGrip, 0.0f, 1.0f);
             else
-                rearGrip = MathF.Min(1.0f, rearGrip + dt / MathF.Max(DriftRecovery, 0.01f));
-            vehicle.SetGrip(1.0f, rearGrip);
+                rearGrip = MathF.Min(driving, rearGrip + driving * dt / MathF.Max(DriftRecovery, 0.01f));
+            vehicle.SetGrip(drift ? 1.0f : driving, rearGrip);
 
             // ABS: the brake eases while a wheel locks, and comes back once it rolls
             if (AbsSlip > 0.0f && brake > 0.0f && kmh > 10.0f)

@@ -6,7 +6,7 @@ using Morava;
 namespace Racing
 {
     /// <summary>
-    /// The race (docs/games/Racing_Plan.html, Phase 4): F1-style start lights, laps and checkpoints, the timers and
+    /// The race (docs/games/Racing_Plan.html, Phase 4): start lights (red, yellow, green), laps and checkpoints, the timers and
     /// splits, respawn and restart, the wrong-way warning, the fallen-off car put back, the medals and the records.
     ///
     /// Everything it knows about the track comes from the track's center line (Tools/TrackBuilder writes it): the
@@ -14,10 +14,11 @@ namespace Racing
     /// nearest point on it moves over them, in order (a lap with a missed one doesn't count). No triggers: nothing to
     /// place in the scene, and nothing a car at 350 km/h (1.6 m a physics step) can jump through.
     ///
-    /// The car starts behind the line: the timer starts when the lights go out, the first lap ends at the second time
+    /// The car starts behind the line: the timer starts when the light turns green, the first lap ends at the second time
     /// over the line. Respawn (the key, or by itself when the car has fallen off) puts the car on the last checkpoint
     /// passed, standing still, facing along the track; the timer keeps running. Restart starts the race again.
-    /// The HUD (Phase 5) reads the race's state from Current.
+    /// The HUD (RaceHud, Phase 5) reads the race's state from Current. The keys don't count while a menu is open
+    /// (KeysBlocked: the pause menu's Enter is its own).
     /// </summary>
     public class RaceManager : Entity
     {
@@ -34,18 +35,21 @@ namespace Racing
         /// <summary>The lap's parts of equal length: Sectors - 1 checkpoints between the start and finish line.</summary>
         public int Sectors = 4;
 
-        // ---- The start lights
-        /// <summary>The panel of the five lights (its children Light 1 to Light 5: UI images).</summary>
+        // ---- The start lights: red, then yellow, then green: go
+        /// <summary>The panel of the three lights (its children Light 1 to Light 3, red, yellow, green: UI images).</summary>
         public Entity? StartLights;
-        /// <summary>Seconds before the first light comes on (the car settles on its springs).</summary>
+        /// <summary>Seconds before the red light comes on (the car settles on its springs).</summary>
         public float LightsDelay = 1.0f;
-        /// <summary>Seconds between the lights.</summary>
+        /// <summary>Seconds the red and the yellow light each stay on before the next.</summary>
         public float LightInterval = 1.0f;
-        /// <summary>The shortest and longest the five lights stay on before they go out (a random time between).</summary>
-        public float LightsHoldMin = 0.2f;
-        public float LightsHoldMax = 1.0f;
-        public Vector4 LightOn = new(1.0f, 0.06f, 0.04f, 1.0f);
-        public Vector4 LightOff = new(0.16f, 0.03f, 0.03f, 1.0f);
+        /// <summary>Seconds the green light stays on after the start, before the lights hide.</summary>
+        public float GreenTime = 1.0f;
+        /// <summary>The lights' colors on, red, yellow, green, and off (dimmed).</summary>
+        public Vector4 RedOn = new(1.0f, 0.08f, 0.05f, 1.0f);
+        public Vector4 YellowOn = new(1.0f, 0.78f, 0.08f, 1.0f);
+        public Vector4 GreenOn = new(0.15f, 1.0f, 0.3f, 1.0f);
+        /// <summary>Times a light's color while it is off.</summary>
+        public float OffDim = 0.16f;
 
         // ---- Off the track
         /// <summary>Meters below the road at which the car has fallen off.</summary>
@@ -76,11 +80,11 @@ namespace Racing
 
         // ---- The race's state, for the HUD (Phase 5)
         public RaceState State { get; private set; } = RaceState.Lights;
-        /// <summary>The start lights on (0 to 5); 0 after they went out.</summary>
+        /// <summary>The start light on: 0 none, 1 red, 2 yellow, 3 green.</summary>
         public int LightsOn { get; private set; }
         /// <summary>The lap being driven, 1 to Laps (Laps when finished).</summary>
         public int Lap => Math.Clamp(lapsDone + 1, 1, Math.Max(Laps, 1));
-        /// <summary>Seconds since the lights went out.</summary>
+        /// <summary>Seconds since the light turned green.</summary>
         public float RaceTime { get; private set; }
         /// <summary>Seconds of the lap being driven.</summary>
         public float LapTime => RaceTime - lapStart;
@@ -95,18 +99,36 @@ namespace Racing
         public bool WrongWay { get; private set; }
         /// <summary>The medal of the finished race: 0 none, 1 bronze, 2 silver, 3 gold, 4 author.</summary>
         public int Medal { get; private set; }
+        /// <summary>The finished race beat the best race (saved before it).</summary>
+        public bool NewRecord { get; private set; }
+        /// <summary>The laps driven in this race, in order (seconds).</summary>
+        public float[] LapTimes => lapTimes.ToArray();
+        /// <summary>Counts the splits (checkpoints and the line): the HUD shows a new one when it changes.</summary>
+        public int SplitCount { get; private set; }
+        /// <summary>The last split's checkpoint, 1 to Sectors - 1; Sectors: the line (a lap).</summary>
+        public int LastSplitCheckpoint { get; private set; }
+        /// <summary>The last lap was the best ever.</summary>
+        public bool LastLapBest { get; private set; }
+        /// <summary>Counts the restarts: the HUD clears its popups when it changes.</summary>
+        public int RestartCount { get; private set; }
+        /// <summary>Set by the menus while they are open: Restart and Respawn wait (their keys are the menus' too).</summary>
+        public static bool KeysBlocked { get; set; }
 
         static readonly string[] MedalNames = { "no medal", "bronze", "silver", "gold", "author" };
+
+        /// <summary>The medal's name for the screen: "", "Bronze", "Silver", "Gold", "Author".</summary>
+        public static string MedalTitle(int medal) => medal switch { 1 => "Bronze", 2 => "Silver", 3 => "Gold", 4 => "Author", _ => "" };
+
+        /// <summary>The medal's time (0: none).</summary>
+        public float MedalTime(int medal) => medal switch { 1 => BronzeTime, 2 => SilverTime, 3 => GoldTime, 4 => AuthorTime, _ => 0.0f };
 
         Centerline? line;
         CarController? car;
         Rigidbody? body;
-        readonly UIImage?[] lights = new UIImage?[5];
+        readonly UIImage?[] lights = new UIImage?[3];
         UIRect? lightsPanel, wrongWayRect;
-        readonly Random random = new();
 
         float phaseTime;        // seconds in the lights, or since the finish
-        float lightsHold;       // the random hold of this start
         float lightsHideAt = -1.0f;
         int nearest = -1;
         float previousS = -1.0f;
@@ -119,6 +141,7 @@ namespace Racing
         float offTime, wrongTime;
         bool respawnAsked, restartAsked, started;
         int respawns;
+        readonly System.Collections.Generic.List<float> lapTimes = new();
 
         string Key(string name) => $"{line?.Name ?? "Track"}.{name}";
 
@@ -148,6 +171,8 @@ namespace Racing
         protected override void OnUpdate(float dt)
         {
             // The keys: read each frame, done at the next physics step
+            if (KeysBlocked)
+                return;
             if (Input.WasPressed("Restart"))
                 restartAsked = true;
             if (Input.WasPressed("Respawn"))
@@ -200,6 +225,9 @@ namespace Racing
 
         // ---- The start
 
+        /// <summary>The race starts again at the next physics step (the menus' Restart).</summary>
+        public void RequestRestart() => restartAsked = true;
+
         /// <summary>The race from the start: the car behind the line, held, the lights from the first.</summary>
         public void Restart()
         {
@@ -207,7 +235,6 @@ namespace Racing
                 return;
             State = RaceState.Lights;
             phaseTime = 0.0f;
-            lightsHold = LightsHoldMin + (float)random.NextDouble() * MathF.Max(LightsHoldMax - LightsHoldMin, 0.0f);
             lightsHideAt = -1.0f;
             RaceTime = 0.0f;
             lapStart = 0.0f;
@@ -218,6 +245,10 @@ namespace Racing
             LastSplit = 0.0f;
             LastSplitDelta = float.NaN;
             Medal = 0;
+            NewRecord = false;
+            LastLapBest = false;
+            lapTimes.Clear();
+            RestartCount++;
             respawns = 0;
             SetWrongWay(false);
             wrongTime = offTime = 0.0f;
@@ -231,33 +262,39 @@ namespace Racing
             SetLights(0);
             if (lightsPanel != null)
                 lightsPanel.Visible = true;
-            Log.Info($"Race: restart; the lights go out {LightsDelay + 4.0f * LightInterval + lightsHold:0.00} s from now");
+            Log.Info($"Race: restart; green {LightsDelay + 2.0f * LightInterval:0.00} s from now");
         }
 
         void UpdateLights()
         {
-            float allOn = LightsDelay + 4.0f * LightInterval;
-            if (phaseTime >= allOn + lightsHold)
+            float interval = MathF.Max(LightInterval, 0.01f);
+            if (phaseTime >= LightsDelay + 2.0f * interval)
             {
-                // Lights out: go
-                SetLights(0);
+                // Green: go
+                SetLights(3);
                 State = RaceState.Racing;
                 car!.Held = false;
-                lightsHideAt = phaseTime + 1.0f;
-                Log.Info("Race: lights out, go");
+                lightsHideAt = phaseTime + MathF.Max(GreenTime, 0.0f);
+                Log.Info("Race: green, go");
                 return;
             }
-            int on = phaseTime < LightsDelay ? 0 : Math.Min(5, 1 + (int)((phaseTime - LightsDelay) / MathF.Max(LightInterval, 0.01f)));
+            int on = phaseTime < LightsDelay ? 0 : phaseTime < LightsDelay + interval ? 1 : 2;
             if (on != LightsOn)
                 SetLights(on);
         }
 
+        // One light on (1 red, 2 yellow, 3 green), the others dimmed
         void SetLights(int on)
         {
             LightsOn = on;
+            Vector4[] colors = { RedOn, YellowOn, GreenOn };
             for (int i = 0; i < lights.Length; i++)
-                if (lights[i] != null)
-                    lights[i]!.Color = i < on ? LightOn : LightOff;
+            {
+                if (lights[i] == null)
+                    continue;
+                Vector4 c = colors[i];
+                lights[i]!.Color = i + 1 == on ? c : new Vector4(c.X * OffDim, c.Y * OffDim, c.Z * OffDim, 1.0f);
+            }
         }
 
         // ---- Laps and checkpoints
@@ -299,7 +336,9 @@ namespace Racing
             lapSplits[Sectors - 1] = lap;
             Split(Sectors - 1, lap);
             lapsDone++;
+            lapTimes.Add(lap);
             bool bestLap = BestLap <= 0.0f || lap < BestLap;
+            LastLapBest = bestLap;
             Log.Info($"Race: lap {lapsDone}/{Laps}: {Format(lap)}{(bestLap ? " (best lap)" : "")}, race {Format(RaceTime)}");
             if (bestLap)
             {
@@ -328,6 +367,8 @@ namespace Racing
         // The split at sector index (0 the first checkpoint, Sectors - 1 the line) against the best lap's
         void Split(int index, float time)
         {
+            LastSplitCheckpoint = index + 1;
+            SplitCount++;
             LastSplit = time;
             LastSplitDelta = index < bestSplits.Length && bestSplits[index] > 0.0f ? time - bestSplits[index] : float.NaN;
         }
@@ -343,6 +384,7 @@ namespace Racing
             float time = RaceTime;
             Medal = time <= AuthorTime ? 4 : time <= GoldTime ? 3 : time <= SilverTime ? 2 : time <= BronzeTime ? 1 : 0;
             bool record = BestRace <= 0.0f || time < BestRace;
+            NewRecord = record;
             if (record)
             {
                 BestRace = time;
@@ -433,14 +475,18 @@ namespace Racing
 
         // ---- Text
 
-        /// <summary>A time as 1:23.456 (or 23.456 under a minute); "-" for none.</summary>
-        public static string Format(float seconds)
+        /// <summary>A time as 1:23.456 (or 23.456 under a minute; decimals: 2 gives 1:23.45, cut, not rounded); "-" for none.</summary>
+        public static string Format(float seconds, int decimals = 3)
         {
             if (seconds <= 0.0f || float.IsNaN(seconds))
                 return "-";
+            decimals = Math.Clamp(decimals, 0, 3);
+            float scale = MathF.Pow(10.0f, decimals);
+            seconds = MathF.Floor(seconds * scale + 1e-3f) / scale; // a clock shows what has passed
             int minutes = (int)(seconds / 60.0f);
             float rest = seconds - 60.0f * minutes;
-            return minutes > 0 ? $"{minutes}:{rest.ToString("00.000", CultureInfo.InvariantCulture)}" : rest.ToString("0.000", CultureInfo.InvariantCulture);
+            string fraction = decimals > 0 ? "." + new string('0', decimals) : "";
+            return minutes > 0 ? $"{minutes}:{rest.ToString("00" + fraction, CultureInfo.InvariantCulture)}" : rest.ToString("0" + fraction, CultureInfo.InvariantCulture);
         }
 
         static string FormatSplits(float[] splits) =>
