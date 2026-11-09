@@ -6,9 +6,12 @@ namespace Racing
 {
     /// <summary>
     /// The race's HUD (docs/games/Racing_Plan.html, Phase 5), on its canvas: two analog dials (the speedometer to MaxSpeed
-    /// km/h and the rev counter to the car's Max RPM, its last RedZoneRpm red), the lap and the times, a
+    /// km/h and the rev counter to the engine's limit, Max RPM plus Over-Rev RPM, its last RedZoneRpm red: the car's 6000 to
+    /// 8000, the top of the throttle's range and the over-rev band only downshifts reach), the lap and the times, a
     /// popup at each split (the time and the difference to the best lap's there), banners (GO, FINAL LAP), the pulsing
     /// wrong-way warning and the finish screen (the time, the laps, the medal, a new record; Race again, Main menu).
+    /// With the manual gearbox, two shift paddles over the rev counter (- down, + up) light up at each press (PaddleShifted;
+    /// PaddleRefused when the gear can't change: the top gear, first, or too fast to go down).
     ///
     /// It only reads: the race's state from RaceManager.Current, the car's from CarController.Current.
     ///
@@ -34,6 +37,18 @@ namespace Racing
         public Entity? SpeedText;
         public Entity? RevNeedle;
         public Entity? GearText;
+
+        // ---- The shift paddles (shown with the manual gearbox)
+        public Entity? PaddleDown;
+        public Entity? PaddleDownText;
+        public Entity? PaddleUp;
+        public Entity? PaddleUpText;
+        public Vector4 PaddleIdle = new(0.3f, 0.32f, 0.38f, 0.85f);
+        public Vector4 PaddleShifted = new(0.92f, 0.12f, 0.16f, 1.0f);
+        public Vector4 PaddleRefused = new(1.0f, 0.62f, 0.12f, 1.0f);
+        /// <summary>Seconds a paddle stays lit after a press (its second half fades), and how far it moves in while pressed.</summary>
+        public float PaddleSeconds = 0.35f;
+        public float PaddlePress = 5.0f;
         /// <summary>The ticks' distance from a dial's center to their outer end, and the numbers' (reference pixels).</summary>
         public float SpeedTickRadius = 142.0f;
         public float SpeedLabelRadius = 104.0f;
@@ -45,7 +60,7 @@ namespace Racing
         /// </summary>
         public float RevZoneRadius = 111.0f;
         /// <summary>The red zone's span: the rev counter's last this many rpm (the scale ends at Max RPM, up to a thousand).</summary>
-        public float RedZoneRpm = 1000.0f;
+        public float RedZoneRpm = 2000.0f;
         public float RevZoneWidth = 19.0f;
         public float RevZoneWidthEnd = 19.0f;
 
@@ -103,6 +118,18 @@ namespace Racing
         float finishedFor = -1.0f;
         bool cursorWasLocked;
 
+        // A paddle: its image, its text, where it rests, its last press
+        sealed class Paddle
+        {
+            public UIRect? Rect, TextRect;
+            public UIImage? Image;
+            public Vector2 Rest, TextRest, In; // In: towards the dial's center
+            public int Presses = -1;
+            public float Age = float.MaxValue;
+            public bool Refused;
+        }
+        Paddle down = new(), up = new();
+
         protected override void OnCreate()
         {
             FinishShown = false;
@@ -127,6 +154,8 @@ namespace Racing
             revLabels = FindNumbered("Rev Label");
             revZone = FindNumbered("Rev Zone");
             LayOutSpeedometer();
+            down = MakePaddle(PaddleDown, PaddleDownText);
+            up = MakePaddle(PaddleUp, PaddleUpText);
 
             if (RaceAgainButton?.GetComponent<UIButton>() is UIButton again)
                 again.Clicked += RaceAgain;
@@ -234,7 +263,7 @@ namespace Racing
 
         // The rev counter to the car's Max RPM (up to a whole thousand), as a Smiths rev counter: a long tick and a number per
         // thousand, a middle one per 500 and a short one per 100 (per 500 only when the scene has too few ticks for that).
-        // Red for the scale's last RedZoneRpm (7000: from 6), not tied to the shift point: a red band under the ticks there,
+        // Red for the scale's last RedZoneRpm (8000: from 6), not tied to the shift point: a red band under the ticks there,
         // the numbers red
         void LayOutRevCounter(float maxRpm, float shiftUpRpm)
         {
@@ -268,6 +297,7 @@ namespace Racing
             float real = Time.UnscaledDeltaTime;
             if (car?.GetComponent<Vehicle>() is Vehicle vehicle)
                 UpdateDials(vehicle, dt);
+            UpdatePaddles(car, real);
             if (race == null)
                 return;
 
@@ -324,7 +354,7 @@ namespace Racing
         void UpdateDials(Vehicle vehicle, float dt)
         {
             if (!revLaidOut)
-                LayOutRevCounter(vehicle.MaxRpm, vehicle.ShiftUpRpm);
+                LayOutRevCounter(MathF.Max(vehicle.MaxRpm, vehicle.RevLimitRpm), vehicle.ShiftUpRpm);
             float speed = MathF.Abs(vehicle.Speed) * 3.6f;
             float rpm = vehicle.EngineRpm;
             float k = 1.0f - MathF.Exp(-NeedleSmoothing * MathF.Max(dt, 0.0f)); // paused: the needles stand
@@ -337,6 +367,53 @@ namespace Racing
             SetText(speedText, $"{speed:0}");
             int gear = vehicle.Gear;
             SetText(gearText, gear < 0 ? "R" : gear == 0 ? "N" : gear.ToString());
+        }
+
+        Paddle MakePaddle(Entity? image, Entity? text)
+        {
+            var paddle = new Paddle { Rect = image?.GetComponent<UIRect>(), Image = image?.GetComponent<UIImage>(), TextRect = text?.GetComponent<UIRect>() };
+            if (paddle.Rect != null)
+            {
+                paddle.Rest = paddle.Rect.Position;
+                paddle.In = paddle.Rest.LengthSquared() > 0.0f ? -Vector2.Normalize(paddle.Rest) : Vector2.Zero;
+            }
+            if (paddle.TextRect != null)
+                paddle.TextRest = paddle.TextRect.Position;
+            return paddle;
+        }
+
+        // The paddles: shown with the manual gearbox, lit at each press (refused: the other color), fading back
+        void UpdatePaddles(CarController? car, float real)
+        {
+            bool shown = car != null && car.ManualGearbox;
+            Light(down, shown, car?.DownPresses ?? 0, car?.LastDownRefused ?? false, real);
+            Light(up, shown, car?.UpPresses ?? 0, car?.LastUpRefused ?? false, real);
+        }
+
+        void Light(Paddle paddle, bool shown, int presses, bool refused, float real)
+        {
+            SetVisible(paddle.Rect, shown);
+            SetVisible(paddle.TextRect, shown);
+            if (presses != paddle.Presses)
+            {
+                if (paddle.Presses >= 0)
+                    paddle.Age = 0.0f; // not at the start: the count from before the HUD
+                paddle.Presses = presses;
+                paddle.Refused = refused;
+            }
+            else
+                paddle.Age += real;
+            if (!shown)
+                return;
+            float seconds = MathF.Max(PaddleSeconds, 0.01f);
+            float lit = paddle.Age < seconds ? Math.Clamp(2.0f * (1.0f - paddle.Age / seconds), 0.0f, 1.0f) : 0.0f; // its second half fades
+            if (paddle.Image != null)
+                paddle.Image.Color = Vector4.Lerp(PaddleIdle, paddle.Refused ? PaddleRefused : PaddleShifted, lit);
+            Vector2 pressed = paddle.In * (PaddlePress * lit);
+            if (paddle.Rect != null)
+                paddle.Rect.Position = paddle.Rest + pressed;
+            if (paddle.TextRect != null)
+                paddle.TextRect.Position = paddle.TextRest + pressed;
         }
 
         void ShowSplit(RaceManager race)

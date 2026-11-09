@@ -145,6 +145,9 @@ namespace Morava
         public delegate* unmanaged<ulong, int, int> Vehicle_SetControls;
         public delegate* unmanaged<ulong, float, float, int> Vehicle_SetGrip;
         public delegate* unmanaged<char*, int, char*, int, int> Asset_ReadText;
+        public delegate* unmanaged<ulong, int, int> Vehicle_SetManual;
+        public delegate* unmanaged<ulong, int, int> Vehicle_Shift;
+        public delegate* unmanaged<ulong, int, int> Vehicle_SetGear;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -179,6 +182,8 @@ namespace Morava
         public NativeVehicleInput Applied;
         public float LateralSlip, LongitudinalSlip;
         public float MaxRpm, ShiftUpRpm;
+        public int Manual, Gears;
+        public float RevLimit;
     }
 
     [StructLayout(LayoutKind.Sequential)]

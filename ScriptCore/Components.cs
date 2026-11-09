@@ -151,7 +151,7 @@ namespace Morava
 
     /// <summary>
     /// A wheeled vehicle (Inspector: Vehicle): a dynamic body on wheels with springs, driven by an engine through an
-    /// automatic gearbox. Its forward is the entity's -Z. The player drives it, or a script (Controls).
+    /// automatic gearbox (or a manual one: ManualGearbox). Its forward is the entity's -Z. The player drives it, or a script (Controls).
     /// </summary>
     public sealed unsafe class Vehicle : Component
     {
@@ -229,6 +229,53 @@ namespace Morava
         public void SetGrip(float front, float rear)
         {
             if (Interop.Game->Vehicle_SetGrip(Entity.Id, front, rear) == 0) throw Missing("vehicle");
+        }
+
+        /// <summary>
+        /// The gearbox is manual: the script shifts (ShiftUp, ShiftDown) and the clutch works by itself (out through a shift,
+        /// and when slow without throttle, so it doesn't creep in gear). The throttle from neutral still puts it in first,
+        /// the brake once stopped in reverse. False (the start): automatic, it shifts by the rpm.
+        /// </summary>
+        public bool ManualGearbox
+        {
+            get => State.Manual != 0;
+            set { if (Interop.Game->Vehicle_SetManual(Entity.Id, value ? 1 : 0) == 0) throw Missing("vehicle"); }
+        }
+
+        /// <summary>
+        /// The most the engine turns: Max RPM, plus the Inspector's Over-Rev RPM (a band only a manual downshift reaches: the
+        /// throttle is cut at Max RPM). A rev counter's end.
+        /// </summary>
+        public float RevLimitRpm => State.RevLimit;
+
+        /// <summary>How many forward gears it has.</summary>
+        public int GearCount => State.Gears;
+
+        /// <summary>
+        /// One gear up in a manual gearbox (from neutral or reverse: first). False: refused (automatic, or in the top gear).
+        /// </summary>
+        public bool ShiftUp() => Shift(1);
+
+        /// <summary>
+        /// One gear down in a manual gearbox. False: refused (automatic, in first, or the engine would turn past its limit in
+        /// the lower gear: Max RPM plus Over-Rev RPM, RevLimitRpm).
+        /// </summary>
+        public bool ShiftDown() => Shift(-1);
+
+        /// <summary>
+        /// Straight into a gear (1, 2... forward, -1 reverse, 0 neutral; clamped to the gearbox's), without a shift's checks:
+        /// a car put at the start or respawned. An automatic gearbox shifts on from there by itself.
+        /// </summary>
+        public void SetGear(int gear)
+        {
+            if (Interop.Game->Vehicle_SetGear(Entity.Id, gear) == 0) throw Missing("vehicle");
+        }
+
+        bool Shift(int direction)
+        {
+            int result = Interop.Game->Vehicle_Shift(Entity.Id, direction);
+            if (result == 0) throw Missing("vehicle");
+            return result > 0;
         }
     }
 

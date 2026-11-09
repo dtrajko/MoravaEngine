@@ -357,6 +357,13 @@ struct VehicleComponent
 	float TopSpeed = 0.0f;
 	float ShiftTime = 0.5f;                 // seconds a gear change takes
 	float ShiftUpRpm = 4000.0f;             // the engine's speed at which it shifts up
+	// The manual gearbox's engine braking (the racing game): off the throttle in gear, the engine holds the car back with
+	// this share of Engine Torque at Max RPM (less at lower rpm, more in a lower gear). 0: none beyond Jolt's own
+	float EngineBraking = 0.0f;
+	// Revolutions per minute the engine may turn above MaxRpm (a GT40's 7000 to 8000): the throttle is cut at MaxRpm (a rev
+	// limiter), so only a manual downshift (or rolling downhill) takes it into this band, where it brakes harder. 0: MaxRpm
+	// is the engine's hard limit
+	float OverRevRpm = 0.0f;
 	// The forward gears' ratios, first to top (the engine turns this many times per turn of the gearbox's output); empty:
 	// Jolt's five (2.66, 1.78, 1.30, 1.00, 0.74). A longer first gear (a lower ratio) pulls less and reaches a higher speed
 	std::vector<float> GearRatios;

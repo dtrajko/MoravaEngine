@@ -10,8 +10,17 @@ Actions:
     Type: Axis1D
     Bindings:
       - { Composite: AD, Negative: A, Positive: D }
-      - { Composite: Arrows, Negative: Left, Positive: Right }
       - { Gamepad: LeftStickX, DeadZone: 0.15 }
+  - Name: SteerArrows   # Axis1D: the arrows' steering, added to Steer only with the automatic gearbox (manual: they shift)
+    Type: Axis1D
+    Bindings:
+      - { Composite: Arrows, Negative: Left, Positive: Right }
+  - Name: ShiftUp       # a gear up with the manual gearbox (Settings: Gearbox)
+    Type: Button
+    Bindings: [ { Key: Right }, { Key: Equal }, { Key: KeypadAdd }, { Gamepad: RightBumper } ]
+  - Name: ShiftDown     # a gear down with the manual gearbox
+    Type: Button
+    Bindings: [ { Key: Left }, { Key: Minus }, { Key: KeypadSubtract }, { Gamepad: LeftBumper } ]
   - Name: Handbrake     # held: the drift (the rear wheels lock, the throttle lets go)
     Type: Button
     Bindings: [ { Key: Space }, { Gamepad: A } ]

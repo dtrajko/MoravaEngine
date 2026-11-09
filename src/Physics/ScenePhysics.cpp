@@ -611,9 +611,23 @@ bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& setti
 	// The engine through an automatic gearbox to the driven wheels: a differential per axle, the torque shared evenly
 	JPH::Ref<JPH::WheeledVehicleControllerSettings> controller = new JPH::WheeledVehicleControllerSettings();
 	controller->mEngine.mMaxTorque = std::max(settings.EngineTorque, 0.0f);
-	controller->mEngine.mMaxRPM = std::max(settings.MaxRpm, controller->mEngine.mMinRPM + 500.0f);
+	// Max RPM: the most the throttle takes it to. Over-revving (a downshift) to Over-Rev RPM more: Jolt's limit is the sum,
+	// the throttle cut at Max RPM in each step (LimiterRpm), and the torque curve kept on the same rpm (Jolt's is relative)
+	const float maxRpm = std::max(settings.MaxRpm, controller->mEngine.mMinRPM + 500.0f);
+	const float overRev = std::max(settings.OverRevRpm, 0.0f);
+	controller->mEngine.mMaxRPM = maxRpm + overRev;
+	if (overRev > 0.0f)
+	{
+		const float share = maxRpm / (maxRpm + overRev);
+		controller->mEngine.mNormalizedTorque.Clear();
+		controller->mEngine.mNormalizedTorque.AddPoint(0.0f, 0.8f);
+		controller->mEngine.mNormalizedTorque.AddPoint(0.66f * share, 1.0f);
+		controller->mEngine.mNormalizedTorque.AddPoint(share, 0.8f);
+		controller->mEngine.mNormalizedTorque.AddPoint(1.0f, 0.8f);
+		vehicle.LimiterRpm = maxRpm;
+	}
 	controller->mTransmission.mSwitchTime = glm::clamp(settings.ShiftTime, 0.0f, 2.0f);
-	controller->mTransmission.mShiftUpRPM = glm::clamp(settings.ShiftUpRpm, controller->mTransmission.mShiftDownRPM + 100.0f, controller->mEngine.mMaxRPM);
+	controller->mTransmission.mShiftUpRPM = glm::clamp(settings.ShiftUpRpm, controller->mTransmission.mShiftDownRPM + 100.0f, maxRpm);
 	// The vehicle's own gears (each above a tenth: a ratio near 0 would let the engine spin free); none: Jolt's
 	if (!settings.GearRatios.empty())
 	{
@@ -645,8 +659,19 @@ bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& setti
 		}
 		radius /= (float)driven.size();
 		const float wheelRadiansPerSecond = settings.TopSpeed / radius;
-		const float engineRadiansPerSecond = controller->mEngine.mMaxRPM * JPH::JPH_PI / 30.0f;
+		const float engineRadiansPerSecond = maxRpm * JPH::JPH_PI / 30.0f;
 		finalDrive = std::max(engineRadiansPerSecond / (wheelRadiansPerSecond * controller->mTransmission.mGearRatios.back()), 0.1f);
+	}
+	if (!driven.empty())
+	{
+		float radius = 0.0f;
+		for (int w : driven)
+		{
+			radius += std::max(settings.Wheels[w].Radius, 0.01f);
+		}
+		radius /= (float)driven.size();
+		vehicle.RpmPerSpeed = finalDrive / radius * 30.0f / JPH::JPH_PI;
+		vehicle.EngineBrakeTorque = glm::clamp(settings.EngineBraking, 0.0f, 1.0f) * controller->mEngine.mMaxTorque;
 	}
 	for (const auto& [left, right] : drivenAxles)
 	{
@@ -710,7 +735,7 @@ bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& setti
 	if (settings.TopSpeed > 0.0f)
 	{
 		Log::GetLogger()->info("Physics: the vehicle '{0}': final drive {1:.2f} for {2:.0f} km/h at {3:.0f} rpm in the top gear", name, finalDrive,
-			settings.TopSpeed * 3.6f, controller->mEngine.mMaxRPM);
+			settings.TopSpeed * 3.6f, maxRpm);
 	}
 	m_World->GetSystem().AddConstraint(vehicle.Constraint);
 	m_World->GetSystem().AddStepListener(vehicle.Constraint);
@@ -794,6 +819,152 @@ bool ScenePhysics::SetVehicleGrip(EnvMapVulkanEntityID entity, float front, floa
 	return true;
 }
 
+bool ScenePhysics::SetVehicleManual(EnvMapVulkanEntityID entity, bool manual)
+{
+	Vehicle* vehicle = const_cast<Vehicle*>(FindVehicle(entity));
+	if (!vehicle)
+	{
+		return false;
+	}
+	if (vehicle->Manual != manual)
+	{
+		vehicle->Manual = manual;
+		vehicle->ShiftTimeLeft = vehicle->ClutchReleaseLeft = 0.0f;
+		JPH::VehicleTransmission& transmission = static_cast<JPH::WheeledVehicleController*>(vehicle->Constraint->GetController())->GetTransmission();
+		transmission.mMode = manual ? JPH::ETransmissionMode::Manual : JPH::ETransmissionMode::Auto;
+	}
+	return true;
+}
+
+void ScenePhysics::PutInGear(Vehicle& vehicle, int gear)
+{
+	JPH::VehicleTransmission& transmission = static_cast<JPH::WheeledVehicleController*>(vehicle.Constraint->GetController())->GetTransmission();
+	vehicle.ShiftTimeLeft = transmission.GetCurrentGear() != 0 ? transmission.mSwitchTime : 0.0f;
+	vehicle.ClutchReleaseLeft = transmission.mClutchReleaseTime;
+	transmission.Set(gear, 0.0f);
+}
+
+ScenePhysics::ShiftResult ScenePhysics::ShiftVehicleGear(EnvMapVulkanEntityID entity, int direction)
+{
+	Vehicle* vehicle = const_cast<Vehicle*>(FindVehicle(entity));
+	if (!vehicle)
+	{
+		return ShiftResult::NotVehicle;
+	}
+	if (!vehicle->Manual || direction == 0)
+	{
+		return ShiftResult::Refused;
+	}
+	const JPH::WheeledVehicleController* controller = static_cast<const JPH::WheeledVehicleController*>(vehicle->Constraint->GetController());
+	const JPH::VehicleTransmission& transmission = controller->GetTransmission();
+	const int gear = transmission.GetCurrentGear();
+	const int gears = (int)transmission.mGearRatios.size();
+	int next = 0;
+	if (direction > 0)
+	{
+		next = gear <= 0 ? 1 : gear + 1; // from neutral or reverse: first
+		if (next > gears)
+		{
+			return ShiftResult::Refused;
+		}
+	}
+	else
+	{
+		if (gear <= 1)
+		{
+			return ShiftResult::Refused;
+		}
+		next = gear - 1;
+		// The engine in the lower gear, at the wheels' speed or the body's (locked or spinning wheels say little): past Max
+		// RPM, it would be thrown over its limit
+		const float ratio = transmission.GetCurrentRatio();
+		const float lower = transmission.mGearRatios[next - 1];
+		const JPH::BodyInterface& bodies = m_World->GetSystem().GetBodyInterface();
+		const float speed = std::abs((bodies.GetRotation(vehicle->Body).Conjugated() * bodies.GetLinearVelocity(vehicle->Body)).Dot(VehicleForward));
+		const float atWheels = ratio != 0.0f ? std::abs(controller->GetWheelSpeedAtClutch()) / ratio * lower : 0.0f;
+		if (std::max(atWheels, speed * vehicle->RpmPerSpeed * lower) > controller->GetEngine().mMaxRPM)
+		{
+			return ShiftResult::Refused;
+		}
+	}
+	PutInGear(*vehicle, next);
+	return ShiftResult::Shifted;
+}
+
+bool ScenePhysics::SetVehicleGear(EnvMapVulkanEntityID entity, int gear)
+{
+	Vehicle* vehicle = const_cast<Vehicle*>(FindVehicle(entity));
+	if (!vehicle)
+	{
+		return false;
+	}
+	JPH::VehicleTransmission& transmission = static_cast<JPH::WheeledVehicleController*>(vehicle->Constraint->GetController())->GetTransmission();
+	gear = glm::clamp(gear, -(int)transmission.mReverseGearRatios.size(), (int)transmission.mGearRatios.size());
+	// No shift time: the clutch is let in at once (the manual's from its release; a car standing still slips it anyway)
+	vehicle->ShiftTimeLeft = vehicle->ClutchReleaseLeft = 0.0f;
+	transmission.Set(gear, 1.0f);
+	return true;
+}
+
+void ScenePhysics::UpdateManualGearbox(Vehicle& vehicle, VehicleInput& applied, float fixedStep)
+{
+	JPH::WheeledVehicleController* controller = static_cast<JPH::WheeledVehicleController*>(vehicle.Constraint->GetController());
+	JPH::VehicleTransmission& transmission = controller->GetTransmission();
+	// The throttle from neutral, or the other way (once stopped: the brake-first rule ran): first or reverse
+	const int gear = transmission.GetCurrentGear();
+	if ((applied.Forward > 0.0f && gear <= 0) || (applied.Forward < 0.0f && gear >= 0))
+	{
+		PutInGear(vehicle, applied.Forward > 0.0f ? 1 : -1);
+	}
+	float clutch = 1.0f;
+	if (vehicle.ShiftTimeLeft > 0.0f)
+	{
+		vehicle.ShiftTimeLeft = std::max(vehicle.ShiftTimeLeft - fixedStep, 0.0f);
+		clutch = 0.0f;
+	}
+	else if (vehicle.ClutchReleaseLeft > 0.0f)
+	{
+		vehicle.ClutchReleaseLeft = std::max(vehicle.ClutchReleaseLeft - fixedStep, 0.0f);
+		clutch = transmission.mClutchReleaseTime > 0.0f ? 1.0f - vehicle.ClutchReleaseLeft / transmission.mClutchReleaseTime : 1.0f;
+	}
+	// Slow without throttle: the clutch out (in gear it would creep at idle; the automatic goes to neutral there)
+	if (applied.Forward == 0.0f && std::abs(controller->GetWheelSpeedAtClutch()) < transmission.mShiftDownRPM)
+	{
+		clutch = 0.0f;
+	}
+	transmission.Set(transmission.GetCurrentGear(), clutch);
+	// No throttle through a shift, as the automatic's (Jolt's manual mode would let the engine race while the clutch is out)
+	applied.Forward *= clutch;
+
+	// Engine braking: off the throttle in a forward gear, the engine's drag (rising with its rpm) through the gears to the
+	// wheels on the ground, as a force against the body's motion (Jolt's engine alone barely holds the car back)
+	const float ratio = transmission.GetCurrentRatio();
+	if (vehicle.EngineBrakeTorque <= 0.0f || applied.Forward != 0.0f || clutch <= 0.0f || ratio <= 0.0f)
+	{
+		return;
+	}
+	const JPH::VehicleEngine& engine = controller->GetEngine();
+	// 1 at Max RPM, more over it (over-revving after a downshift brakes harder)
+	const float limiter = vehicle.LimiterRpm > 0.0f ? vehicle.LimiterRpm : engine.mMaxRPM;
+	const float revs = std::max((engine.GetCurrentRPM() - engine.mMinRPM) / std::max(limiter - engine.mMinRPM, 1.0f), 0.0f);
+	uint32_t onGround = 0;
+	const uint32_t wheels = (uint32_t)vehicle.Constraint->GetWheels().size();
+	for (uint32_t w = 0; w < wheels; w++)
+	{
+		onGround += vehicle.Constraint->GetWheel(w)->HasContact() ? 1u : 0u;
+	}
+	JPH::BodyInterface& bodies = m_World->GetBodyInterface();
+	const JPH::Vec3 forward = bodies.GetRotation(vehicle.Body) * VehicleForward;
+	const float speed = bodies.GetLinearVelocity(vehicle.Body).Dot(forward);
+	if (onGround == 0 || speed < 0.5f)
+	{
+		return;
+	}
+	// The torque at the wheels over their radius: torque x ratio x final drive / radius (RpmPerSpeed holds final drive / radius)
+	const float force = vehicle.EngineBrakeTorque * revs * clutch * ratio * vehicle.RpmPerSpeed * JPH::JPH_PI / 30.0f * (float)onGround / (float)wheels;
+	bodies.AddForce(vehicle.Body, -forward * force);
+}
+
 bool ScenePhysics::GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& state) const
 {
 	const Vehicle* vehicle = m_World ? FindVehicle(entity) : nullptr;
@@ -807,6 +978,9 @@ bool ScenePhysics::GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& st
 	const JPH::WheeledVehicleController* controller = static_cast<const JPH::WheeledVehicleController*>(vehicle->Constraint->GetController());
 	state.Rpm = controller->GetEngine().GetCurrentRPM();
 	state.Gear = controller->GetTransmission().GetCurrentGear();
+	state.Manual = vehicle->Manual;
+	state.Gears = (int)controller->GetTransmission().mGearRatios.size();
+	state.RevLimit = controller->GetEngine().mMaxRPM;
 	state.Wheels = (uint32_t)vehicle->Constraint->GetWheels().size();
 	state.WheelsOnGround = 0;
 	state.LateralSlip = state.LongitudinalSlip = 0.0f;
@@ -1180,9 +1354,20 @@ void ScenePhysics::Step(float fixedStep)
 			applied.Forward = 0.0f; // the handbrake lets go of the throttle
 		}
 		vehicle.Applied = applied;
+		const bool driven = applied.Forward != 0.0f || applied.Steer != 0.0f || applied.Brake != 0.0f || applied.Handbrake != 0.0f;
+		if (vehicle.Manual)
+		{
+			UpdateManualGearbox(vehicle, applied, fixedStep); // Applied keeps the driver's throttle (an engine sound's load)
+		}
+		// The rev limiter: no throttle at Max RPM and over it (an engine that may over-rev; without, Jolt's limit holds it)
+		if (vehicle.LimiterRpm > 0.0f && applied.Forward > 0.0f &&
+			static_cast<const JPH::WheeledVehicleController*>(vehicle.Constraint->GetController())->GetEngine().GetCurrentRPM() >= vehicle.LimiterRpm)
+		{
+			applied.Forward = 0.0f;
+		}
 		static_cast<JPH::WheeledVehicleController*>(vehicle.Constraint->GetController())->SetDriverInput(applied.Forward, applied.Steer,
 			applied.Brake, applied.Handbrake);
-		if (applied.Forward != 0.0f || applied.Steer != 0.0f || applied.Brake != 0.0f || applied.Handbrake != 0.0f)
+		if (driven)
 		{
 			bodies.ActivateBody(vehicle.Body); // a parked vehicle sleeps: the driver wakes it
 		}

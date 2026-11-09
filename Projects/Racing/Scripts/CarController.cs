@@ -19,6 +19,10 @@ namespace Racing
     /// - In the air: the throttle and brake pitch it, the steering turns it, and it rights itself gently, so it lands on its
     ///   wheels.
     /// - Walls: touching one (its tag: WallTag), it scrapes along it instead of bouncing off and spinning.
+    /// - The gearbox: automatic, or manual when the player chose it (Settings: Gearbox; GameOptions.ManualGearbox): ShiftUp
+    ///   and ShiftDown shift (the clutch works by itself), and the arrow keys shift instead of steering (SteerArrows: the
+    ///   arrows' steering, read only with the automatic). The HUD's paddles show each press (UpPresses, DownPresses). At
+    ///   the start and after each respawn it is in first gear.
     /// Each assist has its fields to tune in the Inspector. With TestDriver on, the test driver drives (TestDriver.cs: it
     /// follows the track's center line) through the same assists, for checks without a player.
     /// The race (RaceManager.cs, Phase 4) holds it at the start (Held), puts it back on the track (Respawn) and asks
@@ -96,6 +100,15 @@ namespace Racing
         /// <summary>The car of the running game (the race's: one car).</summary>
         public static CarController? Current { get; private set; }
 
+        /// <summary>The player shifts (the manual gearbox): for the HUD's paddles.</summary>
+        public bool ManualGearbox => manual;
+
+        /// <summary>The shift paddles' presses so far, each way, and whether the last one was refused (top gear, first, too fast).</summary>
+        public int UpPresses { get; private set; }
+        public int DownPresses { get; private set; }
+        public bool LastUpRefused { get; private set; }
+        public bool LastDownRefused { get; private set; }
+
         /// <summary>The car scrapes a wall now (the wall assist holds: for its sound).</summary>
         public bool TouchingWall => wallTime > 0.0f;
 
@@ -116,6 +129,8 @@ namespace Racing
         float absShare = 1.0f;   // the share of the brake ABS lets through
         float wallTime;          // seconds the wall assist still holds after the last touch
         Vector3 wallNormal;      // towards the wall, level
+        bool manual;             // the vehicle's gearbox is manual (as GameOptions says, the test driver aside)
+        bool toFirstGear = true; // put the manual gearbox in first at the next step (the start, a respawn)
 
         protected override void OnCreate()
         {
@@ -153,6 +168,7 @@ namespace Racing
             rearGrip = MathF.Max(DrivingGrip, 0.0f);
             absShare = 1.0f;
             wallTime = 0.0f;
+            toFirstGear = true;
             TouchedTerrain = false;
         }
 
@@ -169,6 +185,37 @@ namespace Racing
                     wallNormal = Vector3.Normalize(normal);
                     wallTime = 0.3f;
                 }
+            }
+        }
+
+        // The gearbox as the player chose it (also changed in the pause menu's Settings), and the paddles' presses
+        void UpdateGearbox()
+        {
+            bool wanted = GameOptions.ManualGearbox && driver == null;
+            if (wanted != manual)
+            {
+                vehicle!.ManualGearbox = wanted;
+                manual = wanted;
+                Log.Info($"CarController: the gearbox is {(manual ? "manual" : "automatic")}");
+            }
+            if (!manual)
+                return;
+            // At the start and after a respawn, standing still: first gear, whatever it was in (the automatic waits in
+            // neutral and takes first with the throttle by itself)
+            if (toFirstGear)
+            {
+                vehicle!.SetGear(1);
+                toFirstGear = false;
+            }
+            if (Input.WasPressed("ShiftUp"))
+            {
+                UpPresses++;
+                LastUpRefused = !vehicle!.ShiftUp();
+            }
+            if (Input.WasPressed("ShiftDown"))
+            {
+                DownPresses++;
+                LastDownRefused = !vehicle!.ShiftDown();
             }
         }
 
@@ -199,11 +246,15 @@ namespace Racing
                 brake = Math.Clamp(Input.GetValue("Brake"), 0.0f, 1.0f);
                 steerTarget = Math.Clamp(Input.GetValue("Steer"), -1.0f, 1.0f);
                 drift = Input.IsHeld("Handbrake");
+                if (!manual)
+                    steerTarget = Math.Clamp(steerTarget + Input.GetValue("SteerArrows"), -1.0f, 1.0f);
                 // The wheel turns towards the keys gradually, and comes back faster
                 bool returning = MathF.Abs(steerTarget) < MathF.Abs(steer) || MathF.Sign(steerTarget) != MathF.Sign(steer);
                 float rate = (returning ? SteerReturnSpeed : SteerSpeed) * dt;
                 steer += Math.Clamp(steerTarget - steer, -rate, rate);
             }
+
+            UpdateGearbox();
 
             // Less of the wheel the faster it goes
             float share = 1.0f - (1.0f - Math.Clamp(FullSpeedSteer, 0.0f, 1.0f)) * Math.Clamp(kmh / MathF.Max(FullSpeedSteerAt, 1.0f), 0.0f, 1.0f);

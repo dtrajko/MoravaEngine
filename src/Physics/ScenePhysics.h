@@ -37,7 +37,7 @@ class ScenePhysicsContactListener;
  * collide with it.
  *
  * Vehicles (VehicleComponent, the vehicle scene's part B) are dynamic bodies with a Jolt VehicleConstraint: wheels on springs
- * cast down from the body, driven by an engine through an automatic gearbox. The game gives each its driver's input
+ * cast down from the body, driven by an engine through an automatic gearbox (or a manual one the game shifts). The game gives each its driver's input
  * (SetVehicleInput: the player's actions, or a script's); the wheels' models are placed where the wheels are, as the
  * bodies are written (WriteTransforms).
  *
@@ -111,6 +111,20 @@ public:
 	// The tires' sideways grip, front and rear, times the component's (FrontGrip, RearGrip): a drift lowers the rear's for a
 	// while. 1, 1: as the component has them. False: not a running vehicle
 	bool SetVehicleGrip(EnvMapVulkanEntityID entity, float front, float rear);
+	// The gearbox: automatic (Jolt shifts by the rpm: the default), or manual: the game shifts (ShiftVehicleGear), and the
+	// clutch works by itself: out while it shifts, then in over Jolt's clutch release time, and out when the engine would
+	// turn slower than Jolt's Shift Down RPM without throttle (in gear it would creep at idle, where the automatic goes to
+	// neutral). The throttle from neutral or reverse still puts it in first, reversing in reverse, as the automatic does.
+	// False: not a running vehicle
+	bool SetVehicleManual(EnvMapVulkanEntityID entity, bool manual);
+	// One gear up (direction 1) or down (-1) in a manual gearbox. Refused: an automatic one, no gear above (top) or below
+	// (first: the brake reverses once stopped), or a downshift that would turn the engine past its limit (Max RPM plus
+	// Over-Rev RPM)
+	enum class ShiftResult { NotVehicle, Shifted, Refused };
+	ShiftResult ShiftVehicleGear(EnvMapVulkanEntityID entity, int direction);
+	// Straight into a gear (1, 2... forward, -1 reverse, 0 neutral; clamped to the gearbox's), with no check: a car put at
+	// the start or respawned, standing still. The automatic shifts on from there by itself. False: not a running vehicle
+	bool SetVehicleGear(EnvMapVulkanEntityID entity, int gear);
 	struct VehicleState
 	{
 		float Speed = 0.0f;         // meters per second along its forward (negative: backward)
@@ -123,6 +137,9 @@ public:
 		float LateralSlip = 0.0f;   // degrees: the most a wheel on the ground slides sideways (the angle between where it
 		                            // points and where it goes): a few in a turn, 10 and more in a drift
 		float LongitudinalSlip = 0.0f; // the most a wheel on the ground spins or locks: 0 rolling, 1 locked or spinning twice as fast
+		float RevLimit = 0.0f;      // the most the engine turns: Max RPM + Over-Rev RPM (a rev counter's end)
+		bool Manual = false;        // the gearbox is manual (SetVehicleManual)
+		int Gears = 0;              // forward gears
 	};
 	bool GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& state) const;
 
@@ -259,6 +276,16 @@ private:
 		std::shared_ptr<std::vector<float>> WheelGrip;
 		std::vector<bool> FrontWheel;
 		float FrontGrip = 1.0f, RearGrip = 1.0f;
+		// A manual gearbox (SetVehicleManual): seconds left with the clutch out for a shift, then letting it in
+		bool Manual = false;
+		float ShiftTimeLeft = 0.0f, ClutchReleaseLeft = 0.0f;
+		// The engine's rpm per meter per second of the body's speed, per unit of gear ratio (the final drive and the driven
+		// wheels' radius): a downshift's check also when the wheels lock or spin
+		float RpmPerSpeed = 0.0f;
+		float EngineBrakeTorque = 0.0f; // newton meters at the engine at Max RPM (VehicleComponent::EngineBraking)
+		// The component's Max RPM: the rev limiter's, where the throttle is cut, when the engine may over-rev (Jolt's limit
+		// is then Max RPM + Over-Rev RPM); 0: no limiter (Jolt's limit is Max RPM)
+		float LimiterRpm = 0.0f;
 		// A wheel's model: its axes (the wheel's turning axis and up, in the model's own space, from its rotation at the start)
 		// and its scale, kept as it rolls and steers
 		struct WheelModel
@@ -273,6 +300,10 @@ private:
 	bool CreateVehicle(Vehicle& vehicle, const VehicleComponent& settings);
 	void RemoveVehicle(Vehicle& vehicle);
 	const Vehicle* FindVehicle(EnvMapVulkanEntityID entity) const;
+	// A manual gearbox into a gear: the clutch out for Jolt's switch time (none from neutral), then let in
+	static void PutInGear(Vehicle& vehicle, int gear);
+	// A manual gearbox's clutch for the next step, the throttle through it, and its engine braking (a force on the body)
+	void UpdateManualGearbox(Vehicle& vehicle, VehicleInput& applied, float fixedStep);
 	// The wheels' models where the wheels are, on the body at its place for this frame
 	void WriteWheels(const Vehicle& vehicle, const glm::vec3& position, const glm::quat& rotation);
 	void SetEntityPosition(EnvMapVulkanEntityID entity, const glm::vec3& position); // the translation only

@@ -5,11 +5,12 @@ namespace Racing
 {
     /// <summary>
     /// The racing game's Settings screen (Sample's, with the car's actions on its Controls screen), on its canvas, its Panel
-    /// hidden until Open: sliders for the music's and the effects' volumes and the mouse's sensitivity, drop-down lists of
-    /// the quality, fullscreen or a window, fullscreen's resolution and VSync, and a Controls screen where the keys and the
-    /// gamepad's buttons are bound anew. The sliders count at once; the lists' choices wait for Apply (Back without it gives
-    /// them up). The engine keeps the player's choices of the window, the quality, the volumes and the bindings for the next
-    /// runs (GameOptions keeps the mouse's sensitivity), and Back saves them. Opened by the main menu and the pause menu,
+    /// hidden until Open: sliders for the music's and the effects' volumes and the mouse's sensitivity, the gearbox
+    /// (automatic or manual), drop-down lists of the quality, fullscreen or a window, fullscreen's resolution and VSync, and
+    /// a Controls screen where the keys and the gamepad's buttons are bound anew. The sliders count at once; the lists'
+    /// choices (the gearbox's too) wait for Apply (Back without it gives them up). The engine keeps the player's choices of the
+    /// window, the quality, the volumes and the bindings for the next runs (GameOptions keeps the mouse's sensitivity and
+    /// the gearbox), and Back saves them. Opened by the main menu and the pause menu,
     /// which get the selection back when it closes; their Pause action (Escape, Start) is Back while it is open (an open
     /// list: closed first).
     /// </summary>
@@ -26,6 +27,9 @@ namespace Racing
         public Entity? MusicValue;
         public Entity? EffectsValue;
         public Entity? MouseValue;
+
+        /// <summary>The gearbox: Automatic (0), Manual (1) (UIDropdown; waits for Apply like the other lists).</summary>
+        public Entity? GearboxDropdown;
 
         /// <summary>Drop-down lists of the settings (UIDropdown).</summary>
         public Entity? QualityDropdown;
@@ -176,11 +180,13 @@ namespace Racing
             then?.Invoke();
         }
 
-        Entity?[] Lists => new[] { QualityDropdown, DisplayDropdown, ResolutionDropdown, VSyncDropdown };
+        Entity?[] Lists => new[] { GearboxDropdown, QualityDropdown, DisplayDropdown, ResolutionDropdown, VSyncDropdown };
 
         // A list's choice differs from what is in place (a list set back to it: nothing to apply)
         bool Differs()
         {
+            if (Dropdown(GearboxDropdown) is UIDropdown gearbox && (gearbox.Value == 1) != GameOptions.ManualGearbox)
+                return true;
             if (Dropdown(QualityDropdown) is UIDropdown quality &&
                 quality.Value != (Quality.IsAutomatic ? 0 : Math.Max(0, Array.IndexOf(QualityOptions, Quality.Level))))
                 return true;
@@ -198,6 +204,8 @@ namespace Racing
         {
             if (!pending)
                 return;
+            if (Dropdown(GearboxDropdown) is UIDropdown gearbox && (gearbox.Value == 1) != GameOptions.ManualGearbox)
+                GameOptions.SetManualGearbox(gearbox.Value == 1);
             if (Dropdown(QualityDropdown) is UIDropdown quality)
             {
                 QualityLevel? chosen = QualityOptions[Math.Clamp(quality.Value, 0, QualityOptions.Length - 1)];
@@ -244,6 +252,8 @@ namespace Racing
         // The lists show what the engine has now (also after F11, or a choice that didn't take)
         void ShowLists()
         {
+            if (Dropdown(GearboxDropdown) is UIDropdown gearbox && !gearbox.IsOpen)
+                gearbox.Value = GameOptions.ManualGearbox ? 1 : 0;
             if (Dropdown(QualityDropdown) is UIDropdown quality && !quality.IsOpen)
                 quality.Value = Quality.IsAutomatic ? 0 : Math.Max(0, Array.IndexOf(QualityOptions, Quality.Level));
             if (Dropdown(DisplayDropdown) is UIDropdown display && !display.IsOpen)
