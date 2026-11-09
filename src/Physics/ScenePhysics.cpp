@@ -614,6 +614,16 @@ bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& setti
 	controller->mEngine.mMaxRPM = std::max(settings.MaxRpm, controller->mEngine.mMinRPM + 500.0f);
 	controller->mTransmission.mSwitchTime = glm::clamp(settings.ShiftTime, 0.0f, 2.0f);
 	controller->mTransmission.mShiftUpRPM = glm::clamp(settings.ShiftUpRpm, controller->mTransmission.mShiftDownRPM + 100.0f, controller->mEngine.mMaxRPM);
+	// The vehicle's own gears (each above a tenth: a ratio near 0 would let the engine spin free); none: Jolt's
+	if (!settings.GearRatios.empty())
+	{
+		JPH::Array<float> ratios;
+		for (float ratio : settings.GearRatios)
+		{
+			ratios.push_back(std::max(ratio, 0.1f));
+		}
+		controller->mTransmission.mGearRatios = ratios;
+	}
 	std::vector<int> all, driven;
 	for (int w = 0; w < (int)settings.Wheels.size(); w++)
 	{

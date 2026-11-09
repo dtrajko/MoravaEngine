@@ -385,6 +385,10 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "TopSpeed" << YAML::Value << vehicle->TopSpeed;
 			out << YAML::Key << "ShiftTime" << YAML::Value << vehicle->ShiftTime;
 			out << YAML::Key << "ShiftUpRpm" << YAML::Value << vehicle->ShiftUpRpm;
+			if (!vehicle->GearRatios.empty())
+			{
+				out << YAML::Key << "GearRatios" << YAML::Value << YAML::Flow << vehicle->GearRatios;
+			}
 			out << YAML::Key << "Wheels" << YAML::Value << YAML::BeginSeq;
 			for (const VehicleComponent::Wheel& wheel : vehicle->Wheels)
 			{
@@ -874,6 +878,13 @@ namespace EnvMapVulkanSceneSerializer
 			Read(vehicleNode, "TopSpeed", vehicle.TopSpeed);
 			Read(vehicleNode, "ShiftTime", vehicle.ShiftTime);
 			Read(vehicleNode, "ShiftUpRpm", vehicle.ShiftUpRpm);
+			if (YAML::Node gears = vehicleNode["GearRatios"]; gears && gears.IsSequence())
+			{
+				for (const YAML::Node& gear : gears)
+				{
+					vehicle.GearRatios.push_back(gear.as<float>(1.0f));
+				}
+			}
 			if (YAML::Node wheels = vehicleNode["Wheels"]; wheels && wheels.IsSequence())
 			{
 				for (const YAML::Node& wheelNode : wheels)

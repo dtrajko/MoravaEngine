@@ -4,9 +4,11 @@
 #
 # The data file (a .track.json, see README.md) is the source: a closed list of control points with a position, a road width,
 # a bank angle and flags. This script makes from it, beside the project's other files (paths in the data, relative to it):
-#   <Models>/Track_<Name>_Road.glb       the driven surface: the road, the curbs, the start line (a grippy collider)
+#   <Models>/Track_<Name>_Road.glb       the driven surface: the road, the curbs (a grippy collider)
 #   <Models>/Track_<Name>_Walls.glb      the side walls (a slippery collider: the car scrapes along them)
-#   <Models>/Track_<Name>_Structure.glb  the road's sides and underside and the supports (drawn only, no collider)
+#   <Models>/Track_<Name>_Structure.glb  the road's sides and underside, the supports, the start line (drawn only, no
+#                                        collider: the line lies just above the road, and as a collider it was a step the
+#                                        car hopped over)
 #   <Assets>/Tracks/<Name>.centerline.json  the center line every few meters, the start: for scripts (Assets.ReadText:
 #                                        the test driver, the race), in the Assets folder so a built game has it
 # Each model is cut into chunks along the track (ChunkLength meters), so the engine culls it chunk by chunk.
@@ -322,7 +324,8 @@ def build_parts(samples, settings, total):
         chunk = min(int(sample["s"] / chunk_length), chunks - 1)
         box(part("Support", chunk), (top[0], ground - 1.0, top[2]), top, right, forward, half)
 
-    # The start line: a checkered strip across the road at distance 0, just above it
+    # The start line: a checkered strip across the road at distance 0, just above it (drawn only: the road under it is
+    # what the car drives on, so the line is no step)
     line_w = settings["StartLineWidth"]
     first = samples[0]
     hw = 0.5 * first["Width"]
@@ -358,9 +361,9 @@ MATERIALS = {
 
 # Which model file each part goes into (the colliders differ: see the top of this file)
 MODEL_OF_PART = {
-    "Road": "Road", "Curb_Red": "Road", "Curb_White": "Road", "Line_White": "Road", "Line_Black": "Road",
+    "Road": "Road", "Curb_Red": "Road", "Curb_White": "Road",
     "Wall": "Walls",
-    "Structure": "Structure", "Support": "Structure",
+    "Structure": "Structure", "Support": "Structure", "Line_White": "Structure", "Line_Black": "Structure",
 }
 
 

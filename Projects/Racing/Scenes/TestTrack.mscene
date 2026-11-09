@@ -22,8 +22,10 @@ Entities:
       Class: Racing.VehicleCamera
       Fields:
         Target: {Entity: 2001}
-        Distance: {Float: 9}
-        Height: {Float: 1.6}
+        Distance: {Float: 7.5}
+        Height: {Float: 1.4}
+        Pitch: {Float: 9}
+        TurnSmoothing: {Float: 4}
         MinDistance: {Float: 5}
         MaxDistance: {Float: 18}
   - ID: 1002
@@ -158,6 +160,7 @@ Entities:
       TopSpeed: 100
       ShiftTime: 0.15
       ShiftUpRpm: 5500
+      GearRatios: [2.23, 1.61, 1.24, 1.0, 0.81]
       Wheels:
         - {Entity: 2012, Position: [-1.05, 0, -1.28], Radius: 0.6, Width: 0.9, Steers: true, Driven: true, Handbrake: false}
         - {Entity: 2013, Position: [1.05, 0, -1.28], Radius: 0.6, Width: 0.9, Steers: true, Driven: true, Handbrake: false}
@@ -217,6 +220,130 @@ Entities:
       Scale: [2.7, 2, 2]
     Model:
       File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2020
+    Name: Engine On A
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: ""
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2023
+    Name: Engine On B
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: ""
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2024
+    Name: Engine Off A
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: ""
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2025
+    Name: Engine Off B
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: ""
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2021
+    Name: Tire Sound
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: Assets/Audio/TireSqueal.wav
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2022
+    Name: Wall Sound
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: Assets/Audio/WallScrape.wav
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 4100
+    Name: Race Audio
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.RaceAudio
+      Fields:
+        EngineOnA: {Entity: 2020}
+        EngineOnB: {Entity: 2023}
+        EngineOffA: {Entity: 2024}
+        EngineOffB: {Entity: 2025}
+        TireSound: {Entity: 2021}
+        WallSound: {Entity: 2022}
   - ID: 4000
     Name: Race
     Parent: 0

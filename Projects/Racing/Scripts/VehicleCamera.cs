@@ -55,17 +55,36 @@ namespace Racing
         /// <summary>How fast it moves back out after a hill or a wall brought it closer: higher is faster.</summary>
         public float OutSmoothing = 4.0f;
 
+        // ---- The racing feel (docs/games/Racing_Plan.html, Phase 6)
+        /// <summary>Degrees the field of view widens at FovSpeed km/h (with the square root of the speed: most of it early).</summary>
+        public float SpeedFov = 12.0f;
+        public float FovSpeed = 300.0f;
+        /// <summary>Seconds of the vehicle's turning the view looks ahead into a turn (0: none), and its most, in degrees.</summary>
+        public float LookAhead = 0.25f;
+        public float MaxLookAhead = 12.0f;
+        /// <summary>Meters the view dips per m/s the vehicle was falling when it lands, its most, and how fast it comes back.</summary>
+        public float LandingDip = 0.04f;
+        public float MaxLandingDip = 0.6f;
+        public float DipRecovery = 6.0f;
+
         float yaw;                 // the vehicle's heading, followed: degrees, as the camera's rotation (0 along -Z, positive to the left)
         float lookYaw, lookPitch;  // the player's turn around it, on top
         float sinceLook = float.MaxValue;
         float zoomDistance, distance = -1.0f; // the distance Zoom chose; the one now (a hill: closer)
         Vector3 pivot;
         bool started;
+        Camera? camera;
+        Rigidbody? body;
+        float baseFov, fov;          // the camera's own field of view; the one now
+        float lastHeading, turnLook; // the heading in the last frame; the look into the turn now (degrees)
+        float lastFall, dip;         // m/s the vehicle fell in the last frame; the dip now (meters)
 
         protected override void OnCreate()
         {
             if (MouseLook)
                 Input.CursorLocked = true;
+            camera = GetComponent<Camera>();
+            baseFov = fov = camera?.FieldOfView ?? 60.0f;
             zoomDistance = Math.Clamp(Distance, MathF.Min(MinDistance, MaxDistance), MathF.Max(MinDistance, MaxDistance));
         }
 
@@ -83,6 +102,7 @@ namespace Racing
             if (!started)
             {
                 yaw = heading;
+                lastHeading = heading;
                 pivot = wantedPivot;
                 started = true;
             }
@@ -111,7 +131,8 @@ namespace Racing
             zoomDistance = Math.Clamp(zoomDistance - notches * ZoomStep, MathF.Min(MinDistance, MaxDistance), MathF.Max(MinDistance, MaxDistance));
 
             // Back and up from the pivot, as far as nothing is in between: closer at once, back out smoothly
-            float viewYaw = yaw + lookYaw, viewPitch = Pitch + lookPitch;
+            UpdateFeel(heading, dt);
+            float viewYaw = yaw + lookYaw + turnLook, viewPitch = Pitch + lookPitch;
             float yawRadians = viewYaw * MathF.PI / 180.0f, pitchRadians = viewPitch * MathF.PI / 180.0f;
             Vector3 ahead = new Vector3(-MathF.Sin(yawRadians), 0.0f, -MathF.Cos(yawRadians));
             Vector3 backward = -ahead * MathF.Cos(pitchRadians) + Vector3.UnitY * MathF.Sin(pitchRadians);
@@ -123,8 +144,36 @@ namespace Racing
             else
                 distance += (free - distance) * Ease(OutSmoothing, dt);
 
-            Translation = pivot + backward * distance;
+            Translation = pivot + backward * distance - Vector3.UnitY * dip;
             EulerAngles = new Vector3(viewPitch, viewYaw, 0.0f);
+        }
+
+        // The field of view widens with the speed, the view looks into the turn, and dips when the vehicle lands
+        void UpdateFeel(float heading, float dt)
+        {
+            if (dt <= 0.0f)
+                return; // paused
+            body ??= Target!.GetComponent<Rigidbody>();
+            Vector3 velocity = body?.LinearVelocity ?? Vector3.Zero;
+            float kmh = velocity.Length() * 3.6f;
+
+            float wantedFov = baseFov + SpeedFov * MathF.Sqrt(Math.Clamp(kmh / MathF.Max(FovSpeed, 1.0f), 0.0f, 1.5f));
+            fov += (wantedFov - fov) * Ease(3.0f, dt);
+            if (camera != null && MathF.Abs(camera.FieldOfView - fov) > 0.01f)
+                camera.FieldOfView = fov;
+
+            // The heading's turn rate (degrees per second), so many seconds ahead; not while reversing or nearly still
+            float rate = WrapAngle(heading - lastHeading) / dt;
+            lastHeading = heading;
+            float wantedLook = kmh > 20.0f ? Math.Clamp(rate * LookAhead, -MaxLookAhead, MaxLookAhead) : 0.0f;
+            turnLook += (wantedLook - turnLook) * Ease(4.0f, dt);
+
+            // Landing: the fall stopped at once (a jump, a crest): dip by how fast it fell, then come back
+            float fall = MathF.Max(-velocity.Y, 0.0f);
+            if (lastFall - fall > 4.0f)
+                dip = MathF.Min(MaxLandingDip, dip + (lastFall - fall) * LandingDip);
+            lastFall = fall;
+            dip -= dip * Ease(DipRecovery, dt);
         }
 
         // The part of the way to go in this frame, for a smoothing rate (frame-rate independent)
