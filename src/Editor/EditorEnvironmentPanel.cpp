@@ -133,6 +133,41 @@ void EnvironmentControls()
 	{
 		ImGui::SetTooltip("Turns the environment around the vertical axis (yaw, degrees):\nskybox, reflections and environment lighting together");
 	}
+
+	// The distance haze (Include/Haze.glslh): a drag with its own format (the wrapper's shows 3 decimals)
+	auto hazeDrag = [](const char* name, float& value, float speed, float min, float max, const char* format, const char* tooltip)
+	{
+		ImGui::TextUnformatted(name);
+		ImGui::NextColumn();
+		ImGui::PushItemWidth(-1);
+		ImGui::DragFloat((std::string("##") + name).c_str(), &value, speed, min, max, format, ImGuiSliderFlags_AlwaysClamp);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("%s", tooltip);
+		}
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+	};
+	ImGuiWrapper::Property("Haze", environment.Haze.Enabled);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Distance haze: far surfaces fade into the sky's own color in their direction (the environment map\n"
+			"near the horizon), so the haze matches any sky, and the ground's far edge melts into the horizon.\n"
+			"Thicker low down. The Haze debug view shows its amount.");
+	}
+	if (environment.Haze.Enabled)
+	{
+		EnvironmentComponent::HazeSettings& haze = environment.Haze;
+		hazeDrag("Haze Density", haze.Density, 0.00002f, 0.0f, 0.05f, "%.5f",
+			"How thick the haze is at its Base Height, per meter: 0.001 hides about 63% of a surface 1 km away\n"
+			"(past the start distance) at that height");
+		hazeDrag("Haze Start", haze.StartDistance, 1.0f, 0.0f, 10000.0f, "%.0f m", "Meters from the camera without haze: nearer surfaces are clear");
+		hazeDrag("Height Falloff", haze.HeightFalloff, 0.0002f, 0.0f, 0.5f, "%.4f",
+			"How fast the haze thins out going up, per meter: it halves every 0.69 / falloff meters\n"
+			"(0.015: every 46 m). 0: as thick at every height");
+		hazeDrag("Haze Base Height", haze.BaseHeight, 1.0f, -10000.0f, 10000.0f, "%.0f m",
+			"The height (world) where the haze has its Density: thicker below, thinner above");
+	}
 	ImGui::Columns(1);
 }
 
@@ -210,7 +245,7 @@ void OnImGuiRenderEnvironment()
 		if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::PushID("DebugView");
-			ImGui::Combo("View", &s_ViewOptions.DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0Path Traced\0SMAA Edges\0SMAA Weights\0TAA Rejection\0Shadow Transmittance\0");
+			ImGui::Combo("View", &s_ViewOptions.DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0Path Traced\0SMAA Edges\0SMAA Weights\0TAA Rejection\0Shadow Transmittance\0Haze\0");
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -254,7 +289,9 @@ void OnImGuiRenderEnvironment()
 					"TAA Rejection: where TAA didn't trust what the frames before showed (yellow), over a dim picture: what moved\n"
 					"  or changed. Shown whichever antialiasing the scene has. The other debug views are drawn without antialiasing.\n"
 					"Shadow Transmittance: the color the sun's light has at each opaque surface: white where it is lit, black in\n"
-					"  shadow, the glass's color behind tinted glass. The map itself: Lights panel, the sun's Show Shadow Map.");
+					"  shadow, the glass's color behind tinted glass. The map itself: Lights panel, the sun's Show Shadow Map.\n"
+					"Haze: how much of each opaque surface the distance haze hides (white: the sky's color alone, black:\n"
+					"  none). The settings: the environment's Haze, above.");
 			}
 			if (s_ViewOptions.DebugView == DebugViewLinearDepth)
 			{

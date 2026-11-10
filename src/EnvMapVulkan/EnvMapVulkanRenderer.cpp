@@ -7,6 +7,7 @@
 #include "EnvMapVulkanAntialiasing.h"
 #include "Assets/AssetFiles.h"
 #include "EnvMapVulkanRenderer.h"
+#include "Core/CpuStats.h"
 #include "Core/EnginePaths.h"
 
 #include "EnvMapVulkanPrefab.h"
@@ -502,14 +503,22 @@ static bool Contains(const std::vector<T>& values, const T& value)
 // the renderer's environment settings (s_EnvMapRotation, s_Exposure...), and UpdateEnvironmentMap loads the map it names
 // when that isn't the map loaded. The Environment panel edits the component.
 static EnvMapVulkanEntityID s_EnvironmentEntity = NoEntity;
+// The distance haze as the shaders take it (EnvMapVulkanSceneDataGPU::HazeParams): zero without one
+static glm::vec4 s_HazeParams = glm::vec4(0.0f);
 
 static void ExtractEnvironment()
 {
 	s_EnvironmentEntity = s_Scene->FindFirst<EnvironmentComponent>();
 	const EnvironmentComponent* environment = s_Scene->TryGet<EnvironmentComponent>(s_EnvironmentEntity);
+	s_HazeParams = glm::vec4(0.0f);
 	if (!environment)
 	{
 		return;
+	}
+	if (environment->Haze.Enabled && environment->Haze.Density > 0.0f)
+	{
+		const EnvironmentComponent::HazeSettings& haze = environment->Haze;
+		s_HazeParams = glm::vec4(haze.Density, std::max(haze.StartDistance, 0.0f), std::max(haze.HeightFalloff, 0.0f), haze.BaseHeight);
 	}
 	s_EnvMapRotation = environment->Rotation;
 	s_Exposure = environment->Exposure;
@@ -835,6 +844,7 @@ static void UpdateFrameUniforms()
 	ub.CameraPosition = camera.GetPosition();
 	ub.EnvMapRotation = s_EnvMapRotation;
 	ub.DisplayTone = GetDisplayTone();
+	ub.HazeParams = s_HazeParams;
 	FillWaterSceneData(s_WaterSettings, camera.GetPosition(), GetWaterSunDirection(), ub);
 
 	ubPtr = shader->MapUniformBuffer(1, frameSet);
@@ -2405,6 +2415,10 @@ static void WriteShadowUniforms()
 	{
 		ub.ShadowDebug.z = 8.0f;
 	}
+	if (s_ViewOptions.DebugView == DebugViewHaze)
+	{
+		ub.ShadowDebug.z = 9.0f; // the distance haze's amount (Include/Haze.glslh)
+	}
 	// Tinted glass: its maps are drawn this frame (they are full size from the frame after it was first seen)
 	ub.GlassShadowParams = glm::vec4(s_FrameHasTintedGlass && s_ShadowGlass.IsFullSize() ? 1.0f : 0.0f, GlassShadowFrostSpread, 0.0f, 0.0f);
 	ub.LocalShadowParams = glm::vec4(s_RenderSettings.LocalShadows.NormalBias, s_RenderSettings.LocalShadows.Softness,
@@ -2967,6 +2981,10 @@ const EnvMapVulkanRenderer::CullingStats& EnvMapVulkanRenderer::GetCullingStats(
 // The probe volume's update of this frame (see EnvMapVulkanProbes): the probes of the batch capture the scene around
 // them, then compute passes blend what they saw into the atlases. Recorded after the lights' shadow maps and the caustics
 // (the captured surfaces are lit through them) and before everything that is lit by the probes.
+// A terrain in a probe's capture: the error its chunks may have, times the terrain's own LOD tolerance (EnvMapVulkanTerrain::
+// ChooseChunk). A cube face is 32 x 32 pixels: a meter at 100 m is far below one of them
+static constexpr float ProbeCaptureTerrainTolerance = 8.0f;
+
 static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 {
 	if (!s_Probes.HasCapture())
@@ -3034,6 +3052,8 @@ static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 		SubmittedModel* Submitted = nullptr;
 		uint32_t MeshIndex = 0;
 		glm::vec4 TransformRows[3];
+		glm::mat4 Transform = glm::mat4(1.0f); // the mesh's, in the world (a terrain chunk's level is chosen from its box)
+		bool Terrain = false;
 		float MaterialIndex = 0.0f;
 		bool Cull = false; // by its bounds (not a skinned mesh: its bones move it out of them)
 		glm::vec3 BoundsMin = glm::vec3(0.0f), BoundsMax = glm::vec3(0.0f); // in the world
@@ -3065,6 +3085,8 @@ static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 			draw.TransformRows[0] = rows[0];
 			draw.TransformRows[1] = rows[1];
 			draw.TransformRows[2] = rows[2];
+			draw.Transform = transform;
+			draw.Terrain = !skinned; // whether it is one: ChooseChunk knows
 			draw.MaterialIndex = submitted.Materials[s]->Get<float>("u_MaterialUniforms.MaterialIndex");
 			draw.Cull = !skinned;
 			draw.BoundsMin = glm::vec3(std::numeric_limits<float>::max());
@@ -3132,8 +3154,19 @@ static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 					vkCmdPushConstants(commandBuffer, layout, EnvMapVulkanProbes::CapturePushStages, 0, sizeof(push), &push);
 
 					const H2M::RefH2M<H2M::MeshH2M>& mesh = model->GetMeshes()[draw.MeshIndex];
-					vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
-					EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
+					// A terrain's chunk: its level for its distance from the probe, with a larger error allowed (a cube
+					// face of 32 x 32 pixels): a far hill is a few triangles
+					EnvMapVulkanTerrain::ChunkDraw chunk;
+					if (draw.Terrain && s_ViewOptions.TerrainLod &&
+						EnvMapVulkanTerrain::ChooseChunk(model.Raw(), draw.MeshIndex, draw.Transform, chunk, &probePosition, ProbeCaptureTerrainTolerance))
+					{
+						DrawTerrainChunk(commandBuffer, chunk, mesh->BaseVertex, 0);
+					}
+					else
+					{
+						vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
+						EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
+					}
 				}
 				s_Probes.EndCaptureFace(commandBuffer);
 			}
@@ -4279,6 +4312,23 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 			frame.Passes.push_back({ scope.Name, scope.SmoothedGpuMs });
 		}
 	}
+	// The CPU's stages, each main loop stage followed by its own
+	const std::vector<CpuStats::Stage>& cpuStages = CpuStats::GetStages();
+	for (const CpuStats::Stage& top : cpuStages)
+	{
+		if (!top.Parent.empty())
+		{
+			continue;
+		}
+		frame.CpuStages.push_back({ top.Name, top.SmoothedMs, false });
+		for (const CpuStats::Stage& stage : cpuStages)
+		{
+			if (stage.Parent == top.Name)
+			{
+				frame.CpuStages.push_back({ stage.Name, stage.SmoothedMs, true });
+			}
+		}
+	}
 
 	// The cameras' shares (7.5): each render texture camera's scope (inside Render Textures), averaged over every frame
 	// (0 in the frames it doesn't draw: the profiler averages a scope only over the frames that have it), and the main
@@ -4660,6 +4710,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	}
 	s_RenderSettings = EnvMapVulkanQuality::Apply(s_QualityTier, s_OwnerRenderSettings ? *s_OwnerRenderSettings : EnvMapVulkanRenderSettings());
 	s_ViewOptions = s_OwnerViewOptions ? *s_OwnerViewOptions : EnvMapVulkanViewOptions();
+	CpuStats::Timer stages(CpuStats::ParentDraw); // where Draw's time goes (the Stats panel, F3, --frame-stats)
 
 	// This frame's environment, lights, water and probe volume, from the scene (see ExtractEnvironment, ExtractLights,
 	// ExtractWater, ExtractProbeVolume)
@@ -4671,6 +4722,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	// their levels of detail from this camera, in every pass
 	EnvMapVulkanTerrain::Update(*s_Scene);
 	EnvMapVulkanTerrain::SetViewPosition(glm::vec3(glm::inverse(camera->GetViewMatrix())[3]));
+	stages.Next("Environment, lights, water, probes, terrains");
 
 	// Shadow map resolutions that differ from the settings (changed in the panel, a scene opened): the maps are recreated
 	// before any command buffer of this frame is recorded (their descriptors in set 0 can't change while a recorded frame
@@ -4769,7 +4821,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	// stand still, where their meshes are and which materials they have (glass isn't captured).
 	uint64_t probeSceneVersion = HashStart, probeAnimationVersion = HashStart, probeGeometryVersion = HashStart;
 
+	stages.Next("Settings, maps, material variants");
 	ApplyPartTransforms();
+	stages.Next("Part transforms");
 	for (EnvMapVulkanEntityID entity : EnvMapVulkanSceneData::GetModels(*s_Scene))
 	{
 		H2M::RefH2M<H2M::ModelH2M> model = EnvMapVulkanSceneData::GetModel(*s_Scene, entity);
@@ -4823,6 +4877,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		modelStates[entity] = std::move(state);
 	}
 	s_PreviousModelStates = std::move(modelStates);
+	stages.Next("Models submitted");
 	// The materials into their GPU buffer, each with its index (after this frame's edits, before anything is recorded)
 	// (with ray tracing, the maps they use get their elements in the array of all textures)
 	if (s_MaterialBuffer.Update(s_RayTracing.GetTextureTable()))
@@ -4850,12 +4905,13 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		WriteProbeDescriptors(); // new atlases: Update waited for the GPU
 	}
+	stages.Next("Material buffer, probe update");
 	UpdateFrameUniforms();
 	if (s_WaterSettings.Enabled)
 	{
 		H2M::CameraH2M& sceneCamera = s_Data.SceneData.SceneCamera.Camera;
 		s_Water.Update(s_WaterSettings, deltaTime, sceneCamera.GetViewMatrix(), sceneCamera.GetProjectionMatrix(), sceneCamera.GetPosition(),
-			s_EnvMapRotation, GetWaterSunDirection(), s_Data.FrameDescriptorSet.DescriptorSets[0], GetDisplayTone());
+			s_EnvMapRotation, GetWaterSunDirection(), s_Data.FrameDescriptorSet.DescriptorSets[0], GetDisplayTone(), s_HazeParams);
 	}
 
 	if (s_ViewportFBNeedsResize)
@@ -4916,6 +4972,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		inputs.SunDirection = GetWaterSunDirection();
 		inputs.Exposure = GetViewExposure(); // as the viewport composite
 		inputs.HuePreservation = s_TonemapHuePreservation;
+		inputs.HazeParams = s_HazeParams;
 		s_TextureViews.Update(*s_Scene, inputs);
 	}
 
@@ -4933,8 +4990,11 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_PathTracer.Prepare(s_Data.FrameDescriptorSet.DescriptorSets[0]);
 	}
 
+	stages.Next("Frame uniforms, water, render textures");
 	GeometryPass();
+	stages.Next("3D passes recorded");
 	CompositePass();
+	stages.Next("Composite and UI recorded");
 }
 
 std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> EnvMapVulkanRenderer::CreateEnvironmentMap(const std::string& filepath)

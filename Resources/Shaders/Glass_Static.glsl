@@ -55,6 +55,7 @@ void main()
 
 #include "Include/PBRCommon.glslh"
 #include "Include/NormalMap.glslh"
+#include "Include/Haze.glslh"
 
 layout (location = 10) flat in mat4 v_ViewProjection;
 
@@ -208,6 +209,8 @@ void main()
 	vec3 emissive = u_Glass.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_Glass.EmissiveIntensity : vec3(0.0);
 
 	color = vec4(transmitted * (1.0 - F) + reflected + highlights + emissive, 1.0);
+	// The distance haze in front of the glass (what's behind it has its own already, in the scene copy)
+	color.rgb = ApplyHaze(color.rgb, u_CameraPosition, Input.WorldPosition);
 
 	if (u_ShowCascades > 0.5 && u_ShadowsEnabled > 0.5)
 	{

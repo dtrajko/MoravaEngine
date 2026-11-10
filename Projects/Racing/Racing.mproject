@@ -16,4 +16,5 @@ Project:
     DefaultQuality: Medium
     Scenes:
       - {File: Scenes/MainMenu.mscene}
+      - {File: Scenes/Circuit.mscene}
       - {File: Scenes/TestTrack.mscene}

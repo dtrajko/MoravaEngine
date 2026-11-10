@@ -2,9 +2,11 @@
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 
+#include "Core/Application.h"
 #include "Core/Log.h"
 
 #include <algorithm>
+#include <unordered_map>
 
 
 // The statistics read for a top-level scope, in the order of EnvMapVulkanProfiler::Statistic (Vulkan writes the values
@@ -18,6 +20,35 @@ static constexpr VkQueryPipelineStatisticFlags StatisticFlags =
 	VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT;
 
 static constexpr uint32_t NoQuery = ~0u;
+
+// --frame-stats: every pass's GPU time and counts added up over the frames after the warmup, logged at shutdown (what the
+// Stats panel shows, for an unattended run: where a frame's time goes)
+namespace
+{
+	struct PassTotal
+	{
+		std::string Name;
+		int Depth = 0;
+		double GpuMs = 0.0, MaxGpuMs = 0.0;
+		double Draws = 0.0, Triangles = 0.0;
+		uint64_t Frames = 0;
+	};
+	struct RunTotals
+	{
+		std::vector<PassTotal> Passes;              // in the order they first appeared
+		std::unordered_map<std::string, size_t> ByPath;
+		double GpuMs = 0.0, CpuMs = 0.0, Draws = 0.0, Triangles = 0.0;
+		uint64_t Frames = 0;
+		std::chrono::steady_clock::time_point Start = std::chrono::steady_clock::now();
+	};
+	RunTotals s_RunTotals;
+
+	bool CollectingRunTotals()
+	{
+		const float warmup = Application::Get()->GetCommandLine().FrameStatsWarmup;
+		return warmup >= 0.0f && std::chrono::duration<float>(std::chrono::steady_clock::now() - s_RunTotals.Start).count() >= warmup;
+	}
+}
 
 EnvMapVulkanProfiler::FrameResults EnvMapVulkanProfiler::s_Results;
 
@@ -51,6 +82,19 @@ void EnvMapVulkanProfiler::Init()
 
 void EnvMapVulkanProfiler::Shutdown()
 {
+	if (s_RunTotals.Frames > 0)
+	{
+		const double frames = (double)s_RunTotals.Frames;
+		Log::GetLogger()->info("Profiler: {0} frames: GPU {1:.2f} ms a frame on average, CPU (frame to frame) {2:.2f} ms; {3:.0f} draw calls, {4:.0f} triangles",
+			s_RunTotals.Frames, s_RunTotals.GpuMs / frames, s_RunTotals.CpuMs / frames, s_RunTotals.Draws / frames, s_RunTotals.Triangles / frames);
+		for (const PassTotal& pass : s_RunTotals.Passes)
+		{
+			const double n = (double)std::max<uint64_t>(pass.Frames, 1);
+			Log::GetLogger()->info("Profiler: {0}{1}: {2:.3f} ms (at most {3:.3f}), {4:.0f} draws, {5:.0f} triangles{6}", std::string(2 * pass.Depth, ' '),
+				pass.Name, pass.GpuMs / n, pass.MaxGpuMs, pass.Draws / n, pass.Triangles / n,
+				pass.Frames < s_RunTotals.Frames ? " (in " + std::to_string(pass.Frames) + " frames)" : std::string());
+		}
+	}
 	VkDevice device = GetDevice();
 	for (FrameSlot& slot : s_Slots)
 	{
@@ -179,6 +223,33 @@ void EnvMapVulkanProfiler::ReadSlot(FrameSlot& slot)
 			results.RenderPasses += recorded.RenderPasses;
 		}
 		results.Scopes.push_back(std::move(scope));
+	}
+	if (results.Valid && CollectingRunTotals())
+	{
+		s_RunTotals.Frames++;
+		s_RunTotals.GpuMs += results.GpuMs;
+		s_RunTotals.CpuMs += s_CpuFrameMs;
+		s_RunTotals.Draws += results.Draws;
+		s_RunTotals.Triangles += (double)results.Triangles;
+		for (size_t i = 0; i < results.Scopes.size(); i++)
+		{
+			const ScopeResult& scope = results.Scopes[i];
+			auto found = s_RunTotals.ByPath.find(paths[i]);
+			if (found == s_RunTotals.ByPath.end())
+			{
+				found = s_RunTotals.ByPath.emplace(paths[i], s_RunTotals.Passes.size()).first;
+				PassTotal pass;
+				pass.Name = scope.Name;
+				pass.Depth = scope.Depth;
+				s_RunTotals.Passes.push_back(pass);
+			}
+			PassTotal& pass = s_RunTotals.Passes[found->second];
+			pass.Frames++;
+			pass.GpuMs += scope.GpuMs;
+			pass.MaxGpuMs = std::max(pass.MaxGpuMs, scope.GpuMs);
+			pass.Draws += scope.Draws;
+			pass.Triangles += (double)scope.Triangles;
+		}
 	}
 	s_Results = std::move(results);
 

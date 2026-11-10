@@ -91,7 +91,7 @@ namespace Racing
         /// <summary>The test driver drives instead of the player (TestDriver.cs), along the track's center line.</summary>
         public bool TestDriver = false;
         /// <summary>The center line the test driver follows: a file of the project (Tools/TrackBuilder writes it).</summary>
-        public string Centerline = "Assets/Tracks/TestTrack.centerline.json";
+        public string Centerline = "Assets/Tracks/Circuit.centerline.json";
         /// <summary>The track entity the center line's points are relative to.</summary>
         public Entity? Track;
         /// <summary>m/s^2 the test driver allows itself sideways in turns (higher: braver).</summary>

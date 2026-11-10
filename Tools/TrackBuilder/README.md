@@ -50,7 +50,12 @@ Coordinates are the engine's: meters, Y up, a car facing along -Z; relative to t
 - **StartDistance**: how far before the start line the car starts (`Start` in the center line file).
 - **Settings** (all optional): `SampleSpacing` (1 m between cross sections), `ChunkLength` (100), `CurbWidth` (1.5),
   `CurbStripe` (3), `WallHeight` (1), `WallThickness` (0.5), `SlabThickness` (0.8), `SupportSpacing` (24),
-  `SupportSize` (1.4), `GroundHeight` (0: supports go down to here), `StartLineWidth` (2), `CenterlineSpacing` (2).
+  `SupportSize` (1.4), `GroundHeight` (0: supports go down to here), `StartLineWidth` (2), `CenterlineSpacing` (2),
+  `Gantry` (false: a start and finish gantry over the line), `GantryHeight` (7),
+  `MeshTolerance` (0.05 m) and `MeshMaxLength` (50 m): the models keep only the cross sections their shape needs. Where
+  the track is straight and even, one quad spans many samples (up to MeshMaxLength), as long as the samples left out
+  stay within MeshTolerance of it; chunk starts, curb stripes and changes of walls or curbs are always kept. The quads of
+  one surface share their corners and are shaded smooth along the track. The center line keeps every sample.
 
 The script prints the track's length, its chunks, how far its lowest and highest points are apart, and each model's
 triangles.

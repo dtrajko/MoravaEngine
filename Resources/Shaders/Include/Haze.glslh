@@ -1,0 +1,59 @@
+// Distance haze (the Environment's Haze settings, EnvironmentComponent::Haze): far surfaces fade into the sky's own color
+// in their direction, so the haze matches any sky map, and the far edge of the ground melts into the horizon behind it.
+// The haze is thicker low down: its density falls off with the height above its base (exponential height fog), and the
+// amount is the density gathered along the way from the camera to the surface, past the start distance.
+//
+// Needs Include/FrameSet.glslh (u_HazeParams, u_EnvRadianceTex, u_EnvMapRotation) and a RotateVectorAboutY (from
+// Include/ShadeSurface.glslh through PBRCommon.glslh, or Include/WaterCommon.glslh).
+#ifndef HAZE_GLSLH
+#define HAZE_GLSLH
+
+// The mip of the environment the haze takes its color from: the sky blurred a little (no stars or cloud detail in it), so
+// the color changes smoothly across the screen and doesn't shimmer
+const float HazeSkyLod = 3.0;
+
+// 0: none, 1: the sky's color alone. u_HazeParams: x = the density per meter at the base height (0: no haze), y = the
+// start distance (meters), z = the height falloff (per meter: the density halves every ln 2 / z meters up), w = the
+// base height (meters, world)
+float HazeAmount(vec3 cameraPosition, vec3 worldPosition)
+{
+	const float density = u_HazeParams.x;
+	if (density <= 0.0)
+	{
+		return 0.0;
+	}
+	vec3 toSurface = worldPosition - cameraPosition;
+	float distance = length(toSurface);
+	float hazed = distance - u_HazeParams.y; // the length of the way inside the haze
+	if (hazed <= 0.0)
+	{
+		return 0.0;
+	}
+	vec3 direction = toSurface / distance;
+	float startHeight = cameraPosition.y + direction.y * u_HazeParams.y - u_HazeParams.w; // where the way enters it, above the base
+	float falloff = max(u_HazeParams.z, 0.0);
+	// The density along the way: density * exp(-falloff * height), integrated over the hazed length (a closed form: the
+	// height changes linearly along the ray). The exponent is limited below the base, where the haze would grow without end.
+	float atStart = density * exp(-falloff * clamp(startHeight, -8.0 / max(falloff, 1e-3), 1e4));
+	float rise = falloff * direction.y * hazed;
+	float gathered = abs(rise) > 1e-4 ? atStart * hazed * (1.0 - exp(-rise)) / rise : atStart * hazed;
+	return 1.0 - exp(-max(gathered, 0.0));
+}
+
+// The color the haze has in a direction from the camera: the environment's, as the skybox shows it there (blurred), at
+// the horizon or above it: looking down onto the ground takes the sky's color at the horizon, not the map's lower half
+// (the ground of a map that has one, or whatever stands in for it)
+vec3 HazeColor(vec3 direction)
+{
+	direction = normalize(vec3(direction.x, max(direction.y, 0.0), direction.z) + vec3(0.0, 1e-4, 0.0));
+	return textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, direction), HazeSkyLod).rgb;
+}
+
+// A surface's color with the haze in front of it
+vec3 ApplyHaze(vec3 color, vec3 cameraPosition, vec3 worldPosition)
+{
+	float amount = HazeAmount(cameraPosition, worldPosition);
+	return amount > 0.0 ? mix(color, HazeColor(normalize(worldPosition - cameraPosition)), amount) : color;
+}
+
+#endif

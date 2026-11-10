@@ -2,6 +2,7 @@
 
 #include "PBRCommon.glslh"
 #include "MeshMaterial.glslh"
+#include "Haze.glslh"
 #include "Tonemap.glslh"
 
 void main()
@@ -104,6 +105,17 @@ void main()
 	else if (u_ShadowDebug.z > 0.5)
 	{
 		color.rgb = directLight;
+	}
+
+	// The distance haze (the Environment's Haze): over the finished surface, not over the views of one part of the light.
+	// The Haze debug view shows its amount (white: the sky's color alone, black: none).
+	if (u_ShadowDebug.z > 8.5)
+	{
+		color.rgb = vec3(HazeAmount(u_CameraPosition, Input.WorldPosition));
+	}
+	else if (u_ShadowDebug.z < 0.5)
+	{
+		color.rgb = ApplyHaze(color.rgb, u_CameraPosition, Input.WorldPosition);
 	}
 
 	// The water between the camera and the mesh, when this pass has it (the water's reflection pass under the water)

@@ -141,6 +141,7 @@ Entities:
     Script:
       Class: Racing.CarController
       Fields:
+        Centerline: {String: Assets/Tracks/TestTrack.centerline.json}
         Track: {Entity: 3000}
     Vehicle:
       Controls: Script
@@ -356,6 +357,7 @@ Entities:
     Script:
       Class: Racing.RaceManager
       Fields:
+        Centerline: {String: Assets/Tracks/TestTrack.centerline.json}
         Car: {Entity: 2001}
         Track: {Entity: 3000}
         StartLights: {Entity: 4001}

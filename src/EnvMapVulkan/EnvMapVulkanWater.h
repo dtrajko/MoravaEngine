@@ -17,8 +17,8 @@ namespace H2M
 }
 
 // std140 layout of the SceneData uniform block (set 0, binding 1, Include/FrameSet.glslh): the camera position, the
-// environment rotation, the scene's water (the light under it, see FillWaterSceneData) and the water volume the meshes
-// are seen through (off in the scene pass)
+// environment rotation, the scene's water (the light under it, see FillWaterSceneData), the water volume the meshes
+// are seen through (off in the scene pass) and the distance haze
 struct EnvMapVulkanSceneDataGPU
 {
 	glm::vec3 CameraPosition = glm::vec3(0.0f);
@@ -32,8 +32,10 @@ struct EnvMapVulkanSceneDataGPU
 	glm::vec4 CausticsParams = glm::vec4(0.0f);        // x = strength (0: no caustics this frame), y = focus depth
 	glm::vec4 DisplayTone = glm::vec4(1.0f, 0.5f, 0.0f, 0.0f); // x = the exposure the view's composite applies, y = its hue
 	                                                   // preservation: Display surfaces undo them (Include/HazelPBR_Fragment.glslh)
+	glm::vec4 HazeParams = glm::vec4(0.0f);            // the distance haze (Include/Haze.glslh, EnvironmentComponent::Haze): x = density
+	                                                   // per meter at the base (0: none), y = start distance, z = height falloff, w = base height
 };
-static_assert(sizeof(EnvMapVulkanSceneDataGPU) == 128, "EnvMapVulkanSceneDataGPU must match SceneData in Include/FrameSet.glslh");
+static_assert(sizeof(EnvMapVulkanSceneDataGPU) == 144, "EnvMapVulkanSceneDataGPU must match SceneData in Include/FrameSet.glslh");
 
 /**
  * The water plane of SceneEnvMapVulkan: one flat, axis-aligned rectangle at a height (Resources/Shaders/Water.glsl).
@@ -131,10 +133,11 @@ public:
 	// Moves the waves and writes the settings, the mirrored camera and the caustics for this frame. view, projection and
 	// cameraPosition: the camera's; sunDirection: toward the sun (pointing down when the sun is off); frameDescriptorSet:
 	// the main per-frame set (set 0), whose environment, light, shadow and caustics bindings the reflection's set 0 shares;
-	// displayTone: the main view's exposure and hue preservation (EnvMapVulkanSceneDataGPU::DisplayTone)
+	// displayTone: the main view's exposure and hue preservation (EnvMapVulkanSceneDataGPU::DisplayTone); hazeParams: the
+	// distance haze (EnvMapVulkanSceneDataGPU::HazeParams)
 	void Update(const EnvMapVulkanWaterSettings& settings, float deltaTime, const glm::mat4& view, const glm::mat4& projection,
 		const glm::vec3& cameraPosition, float envMapRotation, const glm::vec3& sunDirection, VkDescriptorSet frameDescriptorSet,
-		const glm::vec4& displayTone);
+		const glm::vec4& displayTone, const glm::vec4& hazeParams);
 
 	// This frame draws the planar reflection (it is enabled; from above the water or from under it)
 	bool IsReflectionActive() const { return m_ReflectionActive; }

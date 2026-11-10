@@ -73,6 +73,7 @@ public:
 		glm::vec3 SunDirection = glm::vec3(0.0f, -1.0f, 0.0f);
 		float Exposure = 1.0f;        // Color textures: the scene's exposure (with the environment's auto exposure)
 		float HuePreservation = 0.5f; // and tonemapping
+		glm::vec4 HazeParams = glm::vec4(0.0f); // the distance haze (EnvMapVulkanSceneDataGPU::HazeParams)
 	};
 	// This frame's views, from the scene's cameras with a target (their render textures loaded the first time). Called before
 	// anything of the frame is recorded: a view that changed size may wait for the GPU.

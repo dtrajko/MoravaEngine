@@ -134,8 +134,30 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 
 	ImGui::DragFloat("Size", &s.Size, 64.0f, TerrainSettings::MinSize, TerrainSettings::MaxSize, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
 	shapeEdited();
-	Tooltip("The side of the square, in meters (a multiple of 64: the chunks it is drawn in). A height every meter:\n"
+	Tooltip("The side of the square, in meters (a multiple of 64: the chunks it is drawn in). With a height every meter,\n"
 		"1024 m is about a million heights and two million triangles");
+	{
+		static const float spacings[] = { 1.0f, 2.0f, 4.0f };
+		static const char* const names[] = { "1 m", "2 m", "4 m" };
+		int current = s.Spacing >= 3.0f ? 2 : s.Spacing >= 1.5f ? 1 : 0;
+		if (ImGui::Combo("Spacing", &current, names, 3))
+		{
+			s.Spacing = spacings[current];
+			commit = true;
+		}
+		Tooltip("Meters between two heights. 2 m has a quarter of the triangles and heights of 1 m, 4 m a sixteenth: the same\n"
+			"hills without their smallest bumps. Coarser for large terrains seen from afar (a race track's surroundings);\n"
+			"1 m where people walk on it");
+	}
+	{
+		int maxVertices = (int)s.MaxVertices;
+		ImGui::DragInt("Max Vertices", &maxVertices, 100.0f, 0, 10000000, maxVertices == 0 ? "no limit" : "%d", ImGuiSliderFlags_AlwaysClamp);
+		s.MaxVertices = (uint32_t)maxVertices;
+		shapeEdited();
+		Tooltip("The most vertices the drawn ground may have (0: as many as its exact shape needs). The chunks that stray\n"
+			"furthest from the true heights get them first: steep hills keep detail, gentle slopes and flat ground stay\n"
+			"a few triangles. Drawing only: physics has every height");
+	}
 	ImGui::DragFloat("Height", &s.Height, 1.0f, 0.0f, 2000.0f, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
 	shapeEdited();
 	Tooltip("From the lowest valley to the highest peak, about");
@@ -194,6 +216,8 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 		t.FlatCenter = s.FlatCenter;
 		t.FlatRadius = s.FlatRadius;
 		t.FlatBlend = s.FlatBlend;
+		t.Spacing = s.Spacing;
+		t.MaxVertices = s.MaxVertices;
 	}
 
 	// The look and physics: at once

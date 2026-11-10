@@ -120,7 +120,7 @@ SceneEnvMapVulkan::SceneEnvMapVulkan()
     SetupFramebuffers();
 
     H2M::RefH2M<H2M::UserPreferencesH2M> userPreferences = H2M::RefH2M<H2M::UserPreferencesH2M>::Create();
-    userPreferences->FilePath = TEXTURES_DIR "/HDR/umhlanga_sunrise_4k.hdr";
+    userPreferences->FilePath = TEXTURES_DIR "/HDR/rocky_ridge_puresky_2k.hdr";
     EnvMapVulkanRenderer::SetEnvironmentMapFile(userPreferences->FilePath); // the scene is created before the renderer's Init
 
     SetupMeshes();

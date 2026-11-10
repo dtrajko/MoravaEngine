@@ -32,6 +32,7 @@ layout (location = 0) out vec4 color;
 #include "Include/Shadows.glslh"
 
 #include "Include/WaterCommon.glslh"
+#include "Include/Haze.glslh"
 
 // GGX / Trowbridge-Reitz normal distribution (alpha = roughness^2)
 float DistributionGGX(float NdotH, float roughness)
@@ -240,6 +241,9 @@ void main()
 		float foam = smoothstep(1.0 - shallow, 1.0 - shallow + 0.15, pattern) * shallow * u_FoamAmount;
 		surface = mix(surface, vec3(0.9) * incoming, clamp(foam, 0.0, 1.0));
 	}
+
+	// The distance haze in front of the surface (the scene behind it has its own already)
+	surface = ApplyHaze(surface, u_CameraPosition, v_WorldPosition);
 
 	// Edges: over the first EdgeSoftness of water the surface fades into the scene behind it (no hard line at the shore)
 	float edge = clamp(verticalDepth / u_EdgeSoftness, 0.0, 1.0);

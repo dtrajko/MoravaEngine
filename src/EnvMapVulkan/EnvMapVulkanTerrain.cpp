@@ -84,8 +84,8 @@ namespace EnvMapVulkanTerrain
 		}
 		const auto start = std::chrono::steady_clock::now();
 		auto lods = std::make_shared<TerrainLods>();
-		ModelData data = Terrain::BuildModelData(*terrain.Heights, lods.get());
-		size_t triangles = 0; // the chunks' own (every height), not the levels'
+		ModelData data = Terrain::BuildModelData(*terrain.Heights, lods.get(), terrain.Settings.MaxVertices);
+		size_t triangles = 0; // the chunks' own (their base levels), not the coarser levels'
 		for (const ModelMeshData& mesh : data.Meshes)
 		{
 			triangles += mesh.TriangleCount;
@@ -213,7 +213,8 @@ namespace EnvMapVulkanTerrain
 		s_ViewPosition = worldPosition;
 	}
 
-	bool ChooseChunk(const H2M::ModelH2M* model, size_t meshIndex, const glm::mat4& meshTransform, ChunkDraw& draw)
+	bool ChooseChunk(const H2M::ModelH2M* model, size_t meshIndex, const glm::mat4& meshTransform, ChunkDraw& draw,
+		const glm::vec3* viewPosition, float toleranceScale)
 	{
 		auto entity = s_ByModel.find(model);
 		if (entity == s_ByModel.end())
@@ -231,9 +232,10 @@ namespace EnvMapVulkanTerrain
 		const glm::vec3 half = (box.Max - box.Min) * 0.5f;
 		const glm::vec3 extent = glm::abs(glm::vec3(meshTransform[0])) * half.x + glm::abs(glm::vec3(meshTransform[1])) * half.y +
 			glm::abs(glm::vec3(meshTransform[2])) * half.z;
-		const float distance = glm::length(glm::max(glm::abs(s_ViewPosition - center) - extent, glm::vec3(0.0f)));
+		const glm::vec3 view = viewPosition ? *viewPosition : s_ViewPosition;
+		const float distance = glm::length(glm::max(glm::abs(view - center) - extent, glm::vec3(0.0f)));
 		const TerrainLods::Chunk& chunk = gpu->second.Lods->Chunks[meshIndex];
-		draw.Level = TerrainLods::LevelAt(chunk, distance, gpu->second.LodTolerance);
+		draw.Level = TerrainLods::LevelAt(chunk, distance, gpu->second.LodTolerance * toleranceScale);
 		draw.Surface = chunk.Surface[draw.Level];
 		draw.Skirt = chunk.Skirt[draw.Level];
 		return true;

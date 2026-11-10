@@ -21,8 +21,8 @@ namespace Racing
         public Entity? RecordsText;
 
         /// <summary>The race's scene, and its track's name in the records (the center line's Name).</summary>
-        public string RaceScene = "Scenes/TestTrack.mscene";
-        public string TrackName = "TestTrack";
+        public string RaceScene = "Scenes/Circuit.mscene";
+        public string TrackName = "Circuit";
 
         // ---- The camera behind the menu: around Center, Radius away, Height above it, Speed degrees per second
         public Entity? MenuCamera;

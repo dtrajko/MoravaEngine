@@ -66,6 +66,14 @@ struct DebugOverlayFrame
 	uint32_t Meshes = 0;             // of the main view
 	uint32_t Culled = 0;
 	std::vector<Pass> Passes;        // the frame's top-level passes, smoothed
+	// The CPU's stages (CpuStats), smoothed: the main loop's, each followed by the stages inside it (Inner)
+	struct CpuStage
+	{
+		std::string Name;
+		double Ms = 0.0;
+		bool Inner = false;
+	};
+	std::vector<CpuStage> CpuStages;
 	std::vector<Camera> Cameras;     // empty without render texture cameras
 };
 
