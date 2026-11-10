@@ -1962,11 +1962,11 @@ void EnvMapVulkanRenderer::Init()
 	// s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
 	// s_EnvMapFilename = "Textures/HDR/newport_loft.hdr";
 	// The scene's choice (SetEnvironmentMapFile, from SceneEnvMapVulkan's user preferences); without one, an outdoor map
-	// with a real sun (a compact disc, about 7,000x brighter than anything else). A real sun is extracted and the sun light
-	// aligned to it at startup (see Draw).
+	// with a real sun, as the editor's default (SceneEnvMapVulkan). A real sun is extracted and the sun light aligned to it at
+	// startup (see Draw).
 	if (s_EnvMapFilename.empty())
 	{
-		s_EnvMapFilename = TEXTURES_DIR "/HDR/rooitou_park_4k.hdr";
+		s_EnvMapFilename = TEXTURES_DIR "/HDR/rocky_ridge_puresky_2k.hdr";
 	}
 	s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap(s_EnvMapFilename);
 

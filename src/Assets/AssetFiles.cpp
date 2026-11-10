@@ -11,6 +11,7 @@
 
 
 #include <mutex>
+#include <set>
 
 namespace fs = std::filesystem;
 
@@ -63,6 +64,61 @@ namespace AssetFiles
 	bool IsPackMounted() { return s_Pack != nullptr; }
 	const AssetPack* GetPack() { return s_Pack.get(); }
 	const std::string& GetPackFile() { return s_PackFile; }
+
+	static bool ReadEntry(const AssetPack::Entry& entry, std::vector<uint8_t>& bytes);
+
+	std::vector<std::string> FindChangedPackSources()
+	{
+		std::vector<std::string> changed;
+		const AssetPack::Entry* entry = s_Pack ? s_Pack->Find(PackSourcesFile, AssetPack::Kind::File) : nullptr;
+		std::vector<uint8_t> bytes;
+		if (!entry || !ReadEntry(*entry, bytes))
+		{
+			return changed;
+		}
+		try
+		{
+			const YAML::Node root = YAML::Load(std::string(bytes.begin(), bytes.end()));
+			std::set<std::string> known;
+			for (const YAML::Node& file : root["Files"])
+			{
+				const std::string path = file[0].as<std::string>();
+				known.insert(path);
+				uint64_t size = 0;
+				int64_t writeTime = 0;
+				if (!CookFiles::GetFileState(fs::u8path(path), size, writeTime))
+				{
+					changed.push_back(path + " (removed)");
+				}
+				else if (size != file[1].as<uint64_t>() || writeTime != file[2].as<int64_t>())
+				{
+					changed.push_back(path);
+				}
+			}
+			for (const YAML::Node& folder : root["Folders"])
+			{
+				std::error_code error;
+				for (fs::recursive_directory_iterator it(fs::u8path(folder.as<std::string>()), fs::directory_options::skip_permission_denied, error), end; !error && it != end; it.increment(error))
+				{
+					std::error_code typeError;
+					if (!it->is_regular_file(typeError) || it->path().extension() == ".meta")
+					{
+						continue;
+					}
+					const std::string path = it->path().lexically_normal().generic_u8string();
+					if (known.count(path) == 0)
+					{
+						changed.push_back(path + " (new)");
+					}
+				}
+			}
+		}
+		catch (const std::exception& e)
+		{
+			Log::GetLogger()->warn("Assets: the pack's list of its files can't be read: {0}", e.what());
+		}
+		return changed;
+	}
 
 	static bool ReadEntry(const AssetPack::Entry& entry, std::vector<uint8_t>& bytes)
 	{

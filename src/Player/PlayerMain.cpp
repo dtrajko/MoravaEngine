@@ -22,6 +22,8 @@
 
 #include <filesystem>
 #include <memory>
+#include <string>
+#include <vector>
 
 
 int main(int argc, char** argv)
@@ -103,7 +105,29 @@ int main(int argc, char** argv)
 		}
 		// The project's window, as the player last chose it (11.4: the settings in the user's folder)
 		const PlayerSettings player = GameSettings::ReadPlayerSettings(GameSettings::GetUserFile(project, GameSettings::SettingsFile));
-		window = WindowSpecification(project.GetWindowTitle(), project.Window.Width, project.Window.Height);
+		// A developer's pack older than its project (a scene, a model or the scripts changed since it was built): the game runs as
+		// the pack has it, not as the editor shows it. Said in the log and in the window's title
+		std::string title = project.GetWindowTitle();
+		if (AssetFiles::IsPackMounted() && !project.Shipped)
+		{
+			const std::vector<std::string> changed = AssetFiles::FindChangedPackSources();
+			if (!changed.empty())
+			{
+				constexpr size_t Named = 10;
+				Log::GetLogger()->warn("The pack '{0}' is older than its project: {1} file(s) changed since it was built. Build it again "
+					"(MoravaEngine --build-pack <file.mproject>)", AssetFiles::GetPackFile(), changed.size());
+				for (size_t i = 0; i < changed.size() && i < Named; i++)
+				{
+					Log::GetLogger()->warn("  changed: {0}", changed[i]);
+				}
+				if (changed.size() > Named)
+				{
+					Log::GetLogger()->warn("  and {0} more", changed.size() - Named);
+				}
+				title += " (the pack is out of date: " + std::to_string(changed.size()) + " file(s) changed)";
+			}
+		}
+		window = WindowSpecification(title, project.Window.Width, project.Window.Height);
 		window.Fullscreen = player.Fullscreen.value_or(project.Window.Fullscreen);
 		window.VSync = player.VSync.value_or(project.Window.VSync);
 		if (player.Resolution)

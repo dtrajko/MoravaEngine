@@ -22,12 +22,18 @@ namespace AssetFiles
 	// In the pack: the project's file, as Project::LoadFromPack reads it
 	constexpr const char* PackProjectFile = "Game.mproject";
 	constexpr const char* DefaultPackName = "Game.mpak";
+	// In a developer's pack (--build-pack; not Build Game's): the files it was built from as they were, and the project's folders
+	constexpr const char* PackSourcesFile = "PackSources.yaml";
 
 	// Once, before anything loads. False (error says why): the file can't be read as a pack
 	bool MountPack(const std::string& file, std::string& error);
 	bool IsPackMounted();
 	const AssetPack* GetPack();       // nullptr: none mounted
 	const std::string& GetPackFile(); // absolute, forward slashes; empty: none mounted
+	// With a developer's pack mounted: the files it was built from that changed since or were removed ("(removed)" after the
+	// path), and the files added to the project's folders since ("(new)"). Empty: the pack is up to date, or it can't tell
+	// (a shipped game's pack, or one built before packs named their files)
+	std::vector<std::string> FindChangedPackSources();
 
 	bool Exists(const std::string& path);
 	// The file's bytes. False: it doesn't exist or can't be read (logged when it is damaged)
