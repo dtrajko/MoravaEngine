@@ -66,6 +66,9 @@ namespace EnvMapVulkanTerrain
 		TerrainLods::Range Surface, Skirt;
 		uint32_t Level = 0;
 	};
-	// False: the model isn't a terrain's with levels (draw the mesh as it is). meshTransform: the chunk's, in the world
-	bool ChooseChunk(const H2M::ModelH2M* model, size_t meshIndex, const glm::mat4& meshTransform, ChunkDraw& draw);
+	// False: the model isn't a terrain's with levels (draw the mesh as it is). meshTransform: the chunk's, in the world.
+	// viewPosition: where the level is chosen from instead of the camera (a probe's capture), toleranceScale: the error
+	// allowed, times the terrain's own (a probe's small cube faces show much less)
+	bool ChooseChunk(const H2M::ModelH2M* model, size_t meshIndex, const glm::mat4& meshTransform, ChunkDraw& draw,
+		const glm::vec3* viewPosition = nullptr, float toleranceScale = 1.0f);
 }

@@ -20,6 +20,7 @@ enum EnvMapVulkanDebugView
 	DebugViewSMAAEdges, DebugViewSMAAWeights, // SMAA's passes, whichever antialiasing the scene has
 	DebugViewTAARejection, // where TAA's history was pulled back, whichever antialiasing the scene has
 	DebugViewShadowTransmittance, // the color the sun's light has at each surface, through tinted glass (u_ShadowDebug.z)
+	DebugViewHaze, // the distance haze's amount at each surface (u_ShadowDebug.z)
 	DebugViewCount
 };
 

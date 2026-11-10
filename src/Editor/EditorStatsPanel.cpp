@@ -9,6 +9,7 @@
 #include "EnvMapVulkan/EnvMapVulkanSceneSerializer.h"
 
 #include "Core/Application.h"
+#include "Core/CpuStats.h"
 #include "Core/FileDialogs.h"
 #include "Core/Input.h"
 #include "Core/ResourceManager.h"
@@ -217,6 +218,104 @@ static void PassTooltip(const EnvMapVulkanProfiler::ScopeResult& scope)
 	ImGui::EndTooltip();
 }
 
+// The CPU's stages (CpuStats), smoothed: the main loop's, each opening to the stages inside it (the renderer's Draw, the
+// game in the update), with what a stage spent outside the stages inside it ("other") and what the frame spent outside
+// every stage
+static void DrawCpuStages(double frameMs)
+{
+	const std::vector<CpuStats::Stage>& stages = CpuStats::GetStages();
+	if (stages.empty())
+	{
+		ImGui::TextDisabled("Not measured yet");
+		return;
+	}
+	const ImGuiTableFlags tableFlags = ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable;
+	if (!ImGui::BeginTable("##CpuStages", 3, tableFlags))
+	{
+		return;
+	}
+	ImGui::TableSetupColumn("Stage", ImGuiTableColumnFlags_WidthStretch);
+	ImGui::TableSetupColumn("CPU ms");
+	ImGui::TableSetupColumn("%");
+	ImGui::TableHeadersRow();
+	const double total = frameMs > 0.0 ? frameMs : 1.0;
+	auto values = [&](double ms)
+	{
+		ImGui::TableNextColumn();
+		ImGui::Text("%.3f", ms);
+		ImGui::TableNextColumn();
+		ImGui::Text("%.0f", 100.0 * ms / total);
+	};
+	double topSum = 0.0;
+	for (size_t i = 0; i < stages.size(); i++)
+	{
+		const CpuStats::Stage& top = stages[i];
+		if (!top.Parent.empty())
+		{
+			continue;
+		}
+		topSum += top.SmoothedMs;
+		double childSum = 0.0;
+		bool hasChildren = false;
+		for (const CpuStats::Stage& stage : stages)
+		{
+			if (stage.Parent == top.Name)
+			{
+				hasChildren = true;
+				childSum += stage.SmoothedMs;
+			}
+		}
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		ImGui::PushID((int)i);
+		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanFullWidth |
+			(hasChildren ? ImGuiTreeNodeFlags_DefaultOpen : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen));
+		const bool open = ImGui::TreeNodeEx(top.Name.c_str(), flags);
+		values(top.SmoothedMs);
+		if (hasChildren && open)
+		{
+			for (const CpuStats::Stage& stage : stages)
+			{
+				if (stage.Parent != top.Name)
+				{
+					continue;
+				}
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::TreeNodeEx(stage.Name.c_str(), ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+				values(stage.SmoothedMs);
+			}
+			const double other = top.SmoothedMs - childSum;
+			if (other > 0.005)
+			{
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::TextDisabled("    (other)");
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("The stage's time outside the stages measured inside it");
+				}
+				values(other);
+			}
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+	const double outside = frameMs - topSum;
+	if (outside > 0.005)
+	{
+		ImGui::TableNextRow();
+		ImGui::TableNextColumn();
+		ImGui::TextDisabled("(between the stages)");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The frame's time outside the main loop's stages");
+		}
+		values(outside);
+	}
+	ImGui::EndTable();
+}
+
 void OnImGuiRenderRendererStats()
 {
 	if (!s_ShowRendererStats)
@@ -397,6 +496,12 @@ void OnImGuiRenderRendererStats()
 		ImGui::EndTable();
 	}
 	ImGui::TextDisabled("Hover a pass for what it does and the GPU's counts");
+
+	// The CPU's side of the frame: where the time between two frames goes
+	ImGui::Spacing();
+	ImGui::SeparatorText("CPU stages (smoothed)");
+	DrawCpuStages(cpuMs);
+	ImGui::TextDisabled("The main loop's stages; Update and Draw open to the game's and the renderer's own");
 
 	// The scene
 	ImGui::Spacing();

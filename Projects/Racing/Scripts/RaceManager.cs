@@ -30,7 +30,7 @@ namespace Racing
         /// <summary>The track entity the center line's points are relative to.</summary>
         public Entity? Track;
         /// <summary>The track's center line: a file of the project (Tools/TrackBuilder writes it).</summary>
-        public string Centerline = "Assets/Tracks/TestTrack.centerline.json";
+        public string Centerline = "Assets/Tracks/Circuit.centerline.json";
         public int Laps = 3;
         /// <summary>The lap's parts of equal length: Sectors - 1 checkpoints between the start and finish line.</summary>
         public int Sectors = 4;

@@ -294,6 +294,7 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 		sceneData.CameraPosition = view.Draw.Position;
 		sceneData.EnvMapRotation = inputs.EnvMapRotation;
 		sceneData.DisplayTone = glm::vec4(inputs.Exposure, inputs.HuePreservation, 0.0f, 0.0f); // its composite's (a Color texture)
+		sceneData.HazeParams = inputs.HazeParams;
 		if (inputs.Water)
 		{
 			FillWaterSceneData(*inputs.Water, view.Draw.Position, inputs.SunDirection, sceneData);

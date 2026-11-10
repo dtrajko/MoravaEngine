@@ -232,6 +232,18 @@ struct EnvironmentComponent
 	float HuePreservation = 0.5f;    // tonemapping: 0 ACES per channel, 1 hue-preserving
 	bool ExtractSun = true;          // a real sun in the map is taken out of the lighting and given to the sun entity
 	float SkyboxLod = 0.0f;
+
+	// Distance haze (Resources/Shaders/Include/Haze.glslh): far surfaces fade into the sky's own color in their direction
+	// (the environment map near the horizon), so the haze matches any sky and hides where the ground ends. Thicker low
+	// down: the density falls off with the height above BaseHeight.
+	struct HazeSettings
+	{
+		bool Enabled = false;
+		float Density = 0.0015f;      // per meter, at BaseHeight (about 1 - e^-1.5: 78% haze after 1 km at that height)
+		float StartDistance = 150.0f; // meters from the camera: no haze nearer
+		float HeightFalloff = 0.015f; // per meter up: the density halves every ln 2 / falloff meters (46 m here); 0: even
+		float BaseHeight = 0.0f;      // meters (world): where the density is Density
+	} Haze;
 };
 
 // A test of the game's input (docs/engine/Game_Engine_Runtime_Guide.html, 2.3), until scripts do this (Phase 4): while the

@@ -9,6 +9,7 @@
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 
+#include "Core/CpuStats.h"
 #include "Core/FileDialogs.h"
 #include "Core/ResourceManager.h"
 #include "Core/Timer.h"
@@ -469,7 +470,11 @@ void Application::Run()
 
 		float deltaTime = Timer::Get()->GetDeltaTime(); // can be used as H2M::Timestep
 
+		// The CPU's time in the frame's stages (CpuStats: the Stats panel, F3, --frame-stats); the renderer's Draw and the
+		// game add their own stages inside these (CpuStats::ParentDraw, CpuStats::ParentUpdate)
+		CpuStats::Timer stages;
 		m_Window->ProcessEvents();
+		stages.Next(CpuStats::StageEvents);
 
 		if (!m_Minimized)
 		{
@@ -480,11 +485,13 @@ void Application::Run()
 					layer->OnUpdate(m_TimeStep);
 				}
 			}
+			stages.Next(CpuStats::ParentUpdate);
 
 			if (m_Scene)
 			{
 				m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window);
 			}
+			stages.Next(CpuStats::StageSceneUpdate);
 
 			// Render ImGui on render thread
 			Application* app = this;
@@ -502,11 +509,11 @@ void Application::Run()
 			{
 				m_Renderer->WaitAndRender(deltaTime, m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
 			}
-
 			if (m_EnableImGui && m_Scene)
 			{
 				m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 			}
+			stages.Next(CpuStats::StageSubmit);
 
 			m_Client->Draw();
 
@@ -514,25 +521,30 @@ void Application::Run()
 			{
 				H2M::RendererH2M::Submit([=]() { m_ImGuiLayer->End(); });
 			}
+			stages.Next(CpuStats::ParentDraw);
 
 			// Swap buffers and poll events
 			m_Window->SwapBuffers();
+			stages.Next(CpuStats::StagePresent);
 		}
 
 		// The frame's time, for the layers next frame. Measured here: the Timer is ticked only by an older scene class
 		const auto frameEnd = std::chrono::steady_clock::now();
 		m_TimeStep = std::chrono::duration<float>(frameEnd - frameStart).count();
 		frameStart = frameEnd;
-		if (m_CommandLine.FrameStatsWarmup >= 0.0f && !m_Minimized &&
-			std::chrono::duration<float>(frameEnd - loopStart).count() >= m_CommandLine.FrameStatsWarmup)
+		const bool collecting = m_CommandLine.FrameStatsWarmup >= 0.0f && !m_Minimized &&
+			std::chrono::duration<float>(frameEnd - loopStart).count() >= m_CommandLine.FrameStatsWarmup;
+		if (collecting)
 		{
 			frameTimes.push_back(m_TimeStep);
 		}
+		CpuStats::EndFrame(collecting);
 	}
 
 	if (m_CommandLine.FrameStatsWarmup >= 0.0f)
 	{
 		LogFrameStats(frameTimes, m_CommandLine.FrameStatsWarmup);
+		CpuStats::LogTotals();
 	}
 
 	OnShutdown();

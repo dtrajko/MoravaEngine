@@ -2,16 +2,61 @@ Scene:
   Version: 1
   Name: MainMenu
 EditorCamera:
-  Translation: [60, 105, 160]
-  Rotation: [20, 30, 0]
+  Translation: [-176.65462, 185.88483, -65.3402]
+  Rotation: [20.299992, -49.298935, 0]
   FieldOfView: 60
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: false
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Antialiasing: Off
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
 Entities:
   - ID: 1001
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [0.4, 52, 108.5]
-      Rotation: [12, 3, 0]
+      Translation: [0, 96.82, 18.5]
+      Rotation: [12, 0, 0]
       Scale: [1, 1, 1]
     Camera:
       Primary: true
@@ -27,12 +72,14 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/rocky_ridge_puresky_2k.hdr
+      FileID: 6618138474726142396
       Rotation: 4
       Exposure: 1
       AutoExposure: true
       HuePreservation: 0.5
       ExtractSun: true
       SkyboxLod: 0
+      Haze: {Enabled: true, Density: 0.0015, StartDistance: 150, HeightFalloff: 0.015, BaseHeight: 68}
   - ID: 1003
     Name: Sun
     Parent: 0
@@ -52,25 +99,48 @@ Entities:
     Parent: 0
     Tags: [Terrain]
     Transform:
-      Translation: [0, 0, 0]
+      Translation: [350, 0, -90]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Terrain:
       Seed: 12345
-      Size: 1024
-      FlatCenter: [-80, -25]
-      FlatRadius: 290
+      Size: 2048
+      Height: 80
+      FeatureSize: 450
+      Octaves: 6
+      Roughness: 0.45
+      Ridges: 0.3
+      Valleys: 1.5
+      RimHeight: 60
+      RimWidth: 220
+      FlatCenter: [0, 0]
+      FlatRadius: 500
       FlatBlend: 150
+      Spacing: 4
+      MaxVertices: 2000
+      SandHeight: 4
+      RockSlope: 38
+      RockHeight: 65
+      Friction: 0.8
       LodTolerance: 2
       Layers:
-        Sand: {ID: 5100000000000000002, File: Assets/Materials/Terrain_Sand.mmat}
-        Grass: {ID: 5100000000000000001, File: Assets/Materials/Terrain_Grass.mmat}
-        Rock: {ID: 5100000000000000003, File: Assets/Materials/Terrain_Rock.mmat}
+        Sand:
+          ID: 5100000000000000002
+          File: Assets/Materials/Terrain_Sand.mmat
+          Name: Terrain_Sand
+        Grass:
+          ID: 5100000000000000001
+          File: Assets/Materials/Terrain_Grass.mmat
+          Name: Terrain_Grass
+        Rock:
+          ID: 5100000000000000003
+          File: Assets/Materials/Terrain_Rock.mmat
+          Name: Terrain_Rock
   - ID: 3000
     Name: Track
     Parent: 0
     Transform:
-      Translation: [0, 45.78, 0]
+      Translation: [0, 67.6, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
   - ID: 3001
@@ -81,12 +151,498 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Model:
-      File: Assets/Models/Track_TestTrack_Road.glb
+      File: Assets/Models/Track_Circuit_Road.glb
+      FileID: 6650246959369695227
     Collider:
       Shape: TriangleMesh
+      Offset: [0, 0, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.5
+      HalfHeight: 0.5
       Friction: 1
       Restitution: 0
       IsTrigger: false
+  - ID: 11515371914339848267
+    Name: Curb_Red_08
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17616881664576149846
+        File: Assets/Materials/Curb_Red.mmat
+        Name: Curb_Red
+  - ID: 2206172642335261154
+    Name: Curb_Red_09
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 17616881664576149846
+        File: Assets/Materials/Curb_Red.mmat
+        Name: Curb_Red
+  - ID: 12519294047880631908
+    Name: Curb_Red_10
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 17616881664576149846
+        File: Assets/Materials/Curb_Red.mmat
+        Name: Curb_Red
+  - ID: 16672115297688095653
+    Name: Curb_Red_15
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 17616881664576149846
+        File: Assets/Materials/Curb_Red.mmat
+        Name: Curb_Red
+  - ID: 409787196803919214
+    Name: Curb_Red_16
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 17616881664576149846
+        File: Assets/Materials/Curb_Red.mmat
+        Name: Curb_Red
+  - ID: 15986861246772201068
+    Name: Curb_Red_17
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 17616881664576149846
+        File: Assets/Materials/Curb_Red.mmat
+        Name: Curb_Red
+  - ID: 13633731224215735480
+    Name: Curb_Red_18
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 17616881664576149846
+        File: Assets/Materials/Curb_Red.mmat
+        Name: Curb_Red
+  - ID: 3002672529097441461
+    Name: Curb_White_08
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 121487168586104361
+        File: Assets/Materials/Curb_White.mmat
+        Name: Curb_White
+  - ID: 9707888435003703700
+    Name: Curb_White_09
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 121487168586104361
+        File: Assets/Materials/Curb_White.mmat
+        Name: Curb_White
+  - ID: 5843081456040714994
+    Name: Curb_White_10
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 121487168586104361
+        File: Assets/Materials/Curb_White.mmat
+        Name: Curb_White
+  - ID: 2821910188633778013
+    Name: Curb_White_15
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 121487168586104361
+        File: Assets/Materials/Curb_White.mmat
+        Name: Curb_White
+  - ID: 5835242923505939030
+    Name: Curb_White_16
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 121487168586104361
+        File: Assets/Materials/Curb_White.mmat
+        Name: Curb_White
+  - ID: 383927808852924205
+    Name: Curb_White_17
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 121487168586104361
+        File: Assets/Materials/Curb_White.mmat
+        Name: Curb_White
+  - ID: 2402039339448176264
+    Name: Curb_White_18
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 121487168586104361
+        File: Assets/Materials/Curb_White.mmat
+        Name: Curb_White
+  - ID: 6233506170623082403
+    Name: Road_00
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 12325169826570515357
+    Name: Road_01
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 15
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 2600110559007355205
+    Name: Road_02
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 16
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 5247165793757311990
+    Name: Road_03
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 17
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 15645689648524654471
+    Name: Road_04
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 18
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 9044617093958485721
+    Name: Road_05
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 19
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 9733266118950825321
+    Name: Road_06
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 20
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 5409105279046941339
+    Name: Road_07
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 21
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 15085049251681315279
+    Name: Road_08
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 22
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 3313224201115501582
+    Name: Road_09
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 23
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 14817325180262326582
+    Name: Road_10
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 24
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 15733935433852073596
+    Name: Road_11
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 25
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 2896738747760239402
+    Name: Road_12
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 26
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 5291446981799768779
+    Name: Road_13
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 27
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 6763080173917105997
+    Name: Road_14
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 28
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 2260515282125523990
+    Name: Road_15
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 29
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 15427798763659267101
+    Name: Road_16
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 30
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 16383548929394467849
+    Name: Road_17
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 31
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 6139592256340341327
+    Name: Road_18
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 32
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 5049946335454194746
+    Name: Road_19
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 33
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 13830320294542741340
+    Name: Road_20
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 34
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 1536865460123970390
+    Name: Road_21
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 35
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
+  - ID: 9831060646166683436
+    Name: Road_22
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 36
+      Material:
+        ID: 16372970028470753890
+        File: Assets/Materials/Road.mmat
+        Name: Road
   - ID: 3002
     Name: Walls
     Parent: 3000
@@ -96,12 +652,342 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Model:
-      File: Assets/Models/Track_TestTrack_Walls.glb
+      File: Assets/Models/Track_Circuit_Walls.glb
+      FileID: 5977806839402533288
     Collider:
       Shape: TriangleMesh
+      Offset: [0, 0, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.5
+      HalfHeight: 0.5
       Friction: 0.05
       Restitution: 0
       IsTrigger: false
+  - ID: 15578405826333623130
+    Name: Wall_00
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 17829005708605780226
+    Name: Wall_01
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 15018676352685087911
+    Name: Wall_02
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 7495993993717833679
+    Name: Wall_03
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 264510987696641200
+    Name: Wall_04
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 5969931225982842931
+    Name: Wall_05
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 1662352592983373056
+    Name: Wall_06
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 12160669456424747469
+    Name: Wall_07
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 15216844238645957571
+    Name: Wall_08
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 17472934651274829247
+    Name: Wall_09
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 1142740524007955613
+    Name: Wall_10
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 9910991646477451413
+    Name: Wall_11
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 4646330936711607920
+    Name: Wall_12
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 4903349601536490545
+    Name: Wall_13
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 2896947408115900811
+    Name: Wall_14
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 2500851118626184930
+    Name: Wall_15
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 15
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 13037032920001999979
+    Name: Wall_16
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 16
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 3417302833714913293
+    Name: Wall_17
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 17
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 16747632270537082697
+    Name: Wall_18
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 18
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 11972153867238529031
+    Name: Wall_19
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 19
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 3239486106348815205
+    Name: Wall_20
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 20
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 2737674922202198236
+    Name: Wall_21
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 21
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 16528079676602933244
+    Name: Wall_22
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 22
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 15761488367333359306
+    Name: Wall_23
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 23
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
+  - ID: 7043870683843641865
+    Name: Wall_24
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 24
+      Material:
+        ID: 15272031139982170811
+        File: Assets/Materials/Wall.mmat
+        Name: Wall
   - ID: 3003
     Name: Structure
     Parent: 3000
@@ -110,13 +996,703 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Model:
-      File: Assets/Models/Track_TestTrack_Structure.glb
+      File: Assets/Models/Track_Circuit_Structure.glb
+      FileID: 365674231726838572
+  - ID: 3774248331946880222
+    Name: Gantry_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17321624272301629907
+        File: Assets/Materials/Gantry.mmat
+        Name: Gantry
+  - ID: 399846120307316994
+    Name: Line_Black_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 16401835636588248408
+        File: Assets/Materials/Line_Black.mmat
+        Name: Line_Black
+  - ID: 9240897613253916472
+    Name: Line_White_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 6825766320973498503
+        File: Assets/Materials/Line_White.mmat
+        Name: Line_White
+  - ID: 6131102166336451876
+    Name: Structure_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 2226996922903919874
+    Name: Structure_01
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 18012060876884719838
+    Name: Structure_02
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 12105711190333897964
+    Name: Structure_03
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 14112623908866146024
+    Name: Structure_04
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 141773730982031740
+    Name: Structure_05
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 17450428829408255432
+    Name: Structure_06
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 4602389004577878819
+    Name: Structure_07
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 8218774633141561552
+    Name: Structure_08
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 17064284839521091758
+    Name: Structure_09
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 8931469890927915680
+    Name: Structure_10
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 6310353298683369201
+    Name: Structure_11
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 4325976601051626229
+    Name: Structure_12
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 15
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 1885972591017504714
+    Name: Structure_13
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 16
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 17470262391022037219
+    Name: Structure_14
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 17
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 16027967612795317636
+    Name: Structure_15
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 18
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 11306939589690836760
+    Name: Structure_16
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 19
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 10812727347808662251
+    Name: Structure_17
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 20
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 15164442770755899653
+    Name: Structure_18
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 21
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 948046373340321707
+    Name: Structure_19
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 22
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 4828483488124129800
+    Name: Structure_20
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 23
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 13890801056392952192
+    Name: Structure_21
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 24
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 12073344775720607247
+    Name: Structure_22
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 25
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 17006450108738641006
+    Name: Structure_23
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 26
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 3877516892121967555
+    Name: Structure_24
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 27
+      Material:
+        ID: 12577329104820967028
+        File: Assets/Materials/Structure.mmat
+        Name: Structure
+  - ID: 13081651755930744637
+    Name: Support_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 28
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 15182346406056716174
+    Name: Support_01
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 29
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 11290164794772761764
+    Name: Support_02
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 30
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 15513820241295262098
+    Name: Support_03
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 31
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 7759787360514605513
+    Name: Support_04
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 32
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 15576134521040223519
+    Name: Support_05
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 33
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 16438041085133249979
+    Name: Support_06
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 34
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 1269099305865993633
+    Name: Support_07
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 35
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 1469276720170431334
+    Name: Support_08
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 36
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 11574470985414131760
+    Name: Support_09
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 37
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 7160414562665635777
+    Name: Support_10
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 38
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 15077383556802100970
+    Name: Support_11
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 39
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 12809733450649167896
+    Name: Support_12
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 40
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 3652579752755847388
+    Name: Support_13
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 41
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 5939516392797329909
+    Name: Support_14
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 42
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 222957039370413915
+    Name: Support_15
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 43
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 10286872210703293991
+    Name: Support_16
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 44
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 3409352606995270819
+    Name: Support_17
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 45
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 258240510374605635
+    Name: Support_18
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 46
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 15773661056270095786
+    Name: Support_19
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 47
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 5617250301814741558
+    Name: Support_20
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 48
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 3337571031835564900
+    Name: Support_21
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 49
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 8876692780976124882
+    Name: Support_22
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 50
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 3941230846505102045
+    Name: Support_23
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 51
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
+  - ID: 12581149228506522233
+    Name: Support_24
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 52
+      Material:
+        ID: 7814883366347769946
+        File: Assets/Materials/Support.mmat
+        Name: Support
   - ID: 2001
     Name: Car
     Parent: 0
     Transform:
-      Translation: [0.36, 49.8, 102]
-      Rotation: [0, 3, 0]
+      Translation: [0, 94.62, 12]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
   - ID: 2010
     Name: Model
@@ -127,6 +1703,7 @@ Entities:
       Scale: [2, 2, 2]
     Model:
       File: Assets/Models/KenneyCarKit/race.glb
+      FileID: 15457683405762171407
   - ID: 2011
     Name: Body
     Parent: 2010
@@ -136,6 +1713,10 @@ Entities:
       Scale: [1, 1, 1]
     MeshPart:
       SourceMeshIndex: 0
+      Material:
+        ID: 2451689683577127287
+        File: Assets/Materials/colormap_2.mmat
+        Name: colormap (2)
   - ID: 2012
     Name: Wheel FL
     Parent: 2001
@@ -145,6 +1726,20 @@ Entities:
       Scale: [2.25, 2, 2]
     Model:
       File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+      FileID: 13808393781537568029
+  - ID: 15367906768065854683
+    Name: wheel-racing
+    Parent: 2012
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17875474936841054445
+        File: Assets/Materials/colormap.mmat
+        Name: colormap
   - ID: 2013
     Name: Wheel FR
     Parent: 2001
@@ -154,6 +1749,20 @@ Entities:
       Scale: [2.25, 2, 2]
     Model:
       File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+      FileID: 13808393781537568029
+  - ID: 2170622950137098146
+    Name: wheel-racing
+    Parent: 2013
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17875474936841054445
+        File: Assets/Materials/colormap.mmat
+        Name: colormap
   - ID: 2014
     Name: Wheel RL
     Parent: 2001
@@ -163,6 +1772,20 @@ Entities:
       Scale: [2.7, 2, 2]
     Model:
       File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+      FileID: 13808393781537568029
+  - ID: 1239268438780913011
+    Name: wheel-racing
+    Parent: 2014
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17875474936841054445
+        File: Assets/Materials/colormap.mmat
+        Name: colormap
   - ID: 2015
     Name: Wheel RR
     Parent: 2001
@@ -172,6 +1795,20 @@ Entities:
       Scale: [2.7, 2, 2]
     Model:
       File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+      FileID: 13808393781537568029
+  - ID: 9196075837913572764
+    Name: wheel-racing
+    Parent: 2015
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17875474936841054445
+        File: Assets/Materials/colormap.mmat
+        Name: colormap
   - ID: 8000
     Name: Main Menu
     Parent: 0
@@ -189,7 +1826,9 @@ Entities:
         SettingsScreen: {Entity: 7000}
         RecordsText: {Entity: 8020}
         MenuCamera: {Entity: 1001}
-        Center: {Vector3: [-80, 52, -25]}
+        Center: {Vector3: [0, 73.6, 0]}
+        RaceScene: {String: Scenes/Circuit.mscene}
+        TrackName: {String: Circuit}
         Radius: {Float: 180}
         Height: {Float: 40}
         Speed: {Float: 3}
@@ -222,6 +1861,7 @@ Entities:
     UIText:
       Text: RACING
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 170
       Color: [1, 1, 1, 1]
       Align: Left
@@ -248,6 +1888,7 @@ Entities:
     UIText:
       Text: Test Track   3 laps
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 40
       Color: [0.66, 0.7, 0.78, 1]
       Align: Left
@@ -262,6 +1903,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [110, -20], Size: [440, 90], Visible: true}
+    UIText:
+      Text: Race
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 46
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -271,15 +1922,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: Race
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 46
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 8011
     Name: Settings Button
     Parent: 8001
@@ -288,6 +1930,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [110, 90], Size: [440, 90], Visible: true}
+    UIText:
+      Text: Settings
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 46
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -297,15 +1949,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: Settings
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 46
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 8012
     Name: Quit Button
     Parent: 8001
@@ -314,6 +1957,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [110, 200], Size: [440, 90], Visible: true}
+    UIText:
+      Text: Quit
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 46
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -323,15 +1976,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: Quit
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 46
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 8020
     Name: Records
     Parent: 8001
@@ -343,6 +1987,7 @@ Entities:
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 34
       Color: [1, 0.82, 0.25, 1]
       Align: Left
@@ -358,8 +2003,9 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [114, -50], Size: [1400, 50], Visible: true}
     UIText:
-      Text: "Mouse, arrow keys and Enter, or the gamepad"
+      Text: Mouse, arrow keys and Enter, or the gamepad
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 28
       Color: [1, 1, 1, 0.65]
       Align: Left
@@ -422,6 +2068,7 @@ Entities:
     UIText:
       Text: SETTINGS
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 84
       Color: [1, 1, 1, 1]
       Align: Center
@@ -439,6 +2086,7 @@ Entities:
     UIText:
       Text: Music
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 42
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -481,6 +2129,7 @@ Entities:
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 38
       Color: [1, 1, 1, 1]
       Align: Left
@@ -498,6 +2147,7 @@ Entities:
     UIText:
       Text: Effects
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 42
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -540,6 +2190,7 @@ Entities:
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 38
       Color: [1, 1, 1, 1]
       Align: Left
@@ -557,6 +2208,7 @@ Entities:
     UIText:
       Text: Mouse sensitivity
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 42
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -599,6 +2251,7 @@ Entities:
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 38
       Color: [1, 1, 1, 1]
       Align: Left
@@ -616,6 +2269,7 @@ Entities:
     UIText:
       Text: Gearbox
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 42
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -630,6 +2284,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -120], Size: [560, 66], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIDropdown:
       Options: [Automatic, Manual]
@@ -643,15 +2307,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnValueChanged: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 38
-      Color: [1, 1, 1, 1]
-      Align: Left
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7040
     Name: Quality Label
     Parent: 7001
@@ -663,6 +2318,7 @@ Entities:
     UIText:
       Text: Quality
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 42
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -677,6 +2333,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -45], Size: [560, 66], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIDropdown:
       Options: [Automatic, Low, Medium, High, Ultra]
@@ -690,15 +2356,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnValueChanged: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 38
-      Color: [1, 1, 1, 1]
-      Align: Left
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7050
     Name: Display Label
     Parent: 7001
@@ -710,6 +2367,7 @@ Entities:
     UIText:
       Text: Display
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 42
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -724,6 +2382,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 30], Size: [560, 66], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIDropdown:
       Options: [Fullscreen, Window]
@@ -737,15 +2405,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnValueChanged: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 38
-      Color: [1, 1, 1, 1]
-      Align: Left
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7060
     Name: Resolution Label
     Parent: 7001
@@ -757,6 +2416,7 @@ Entities:
     UIText:
       Text: Resolution
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 42
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -771,6 +2431,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 105], Size: [560, 66], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIDropdown:
       Options: []
@@ -784,15 +2454,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnValueChanged: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 38
-      Color: [1, 1, 1, 1]
-      Align: Left
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7070
     Name: VSync Label
     Parent: 7001
@@ -804,6 +2465,7 @@ Entities:
     UIText:
       Text: VSync
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 42
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -818,6 +2480,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 180], Size: [560, 66], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIDropdown:
       Options: [Off, On]
@@ -831,15 +2503,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnValueChanged: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 38
-      Color: [1, 1, 1, 1]
-      Align: Left
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7090
     Name: Controls Button
     Parent: 7001
@@ -848,6 +2511,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 330], Size: [360, 84], Visible: true}
+    UIText:
+      Text: Controls
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -857,15 +2530,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: OpenControls}
-    UIText:
-      Text: Controls
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 42
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7091
     Name: Apply Button
     Parent: 7001
@@ -874,6 +2538,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 330], Size: [360, 84], Visible: true}
+    UIText:
+      Text: Apply
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -883,15 +2557,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: Apply}
-    UIText:
-      Text: Apply
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 42
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7092
     Name: Back Button
     Parent: 7001
@@ -900,6 +2565,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 330], Size: [360, 84], Visible: true}
+    UIText:
+      Text: Back
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -909,15 +2584,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: Back}
-    UIText:
-      Text: Back
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 42
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7093
     Name: Hint
     Parent: 7001
@@ -929,6 +2595,7 @@ Entities:
     UIText:
       Text: "Up and down: the next setting. Left and right: a slider. Enter or A: open a list, choose, then Apply. Escape or Start: back"
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 28
       Color: [1, 1, 1, 0.7]
       Align: Center
@@ -955,6 +2622,7 @@ Entities:
     UIText:
       Text: CONTROLS
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 84
       Color: [1, 1, 1, 1]
       Align: Center
@@ -972,6 +2640,7 @@ Entities:
     UIText:
       Text: Keyboard
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 36
       Color: [0.66, 0.7, 0.78, 1]
       Align: Center
@@ -989,6 +2658,7 @@ Entities:
     UIText:
       Text: Gamepad
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 36
       Color: [0.66, 0.7, 0.78, 1]
       Align: Center
@@ -1006,6 +2676,7 @@ Entities:
     UIText:
       Text: Accelerate
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 40
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -1020,6 +2691,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -270], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1029,15 +2710,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7112
     Name: Accelerate Pad
     Parent: 7100
@@ -1046,6 +2718,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -270], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1055,15 +2737,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7120
     Name: Brake Label
     Parent: 7100
@@ -1075,6 +2748,7 @@ Entities:
     UIText:
       Text: Brake
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 40
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -1089,6 +2763,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -190], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1098,15 +2782,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7122
     Name: Brake Pad
     Parent: 7100
@@ -1115,6 +2790,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -190], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1124,15 +2809,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7130
     Name: Steer left Label
     Parent: 7100
@@ -1144,6 +2820,7 @@ Entities:
     UIText:
       Text: Steer left
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 40
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -1158,6 +2835,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -110], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1167,15 +2854,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7132
     Name: Stick
     Parent: 7100
@@ -1187,6 +2865,7 @@ Entities:
     UIText:
       Text: Left Stick
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 36
       Color: [1, 1, 1, 0.7]
       Align: Center
@@ -1204,6 +2883,7 @@ Entities:
     UIText:
       Text: Steer right
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 40
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -1218,6 +2898,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -30], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1227,15 +2917,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7150
     Name: Handbrake Label
     Parent: 7100
@@ -1247,6 +2928,7 @@ Entities:
     UIText:
       Text: Handbrake
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 40
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -1261,6 +2943,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, 50], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1270,15 +2962,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7152
     Name: Handbrake Pad
     Parent: 7100
@@ -1287,6 +2970,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, 50], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1296,15 +2989,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7160
     Name: Respawn Label
     Parent: 7100
@@ -1316,6 +3000,7 @@ Entities:
     UIText:
       Text: Respawn
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 40
       Color: [0.66, 0.7, 0.78, 1]
       Align: Right
@@ -1330,6 +3015,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, 130], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1339,15 +3034,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7162
     Name: Respawn Pad
     Parent: 7100
@@ -1356,6 +3042,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, 130], Size: [380, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1365,15 +3061,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ""}
-    UIText:
-      Text: ""
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 36
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7180
     Name: Hint
     Parent: 7100
@@ -1385,6 +3072,7 @@ Entities:
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 32
       Color: [1, 1, 1, 0.8]
       Align: Center
@@ -1399,6 +3087,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-240, 330], Size: [440, 84], Visible: true}
+    UIText:
+      Text: Reset
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1408,15 +3106,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: ResetControls}
-    UIText:
-      Text: Reset
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 42
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7182
     Name: Back Button
     Parent: 7100
@@ -1425,6 +3114,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [240, 330], Size: [440, 84], Visible: true}
+    UIText:
+      Text: Back
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
     UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
     UIButton:
       Interactable: true
@@ -1434,15 +3133,6 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnClick: {Target: 0, Method: Back}
-    UIText:
-      Text: Back
-      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
-      Size: 42
-      Color: [1, 1, 1, 1]
-      Align: Center
-      VerticalAlign: Middle
-      Wrap: false
-      LineSpacing: 1
   - ID: 7183
     Name: Hint
     Parent: 7100
@@ -1454,6 +3144,7 @@ Entities:
     UIText:
       Text: "Escape or Start: back to Settings"
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
       Size: 28
       Color: [1, 1, 1, 0.7]
       Align: Center

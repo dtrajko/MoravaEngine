@@ -721,7 +721,7 @@ void EnvMapVulkanWater::WriteSceneCopyDescriptors()
 
 void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float deltaTime, const glm::mat4& view, const glm::mat4& projection,
 	const glm::vec3& cameraPosition, float envMapRotation, const glm::vec3& sunDirection, VkDescriptorSet frameDescriptorSet,
-	const glm::vec4& displayTone)
+	const glm::vec4& displayTone, const glm::vec4& hazeParams)
 {
 	// Planar reflection: from above the water what is above the surface; from under the water what is under it (the
 	// surface is a mirror there outside Snell's window)
@@ -775,6 +775,7 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 		sceneData.CameraPosition = glm::vec3(cameraPosition.x, 2.0f * h - cameraPosition.y, cameraPosition.z);
 		sceneData.EnvMapRotation = envMapRotation;
 		sceneData.DisplayTone = displayTone; // the reflection is seen through the main view's composite
+		sceneData.HazeParams = hazeParams;   // the distance haze, from the mirrored camera
 		FillWaterSceneData(settings, cameraPosition, sunDirection, sceneData);
 		if (cameraBelow)
 		{

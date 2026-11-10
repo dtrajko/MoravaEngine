@@ -36,155 +36,15 @@ import os
 import sys
 
 
-# ---------------------------------------------------------------------------------------------------------------- vectors
-def add(a, b): return (a[0] + b[0], a[1] + b[1], a[2] + b[2])
-def sub(a, b): return (a[0] - b[0], a[1] - b[1], a[2] - b[2])
-def mul(a, s): return (a[0] * s, a[1] * s, a[2] * s)
-def dot(a, b): return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-def cross(a, b): return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
-def length(a): return math.sqrt(dot(a, a))
-def normalize(a):
-    l = length(a)
-    return mul(a, 1.0 / l) if l > 1e-9 else (0.0, 0.0, 0.0)
-def lerp(a, b, t): return a + (b - a) * t
-def smoothstep(t): return t * t * (3.0 - 2.0 * t)
-
-WORLD_UP = (0.0, 1.0, 0.0)
-CURB_TURN_WINDOW = 20.0  # meters before and after a sample over which its turn's direction is measured
+# The data and the spline are shared with preview_track.py (plain Python): track_spline.py, beside this file
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from track_spline import (add, sub, mul, dot, cross, length, normalize, WORLD_UP, load_track, sample_track,  # noqa: E402
+                          simplify_samples)
 
 
 def to_blender(p):
     # engine (x, y up, z) -> Blender (x, y = -z, z up): a rotation, so faces keep their winding
     return (p[0], -p[2], p[1])
-
-
-# ------------------------------------------------------------------------------------------------------------- the data
-DEFAULTS = {
-    "Width": 16.0,          # meters, curb to curb
-    "Bank": 0.0,            # degrees
-    "Walls": True,
-    "Curbs": False,
-    "Supports": True,
-}
-SETTINGS = {
-    "SampleSpacing": 1.0,   # meters between two cross sections
-    "ChunkLength": 100.0,   # meters of track per chunk (culled one by one)
-    "CurbWidth": 1.5,
-    "CurbStripe": 3.0,      # meters per red or white stripe
-    "WallHeight": 1.0,
-    "WallThickness": 0.5,
-    "SlabThickness": 0.8,
-    "SupportSpacing": 24.0,
-    "SupportSize": 1.4,     # meters, a square pillar
-    "GroundHeight": 0.0,    # the engine's y of the ground below the track: supports go down to here (and a meter more)
-    "StartLineWidth": 2.0,  # meters along the track, at distance 0 (the first point)
-    "CenterlineSpacing": 2.0,
-}
-
-
-def load_track(path):
-    with open(path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    settings = dict(SETTINGS)
-    settings.update(data.get("Settings", {}))
-    defaults = dict(DEFAULTS)
-    defaults.update(data.get("Defaults", {}))
-    points = []
-    for p in data["Points"]:
-        point = dict(defaults)
-        point.update(p)
-        point["Position"] = tuple(float(v) for v in p["Position"])
-        points.append(point)
-    if len(points) < 4:
-        raise ValueError("a track needs at least 4 points")
-    return data, settings, points
-
-
-# ------------------------------------------------------------------------------------------------- the spline and samples
-def catmull_rom(p0, p1, p2, p3, t, alpha=0.5):
-    # Centripetal Catmull-Rom (alpha 0.5): no loops or cusps where points are unevenly spaced
-    def tj(ti, a, b):
-        return ti + max(length(sub(b, a)), 1e-6) ** alpha
-    t0 = 0.0
-    t1 = tj(t0, p0, p1)
-    t2 = tj(t1, p1, p2)
-    t3 = tj(t2, p2, p3)
-    u = lerp(t1, t2, t)
-    def blend(a, b, ta, tb):
-        return add(mul(a, (tb - u) / (tb - ta)), mul(b, (u - ta) / (tb - ta)))
-    a1 = blend(p0, p1, t0, t1)
-    a2 = blend(p1, p2, t1, t2)
-    a3 = blend(p2, p3, t2, t3)
-    b1 = blend(a1, a2, t0, t2)
-    b2 = blend(a2, a3, t1, t3)
-    return blend(b1, b2, t1, t2)
-
-
-def sample_track(points, spacing):
-    # A dense polyline first (segment, t, position), then evenly spaced samples along its length
-    n = len(points)
-    dense = []
-    steps = 64
-    for i in range(n):
-        p0 = points[(i - 1) % n]["Position"]
-        p1 = points[i]["Position"]
-        p2 = points[(i + 1) % n]["Position"]
-        p3 = points[(i + 2) % n]["Position"]
-        for k in range(steps):
-            t = k / steps
-            dense.append((i, t, catmull_rom(p0, p1, p2, p3, t)))
-    distances = [0.0]
-    for k in range(1, len(dense) + 1):
-        distances.append(distances[-1] + length(sub(dense[k % len(dense)][2], dense[k - 1][2])))
-    total = distances[-1]
-    count = max(8, int(round(total / spacing)))
-    step = total / count
-
-    samples = []
-    k = 0
-    for j in range(count):
-        s = j * step
-        while distances[k + 1] < s:
-            k += 1
-        f = (s - distances[k]) / max(distances[k + 1] - distances[k], 1e-9)
-        a, b = dense[k], dense[(k + 1) % len(dense)]
-        position = add(a[2], mul(sub(b[2], a[2]), f))
-        segment, t = a[0], a[1] + (1.0 / steps) * f
-        pa, pb = points[segment], points[(segment + 1) % n]
-        e = smoothstep(min(max(t, 0.0), 1.0))
-        samples.append({
-            "s": s,
-            "Position": position,
-            "Width": lerp(pa["Width"], pb["Width"], e),
-            "Bank": lerp(pa["Bank"], pb["Bank"], e),
-            # flags hold for the segment from a point to the next
-            "Walls": bool(pa["Walls"]),
-            "Curbs": bool(pa["Curbs"]),
-            "Supports": bool(pa["Supports"]),
-        })
-
-    # Frames: tangent from the neighbors, right from the world's up, both turned around the tangent by the bank
-    for j, sample in enumerate(samples):
-        prev = samples[(j - 1) % count]["Position"]
-        nxt = samples[(j + 1) % count]["Position"]
-        tangent = normalize(sub(nxt, prev))
-        right = normalize(cross(tangent, WORLD_UP))
-        up = cross(right, tangent)
-        bank = math.radians(sample["Bank"])
-        c, s = math.cos(bank), math.sin(bank)
-        sample["Tangent"] = tangent
-        sample["Right"] = sub(mul(right, c), mul(up, s))   # positive bank: the right edge goes down
-        sample["Up"] = add(mul(up, c), mul(right, s))
-
-    # The inner side of the turn at each sample (-1: left, 1: right), where its curb goes: the way the track turns over
-    # CurbTurnWindow meters around it (a wide window: a curb doesn't jump sides in a nearly straight stretch)
-    window = max(1, int(round(CURB_TURN_WINDOW / spacing)))
-    for j, sample in enumerate(samples):
-        before = samples[(j - window) % count]["Tangent"]
-        after = samples[(j + window) % count]["Tangent"]
-        turn = cross(before, after)[1]  # positive: turning left (seen from above)
-        sample["Inner"] = -1.0 if turn > 0.0 else 1.0
-    return samples, total
 
 
 # ----------------------------------------------------------------------------------------------------------- the meshes
@@ -195,16 +55,28 @@ class MeshBuilder:
         self.vertices = []
         self.faces = []
         self.uvs = []  # per face corner, in face order
+        self.shared = {}  # (surface, position) -> vertex: the quads of one surface along the track share their corners
 
-    def quad(self, a, b, c, d, uv, facing):
-        # a, b, c, d: engine-space corners in order around the quad; facing: the direction its front should face
+    def vertex(self, p, surface):
+        if surface is None:
+            self.vertices.append(p)
+            return len(self.vertices) - 1
+        key = (surface, round(p[0], 4), round(p[1], 4), round(p[2], 4))
+        index = self.shared.get(key)
+        if index is None:
+            index = self.shared[key] = len(self.vertices)
+            self.vertices.append(p)
+        return index
+
+    def quad(self, a, b, c, d, uv, facing, surface=None):
+        # a, b, c, d: engine-space corners in order around the quad; facing: the direction its front should face.
+        # surface: a name for one surface along the track (the road, a wall's inner face...): its quads share corners, so
+        # it is shaded smooth along the track; a corner between two surfaces stays sharp (each has its own vertices there)
         normal = cross(sub(b, a), sub(c, a))
         if dot(normal, facing) < 0.0:
             a, b, c, d = d, c, b, a
             uv = (uv[3], uv[2], uv[1], uv[0])
-        base = len(self.vertices)
-        self.vertices.extend([a, b, c, d])
-        self.faces.append((base, base + 1, base + 2, base + 3))
+        self.faces.append(tuple(self.vertex(p, surface) for p in (a, b, c, d)))
         self.uvs.extend(uv)
 
     def empty(self):
@@ -229,7 +101,20 @@ def box(builder, center_bottom, center_top, right, forward, half):
         builder.quad(bottom[i], bottom[j], top[j], top[i], ((0, 0), (half * 2, 0), (half * 2, height), (0, height)), side)
 
 
-def build_parts(samples, settings, total):
+def cuboid(builder, center, ax, ay, az):
+    # A closed box: center and its three half axes (each face faces out from the center)
+    for axis, u, v in ((ax, ay, az), (ay, az, ax), (az, ax, ay)):
+        for sign in (-1.0, 1.0):
+            n = mul(axis, sign)
+            c = add(center, n)
+            corners = [add(c, add(mul(u, x), mul(v, y))) for x, y in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+            lu, lv = 2.0 * length(u), 2.0 * length(v)
+            builder.quad(corners[0], corners[1], corners[2], corners[3], ((0, 0), (lu, 0), (lu, lv), (0, lv)), n)
+
+
+def build_parts(samples, settings, total, mesh_samples=None):
+    # mesh_samples: the samples the road, curbs and walls are made of (simplify_samples: fewer where the track is
+    # straight); the supports and the start keep every sample's spacing
     chunk_length = settings["ChunkLength"]
     chunks = max(1, int(math.ceil(total / chunk_length - 1e-6)))
     parts = {}
@@ -241,14 +126,14 @@ def build_parts(samples, settings, total):
         return parts[key]
 
     curb_w = settings["CurbWidth"]
-    wall_h = settings["WallHeight"]
     wall_t = settings["WallThickness"]
     slab = settings["SlabThickness"]
     stripe = settings["CurbStripe"]
-    count = len(samples)
+    along = samples if mesh_samples is None else mesh_samples
+    count = len(along)
     for j in range(count):
-        s0 = samples[j]
-        s1 = samples[(j + 1) % count]
+        s0 = along[j]
+        s1 = along[(j + 1) % count]
         chunk = min(int(s0["s"] / chunk_length), chunks - 1)
         hw = 0.5 * s0["Width"]
         hw1 = 0.5 * s1["Width"]  # the width changes smoothly: each side of a quad uses its own sample's
@@ -264,9 +149,9 @@ def build_parts(samples, settings, total):
         b = profile_point(s0, hw - right_curb, 0.0)
         c = profile_point(s1, hw1 - right_curb, 0.0)
         d = profile_point(s1, -(hw1 - left_curb), 0.0)
-        v1 = s1["s"] if s1["s"] > s0["s"] else s0["s"] + length(sub(s1["Position"], s0["Position"]))
+        v1 = s1["s"] if s1["s"] > s0["s"] else total  # the last quad closes the loop at the first sample
         road.quad(a, b, c, d, ((-(hw - left_curb), s0["s"]), (hw - right_curb, s0["s"]), (hw1 - right_curb, v1), (-(hw1 - left_curb), v1)),
-                  add(s0["Up"], s1["Up"]))
+                  add(s0["Up"], s1["Up"]), "road")
 
         # The curb: red and white stripes, flush with the road, on the inner side of the turn only
         if curbs:
@@ -276,33 +161,42 @@ def build_parts(samples, settings, total):
                 b = profile_point(s0, side * (hw - curb_w), 0.0)
                 c = profile_point(s1, side * (hw1 - curb_w), 0.0)
                 d = profile_point(s1, side * hw1, 0.0)
-                part(color, chunk).quad(a, b, c, d, ((0, s0["s"]), (curb_w, s0["s"]), (curb_w, v1), (0, v1)), add(s0["Up"], s1["Up"]))
+                part(color, chunk).quad(a, b, c, d, ((0, s0["s"]), (curb_w, s0["s"]), (curb_w, v1), (0, v1)), add(s0["Up"], s1["Up"]),
+                                        ("curb", side))
 
         # Walls (inner face, top, outer face down to the underside) or the bare edge of the slab
         outer = wall_t if walls else 0.0
         for side in (-1.0, 1.0):
-            def q(builder, r0, u0, r1, u1, rr0, rr1, facing_r, facing_u, uv):
-                # r0/r1 at s0, rr0/rr1 at s1 (the width changes): lateral offsets measured from the center
+            def q(builder, r0, u0, r1, u1, rr0, rr1, facing_r, facing_u, uv, uu0=None, uu1=None, surface=None):
+                # r0/r1 at s0, rr0/rr1 at s1 (the width changes): lateral offsets measured from the center; u0/u1 the
+                # heights at s0, uu0/uu1 at s1 (the same unless given: a wall's height changes)
+                uu0 = u0 if uu0 is None else uu0
+                uu1 = u1 if uu1 is None else uu1
                 a = profile_point(s0, r0, u0)
                 b = profile_point(s0, r1, u1)
-                c = profile_point(s1, rr1, u1)
-                d = profile_point(s1, rr0, u0)
+                c = profile_point(s1, rr1, uu1)
+                d = profile_point(s1, rr0, uu0)
                 facing = add(mul(add(s0["Right"], s1["Right"]), facing_r), mul(add(s0["Up"], s1["Up"]), facing_u))
-                builder.quad(a, b, c, d, ((uv[0], s0["s"]), (uv[1], s0["s"]), (uv[1], v1), (uv[0], v1)), facing)
+                builder.quad(a, b, c, d, ((uv[0], s0["s"]), (uv[1], s0["s"]), (uv[1], v1), (uv[0], v1)), facing, surface)
             if walls:
                 w = part("Wall", chunk)
-                q(w, side * hw, 0.0, side * hw, wall_h, side * hw1, side * hw1, -side, 0.0, (0.0, wall_h))
-                q(w, side * hw, wall_h, side * (hw + wall_t), wall_h, side * hw1, side * (hw1 + wall_t), 0.0, 1.0, (0.0, wall_t))
-                q(w, side * (hw + wall_t), wall_h, side * (hw + wall_t), -slab, side * (hw1 + wall_t), side * (hw1 + wall_t), side, 0.0, (0.0, wall_h + slab))
+                key = "WallLeft" if side < 0.0 else "WallRight"
+                h0, h1 = s0[key], s1[key]
+                q(w, side * hw, 0.0, side * hw, h0, side * hw1, side * hw1, -side, 0.0, (0.0, h0), uu1=h1, surface=("inner", side))
+                q(w, side * hw, h0, side * (hw + wall_t), h0, side * hw1, side * (hw1 + wall_t), 0.0, 1.0, (0.0, wall_t), h1, h1,
+                  surface=("top", side))
+                q(w, side * (hw + wall_t), h0, side * (hw + wall_t), -slab, side * (hw1 + wall_t), side * (hw1 + wall_t), side, 0.0,
+                  (0.0, h0 + slab), h1, -slab, surface=("outer", side))
             else:
-                q(part("Structure", chunk), side * hw, 0.0, side * hw, -slab, side * hw1, side * hw1, side, 0.0, (0.0, slab))
+                q(part("Structure", chunk), side * hw, 0.0, side * hw, -slab, side * hw1, side * hw1, side, 0.0, (0.0, slab),
+                  surface=("edge", side))
         # The underside
         a = profile_point(s0, -(hw + outer), -slab)
         b = profile_point(s0, hw + outer, -slab)
         c = profile_point(s1, hw1 + outer, -slab)
         d = profile_point(s1, -(hw1 + outer), -slab)
         part("Structure", chunk).quad(a, b, c, d, ((0, s0["s"]), (2 * (hw + outer), s0["s"]), (2 * (hw1 + outer), v1), (0, v1)),
-                                      mul(add(s0["Up"], s1["Up"]), -1.0))
+                                      mul(add(s0["Up"], s1["Up"]), -1.0), "under")
 
     # Supports: square pillars under the road's center, every SupportSpacing meters, where the road is high enough
     ground = settings["GroundHeight"]
@@ -343,6 +237,26 @@ def build_parts(samples, settings, total):
             corners = [add(profile_point(first, r, lift), mul(along, f)) for r, f in ((r0, f0), (r1, f0), (r1, f1), (r0, f1))]
             name = "Line_White" if (row + k) % 2 == 0 else "Line_Black"
             part(name, 0).quad(corners[0], corners[1], corners[2], corners[3], ((0, 0), (1, 0), (1, 1), (0, 1)), first["Up"])
+
+    # The start and finish gantry: a pillar beyond each wall, from the ground (or the underside) up past the beam, and a
+    # beam across the road above the start line (drawn only: the car can't reach it from the road)
+    if settings["Gantry"]:
+        gantry = part("Gantry", 0)
+        clear = settings["GantryHeight"]
+        beam = 1.2                                  # meters: the beam's height and depth
+        pillar = 0.6                                # half a pillar's side
+        level = normalize((along[0], 0.0, along[2]))
+        across = normalize(cross(level, WORLD_UP))
+        reach = hw + settings["WallThickness"] + pillar + 0.3
+        top_of_beam = clear + beam
+        for side in (-1.0, 1.0):
+            base = profile_point(first, side * reach, 0.0)
+            bottom_y = ground - 1.0 if first["Supports"] else base[1] - slab
+            top = (base[0], first["Position"][1] + top_of_beam + 0.4, base[2])
+            mid = ((base[0] + top[0]) * 0.5, (bottom_y + top[1]) * 0.5, (base[2] + top[2]) * 0.5)
+            cuboid(gantry, mid, mul(across, pillar), (0.0, 0.5 * (top[1] - bottom_y), 0.0), mul(level, pillar))
+        center = add(first["Position"], (0.0, clear + 0.5 * beam, 0.0))
+        cuboid(gantry, center, mul(across, reach + pillar), (0.0, 0.5 * beam, 0.0), mul(level, 0.5 * beam))
     return parts, chunks
 
 
@@ -357,6 +271,7 @@ MATERIALS = {
     "Support": ((0.55, 0.55, 0.57), 0.9, 0.0),
     "Line_White": ((0.95, 0.95, 0.95), 0.6, 0.0),
     "Line_Black": ((0.03, 0.03, 0.03), 0.6, 0.0),
+    "Gantry": ((0.08, 0.09, 0.1), 0.4, 0.6),
 }
 
 # Which model file each part goes into (the colliders differ: see the top of this file)
@@ -364,6 +279,7 @@ MODEL_OF_PART = {
     "Road": "Road", "Curb_Red": "Road", "Curb_White": "Road",
     "Wall": "Walls",
     "Structure": "Structure", "Support": "Structure", "Line_White": "Structure", "Line_Black": "Structure",
+    "Gantry": "Structure",
 }
 
 
@@ -392,7 +308,9 @@ def make_object(name, builder, collection):
     uv_layer = mesh.uv_layers.new(name="UVMap")
     for i, loop in enumerate(mesh.loops):
         uv_layer.data[i].uv = builder.uvs[loop.index]
-    # Flat faces: each quad has its own corners (1 m long, so a bank or a curve changes little from one to the next)
+    # Smooth along the track where a surface's quads share corners (MeshBuilder.quad's surface); sharp where two surfaces
+    # meet or a quad has corners of its own (supports, the gantry: boxes)
+    mesh.shade_smooth()
     obj = bpy.data.objects.new(name, mesh)
     collection.objects.link(obj)
     return obj
@@ -420,7 +338,10 @@ def main():
     os.makedirs(models_dir, exist_ok=True)
 
     samples, total = sample_track(points, settings["SampleSpacing"])
-    parts, chunks = build_parts(samples, settings, total)
+    mesh_samples = [samples[k] for k in simplify_samples(samples, total, settings)]
+    print("build_track: %d cross sections in the models, of %d samples (MeshTolerance %.3f m)" % (
+        len(mesh_samples), len(samples), settings["MeshTolerance"]))
+    parts, chunks = build_parts(samples, settings, total, mesh_samples)
 
     clear_blender()
     collection = bpy.context.scene.collection

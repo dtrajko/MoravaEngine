@@ -1,5 +1,7 @@
 #include "GameSystems.h"
 
+#include "Core/CpuStats.h"
+
 #include "EnvMapVulkan/EnvMapVulkanScene.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
 
@@ -399,7 +401,9 @@ void GameSystems::FixedUpdate(float fixedStep)
 		DrivePlayerVehicles();
 	}
 
+	CpuStats::Timer stages(CpuStats::ParentUpdate); // the game's share of a frame (the Stats panel, F3, --frame-stats)
 	m_Scripts.FixedUpdate(fixedStep);
+	stages.Next("Scripts' OnFixedUpdate");
 
 	// What the game destroyed in this step is gone before physics steps (its bodies with it)
 	ScriptBindings::DestroyQueued(m_ScriptContext);
@@ -408,6 +412,7 @@ void GameSystems::FixedUpdate(float fixedStep)
 	// Physics, after what moves kinematic bodies (the input test, the scripts), then its collisions and triggers to the
 	// scripts (still the fixed step: Input's edges are the step's), and what they destroyed (a pickup: gone in this frame)
 	m_Physics.Step(fixedStep);
+	stages.Next("Physics step");
 	m_Scripts.DispatchEvents(m_Physics.GetEvents());
 	ScriptBindings::DestroyQueued(m_ScriptContext);
 	m_Scripts.RemoveDestroyed();
@@ -467,7 +472,9 @@ void GameSystems::Update(float frameTime, float unscaledFrameTime, float alpha)
 	// The UI in real time (a pause menu works at time scale 0), its clicks to the scripts before their OnUpdate, and what
 	// those destroyed
 	m_Scripts.RemoveDestroyed();
+	CpuStats::Timer stages(CpuStats::ParentUpdate); // the game's share of a frame (the Stats panel, F3, --frame-stats)
 	m_UI.Update(m_Input, unscaledFrameTime);
+	stages.Next("Game UI");
 	m_Scripts.DispatchButtonClicks(m_UI.GetClicks());
 	m_Scripts.DispatchSliderChanges(m_UI.GetValueChanges());
 	m_Scripts.DispatchDropdownChanges(m_UI.GetDropdownChanges());
@@ -475,6 +482,7 @@ void GameSystems::Update(float frameTime, float unscaledFrameTime, float alpha)
 	m_Scripts.RemoveDestroyed();
 
 	m_Scripts.Update(frameTime);
+	stages.Next("Scripts' OnUpdate");
 
 	// What the game destroyed in this frame
 	ScriptBindings::DestroyQueued(m_ScriptContext);
@@ -488,7 +496,9 @@ void GameSystems::Update(float frameTime, float unscaledFrameTime, float alpha)
 	m_Scripts.RemoveDestroyed();
 
 	// The listener and the sounds where the frame left their entities (the sounds of destroyed ones go)
+	stages.Next("Animation");
 	m_Audio.Update(frameTime);
+	stages.Next("Audio");
 
 	// A frame of no game time (time scale 0: a pause menu) runs no fixed step: its presses (A on the menu's Resume) are not
 	// the game's, so they don't wait for the next step (the ball would jump when the game goes on)

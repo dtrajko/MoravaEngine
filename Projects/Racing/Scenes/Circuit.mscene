@@ -1,0 +1,4096 @@
+Scene:
+  Version: 1
+  Name: Circuit
+EditorCamera:
+  Translation: [-120, 187.6, 260]
+  Rotation: [25, -25, 0]
+  FieldOfView: 60
+RenderSettings:
+  RayTracing:
+    Enabled: false
+Entities:
+  - ID: 1001
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 96.82, 18.5]
+      Rotation: [12, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 65
+      NearClip: 0.1
+      FarClip: 3000
+    Script:
+      Class: Racing.VehicleCamera
+      Fields:
+        Target: {Entity: 2001}
+        Distance: {Float: 7.5}
+        Height: {Float: 1.4}
+        Pitch: {Float: 9}
+        TurnSmoothing: {Float: 4}
+        MinDistance: {Float: 5}
+        MaxDistance: {Float: 18}
+  - ID: 1002
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/rocky_ridge_puresky_2k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+      Haze: {Enabled: true, Density: 0.0015, StartDistance: 150, HeightFalloff: 0.015, BaseHeight: 68}
+  - ID: 1003
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-35, 30, 0]
+      Scale: [1, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 1
+      FollowEnvironmentRotation: false
+      CastShadows: true
+      IconPlaced: false
+  - ID: 1004
+    Name: Terrain
+    Parent: 0
+    Tags: [Terrain]
+    Transform:
+      Translation: [350, 0, -90]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Terrain:
+      Seed: 12345
+      Size: 2048
+      FlatCenter: [0, 0]
+      FlatRadius: 500
+      FlatBlend: 150
+      Spacing: 4
+      MaxVertices: 30000
+      LodTolerance: 2
+      Layers:
+        Sand: {ID: 5100000000000000002, File: Assets/Materials/Terrain_Sand.mmat}
+        Grass: {ID: 5100000000000000001, File: Assets/Materials/Terrain_Grass.mmat}
+        Rock: {ID: 5100000000000000003, File: Assets/Materials/Terrain_Rock.mmat}
+  - ID: 3000
+    Name: Track
+    Parent: 0
+    Transform:
+      Translation: [0, 67.6, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - ID: 3001
+    Name: Road
+    Parent: 3000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Track_Circuit_Road.glb
+    Collider:
+      Shape: TriangleMesh
+      Friction: 1
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3002
+    Name: Walls
+    Parent: 3000
+    Tags: [Wall]
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Track_Circuit_Walls.glb
+    Collider:
+      Shape: TriangleMesh
+      Friction: 0.05
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3003
+    Name: Structure
+    Parent: 3000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Track_Circuit_Structure.glb
+  - ID: 2001
+    Name: Car
+    Parent: 0
+    Transform:
+      Translation: [0, 94.62, 12]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 0.1, 0]
+      HalfExtents: [1.65, 0.42, 2.55]
+    RigidBody:
+      Type: Dynamic
+      Mass: 800
+      LinearDamping: 0.015
+      AngularDamping: 0.3
+      ContinuousCollision: true
+    Script:
+      Class: Racing.CarController
+      Fields:
+        Centerline: {String: Assets/Tracks/Circuit.centerline.json}
+        Track: {Entity: 3000}
+    Vehicle:
+      Controls: Script
+      EngineTorque: 900
+      MaxRpm: 7000
+      MaxSteerAngle: 30
+      BrakeTorque: 2500
+      HandbrakeTorque: 4000
+      SuspensionTravel: 0.25
+      SuspensionFrequency: 3
+      SuspensionDamping: 0.6
+      AntiRollBars: true
+      MaxTilt: 60
+      CenterOfMassOffset: [0, -0.4, 0]
+      FrontGrip: 1.3
+      RearGrip: 1.4
+      TopSpeed: 100
+      ShiftTime: 0.15
+      ShiftUpRpm: 5500
+      EngineBraking: 0.2
+      OverRevRpm: 1000
+      GearRatios: [2.23, 1.61, 1.24, 1.0, 0.81]
+      Wheels:
+        - {Entity: 2012, Position: [-1.05, 0, -1.28], Radius: 0.6, Width: 0.9, Steers: true, Driven: true, Handbrake: false}
+        - {Entity: 2013, Position: [1.05, 0, -1.28], Radius: 0.6, Width: 0.9, Steers: true, Driven: true, Handbrake: false}
+        - {Entity: 2014, Position: [-1.14, 0, 1.76], Radius: 0.6, Width: 1.08, Steers: false, Driven: true, Handbrake: true}
+        - {Entity: 2015, Position: [1.14, 0, 1.76], Radius: 0.6, Width: 1.08, Steers: false, Driven: true, Handbrake: true}
+  - ID: 2010
+    Name: Model
+    Parent: 2001
+    Transform:
+      Translation: [0, -0.6, 0]
+      Rotation: [0, 180, 0]
+      Scale: [2, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/race.glb
+  - ID: 2011
+    Name: Body
+    Parent: 2010
+    Transform:
+      Translation: [0, 0.1, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+  - ID: 2012
+    Name: Wheel FL
+    Parent: 2001
+    Transform:
+      Translation: [-1.05, 0, -1.28]
+      Rotation: [0, 180, 0]
+      Scale: [2.25, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2013
+    Name: Wheel FR
+    Parent: 2001
+    Transform:
+      Translation: [1.05, 0, -1.28]
+      Rotation: [0, 0, 0]
+      Scale: [2.25, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2014
+    Name: Wheel RL
+    Parent: 2001
+    Transform:
+      Translation: [-1.14, 0, 1.76]
+      Rotation: [0, 180, 0]
+      Scale: [2.7, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2015
+    Name: Wheel RR
+    Parent: 2001
+    Transform:
+      Translation: [1.14, 0, 1.76]
+      Rotation: [0, 0, 0]
+      Scale: [2.7, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2020
+    Name: Engine On A
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: ""
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2023
+    Name: Engine On B
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: ""
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2024
+    Name: Engine Off A
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: ""
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2025
+    Name: Engine Off B
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: ""
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2021
+    Name: Tire Sound
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: Assets/Audio/TireSqueal.wav
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 2022
+    Name: Wall Sound
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: Assets/Audio/WallScrape.wav
+      Bus: Effects
+      Volume: 0
+      Pitch: 1
+      Loop: true
+      PlayOnStart: false
+      Stream: false
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30
+  - ID: 4100
+    Name: Race Audio
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.RaceAudio
+      Fields:
+        EngineOnA: {Entity: 2020}
+        EngineOnB: {Entity: 2023}
+        EngineOffA: {Entity: 2024}
+        EngineOffB: {Entity: 2025}
+        TireSound: {Entity: 2021}
+        WallSound: {Entity: 2022}
+  - ID: 4000
+    Name: Race
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.RaceManager
+      Fields:
+        Centerline: {String: Assets/Tracks/Circuit.centerline.json}
+        Car: {Entity: 2001}
+        Track: {Entity: 3000}
+        StartLights: {Entity: 4001}
+        WrongWayText: {Entity: 4010}
+        AuthorTime: {Float: 81}
+        GoldTime: {Float: 86}
+        SilverTime: {Float: 98}
+        BronzeTime: {Float: 122}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
+  - ID: 4001
+    Name: Start Lights
+    Parent: 4000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0], AnchorMax: [0.5, 0], Pivot: [0.5, 0], Position: [0, 40], Size: [380, 136], Visible: true}
+    UIImage: {Texture: "", Color: [0.03, 0.03, 0.035, 0.85]}
+  - ID: 4002
+    Name: Light 1
+    Parent: 4001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-120, 0], Size: [96, 96], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/StartLight.png, Color: [0.16, 0.013, 0.008, 1]}
+  - ID: 4003
+    Name: Light 2
+    Parent: 4001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [96, 96], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/StartLight.png, Color: [0.16, 0.125, 0.013, 1]}
+  - ID: 4004
+    Name: Light 3
+    Parent: 4001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [120, 0], Size: [96, 96], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/StartLight.png, Color: [0.024, 0.16, 0.048, 1]}
+  - ID: 4010
+    Name: Wrong Way
+    Parent: 4000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0.5], AnchorMax: [1, 0.5], Pivot: [0.5, 0.5], Position: [0, -150], Size: [0, 190], Visible: false}
+    UIImage: {Texture: "", Color: [0.3, 0.02, 0.02, 0.55]}
+  - ID: 4011
+    Name: Wrong Way Text
+    Parent: 4010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: true}
+    UIText:
+      Text: WRONG WAY
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 150
+      Color: [1, 0.22, 0.12, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5000
+    Name: HUD
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.RaceHud
+      Fields:
+        SpeedNeedle: {Entity: 5160}
+        SpeedText: {Entity: 5162}
+        RevNeedle: {Entity: 5260}
+        GearText: {Entity: 5262}
+        PaddleDown: {Entity: 5264}
+        PaddleDownText: {Entity: 5265}
+        PaddleUp: {Entity: 5266}
+        PaddleUpText: {Entity: 5267}
+        LapText: {Entity: 5013}
+        RaceTimeText: {Entity: 5015}
+        LapTimeText: {Entity: 5017}
+        BestLapText: {Entity: 5019}
+        SplitPanel: {Entity: 5030}
+        SplitText: {Entity: 5031}
+        SplitDeltaText: {Entity: 5032}
+        Banner: {Entity: 5040}
+        WrongWayText: {Entity: 4011}
+        FinishScreen: {Entity: 5500}
+        FinishTime: {Entity: 5504}
+        FinishRecord: {Entity: 5505}
+        FinishMedal: {Entity: 5506}
+        FinishLaps: {Entity: 5507}
+        RaceAgainButton: {Entity: 5510}
+        MainMenuButton: {Entity: 5511}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
+  - ID: 5010
+    Name: Race Info
+    Parent: 5000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [36, 32], Size: [360, 214], Visible: true}
+    UIImage: {Texture: "", Color: [0.03, 0.035, 0.05, 0.78]}
+  - ID: 5011
+    Name: Accent
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 1], Pivot: [0, 0.5], Position: [0, 0], Size: [6, 0], Visible: true}
+    UIImage: {Texture: "", Color: [0.9, 0.1, 0.14, 1]}
+  - ID: 5012
+    Name: Lap Label
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [28, 16], Size: [120, 56], Visible: true}
+    UIText:
+      Text: LAP
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 30
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5013
+    Name: Lap
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 0], AnchorMax: [1, 0], Pivot: [1, 0], Position: [-24, 2], Size: [220, 80], Visible: true}
+    UIText:
+      Text: 1/3
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 70
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5020
+    Name: Line
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 0], Pivot: [0.5, 0], Position: [3, 86], Size: [-40, 2], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.14]}
+  - ID: 5014
+    Name: Race Time Label
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [28, 98], Size: [160, 36], Visible: true}
+    UIText:
+      Text: TIME
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5015
+    Name: Race Time
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 0], AnchorMax: [1, 0], Pivot: [1, 0], Position: [-24, 98], Size: [200, 36], Visible: true}
+    UIText:
+      Text: "0.00"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 30
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5016
+    Name: Lap Time Label
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [28, 134], Size: [160, 36], Visible: true}
+    UIText:
+      Text: LAP TIME
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5017
+    Name: Lap Time
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 0], AnchorMax: [1, 0], Pivot: [1, 0], Position: [-24, 134], Size: [200, 36], Visible: true}
+    UIText:
+      Text: "-"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 30
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5018
+    Name: Best Lap Label
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [28, 170], Size: [160, 36], Visible: true}
+    UIText:
+      Text: BEST LAP
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5019
+    Name: Best Lap
+    Parent: 5010
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 0], AnchorMax: [1, 0], Pivot: [1, 0], Position: [-24, 170], Size: [200, 36], Visible: true}
+    UIText:
+      Text: "-"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 30
+      Color: [1, 1, 1, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5030
+    Name: Split
+    Parent: 5000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0], AnchorMax: [0.5, 0], Pivot: [0.5, 0], Position: [0, 196], Size: [600, 66], Visible: false}
+    UIImage: {Texture: "", Color: [0.03, 0.035, 0.05, 0.78]}
+  - ID: 5031
+    Name: Split Text
+    Parent: 5030
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [-56, 0], Visible: true}
+    UIText:
+      Text: CHECKPOINT 1   12.345
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5032
+    Name: Split Delta
+    Parent: 5030
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [-56, 0], Visible: true}
+    UIText:
+      Text: "-0.123"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [0.3, 0.95, 0.45, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5040
+    Name: Banner
+    Parent: 5000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -200], Size: [1600, 200], Visible: false}
+    UIText:
+      Text: "GO!"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 160
+      Color: [0.3, 0.95, 0.45, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5100
+    Name: Speedometer
+    Parent: 5000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 1], AnchorMax: [1, 1], Pivot: [1, 1], Position: [-36, -28], Size: [330, 330], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/Dial.png, Color: [0.92, 0.94, 1, 0.92]}
+  - ID: 5110
+    Name: Speed Tick 1
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: -135, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5111
+    Name: Speed Tick 2
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: -127.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5112
+    Name: Speed Tick 3
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: -120, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5113
+    Name: Speed Tick 4
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: -112.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5114
+    Name: Speed Tick 5
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: -105, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5115
+    Name: Speed Tick 6
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: -97.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5116
+    Name: Speed Tick 7
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: -90, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5117
+    Name: Speed Tick 8
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: -82.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5118
+    Name: Speed Tick 9
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: -75, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5119
+    Name: Speed Tick 10
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: -67.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5120
+    Name: Speed Tick 11
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: -60, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5121
+    Name: Speed Tick 12
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: -52.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5122
+    Name: Speed Tick 13
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: -45, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5123
+    Name: Speed Tick 14
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: -37.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5124
+    Name: Speed Tick 15
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: -30, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5125
+    Name: Speed Tick 16
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: -22.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5126
+    Name: Speed Tick 17
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: -15, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5127
+    Name: Speed Tick 18
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: -7.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5128
+    Name: Speed Tick 19
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5129
+    Name: Speed Tick 20
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: 7.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5130
+    Name: Speed Tick 21
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: 15, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5131
+    Name: Speed Tick 22
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: 22.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5132
+    Name: Speed Tick 23
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: 30, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5133
+    Name: Speed Tick 24
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: 37.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5134
+    Name: Speed Tick 25
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: 45, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5135
+    Name: Speed Tick 26
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: 52.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5136
+    Name: Speed Tick 27
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: 60, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5137
+    Name: Speed Tick 28
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: 67.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5138
+    Name: Speed Tick 29
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: 75, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5139
+    Name: Speed Tick 30
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: 82.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5140
+    Name: Speed Tick 31
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: 90, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5141
+    Name: Speed Tick 32
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: 97.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5142
+    Name: Speed Tick 33
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: 105, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5143
+    Name: Speed Tick 34
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: 112.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5144
+    Name: Speed Tick 35
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: 120, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5145
+    Name: Speed Tick 36
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 10.9231], Position: [0, 0], Size: [3, 13], Rotation: 127.5, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5146
+    Name: Speed Tick 37
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.9167], Position: [0, 0], Size: [5, 24], Rotation: 135, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5150
+    Name: Speed Label 1
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-73.54, 73.54], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "0"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5151
+    Name: Speed Label 2
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-100.46, 26.92], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "40"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5152
+    Name: Speed Label 3
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-100.46, -26.92], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "80"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5153
+    Name: Speed Label 4
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-73.54, -73.54], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "120"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5154
+    Name: Speed Label 5
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-26.92, -100.46], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "160"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5155
+    Name: Speed Label 6
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [26.92, -100.46], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "200"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5156
+    Name: Speed Label 7
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [73.54, -73.54], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "240"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5157
+    Name: Speed Label 8
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [100.46, -26.92], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "280"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5158
+    Name: Speed Label 9
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [100.46, 26.92], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "320"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5159
+    Name: Speed Label 10
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [73.54, 73.54], Size: [64, 32], Visible: true}
+    UIText:
+      Text: "360"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5162
+    Name: Speed
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 108], Size: [140, 52], Visible: true}
+    UIText:
+      Text: "0"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 46
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5163
+    Name: Speed Unit
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 140], Size: [120, 30], Visible: true}
+    UIText:
+      Text: km/h
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 20
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5160
+    Name: Speed Needle
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.86], Position: [0, 0], Size: [16, 150], Rotation: -135, Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/Needle.png, Color: [1, 0.28, 0.16, 1]}
+  - ID: 5161
+    Name: Speed Cap
+    Parent: 5100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [38, 38], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/DialCap.png, Color: [0.3, 0.31, 0.35, 1]}
+  - ID: 5200
+    Name: Rev Counter
+    Parent: 5000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 1], AnchorMax: [1, 1], Pivot: [1, 1], Position: [-380, -28], Size: [250, 250], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/Dial.png, Color: [0.92, 0.94, 1, 0.92]}
+  - ID: 5270
+    Name: Rev Zone 1
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 97.634, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5271
+    Name: Rev Zone 2
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 100.045, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5272
+    Name: Rev Zone 3
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 102.455, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5273
+    Name: Rev Zone 4
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 104.866, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5274
+    Name: Rev Zone 5
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 107.277, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5275
+    Name: Rev Zone 6
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 109.688, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5276
+    Name: Rev Zone 7
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 112.098, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5277
+    Name: Rev Zone 8
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 114.509, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5278
+    Name: Rev Zone 9
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 116.92, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5279
+    Name: Rev Zone 10
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 119.33, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5280
+    Name: Rev Zone 11
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 121.741, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5281
+    Name: Rev Zone 12
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 124.152, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5282
+    Name: Rev Zone 13
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 126.562, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5283
+    Name: Rev Zone 14
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 128.973, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5284
+    Name: Rev Zone 15
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 131.384, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5285
+    Name: Rev Zone 16
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 5.8421], Position: [0, 0], Size: [5.67, 19.0], Rotation: 133.795, Visible: true}
+    UIImage: {Texture: "", Color: [1, 0.18, 0.16, 1]}
+  - ID: 5300
+    Name: Rev Tick 1
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: -135.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5301
+    Name: Rev Tick 2
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -131.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5302
+    Name: Rev Tick 3
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -127.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5303
+    Name: Rev Tick 4
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -123.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5304
+    Name: Rev Tick 5
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -119.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5305
+    Name: Rev Tick 6
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: -115.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5306
+    Name: Rev Tick 7
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -111.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5307
+    Name: Rev Tick 8
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -108.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5308
+    Name: Rev Tick 9
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -104.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5309
+    Name: Rev Tick 10
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -100.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5310
+    Name: Rev Tick 11
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: -96.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5311
+    Name: Rev Tick 12
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -92.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5312
+    Name: Rev Tick 13
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -88.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5313
+    Name: Rev Tick 14
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -84.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5314
+    Name: Rev Tick 15
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -81.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5315
+    Name: Rev Tick 16
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: -77.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5316
+    Name: Rev Tick 17
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -73.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5317
+    Name: Rev Tick 18
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -69.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5318
+    Name: Rev Tick 19
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -65.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5319
+    Name: Rev Tick 20
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -61.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5320
+    Name: Rev Tick 21
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: -57.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5321
+    Name: Rev Tick 22
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -54.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5322
+    Name: Rev Tick 23
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -50.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5323
+    Name: Rev Tick 24
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -46.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5324
+    Name: Rev Tick 25
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -42.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5325
+    Name: Rev Tick 26
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: -38.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5326
+    Name: Rev Tick 27
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -34.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5327
+    Name: Rev Tick 28
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -30.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5328
+    Name: Rev Tick 29
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -27.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5329
+    Name: Rev Tick 30
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -23.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5330
+    Name: Rev Tick 31
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: -19.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5331
+    Name: Rev Tick 32
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -15.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5332
+    Name: Rev Tick 33
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -11.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5333
+    Name: Rev Tick 34
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -7.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5334
+    Name: Rev Tick 35
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: -3.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5335
+    Name: Rev Tick 36
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: 0.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5336
+    Name: Rev Tick 37
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 3.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5337
+    Name: Rev Tick 38
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 7.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5338
+    Name: Rev Tick 39
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 11.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5339
+    Name: Rev Tick 40
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 15.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5340
+    Name: Rev Tick 41
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: 19.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5341
+    Name: Rev Tick 42
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 23.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5342
+    Name: Rev Tick 43
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 27.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5343
+    Name: Rev Tick 44
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 30.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5344
+    Name: Rev Tick 45
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 34.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5345
+    Name: Rev Tick 46
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: 38.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5346
+    Name: Rev Tick 47
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 42.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5347
+    Name: Rev Tick 48
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 46.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5348
+    Name: Rev Tick 49
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 50.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5349
+    Name: Rev Tick 50
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 54.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5350
+    Name: Rev Tick 51
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: 57.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5351
+    Name: Rev Tick 52
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 61.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5352
+    Name: Rev Tick 53
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 65.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5353
+    Name: Rev Tick 54
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 69.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5354
+    Name: Rev Tick 55
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 73.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5355
+    Name: Rev Tick 56
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: 77.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5356
+    Name: Rev Tick 57
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 81.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5357
+    Name: Rev Tick 58
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 84.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5358
+    Name: Rev Tick 59
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 88.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5359
+    Name: Rev Tick 60
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 92.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5360
+    Name: Rev Tick 61
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: 96.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5361
+    Name: Rev Tick 62
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 100.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5362
+    Name: Rev Tick 63
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 104.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5363
+    Name: Rev Tick 64
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 108.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5364
+    Name: Rev Tick 65
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 111.857, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5365
+    Name: Rev Tick 66
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: 115.714, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5366
+    Name: Rev Tick 67
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 119.571, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5367
+    Name: Rev Tick 68
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 123.429, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5368
+    Name: Rev Tick 69
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 127.286, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5369
+    Name: Rev Tick 70
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 131.143, Visible: true}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5370
+    Name: Rev Tick 71
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: 135.0, Visible: true}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5371
+    Name: Rev Tick 72
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5372
+    Name: Rev Tick 73
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5373
+    Name: Rev Tick 74
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5374
+    Name: Rev Tick 75
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5375
+    Name: Rev Tick 76
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5376
+    Name: Rev Tick 77
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5377
+    Name: Rev Tick 78
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5378
+    Name: Rev Tick 79
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5379
+    Name: Rev Tick 80
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5380
+    Name: Rev Tick 81
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5381
+    Name: Rev Tick 82
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5382
+    Name: Rev Tick 83
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5383
+    Name: Rev Tick 84
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5384
+    Name: Rev Tick 85
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5385
+    Name: Rev Tick 86
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5386
+    Name: Rev Tick 87
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5387
+    Name: Rev Tick 88
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5388
+    Name: Rev Tick 89
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5389
+    Name: Rev Tick 90
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5390
+    Name: Rev Tick 91
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5391
+    Name: Rev Tick 92
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5392
+    Name: Rev Tick 93
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5393
+    Name: Rev Tick 94
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5394
+    Name: Rev Tick 95
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5395
+    Name: Rev Tick 96
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 9.1667], Position: [0, 0], Size: [3.5, 12], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5396
+    Name: Rev Tick 97
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5397
+    Name: Rev Tick 98
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5398
+    Name: Rev Tick 99
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5399
+    Name: Rev Tick 100
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 15.7143], Position: [0, 0], Size: [2, 7], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.7, 0.74, 0.82, 0.7]}
+  - ID: 5400
+    Name: Rev Tick 101
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 6.1111], Position: [0, 0], Size: [5, 18], Rotation: 135, Visible: false}
+    UIImage: {Texture: "", Color: [0.92, 0.94, 1, 0.95]}
+  - ID: 5240
+    Name: Rev Label 1
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-46.67, 46.67], Size: [50, 34], Visible: true}
+    UIText:
+      Text: "0"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5241
+    Name: Rev Label 2
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-65.59, 7.39], Size: [50, 34], Visible: true}
+    UIText:
+      Text: "1"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5242
+    Name: Rev Label 3
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-55.88, -35.11], Size: [50, 34], Visible: true}
+    UIText:
+      Text: "2"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5243
+    Name: Rev Label 4
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-21.8, -62.3], Size: [50, 34], Visible: true}
+    UIText:
+      Text: "3"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5244
+    Name: Rev Label 5
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [21.8, -62.3], Size: [50, 34], Visible: true}
+    UIText:
+      Text: "4"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5245
+    Name: Rev Label 6
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [55.88, -35.11], Size: [50, 34], Visible: true}
+    UIText:
+      Text: "5"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [0.92, 0.94, 1, 0.95]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5246
+    Name: Rev Label 7
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [65.59, 7.39], Size: [50, 34], Visible: true}
+    UIText:
+      Text: "6"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [1, 0.18, 0.16, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5247
+    Name: Rev Label 8
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [46.67, 46.67], Size: [50, 34], Visible: true}
+    UIText:
+      Text: "7"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [1, 0.18, 0.16, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5248
+    Name: Rev Label 9
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [46.67, 46.67], Size: [50, 34], Visible: false}
+    UIText:
+      Text: "8"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [1, 0.18, 0.16, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5249
+    Name: Rev Label 10
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [46.67, 46.67], Size: [50, 34], Visible: false}
+    UIText:
+      Text: "9"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [1, 0.18, 0.16, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5250
+    Name: Rev Label 11
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [46.67, 46.67], Size: [50, 34], Visible: false}
+    UIText:
+      Text: "10"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [1, 0.18, 0.16, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5251
+    Name: Rev Label 12
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [46.67, 46.67], Size: [50, 34], Visible: false}
+    UIText:
+      Text: "11"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [1, 0.18, 0.16, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5252
+    Name: Rev Label 13
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [46.67, 46.67], Size: [50, 34], Visible: false}
+    UIText:
+      Text: "12"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 24
+      Color: [1, 0.18, 0.16, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5262
+    Name: Gear
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 48], Size: [100, 64], Visible: true}
+    UIText:
+      Text: N
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 58
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5263
+    Name: Rev Unit
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 92], Size: [160, 26], Visible: true}
+    UIText:
+      Text: x1000 rpm
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 17
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5260
+    Name: Rev Needle
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.86], Position: [0, 0], Size: [10, 116], Rotation: -135, Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/Needle.png, Color: [1, 0.28, 0.16, 1]}
+  - ID: 5261
+    Name: Rev Cap
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [44, 44], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/DialCap.png, Color: [0.3, 0.31, 0.35, 1]}
+  - ID: 5264
+    Name: Paddle Down
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-92, -152], Size: [96, 64], Rotation: -18, Visible: false}
+    UIImage: {Texture: Assets/Textures/UI/Paddle.png, Color: [0.3, 0.32, 0.38, 0.85]}
+  - ID: 5265
+    Name: Paddle Down Text
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-92, -156], Size: [96, 64], Visible: false}
+    UIText:
+      Text: "-"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 46
+      Color: [1, 1, 1, 0.9]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5266
+    Name: Paddle Up
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [92, -152], Size: [96, 64], Rotation: 18, Visible: false}
+    UIImage: {Texture: Assets/Textures/UI/Paddle.png, Color: [0.3, 0.32, 0.38, 0.85]}
+  - ID: 5267
+    Name: Paddle Up Text
+    Parent: 5200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [92, -156], Size: [96, 64], Visible: false}
+    UIText:
+      Text: "+"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 46
+      Color: [1, 1, 1, 0.9]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5500
+    Name: Finish Screen
+    Parent: 5000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.55]}
+  - ID: 5501
+    Name: Finish Panel
+    Parent: 5500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [920, 780], Visible: true}
+    UIImage: {Texture: "", Color: [0.03, 0.035, 0.05, 0.93]}
+  - ID: 5502
+    Name: Accent
+    Parent: 5501
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 0], Pivot: [0.5, 0], Position: [0, 0], Size: [0, 8], Visible: true}
+    UIImage: {Texture: "", Color: [0.9, 0.1, 0.14, 1]}
+  - ID: 5503
+    Name: Finish Title
+    Parent: 5501
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -318], Size: [800, 70], Visible: true}
+    UIText:
+      Text: FINISH
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 48
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5504
+    Name: Finish Time
+    Parent: 5501
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -222], Size: [800, 120], Visible: true}
+    UIText:
+      Text: "1:23.456"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 112
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5505
+    Name: Finish Record
+    Parent: 5501
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -128], Size: [800, 50], Visible: true}
+    UIText:
+      Text: NEW RECORD
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 0.82, 0.25, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5506
+    Name: Finish Medal
+    Parent: 5501
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -76], Size: [860, 50], Visible: true}
+    UIText:
+      Text: GOLD MEDAL
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 0.82, 0.25, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5508
+    Name: Line
+    Parent: 5501
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -26], Size: [700, 2], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.14]}
+  - ID: 5507
+    Name: Finish Laps
+    Parent: 5501
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 104], Size: [700, 190], Visible: true}
+    UIText:
+      Text: "Lap 1   27.123\nLap 2   26.456   fastest\nLap 3   26.789\nBest lap ever   26.456"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Top
+      Wrap: false
+      LineSpacing: 1.1
+  - ID: 5510
+    Name: Race Again Button
+    Parent: 5501
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 315], Size: [380, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Race again
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 5511
+    Name: Main Menu Button
+    Parent: 5501
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [210, 315], Size: [380, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Main menu
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 6000
+    Name: Pause Menu
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.PauseMenu
+      Fields:
+        Menu: {Entity: 6001}
+        ResumeButton: {Entity: 6010}
+        RestartButton: {Entity: 6011}
+        SettingsButton: {Entity: 6012}
+        MainMenuButton: {Entity: 6013}
+        SettingsScreen: {Entity: 7000}
+        Title: {Entity: 6003}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 10}
+  - ID: 6001
+    Name: Pause Panel
+    Parent: 6000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.6]}
+  - ID: 6002
+    Name: Pause Box
+    Parent: 6001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [560, 600], Visible: true}
+    UIImage: {Texture: "", Color: [0.03, 0.035, 0.05, 0.93]}
+  - ID: 6004
+    Name: Accent
+    Parent: 6002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 0], Pivot: [0.5, 0], Position: [0, 0], Size: [0, 8], Visible: true}
+    UIImage: {Texture: "", Color: [0.9, 0.1, 0.14, 1]}
+  - ID: 6003
+    Name: Title
+    Parent: 6002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -205], Size: [500, 100], Visible: true}
+    UIText:
+      Text: PAUSED
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 76
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 6010
+    Name: Resume Button
+    Parent: 6002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -90], Size: [420, 82], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Resume
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 6011
+    Name: Restart Button
+    Parent: 6002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 10], Size: [420, 82], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Restart
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 6012
+    Name: Settings Button
+    Parent: 6002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 110], Size: [420, 82], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Settings
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 6013
+    Name: Main Menu Button
+    Parent: 6002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 210], Size: [420, 82], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Main menu
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 6020
+    Name: Hint
+    Parent: 6001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -50], Size: [1600, 50], Visible: true}
+    UIText:
+      Text: "Escape or Start: back to the race"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 30
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7000
+    Name: Settings Menu
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.SettingsMenu
+      Fields:
+        Panel: {Entity: 7001}
+        MusicSlider: {Entity: 7011}
+        EffectsSlider: {Entity: 7021}
+        MouseSlider: {Entity: 7031}
+        MusicValue: {Entity: 7012}
+        EffectsValue: {Entity: 7022}
+        MouseValue: {Entity: 7032}
+        GearboxDropdown: {Entity: 7036}
+        QualityDropdown: {Entity: 7041}
+        DisplayDropdown: {Entity: 7051}
+        ResolutionDropdown: {Entity: 7061}
+        VSyncDropdown: {Entity: 7071}
+        ApplyButton: {Entity: 7091}
+        ControlsPanel: {Entity: 7100}
+        AccelerateKey: {Entity: 7111}
+        AcceleratePad: {Entity: 7112}
+        BrakeKey: {Entity: 7121}
+        BrakePad: {Entity: 7122}
+        SteerLeftKey: {Entity: 7131}
+        SteerRightKey: {Entity: 7141}
+        HandbrakeKey: {Entity: 7151}
+        HandbrakePad: {Entity: 7152}
+        RespawnKey: {Entity: 7161}
+        RespawnPad: {Entity: 7162}
+        ControlsHint: {Entity: 7180}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 20}
+  - ID: 7001
+    Name: Settings Panel
+    Parent: 7000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.01, 0.012, 0.02, 0.9]}
+  - ID: 7002
+    Name: Title
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -440], Size: [900, 120], Visible: true}
+    UIText:
+      Text: SETTINGS
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 84
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7010
+    Name: Music Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -345], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Music
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7011
+    Name: Music Slider
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -345], Size: [560, 14], Visible: true}
+    UIImage: {Texture: "", Color: [0.14, 0.15, 0.19, 0.95]}
+    UISlider:
+      Value: 0.5
+      Min: 0
+      Max: 1
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.9, 0.1, 0.14, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [28, 48]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 0.85, 0.3, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7012
+    Name: Music Value
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -345], Size: [180, 70], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7020
+    Name: Effects Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -270], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Effects
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7021
+    Name: Effects Slider
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -270], Size: [560, 14], Visible: true}
+    UIImage: {Texture: "", Color: [0.14, 0.15, 0.19, 0.95]}
+    UISlider:
+      Value: 1
+      Min: 0
+      Max: 1
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.9, 0.1, 0.14, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [28, 48]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 0.85, 0.3, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7022
+    Name: Effects Value
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -270], Size: [180, 70], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7030
+    Name: Mouse sensitivity Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -195], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Mouse sensitivity
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7031
+    Name: Mouse sensitivity Slider
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -195], Size: [560, 14], Visible: true}
+    UIImage: {Texture: "", Color: [0.14, 0.15, 0.19, 0.95]}
+    UISlider:
+      Value: 1
+      Min: 0.25
+      Max: 3
+      WholeNumbers: false
+      Step: 0.25
+      Interactable: true
+      FillColor: [0.9, 0.1, 0.14, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [28, 48]
+      Normal: [0.85, 0.85, 0.85, 1]
+      Highlighted: [1, 0.85, 0.3, 1]
+      Pressed: [0.65, 0.65, 0.65, 1]
+      Disabled: [0.55, 0.55, 0.55, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7032
+    Name: Mouse sensitivity Value
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -195], Size: [180, 70], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7035
+    Name: Gearbox Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -120], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Gearbox
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7036
+    Name: Gearbox Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -120], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [Automatic, Manual]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7040
+    Name: Quality Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -45], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Quality
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7041
+    Name: Quality Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -45], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [Automatic, Low, Medium, High, Ultra]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7050
+    Name: Display Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 30], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Display
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7051
+    Name: Display Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 30], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [Fullscreen, Window]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7060
+    Name: Resolution Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 105], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Resolution
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7061
+    Name: Resolution Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 105], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: []
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7070
+    Name: VSync Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 180], Size: [420, 70], Visible: true}
+    UIText:
+      Text: VSync
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7071
+    Name: VSync Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 180], Size: [560, 66], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [Off, On]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7090
+    Name: Controls Button
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: OpenControls}
+    UIText:
+      Text: Controls
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7091
+    Name: Apply Button
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: Apply}
+    UIText:
+      Text: Apply
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7092
+    Name: Back Button
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 330], Size: [360, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: Back}
+    UIText:
+      Text: Back
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7093
+    Name: Hint
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -50], Size: [1700, 60], Visible: true}
+    UIText:
+      Text: "Up and down: the next setting. Left and right: a slider. Enter or A: open a list, choose, then Apply. Escape or Start: back"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7100
+    Name: Controls Panel
+    Parent: 7000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.01, 0.012, 0.02, 0.9]}
+  - ID: 7101
+    Name: Title
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -440], Size: [900, 120], Visible: true}
+    UIText:
+      Text: CONTROLS
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 84
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7102
+    Name: Keyboard Header
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -350], Size: [380, 60], Visible: true}
+    UIText:
+      Text: Keyboard
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7103
+    Name: Gamepad Header
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -350], Size: [380, 60], Visible: true}
+    UIText:
+      Text: Gamepad
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7110
+    Name: Accelerate Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -270], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Accelerate
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7111
+    Name: Accelerate Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -270], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7112
+    Name: Accelerate Pad
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -270], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7120
+    Name: Brake Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -190], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Brake
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7121
+    Name: Brake Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -190], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7122
+    Name: Brake Pad
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -190], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7130
+    Name: Steer left Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -110], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Steer left
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7131
+    Name: Steer Left Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -110], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7132
+    Name: Stick
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, -70], Size: [380, 64], Visible: true}
+    UIText:
+      Text: Left Stick
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7140
+    Name: Steer right Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, -30], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Steer right
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7141
+    Name: Steer Right Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, -30], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7150
+    Name: Handbrake Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, 50], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Handbrake
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7151
+    Name: Handbrake Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, 50], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7152
+    Name: Handbrake Pad
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, 50], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7160
+    Name: Respawn Label
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-470, 130], Size: [420, 66], Visible: true}
+    UIText:
+      Text: Respawn
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 40
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7161
+    Name: Respawn Key
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [40, 130], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7162
+    Name: Respawn Pad
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [460, 130], Size: [380, 64], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7180
+    Name: Hint
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 230], Size: [1400, 60], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 32
+      Color: [1, 1, 1, 0.8]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7181
+    Name: Reset Button
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-240, 330], Size: [440, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ResetControls}
+    UIText:
+      Text: Reset
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7182
+    Name: Back Button
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [240, 330], Size: [440, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: Back}
+    UIText:
+      Text: Back
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7183
+    Name: Hint
+    Parent: 7100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -50], Size: [1700, 60], Visible: true}
+    UIText:
+      Text: "Escape or Start: back to Settings"
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.7]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1

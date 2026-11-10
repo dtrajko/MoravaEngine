@@ -146,6 +146,20 @@ namespace
 			}
 		}
 
+		// The CPU's stages: the main loop's, and of the stages inside them those that take a tenth of the frame or more
+		if (!frame.CpuStages.empty() && frame.CpuMs > 0.0)
+		{
+			AddHeader(rows, "CPU stages");
+			for (const DebugOverlayFrame::CpuStage& stage : frame.CpuStages)
+			{
+				if (stage.Ms < 0.01 || (stage.Inner && stage.Ms < 0.1 * frame.CpuMs))
+				{
+					continue;
+				}
+				AddRow(rows, stage.Inner ? "  " + stage.Name : stage.Name, Format("%.2f ms  %3.0f %%", stage.Ms, 100.0 * stage.Ms / frame.CpuMs));
+			}
+		}
+
 		// What each camera costs, with render texture cameras (7.5): in ms and in percent of the GPU frame
 		if (frame.GpuValid && !frame.Cameras.empty() && frame.GpuMs > 0.0)
 		{

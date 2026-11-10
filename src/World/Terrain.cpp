@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstring>
 #include <limits>
+#include <queue>
 #include <random>
 #include <thread>
 
@@ -180,6 +181,8 @@ uint64_t TerrainSettings::GetShapeHash() const
 	hash = HashOf(hash, FlatCenter);
 	hash = HashOf(hash, FlatRadius);
 	hash = HashOf(hash, FlatBlend);
+	hash = HashOf(hash, Spacing);
+	hash = HashOf(hash, MaxVertices);
 	return hash;
 }
 
@@ -196,6 +199,7 @@ void TerrainSettings::Clamp()
 	RimWidth = std::clamp(RimWidth, 1.0f, Size * 0.5f);
 	FlatRadius = std::clamp(FlatRadius, 0.0f, Size * 0.5f);
 	FlatBlend = std::clamp(FlatBlend, 0.0f, Size * 0.5f);
+	Spacing = Spacing >= 3.0f ? 4.0f : Spacing >= 1.5f ? 2.0f : 1.0f; // a chunk (64 m) a whole number of cells at every level
 	RockSlope = std::clamp(RockSlope, 0.0f, 90.0f);
 	Friction = std::clamp(Friction, 0.0f, 2.0f);
 	LodTolerance = std::clamp(LodTolerance, 0.0f, 20.0f);
@@ -324,9 +328,9 @@ namespace Terrain
 		settings.Clamp();
 
 		auto heights = std::make_shared<TerrainHeights>();
-		heights->Spacing = TerrainSettings::Spacing;
+		heights->Spacing = settings.Spacing;
 		heights->Size = settings.Size;
-		heights->SampleCount = (uint32_t)std::lround(settings.Size / TerrainSettings::Spacing) + 1;
+		heights->SampleCount = (uint32_t)std::lround(settings.Size / settings.Spacing) + 1;
 		heights->ShapeHash = input.GetShapeHash();
 		const uint32_t count = heights->SampleCount;
 		heights->Heights.resize((size_t)count * count);
@@ -347,7 +351,7 @@ namespace Terrain
 		}
 
 		const float half = settings.Size * 0.5f;
-		const float spacing = TerrainSettings::Spacing;
+		const float spacing = settings.Spacing;
 		std::vector<float>& h = heights->Heights;
 		ParallelRows(count, [&](uint32_t first, uint32_t last)
 		{
@@ -410,7 +414,7 @@ namespace Terrain
 		return heights;
 	}
 
-	ModelData BuildModelData(const TerrainHeights& heights, TerrainLods* lods)
+	ModelData BuildModelData(const TerrainHeights& heights, TerrainLods* lods, uint32_t maxVertices)
 	{
 		ModelData data;
 		const uint32_t count = heights.SampleCount;
@@ -418,7 +422,7 @@ namespace Terrain
 		{
 			return data;
 		}
-		const uint32_t cellsPerChunk = (uint32_t)std::lround(TerrainSettings::ChunkSize / heights.Spacing);
+		const uint32_t cellsPerChunk = TerrainSettings::ChunkCells;
 		const uint32_t cells = count - 1;
 		const uint32_t chunks = (cells + cellsPerChunk - 1) / cellsPerChunk;
 		const float half = heights.Size * 0.5f;
@@ -432,8 +436,112 @@ namespace Terrain
 		// A level's spacing in heights, when it fits the chunk (else the level before it is used again)
 		auto levelFits = [](uint32_t level, uint32_t w, uint32_t d) { const uint32_t step = 1u << level; return w % step == 0 && d % step == 0; };
 
-		// Sizes first: each chunk's vertices (the grid, then the skirt's lowered copies of its edges) and its own triangles
-		// (level 0); after all of them, the levels' triangles and skirts
+		// Each chunk's shape first: every level's error (the most its triangles stray from the heights, each square split
+		// from its corner at -x -z to the one at +x +z as the triangles are), and the level of the chunk's own mesh: the
+		// coarsest exact one (within ExactError), or the one a vertex budget gives it (below). Flat or evenly sloped ground
+		// is then a few vertices and two triangles in the mesh itself, for every pass that draws it, with the levels of
+		// detail or without them (the probes' capture)
+		struct ChunkShape
+		{
+			uint32_t W = 0, D = 0; // cells
+			uint32_t Base = 0;     // the level of the mesh's own triangles and vertices
+			float Error[TerrainLods::LevelCount] = {};
+			bool Fits[TerrainLods::LevelCount] = {};
+		};
+		const float ExactError = 0.005f; // meters
+		std::vector<ChunkShape> shapes((size_t)chunks * chunks);
+		ParallelRows(chunks, [&](uint32_t first, uint32_t last)
+		{
+			for (uint32_t cz = first; cz < last; cz++)
+			{
+				for (uint32_t cx = 0; cx < chunks; cx++)
+				{
+					ChunkShape& shape = shapes[(size_t)cz * chunks + cx];
+					const uint32_t x0 = cx * cellsPerChunk, z0 = cz * cellsPerChunk;
+					const uint32_t w = std::min(cellsPerChunk, cells - x0), d = std::min(cellsPerChunk, cells - z0);
+					shape.W = w;
+					shape.D = d;
+					shape.Fits[0] = true;
+					for (uint32_t level = 1; level < TerrainLods::LevelCount; level++)
+					{
+						shape.Fits[level] = levelFits(level, w, d);
+						if (!shape.Fits[level])
+						{
+							shape.Error[level] = shape.Error[level - 1];
+							continue;
+						}
+						const uint32_t step = 1u << level;
+						float error = 0.0f;
+						for (uint32_t z = 0; z <= d; z++)
+						{
+							for (uint32_t x = 0; x <= w; x++)
+							{
+								const uint32_t qx = std::min(x / step * step, w - step), qz = std::min(z / step * step, d - step);
+								const float u = (float)(x - qx) / step, v = (float)(z - qz) / step;
+								const int gx = (int)(x0 + qx), gz = (int)(z0 + qz), gs = (int)step;
+								const float ha = at(gx, gz), hb = at(gx + gs, gz), hc = at(gx, gz + gs), he = at(gx + gs, gz + gs);
+								const float level_h = v >= u ? ha + u * (he - hc) + v * (hc - ha) : ha + u * (hb - ha) + v * (he - hb);
+								error = std::max(error, std::fabs(level_h - at((int)(x0 + x), (int)(z0 + z))));
+							}
+						}
+						shape.Error[level] = std::max(error, shape.Error[level - 1]); // never less than a finer level's
+						if (shape.Error[level] <= ExactError)
+						{
+							shape.Base = level;
+						}
+					}
+				}
+			}
+		});
+
+		// A vertex budget (maxVertices): each chunk starts as its coarsest level, then the chunk whose triangles stray
+		// furthest from the heights gets its next finer level, again and again while the budget lasts (never finer than
+		// its exact level). The vertices go where the ground needs them: steep hills get detail, gentle ones stay coarse
+		auto vertexCost = [&](const ChunkShape& shape, uint32_t level)
+		{
+			const uint32_t step = 1u << level, gw = shape.W / step, gd = shape.D / step;
+			return (size_t)(gw + 1) * (gd + 1) + (lods ? (size_t)2 * (gw + 1) + (size_t)2 * (gd + 1) : 0);
+		};
+		if (maxVertices > 0)
+		{
+			size_t total = 0;
+			std::priority_queue<std::pair<float, size_t>> worst; // (error, chunk): the largest first
+			for (size_t c = 0; c < shapes.size(); c++)
+			{
+				ChunkShape& shape = shapes[c];
+				shape.Base = 0;
+				for (uint32_t level = 1; level < TerrainLods::LevelCount && shape.Fits[level]; level++)
+				{
+					shape.Base = level; // the levels that fit a chunk are the first ones (a coarser step fits only if a finer does)
+				}
+				total += vertexCost(shape, shape.Base);
+				if (shape.Base > 0 && shape.Error[shape.Base] > ExactError)
+				{
+					worst.push({ shape.Error[shape.Base], c });
+				}
+			}
+			while (!worst.empty())
+			{
+				const size_t c = worst.top().second;
+				worst.pop();
+				ChunkShape& shape = shapes[c];
+				const size_t extra = vertexCost(shape, shape.Base - 1) - vertexCost(shape, shape.Base);
+				if (total + extra > maxVertices)
+				{
+					continue; // too many for this one; a chunk with a cheaper step may still fit
+				}
+				total += extra;
+				shape.Base--;
+				if (shape.Base > 0 && shape.Error[shape.Base] > ExactError)
+				{
+					worst.push({ shape.Error[shape.Base], c });
+				}
+			}
+		}
+
+		// Sizes: each chunk's vertices (its base level's grid, then the skirt's lowered copies of its edges) and its own
+		// triangles; after all of them, the coarser levels' triangles and every level's skirt. A level finer than the base
+		// is the base (its triangles are exact)
 		data.Meshes.resize((size_t)chunks * chunks);
 		if (lods)
 		{
@@ -444,13 +552,14 @@ namespace Terrain
 		{
 			for (uint32_t cx = 0; cx < chunks; cx++)
 			{
-				const uint32_t w = std::min(cellsPerChunk, cells - cx * cellsPerChunk), d = std::min(cellsPerChunk, cells - cz * cellsPerChunk);
+				const ChunkShape& shape = shapes[(size_t)cz * chunks + cx];
+				const uint32_t step = 1u << shape.Base, gw = shape.W / step, gd = shape.D / step;
 				ModelMeshData& mesh = data.Meshes[(size_t)cz * chunks + cx];
 				mesh.Name = "Chunk " + std::to_string(cx) + ", " + std::to_string(cz);
 				mesh.BaseVertex = (uint32_t)vertexTotal;
 				mesh.BaseIndex = (uint32_t)(triangleTotal * 3);
-				mesh.VertexCount = (w + 1) * (d + 1) + (lods ? 2 * (w + 1) + 2 * (d + 1) : 0);
-				mesh.TriangleCount = w * d * 2;
+				mesh.VertexCount = (uint32_t)vertexCost(shape, shape.Base);
+				mesh.TriangleCount = gw * gd * 2;
 				mesh.IndexCount = mesh.TriangleCount * 3;
 				vertexTotal += mesh.VertexCount;
 				triangleTotal += mesh.TriangleCount;
@@ -460,28 +569,36 @@ namespace Terrain
 		{
 			for (size_t c = 0; c < data.Meshes.size(); c++)
 			{
-				const uint32_t cx = (uint32_t)(c % chunks), cz = (uint32_t)(c / chunks);
-				const uint32_t w = std::min(cellsPerChunk, cells - cx * cellsPerChunk), d = std::min(cellsPerChunk, cells - cz * cellsPerChunk);
+				const ChunkShape& shape = shapes[c];
 				TerrainLods::Chunk& chunk = lods->Chunks[c];
-				chunk.Surface[0] = { data.Meshes[c].BaseIndex, data.Meshes[c].IndexCount };
 				for (uint32_t level = 0; level < TerrainLods::LevelCount; level++)
 				{
-					if (level > 0 && !levelFits(level, w, d))
+					chunk.Error[level] = shape.Error[std::max(level, shape.Base)]; // a finer level than the base is the base
+				}
+				chunk.Surface[shape.Base] = { data.Meshes[c].BaseIndex, data.Meshes[c].IndexCount };
+				for (uint32_t level = shape.Base; level < TerrainLods::LevelCount; level++)
+				{
+					if (level > shape.Base && !shape.Fits[level])
 					{
 						chunk.Surface[level] = chunk.Surface[level - 1];
 						chunk.Skirt[level] = chunk.Skirt[level - 1];
 						continue;
 					}
 					const uint32_t step = 1u << level;
-					if (level > 0)
+					if (level > shape.Base)
 					{
-						const uint32_t triangles = (w / step) * (d / step) * 2;
+						const uint32_t triangles = (shape.W / step) * (shape.D / step) * 2;
 						chunk.Surface[level] = { (uint32_t)(triangleTotal * 3), triangles * 3 };
 						triangleTotal += triangles;
 					}
-					const uint32_t skirtTriangles = (2 * (w / step) + 2 * (d / step)) * 4; // a quad per edge segment, both sides
+					const uint32_t skirtTriangles = (2 * (shape.W / step) + 2 * (shape.D / step)) * 4; // a quad per edge segment, both sides
 					chunk.Skirt[level] = { (uint32_t)(triangleTotal * 3), skirtTriangles * 3 };
 					triangleTotal += skirtTriangles;
+				}
+				for (uint32_t level = 0; level < shape.Base; level++)
+				{
+					chunk.Surface[level] = chunk.Surface[shape.Base];
+					chunk.Skirt[level] = chunk.Skirt[shape.Base];
 				}
 			}
 		}
@@ -494,33 +611,44 @@ namespace Terrain
 			{
 				for (uint32_t cx = 0; cx < chunks; cx++)
 				{
+					const ChunkShape& shape = shapes[(size_t)cz * chunks + cx];
 					ModelMeshData& mesh = data.Meshes[(size_t)cz * chunks + cx];
 					const uint32_t x0 = cx * cellsPerChunk, z0 = cz * cellsPerChunk;
-					const uint32_t w = std::min(cellsPerChunk, cells - x0), d = std::min(cellsPerChunk, cells - z0);
+					const uint32_t w = shape.W, d = shape.D;
+					const uint32_t base = 1u << shape.Base, gw = w / base, gd = d / base;
+					// A vertex of the base grid, by its cell coordinates in the chunk (multiples of the base level's step)
+					auto gridIndex = [&](uint32_t x, uint32_t z) { return (z / base) * (gw + 1) + x / base; };
 					float minY = std::numeric_limits<float>::max(), maxY = -std::numeric_limits<float>::max();
 					for (uint32_t z = 0; z <= d; z++)
 					{
 						for (uint32_t x = 0; x <= w; x++)
 						{
+							const float y = at((int)(x0 + x), (int)(z0 + z));
+							minY = std::min(minY, y);
+							maxY = std::max(maxY, y);
+						}
+					}
+					for (uint32_t z = 0; z <= d; z += base)
+					{
+						for (uint32_t x = 0; x <= w; x += base)
+						{
 							const int gx = (int)(x0 + x), gz = (int)(z0 + z);
 							const float y = at(gx, gz);
 							const float dx = at(gx + 1, gz) - at(gx - 1, gz), dz = at(gx, gz + 1) - at(gx, gz - 1);
-							H2M::VertexH2M& vertex = data.StaticVertices[mesh.BaseVertex + z * (w + 1) + x];
+							H2M::VertexH2M& vertex = data.StaticVertices[mesh.BaseVertex + gridIndex(x, z)];
 							vertex.Position = glm::vec3(-half + gx * spacing, y, -half + gz * spacing);
 							vertex.Normal = glm::normalize(glm::vec3(-dx, 2.0f * spacing, -dz));
 							vertex.Tangent = glm::normalize(glm::vec3(2.0f * spacing, dx, 0.0f));
 							vertex.Binormal = glm::normalize(glm::vec3(0.0f, dz, 2.0f * spacing));
 							vertex.Texcoord = glm::vec2(vertex.Position.x, vertex.Position.z);
-							minY = std::min(minY, y);
-							maxY = std::max(maxY, y);
 						}
 					}
 					H2M::Index* index = &data.Indices[mesh.BaseIndex / 3];
-					for (uint32_t z = 0; z < d; z++)
+					for (uint32_t z = 0; z < d; z += base)
 					{
-						for (uint32_t x = 0; x < w; x++)
+						for (uint32_t x = 0; x < w; x += base)
 						{
-							const uint32_t a = z * (w + 1) + x, b = a + 1, c = a + (w + 1), e = c + 1;
+							const uint32_t a = gridIndex(x, z), b = gridIndex(x + base, z), c = gridIndex(x, z + base), e = gridIndex(x + base, z + base);
 							*index++ = { a, c, e }; // facing up, split from a to e (-x -z to +x +z)
 							*index++ = { a, e, b };
 						}
@@ -536,17 +664,16 @@ namespace Terrain
 					// x = w), lowered by the chunk's height range and a meter (no coarser level's edge strays further from
 					// the heights), with the edges' normals so they shade as the ground beside them
 					const float depth = std::max(maxY - minY, 1.0f) + 1.0f;
-					const uint32_t grid = (w + 1) * (d + 1);
-					auto gridIndex = [&](uint32_t x, uint32_t z) { return z * (w + 1) + x; };
+					const uint32_t grid = (gw + 1) * (gd + 1);
 					// The skirt vertex below the grid's (x, z) on an edge (0: z = 0, 1: z = d, 2: x = 0, 3: x = w)
 					auto skirtIndex = [&](uint32_t edge, uint32_t x, uint32_t z)
 					{
 						switch (edge)
 						{
-							case 0: return grid + x;
-							case 1: return grid + (w + 1) + x;
-							case 2: return grid + 2 * (w + 1) + z;
-							default: return grid + 2 * (w + 1) + (d + 1) + z;
+							case 0: return grid + x / base;
+							case 1: return grid + (gw + 1) + x / base;
+							case 2: return grid + 2 * (gw + 1) + z / base;
+							default: return grid + 2 * (gw + 1) + (gd + 1) + z / base;
 						}
 					};
 					auto edgePoint = [&](uint32_t edge, uint32_t i, uint32_t& x, uint32_t& z)
@@ -557,7 +684,7 @@ namespace Terrain
 					for (uint32_t edge = 0; edge < 4; edge++)
 					{
 						const uint32_t n = edge < 2 ? w : d;
-						for (uint32_t i = 0; i <= n; i++)
+						for (uint32_t i = 0; i <= n; i += base)
 						{
 							uint32_t x, z;
 							edgePoint(edge, i, x, z);
@@ -568,33 +695,16 @@ namespace Terrain
 					}
 					mesh.BoundsMin.y -= depth;
 
-					TerrainLods::Chunk& chunk = lods->Chunks[(size_t)cz * chunks + cx]; // this chunk's only: no other thread writes it
-					for (uint32_t level = 0; level < TerrainLods::LevelCount; level++)
+					const TerrainLods::Chunk& chunk = lods->Chunks[(size_t)cz * chunks + cx]; // this chunk's only: no other thread writes it
+					for (uint32_t level = shape.Base; level < TerrainLods::LevelCount; level++)
 					{
-						if (level > 0 && !levelFits(level, w, d))
+						if (level > shape.Base && !shape.Fits[level])
 						{
-							chunk.Error[level] = chunk.Error[level - 1];
 							continue;
 						}
 						const uint32_t step = 1u << level;
-						if (level > 0)
+						if (level > shape.Base)
 						{
-							// The level's error: each height against the level's triangle above or below it (each square
-							// split from its corner at -x -z to the one at +x +z, as the triangles are)
-							float error = 0.0f;
-							for (uint32_t z = 0; z <= d; z++)
-							{
-								for (uint32_t x = 0; x <= w; x++)
-								{
-									const uint32_t qx = std::min(x / step * step, w - step), qz = std::min(z / step * step, d - step);
-									const float u = (float)(x - qx) / step, v = (float)(z - qz) / step;
-									const int gx = (int)(x0 + qx), gz = (int)(z0 + qz), gs = (int)step;
-									const float ha = at(gx, gz), hb = at(gx + gs, gz), hc = at(gx, gz + gs), he = at(gx + gs, gz + gs);
-									const float level_h = v >= u ? ha + u * (he - hc) + v * (hc - ha) : ha + u * (hb - ha) + v * (he - hb);
-									error = std::max(error, std::fabs(level_h - at((int)(x0 + x), (int)(z0 + z))));
-								}
-							}
-							chunk.Error[level] = std::max(error, chunk.Error[level - 1]); // never less than a finer level's
 							H2M::Index* surface = &data.Indices[chunk.Surface[level].BaseIndex / 3];
 							for (uint32_t z = 0; z < d; z += step)
 							{

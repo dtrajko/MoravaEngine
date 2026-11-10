@@ -572,6 +572,8 @@ namespace EnvMapVulkanSceneSerializer
 			WriteVec2(out, "FlatCenter", t.FlatCenter);
 			out << YAML::Key << "FlatRadius" << YAML::Value << t.FlatRadius;
 			out << YAML::Key << "FlatBlend" << YAML::Value << t.FlatBlend;
+			out << YAML::Key << "Spacing" << YAML::Value << t.Spacing;
+			out << YAML::Key << "MaxVertices" << YAML::Value << t.MaxVertices;
 			out << YAML::Key << "SandHeight" << YAML::Value << t.SandHeight;
 			out << YAML::Key << "RockSlope" << YAML::Value << t.RockSlope;
 			out << YAML::Key << "RockHeight" << YAML::Value << t.RockHeight;
@@ -633,6 +635,15 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "HuePreservation" << YAML::Value << environment->HuePreservation;
 			out << YAML::Key << "ExtractSun" << YAML::Value << environment->ExtractSun;
 			out << YAML::Key << "SkyboxLod" << YAML::Value << environment->SkyboxLod;
+			// The distance haze: its settings kept while it is off too (turned on again, it is as it was tuned)
+			const EnvironmentComponent::HazeSettings& haze = environment->Haze;
+			out << YAML::Key << "Haze" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "Enabled" << YAML::Value << haze.Enabled;
+			out << YAML::Key << "Density" << YAML::Value << haze.Density;
+			out << YAML::Key << "StartDistance" << YAML::Value << haze.StartDistance;
+			out << YAML::Key << "HeightFalloff" << YAML::Value << haze.HeightFalloff;
+			out << YAML::Key << "BaseHeight" << YAML::Value << haze.BaseHeight;
+			out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndMap;
@@ -759,6 +770,8 @@ namespace EnvMapVulkanSceneSerializer
 			ReadVec2(terrainNode["FlatCenter"], t.FlatCenter);
 			Read(terrainNode, "FlatRadius", t.FlatRadius);
 			Read(terrainNode, "FlatBlend", t.FlatBlend);
+			Read(terrainNode, "Spacing", t.Spacing);
+			Read(terrainNode, "MaxVertices", t.MaxVertices);
 			Read(terrainNode, "SandHeight", t.SandHeight);
 			Read(terrainNode, "RockSlope", t.RockSlope);
 			Read(terrainNode, "RockHeight", t.RockHeight);
@@ -1082,6 +1095,14 @@ namespace EnvMapVulkanSceneSerializer
 			Read(environmentNode, "HuePreservation", environment.HuePreservation);
 			Read(environmentNode, "ExtractSun", environment.ExtractSun);
 			Read(environmentNode, "SkyboxLod", environment.SkyboxLod);
+			if (YAML::Node hazeNode = environmentNode["Haze"])
+			{
+				Read(hazeNode, "Enabled", environment.Haze.Enabled);
+				Read(hazeNode, "Density", environment.Haze.Density);
+				Read(hazeNode, "StartDistance", environment.Haze.StartDistance);
+				Read(hazeNode, "HeightFalloff", environment.Haze.HeightFalloff);
+				Read(hazeNode, "BaseHeight", environment.Haze.BaseHeight);
+			}
 		}
 	}
 
