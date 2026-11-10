@@ -34,7 +34,7 @@ namespace PackBuilder
 	static const char* const s_EngineFiles[] = {
 		ASSETS_DIR "/textures/BRDF_LUT.tga",
 		FONTS_DIR "/opensans/OpenSans-Regular.ttf",
-		TEXTURES_DIR "/HDR/rooitou_park_4k.hdr",
+		TEXTURES_DIR "/HDR/rocky_ridge_puresky_2k.hdr",
 		TEXTURES_DIR "/dirt.png",
 		TEXTURES_DIR "/normal_map_default.png",
 		TEXTURES_DIR "/plain.png",
@@ -108,6 +108,7 @@ namespace PackBuilder
 			{
 				folders.push_back(fs::u8path(inputMap).parent_path().generic_u8string());
 			}
+			m_ProjectFolders = folders;
 			for (const std::string& folder : folders)
 			{
 				std::error_code error;
@@ -223,6 +224,7 @@ namespace PackBuilder
 				Fail("The script assembly '" + source.generic_u8string() + "' doesn't exist: build the project's scripts first");
 				return false;
 			}
+			m_ScriptAssembly = source.generic_u8string();
 			// With what it references, beside it. Not the debug symbols, and not what describes running it alone
 			for (const fs::directory_entry& entry : fs::directory_iterator(source.parent_path(), error))
 			{
@@ -501,12 +503,60 @@ namespace PackBuilder
 				AddEntry(writer, 0, AssetType::None, AssetPack::Kind::Shader, ProjectPaths::ToStored(shader), bytes);
 				m_Shaders++;
 			}
+			if (!shipping)
+			{
+				AddSources(project, writer, shaders);
+			}
 			return true;
+		}
+
+		// A developer's pack (not Build Game's) names the files it was built from as they were then, and the project's folders:
+		// the player says when the pack is older than its project (AssetFiles::FindChangedPackSources). A shipped game has no
+		// project beside it and doesn't carry the developer's paths
+		void AddSources(const Project& project, AssetPack::Writer& writer, const std::vector<std::string>& shaders)
+		{
+			auto absolute = [](const std::string& path)
+			{
+				std::error_code error;
+				return fs::absolute(fs::u8path(path), error).lexically_normal().generic_u8string();
+			};
+			std::vector<std::string> files = { project.FilePath };
+			for (const auto& [key, file] : m_Files)
+			{
+				files.push_back(file.DiskPath);
+			}
+			files.insert(files.end(), shaders.begin(), shaders.end());
+			if (!m_ScriptAssembly.empty())
+			{
+				files.push_back(m_ScriptAssembly);
+			}
+
+			YAML::Emitter out;
+			out << YAML::BeginMap;
+			out << YAML::Key << "Folders" << YAML::Value << YAML::BeginSeq;
+			for (const std::string& folder : m_ProjectFolders)
+			{
+				out << absolute(folder);
+			}
+			out << YAML::EndSeq;
+			out << YAML::Key << "Files" << YAML::Value << YAML::BeginSeq; // each: path, size, write time
+			for (const std::string& file : files)
+			{
+				uint64_t size = 0;
+				int64_t writeTime = 0;
+				CookFiles::GetFileState(fs::u8path(file), size, writeTime);
+				out << YAML::Flow << YAML::BeginSeq << absolute(file) << size << writeTime << YAML::EndSeq;
+			}
+			out << YAML::EndSeq << YAML::EndMap;
+			const std::string text = out.c_str();
+			AddEntry(writer, 0, AssetType::None, AssetPack::Kind::File, AssetFiles::PackSourcesFile, std::vector<uint8_t>(text.begin(), text.end()));
 		}
 
 		std::map<std::string, PackFile> m_Files; // by the path a saved file writes
 		std::deque<std::string> m_Queue;
 		std::vector<std::string> m_Errors;
+		std::vector<std::string> m_ProjectFolders; // the project's folders that go in whole
+		std::string m_ScriptAssembly;              // where the game's script assembly was copied from
 		uint32_t m_ModelsImported = 0, m_ModelsCached = 0, m_MapsCooked = 0, m_MapsCached = 0, m_Shaders = 0, m_ShadersLeftOut = 0, m_Entries = 0;
 		uint64_t m_StoredBytes = 0, m_OriginalBytes = 0;
 	};

@@ -54,7 +54,9 @@ Coordinates are the engine's: meters, Y up, a car facing along -Z; relative to t
   `Gantry` (false: a start and finish gantry over the line), `GantryHeight` (7),
   `MeshTolerance` (0.05 m) and `MeshMaxLength` (50 m): the models keep only the cross sections their shape needs. Where
   the track is straight and even, one quad spans many samples (up to MeshMaxLength), as long as the samples left out
-  stay within MeshTolerance of it; chunk starts, curb stripes and changes of walls or curbs are always kept. The quads of
+  stay within MeshTolerance of it and its slope along the track stays within `MeshMaxAngle` (0.1 degrees) of theirs: a
+  quad that is close but tilted folds the road at its ends, and the wheels (the colliders are these meshes) feel each
+  fold as a bump. Chunk starts, curb stripes and changes of walls or curbs are always kept. The quads of
   one surface share their corners and are shaded smooth along the track. The center line keeps every sample.
 
 The script prints the track's length, its chunks, how far its lowest and highest points are apart, and each model's

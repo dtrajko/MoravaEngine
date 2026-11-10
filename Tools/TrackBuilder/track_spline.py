@@ -53,6 +53,7 @@ SETTINGS = {
     "GantryHeight": 7.0,    # meters from the road to the beam's underside
     "MeshTolerance": 0.05,  # meters: the models keep a cross section only where leaving it out would move the surface more
     "MeshMaxLength": 50.0,  # meters: the longest a model's quad gets along the track (a long straight: a few of them)
+    "MeshMaxAngle": 0.1,    # degrees: how far a quad's slope along the track may be from the surface's it replaces
 }
 
 
@@ -198,9 +199,13 @@ def simplify_samples(samples, total, settings):
     """The samples the models are made of: where the track is straight, level and of one width and bank, a quad can run
     from one sample to one much further on with the same shape, so the samples between are left out. Each sample kept
     is the furthest one from the last kept whose left-out samples all stay within MeshTolerance of the quad's straight
-    edges (the road's edges, the walls' tops and outer feet), at most MeshMaxLength on. A sample where something changes
-    is always kept: a chunk's start, a curb stripe's, a change of walls, curbs or the curbs' side. Returns indices."""
+    edges (the road's edges, the walls' tops and outer feet), at most MeshMaxLength on, and whose surface between them
+    runs within MeshMaxAngle of the quad's direction: a quad that is close but tilted makes a fold at its ends, which a
+    fast car feels as a bump (with 0.05 m alone, folds of up to 2.8 degrees on the circuit's crests). A sample where
+    something changes is always kept: a chunk's start, a curb stripe's, a change of walls, curbs or the curbs' side.
+    Returns indices."""
     tolerance = settings["MeshTolerance"]
+    max_angle = math.radians(settings["MeshMaxAngle"])
     max_length = settings["MeshMaxLength"]
     chunk_length = settings["ChunkLength"]
     stripe = settings["CurbStripe"]
@@ -235,6 +240,14 @@ def simplify_samples(samples, total, settings):
             t = (distance[k] - distance[i]) / span
             for a, b, c in zip(first, last, profiles[k]):
                 if length(sub(c, add(a, mul(sub(b, a), t)))) > tolerance:
+                    return False
+        # The surface's slope along the track, sample to sample, against the quad's: measured against each sample's up, so
+        # a curve's turn doesn't count (the wheels feel a fold in the slope, not the facets of a bend)
+        chords = [normalize(sub(b, a)) for a, b in zip(first, last)]
+        for k in range(i, j):
+            up = samples[k]["Up"]
+            for chord, c, d in zip(chords, profiles[k], profiles[(k + 1) % count]):
+                if abs(math.asin(max(-1.0, min(1.0, dot(chord, up)))) - math.asin(max(-1.0, min(1.0, dot(normalize(sub(d, c)), up))))) > max_angle:
                     return False
         return True
 

@@ -12,15 +12,22 @@ window, read what its log says, and compile files with GCC as the Linux CI build
 
 ## Before you start
 
-- **Build first.** The scripts run what is in `build/Debug` (`-Config Release` for a Release build):
+- **Build first.** The scripts run what is in `build/Debug` (`-Config Release` or `-Config RelWithDebInfo` for the others):
 
   ```powershell
   cmake --build D:\Workspace\MoravaEngine\build --config Debug --parallel -- /nologo /v:minimal
   ```
 
+  Debug is slow on big scenes: unoptimized C++ spends most of a frame in the editor's UI and in recording the frame
+  (measured 2026-11-10 on the racing circuit: 22 fps in Debug, over 200 in Release). **RelWithDebInfo** is optimized and
+  keeps the debug symbols, with breakpoints and the call stack in Visual Studio (stepping jumps where the optimizer moved
+  code, and some variables show as optimized away). Asserts are off in it, as in Release (`HZ_RELEASE`). Build it with
+  `--config RelWithDebInfo`; it goes to `build/RelWithDebInfo`.
+
   Close an open editor before building: Windows locks its executable and the link fails (`LNK1168`).
 - **The player reads cooked files.** It doesn't link assimp or shaderc (Phase 10.3): build a pack and run that, or open the
-  project in the editor once so its caches are filled.
+  project in the editor once so its caches are filled. A pack older than its project still runs, as it was built: the
+  log warns (`The pack ... is older than its project`) with the files changed since, and the window's title says so.
 
   ```powershell
   # From the repository's root: writes <Project>\Build\Game.mpak and the game's scripts beside it. Exit code 1: not written
@@ -63,7 +70,7 @@ scripts. The whole log is in `Output/MoravaPlayer.log` (or `MoravaEngine.log`).
 | `-Capture <name.png>` | A screenshot of the window, in `Output/` (or at the path given) |
 | `-CaptureAfter <s>` | When to take it, in seconds after the window appeared (default: 3 s before it closes) |
 | `-Crop x,y,w,h`, `-Zoom <n>` | Keep only that part of the screenshot, enlarged (pixels stay sharp) |
-| `-Config <name>` | `Debug` (default) or `Release` |
+| `-Config <name>` | `Debug` (default), `Release` or `RelWithDebInfo` |
 | `-Log <file>` | Where the log goes (default `Output/<exe>.log`) |
 | `-Extra <options>` | More engine options, as written on its command line (see below) |
 
