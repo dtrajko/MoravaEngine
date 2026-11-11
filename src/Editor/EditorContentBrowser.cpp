@@ -1,10 +1,10 @@
-// The Content Browser (docs/engine/Game_Engine_Runtime_Guide.html, 6.1): the open project's folder (or the engine's), as
-// icons. Double-click: a folder opens, a scene opens, a prefab is placed where the camera looks, a script opens in the
-// code editor, a model is loaded, an .hdr becomes the environment, a material goes to the Material Library, anything
-// else opens in the system's program. Drag a file onto the viewport, the Scene Hierarchy, the Inspector or a panel that
-// takes it; drag an entity from the Scene Hierarchy here to save it as a prefab in the folder shown. The folder is read
-// again every second, so files made elsewhere show up by themselves. Replaces H2M's ContentBrowserPanelH2M, which only
-// knew the engine's folder.
+// The Content Browser (docs/engine/Game_Engine_Runtime_Guide.html, 6.1): the open project's folder (or the engine's),
+// as icons. Double-click: a folder opens, a scene opens, a project (.mproject) opens, a prefab is placed where the
+// camera looks, a script opens in the code editor, a model is loaded, an .hdr becomes the environment, a material goes
+// to the Material Library, anything else opens in the system's program. Drag a file onto the viewport, the Scene
+// Hierarchy, the Inspector or a panel that takes it; drag an entity from the Scene Hierarchy here to save it as a
+// prefab in the folder shown. The folder is read again every second, so files made elsewhere show up by themselves.
+// Replaces H2M's ContentBrowserPanelH2M, which only knew the engine's folder.
 
 
 #include "Animation/AnimatorController.h"
@@ -66,11 +66,11 @@ static std::string Lower(std::string text)
 	return text;
 }
 
-// The engine's folder is the repository's root: of what is there, only the engine's own content is shown, not the
-// build, the libraries, the documentation or the DLLs
+// The engine's folder is the repository's root: of what is there, only the engine's own content and its projects are
+// shown, not the build, the libraries, the documentation or the DLLs
 static bool IsEngineContentFolder(const std::string& name)
 {
-	static const std::array<const char*, 7> folders = { ASSETS_DIR, FONTS_DIR, MODELS_DIR, RESOURCES_DIR, SCENES_DIR, SHADERS_DIR, TEXTURES_DIR };
+	static const std::array<const char*, 8> folders = { ASSETS_DIR, FONTS_DIR, MODELS_DIR, PROJECTS_DIR, RESOURCES_DIR, SCENES_DIR, SHADERS_DIR, TEXTURES_DIR };
 	return std::find(folders.begin(), folders.end(), name) != folders.end();
 }
 
@@ -186,6 +186,10 @@ static void OpenEntry(const ContentEntry& entry)
 	{
 		OpenAnimatorController(path);
 	}
+	else if (entry.Extension == Project::FileExtension)
+	{
+		RequestOpenProject(path);
+	}
 	else if (EnvMapVulkanSceneLoader::IsModelFile(path))
 	{
 		s_PendingModelFilename = path; // loaded at the start of the next frame, where the camera looks
@@ -210,6 +214,7 @@ static const char* GetOpenHint(const ContentEntry& entry)
 	if (entry.Extension == ".hdr")                                       return "Double-click: the environment map";
 	if (entry.Extension == ".mmat")                                      return "Double-click: load it into the Material Library";
 	if (entry.Extension == AnimatorController::FileExtension)            return "Double-click: edit it in the Animator panel.\nDrag it onto an Animator's controller (Inspector)";
+	if (entry.Extension == Project::FileExtension)                       return "Double-click: open the project";
 	if (EnvMapVulkanSceneLoader::IsModelFile(entry.Path.u8string()))    return "Double-click: load the model.\nDrag it onto the viewport to place it";
 	return "Double-click: open it in the system's program. Drag it onto a field that takes it";
 }
@@ -266,6 +271,18 @@ static void Breadcrumbs(const fs::path& root)
 void OnImGuiRenderContentBrowser()
 {
 	ImGui::Begin("Content Browser");
+	// Another project opened (double-clicked here, or from the File menu): show its folder
+	static std::string s_ShownProject;
+	const std::string openProject = Project::GetOpen() ? Project::GetOpen()->GetDirectory() : "";
+	if (openProject != s_ShownProject)
+	{
+		s_ShownProject = openProject;
+		if (!openProject.empty())
+		{
+			s_BrowseEngine = false;
+			s_Folder.clear();
+		}
+	}
 	const fs::path root = GetRoot();
 	std::error_code error;
 	fs::path folder = root / s_Folder;

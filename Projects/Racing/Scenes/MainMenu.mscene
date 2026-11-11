@@ -41,7 +41,7 @@ RenderSettings:
     HalfResolution: true
     RayTraced: true
     Rays: 2
-  Antialiasing: Off
+  Antialiasing: SMAA
   Bloom:
     Enabled: true
     Threshold: 1
@@ -117,7 +117,7 @@ Entities:
       FlatRadius: 500
       FlatBlend: 150
       Spacing: 4
-      MaxVertices: 2000
+      MaxVertices: 6000
       SandHeight: 4
       RockSlope: 38
       RockHeight: 65

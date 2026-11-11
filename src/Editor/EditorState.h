@@ -496,7 +496,7 @@ void RequestOpenScene(const std::string& filepath = "");
 // scene), one opened from its .mproject file (with its start scene), or none (a new scene). Each replaces the scene, so it
 // asks about unsaved changes first.
 void RequestNewProject();
-void RequestOpenProject();
+void RequestOpenProject(const std::string& filepath = ""); // empty: chosen in a dialog
 void RequestCloseProject();
 
 // Writes the open project's file (after an edit in the Project panel)

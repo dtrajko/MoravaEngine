@@ -12,7 +12,8 @@ namespace Racing
     /// It steers at a point ahead on the center line (farther the faster it goes), and keeps to a speed it can take the
     /// curves ahead with: for each stretch ahead, the speed whose sideways acceleration in that stretch's curve is
     /// Cornering, and from which it can still brake (Braking) by then. Each lap is logged with its time and how far the car
-    /// strayed from the center line.
+    /// strayed from the center line. A car that hardly moves for StuckTime though the driver wants to go (against a wall, turned
+    /// around after a spin) is Stuck: the race puts it back on the track (RaceManager), as the player's Respawn key would.
     /// </summary>
     public sealed class TestDriver
     {
@@ -24,6 +25,13 @@ namespace Racing
 
         /// <summary>m/s^2 it brakes with, for its look ahead.</summary>
         public float Braking = 20.0f;
+        /// <summary>Seconds under StuckSpeed with the throttle on before it counts as stuck.</summary>
+        public float StuckTime = 3.0f;
+        /// <summary>m/s: slower than this, the car isn't getting anywhere.</summary>
+        public float StuckSpeed = 2.0f;
+
+        /// <summary>The car hasn't moved for StuckTime though the driver wanted it to: the race respawns it.</summary>
+        public bool Stuck => stuckFor >= StuckTime;
 
         readonly Centerline line;
         readonly float cornering;
@@ -31,6 +39,7 @@ namespace Racing
         float time, lapStart = -1.0f, maxOff, nextLog, previousS = -1.0f, topSpeed;
         int laps;
         float steer;
+        float stuckFor;
         float startTime = -1.0f;        // when it first moved: the 0-100 and 0-200 km/h times count from it
         bool logged100, logged200;
 
@@ -52,6 +61,13 @@ namespace Racing
 
         Vector3 P(int i) => line.Points[i].Position;
         int Ahead(int i, float meters) => line.Ahead(i, meters);
+
+        /// <summary>The car was put back on the track: it looks for its place on the whole line again.</summary>
+        public void OnRespawn()
+        {
+            nearest = -1;
+            stuckFor = 0.0f;
+        }
 
         public Controls Drive(Vector3 position, Vector3 forward, Vector3 right, float speed, float dt)
         {
@@ -100,6 +116,7 @@ namespace Racing
                 controls.Throttle = 1.0f;
             else if (speed > limit + 2.0f)
                 controls.Brake = Math.Clamp((speed - limit) / 8.0f, 0.2f, 1.0f);
+            stuckFor = controls.Throttle > 0.0f && MathF.Abs(speed) < StuckSpeed && startTime >= 0.0f ? stuckFor + dt : 0.0f;
 
             // Laps: the start line is the center line's distance 0
             float s = line.Points[nearest].S;

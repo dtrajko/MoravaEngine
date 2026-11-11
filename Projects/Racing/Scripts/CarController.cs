@@ -117,6 +117,8 @@ namespace Racing
 
         /// <summary>The test driver drives it (TestDriver on, and the center line found).</summary>
         public bool TestDriving => driver != null;
+        /// <summary>The test driver is stuck (TestDriver.Stuck): the race respawns the car.</summary>
+        public bool TestDriverStuck => driver != null && driver.Stuck;
 
         /// <summary>It touched the terrain since the last time this was read (and cleared): it has fallen off the track.</summary>
         public bool TouchedTerrain { get; set; }
@@ -170,6 +172,7 @@ namespace Racing
             wallTime = 0.0f;
             toFirstGear = true;
             TouchedTerrain = false;
+            driver?.OnRespawn();
         }
 
         protected override void OnCollisionEnter(Collision collision)

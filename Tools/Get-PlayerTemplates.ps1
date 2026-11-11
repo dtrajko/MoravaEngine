@@ -5,7 +5,7 @@
 .DESCRIPTION
     The Build workflow uploads a player template per platform from its Release builds (docs/engine/Game_Engine_Runtime_Guide.html,
     11.2): the player, ScriptCore, the private .NET and the license notices. This takes them from the latest successful run on a
-    branch and puts each in PlayerTemplates/<platform> beside every editor build found (build/Debug, build/Release, build), where
+    branch and puts each in PlayerTemplates/<platform> beside every editor build found (build/Debug, build/Release, build/RelWithDebInfo, build/MinSizeRel, build), where
     Build Game looks. Needs the GitHub CLI, logged in (gh auth login).
 
     A template belongs to the engine of its commit: download again after master changed, so the player matches the editor.
@@ -50,7 +50,7 @@ if (-not $RunId) {
 }
 
 if (-not $Destination) {
-    $Destination = @('Debug', 'Release', 'RelWithDebInfo', '.') | ForEach-Object { Join-Path $repo "build/$_" } |
+    $Destination = @('Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel', '.') | ForEach-Object { Join-Path $repo "build/$_" } |
         Where-Object { (Test-Path (Join-Path $_ 'MoravaEngine.exe')) -or (Test-Path (Join-Path $_ 'MoravaEngine')) }
     if (-not $Destination) { throw "No editor build under $repo/build: build MoravaEngine first, or name a -Destination" }
 }

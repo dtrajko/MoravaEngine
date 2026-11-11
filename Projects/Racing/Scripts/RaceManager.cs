@@ -213,6 +213,8 @@ namespace Racing
                     RaceTime += dt;
                     if (respawnAsked)
                         Respawn("the key");
+                    else if (car!.TestDriverStuck)
+                        Respawn("the test driver was stuck");
                     UpdateProgress();
                     UpdateOffTrack(dt);
                     UpdateWrongWay(dt);

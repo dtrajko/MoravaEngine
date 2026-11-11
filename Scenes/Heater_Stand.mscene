@@ -1,0 +1,418 @@
+Scene:
+  Version: 1
+  Name: Heater_Stand
+EditorCamera:
+  Translation: [-102.10049, 24.70819, 64.43779]
+  Rotation: [13.199958, -56.3909, 0]
+  FieldOfView: 45
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Antialiasing: SMAA
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 13459810789903327349
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/rocky_ridge_puresky_2k.hdr
+      FileID: 6618138474726142396
+      Rotation: 0
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+      Haze: {Enabled: false, Density: 0.0015, StartDistance: 150, HeightFalloff: 0.015, BaseHeight: 0}
+  - ID: 15616183974818644139
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [58.33234, 26.299686, -45.42856]
+      Scale: [0.99999994, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.5272906, 0.109459504]
+      Intensity: 0.49687073
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 5961264181333757587
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [38.19736, 5, 62.124084]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 45
+      NearClip: 0.01
+      FarClip: 1000
+  - ID: 1839366639152128238
+    Name: cylinder.obj
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 35.77258, 1]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 9057134912390436662
+    Name: Cylinder
+    Parent: 1839366639152128238
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
+  - ID: 15906876885128584154
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [-13.287939, 31.47058, 0]
+      Rotation: [0, -0, -90]
+      Scale: [0.9999965, 12.854586, 0.99998933]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 8961254685190105124
+    Name: Cylinder
+    Parent: 15906876885128584154
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
+  - ID: 16920207731891344644
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [-0.02146101, -37.130054, 6.4150867]
+      Rotation: [0, -0, -90]
+      Scale: [0.9999965, 1.3105483, 0.99994236]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 17430132110602877529
+    Name: Cylinder
+    Parent: 16920207731891344644
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7598003040701330780
+        File: assets/Materials/None.mmat
+        Name: None
+  - ID: 5206390356794625962
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [-25.772045, -37.130054, 6.4150867]
+      Rotation: [0, -0, -90]
+      Scale: [0.9999965, 1.3105483, 0.99993384]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 12352959161673997350
+    Name: Cylinder
+    Parent: 5206390356794625962
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7598003040701330780
+        File: assets/Materials/None.mmat
+        Name: None
+  - ID: 8884857784581727624
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [-0.02146101, -37.130054, -6.7147365]
+      Rotation: [0, -0, -90]
+      Scale: [0.9999965, 1.3105483, 0.99993396]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 2250752210016208305
+    Name: Cylinder
+    Parent: 8884857784581727624
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7598003040701330780
+        File: assets/Materials/None.mmat
+        Name: None
+  - ID: 15549746634835690220
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [-25.829762, -37.130054, -6.7147365]
+      Rotation: [0, -0, -90]
+      Scale: [0.9999965, 1.3105483, 0.99992543]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 18276551158190110567
+    Name: Cylinder
+    Parent: 15549746634835690220
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7598003040701330780
+        File: assets/Materials/None.mmat
+        Name: None
+  - ID: 16316410092671623313
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [-13.287939, -27.605324, 0]
+      Rotation: [0, -0, -90]
+      Scale: [0.9999965, 12.854586, 0.99998194]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 6091556371488107150
+    Name: Cylinder
+    Parent: 16316410092671623313
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
+  - ID: 6092550210348917880
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [-13.287939, 17.740831, 0]
+      Rotation: [0, -0, -90]
+      Scale: [0.9999965, 12.854586, 0.99997324]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 15491735257001384804
+    Name: Cylinder
+    Parent: 6092550210348917880
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
+  - ID: 3673570736517744989
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [-13.287939, 3.5002074, 0]
+      Rotation: [0, -0, -90]
+      Scale: [0.9999965, 12.854586, 0.9999676]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 1979940836739838865
+    Name: Cylinder
+    Parent: 3673570736517744989
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
+  - ID: 7010827624818710662
+    Name: Cylinder
+    Parent: 0
+    Transform:
+      Translation: [-13.287939, -11.124503, 0]
+      Rotation: [0, -0, -90]
+      Scale: [0.9999965, 12.854586, 0.99996376]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 15166862440400549730
+    Name: Cylinder
+    Parent: 7010827624818710662
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
+  - ID: 16538538362470455494
+    Name: cylinder.obj
+    Parent: 0
+    Transform:
+      Translation: [-25.728706, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 35.77258, 1]
+    Model:
+      File: Models/Primitives/cylinder.obj
+      FileID: 2722251172588901792
+  - ID: 5411757930656280994
+    Name: Cylinder
+    Parent: 16538538362470455494
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
+  - ID: 13356702385278766988
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [-12.833721, -16.039505, 3.3010044]
+      Rotation: [0, -0, 0]
+      Scale: [19.958128, 11.669578, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+  - ID: 1382279407874031530
+    Name: Cube
+    Parent: 13356702385278766988
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
+  - ID: 1879538750518556724
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [0.010923862, -35.148193, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 8.6311455]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+  - ID: 8823933884016052911
+    Name: Cube
+    Parent: 1879538750518556724
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
+  - ID: 15788300410019857533
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [-25.75044, -35.148193, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 8.6311455]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+  - ID: 1084381180053183228
+    Name: Cube
+    Parent: 15788300410019857533
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 479566400812543355
+        File: assets/Materials/Material_3.mmat
+        Name: Material
