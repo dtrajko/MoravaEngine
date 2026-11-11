@@ -70,7 +70,7 @@ scripts. The whole log is in `Output/MoravaPlayer.log` (or `MoravaEngine.log`).
 | `-Capture <name.png>` | A screenshot of the window, in `Output/` (or at the path given) |
 | `-CaptureAfter <s>` | When to take it, in seconds after the window appeared (default: 3 s before it closes) |
 | `-Crop x,y,w,h`, `-Zoom <n>` | Keep only that part of the screenshot, enlarged (pixels stay sharp) |
-| `-Config <name>` | `Debug` (default), `Release` or `RelWithDebInfo` |
+| `-Config <name>` | `Debug` (default), `Release`, `RelWithDebInfo` or `MinSizeRel` |
 | `-Log <file>` | Where the log goes (default `Output/<exe>.log`) |
 | `-Extra <options>` | More engine options, as written on its command line (see below) |
 

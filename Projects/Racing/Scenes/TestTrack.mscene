@@ -5,6 +5,8 @@ EditorCamera:
   Translation: [60, 105, 160]
   Rotation: [20, 30, 0]
   FieldOfView: 60
+RenderSettings:
+  Antialiasing: SMAA
 Entities:
   - ID: 1001
     Name: Camera

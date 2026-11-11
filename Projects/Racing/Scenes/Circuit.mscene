@@ -8,6 +8,7 @@ EditorCamera:
 RenderSettings:
   RayTracing:
     Enabled: false
+  Antialiasing: TAA
 Entities:
   - ID: 1001
     Name: Camera
@@ -368,10 +369,10 @@ Entities:
         Track: {Entity: 3000}
         StartLights: {Entity: 4001}
         WrongWayText: {Entity: 4010}
-        AuthorTime: {Float: 81}
-        GoldTime: {Float: 86}
-        SilverTime: {Float: 98}
-        BronzeTime: {Float: 122}
+        AuthorTime: {Float: 160}
+        GoldTime: {Float: 170}
+        SilverTime: {Float: 195}
+        BronzeTime: {Float: 240}
     UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
   - ID: 4001
     Name: Start Lights

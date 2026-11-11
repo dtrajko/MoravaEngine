@@ -455,16 +455,16 @@ void RequestNewProject()
 	}
 }
 
-void RequestOpenProject()
+void RequestOpenProject(const std::string& filepath)
 {
 	if (RefusedWhilePlaying("Open Project"))
 	{
 		return;
 	}
-	const std::string filepath = FileDialogs::OpenFile({ { "Project", "mproject" } }, GetProjectsFolderForDialog());
-	if (!filepath.empty())
+	const std::string path = filepath.empty() ? FileDialogs::OpenFile({ { "Project", "mproject" } }, GetProjectsFolderForDialog()) : filepath;
+	if (!path.empty())
 	{
-		RequestSceneOperation(SceneOperation::OpenProject, filepath);
+		RequestSceneOperation(SceneOperation::OpenProject, path);
 	}
 }
 
