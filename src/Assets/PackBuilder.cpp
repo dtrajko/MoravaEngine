@@ -34,7 +34,7 @@ namespace PackBuilder
 	static const char* const s_EngineFiles[] = {
 		ASSETS_DIR "/textures/BRDF_LUT.tga",
 		FONTS_DIR "/opensans/OpenSans-Regular.ttf",
-		TEXTURES_DIR "/HDR/rocky_ridge_puresky_2k.hdr",
+		TEXTURES_DIR "/HDR/quarry_04_puresky_2k.hdr",
 		TEXTURES_DIR "/dirt.png",
 		TEXTURES_DIR "/normal_map_default.png",
 		TEXTURES_DIR "/plain.png",

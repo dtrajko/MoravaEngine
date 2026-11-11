@@ -39,7 +39,7 @@ import sys
 # The data and the spline are shared with preview_track.py (plain Python): track_spline.py, beside this file
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from track_spline import (add, sub, mul, dot, cross, length, normalize, WORLD_UP, load_track, sample_track,  # noqa: E402
-                          simplify_samples)
+                          simplify_samples, road_twist)
 
 
 def to_blender(p):
@@ -78,6 +78,18 @@ class MeshBuilder:
             uv = (uv[3], uv[2], uv[1], uv[0])
         self.faces.append(tuple(self.vertex(p, surface) for p in (a, b, c, d)))
         self.uvs.extend(uv)
+
+    def triangle(self, a, b, c, uv, facing, surface=None):
+        # As quad, for one triangle: the road's strips are joined by triangles of their own (build_parts)
+        normal = cross(sub(b, a), sub(c, a))
+        if dot(normal, facing) < 0.0:
+            a, c = c, a
+            uv = (uv[2], uv[1], uv[0])
+        self.faces.append(tuple(self.vertex(p, surface) for p in (a, b, c)))
+        self.uvs.extend(uv)
+
+    def triangles(self):
+        return sum(len(face) - 2 for face in self.faces)
 
     def empty(self):
         return not self.faces
@@ -131,6 +143,23 @@ def build_parts(samples, settings, total, mesh_samples=None):
     stripe = settings["CurbStripe"]
     along = samples if mesh_samples is None else mesh_samples
     count = len(along)
+
+    # The road's strips across its width: where the bank changes, a quad wall to wall is twisted and folds along its
+    # diagonal by about twist / length (road_twist), up to 5.6 degrees on the circuit; n strips fold n times less. Each
+    # cross section is cut into as many as the quads on either side of it need (one where the bank holds: the straights
+    # and the middle of a turn stay a quad wide), and two cross sections with different counts are joined by triangles
+    # between their corners, so no strip ends in the middle of another (no T-junction: no crack to see through)
+    max_fold = math.radians(settings["MeshMaxFold"])
+    need = []
+    for j in range(count):
+        s0, s1 = along[j], along[(j + 1) % count]
+        span = (s1["s"] if s1["s"] > s0["s"] else total) - s0["s"]
+        n = max(1, int(math.ceil(abs(road_twist(s0, s1)) / (span * max_fold) - 1e-9)))
+        # A power of two: neighboring cross sections mostly have the same count, and where they don't, every corner of
+        # the coarser one is a corner of the finer one (counts like 10 and 12 make skewed triangles: folds of 1 degree)
+        need.append(min(32, 1 << (n - 1).bit_length()))
+    strips = [max(need[j - 1], need[j]) for j in range(count)]
+    print("build_track: the road in 1 to %d strips across (MeshMaxFold %.2f degrees)" % (max(strips), settings["MeshMaxFold"]))
     for j in range(count):
         s0 = along[j]
         s1 = along[(j + 1) % count]
@@ -145,13 +174,27 @@ def build_parts(samples, settings, total, mesh_samples=None):
         inner = s0["Inner"]
         left_curb = curb_w if curbs and inner < 0.0 else 0.0
         right_curb = curb_w if curbs and inner > 0.0 else 0.0
-        a = profile_point(s0, -(hw - left_curb), 0.0)
-        b = profile_point(s0, hw - right_curb, 0.0)
-        c = profile_point(s1, hw1 - right_curb, 0.0)
-        d = profile_point(s1, -(hw1 - left_curb), 0.0)
         v1 = s1["s"] if s1["s"] > s0["s"] else total  # the last quad closes the loop at the first sample
-        road.quad(a, b, c, d, ((-(hw - left_curb), s0["s"]), (hw - right_curb, s0["s"]), (hw1 - right_curb, v1), (-(hw1 - left_curb), v1)),
-                  add(s0["Up"], s1["Up"]), "road")
+        facing = add(s0["Up"], s1["Up"])
+        n0, n1 = strips[j], strips[(j + 1) % count]
+        row0 = [-(hw - left_curb) + (2.0 * hw - left_curb - right_curb) * i / n0 for i in range(n0 + 1)]    # across, at s0
+        row1 = [-(hw1 - left_curb) + (2.0 * hw1 - left_curb - right_curb) * i / n1 for i in range(n1 + 1)]  # at s1
+        if n0 == 1 and n1 == 1:
+            road.quad(profile_point(s0, row0[0], 0.0), profile_point(s0, row0[1], 0.0), profile_point(s1, row1[1], 0.0),
+                      profile_point(s1, row1[0], 0.0), ((row0[0], s0["s"]), (row0[1], s0["s"]), (row1[1], v1), (row1[0], v1)), facing, "road")
+        else:
+            # Zip the two rows of corners together, left to right: each triangle takes the next corner of the row that
+            # is behind (by its place across the road, 0 to 1), so the diagonals all lean the same way
+            i0 = i1 = 0
+            while i0 < n0 or i1 < n1:
+                p0, p1 = (s0, row0[i0], s0["s"]), (s1, row1[i1], v1)
+                if i1 == n1 or (i0 < n0 and (i0 + 1) / n0 <= (i1 + 1) / n1):
+                    i0 += 1
+                    p2 = (s0, row0[i0], s0["s"])
+                else:
+                    i1 += 1
+                    p2 = (s1, row1[i1], v1)
+                road.triangle(*(profile_point(p[0], p[1], 0.0) for p in (p0, p2, p1)), tuple((p[1], p[2]) for p in (p0, p2, p1)), facing, "road")
 
         # The curb: red and white stripes, flush with the road, on the inner side of the turn only
         if curbs:
@@ -354,7 +397,7 @@ def main():
         obj.data.materials.append(material(part_name))
         model = MODEL_OF_PART[part_name]
         objects_of_model.setdefault(model, []).append(obj)
-        triangles_of_model[model] = triangles_of_model.get(model, 0) + 2 * len(builder.faces)
+        triangles_of_model[model] = triangles_of_model.get(model, 0) + builder.triangles()
 
     written = []
     for model, objects in sorted(objects_of_model.items()):
