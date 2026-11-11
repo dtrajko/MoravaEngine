@@ -6,6 +6,7 @@
 #include "VulkanAllocatorH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "Renderer/VulkanTarget.h"
 #include "H2M/Utilities/StringUtilsH2M.h"
 
 #include "Core/Log.h"
@@ -148,7 +149,7 @@ namespace H2M
 
 		// Initialize VulkanMemoryAllocator
 		VmaAllocatorCreateInfo allocatorInfo = {};
-		allocatorInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+		allocatorInfo.vulkanApiVersion = MoravaVulkanVersion;
 		allocatorInfo.physicalDevice = device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 		allocatorInfo.device = device->GetVulkanDevice();
 		allocatorInfo.instance = VulkanContextH2M::GetInstance();

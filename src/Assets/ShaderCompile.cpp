@@ -1,6 +1,7 @@
 #include "ShaderCompile.h"
 
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
+#include "Renderer/VulkanTarget.h"
 
 #include <shaderc/shaderc.hpp>
 
@@ -71,7 +72,9 @@ namespace ShaderCompile
 	{
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
-		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+		// shaderc's version numbers are Vulkan's own encoding (variant 0), so the target version converts as it is
+		static_assert(static_cast<uint32_t>(shaderc_env_version_vulkan_1_2) == VK_API_VERSION_1_2, "shaderc's Vulkan version encoding changed");
+		options.SetTargetEnvironment(shaderc_target_env_vulkan, static_cast<shaderc_env_version>(MoravaVulkanVersion));
 		options.SetIncluder(std::make_unique<Includer>());
 
 		const shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, GetShaderKind(stage), path.c_str(), options);

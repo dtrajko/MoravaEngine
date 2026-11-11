@@ -7,6 +7,7 @@
 #include "VulkanContextH2M.h"
 #include "Core/Application.h"
 #include "Project/Project.h"
+#include "Renderer/VulkanTarget.h"
 
 #include "VulkanH2M.h"
 
@@ -51,7 +52,7 @@ namespace H2M
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.pApplicationName = "Hazel";
 		appInfo.pEngineName = "Hazel";
-		appInfo.apiVersion = VK_API_VERSION_1_2;
+		appInfo.apiVersion = MoravaVulkanVersion;
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Extensions and Validation

@@ -706,6 +706,7 @@ void Application::InitWindow(WindowSpecification windowSpecification)
 	RendererBasic::AppendRendererInfo(windowSpecification);
 
 	m_Window = Window::Create(windowSpecification);
+	RendererBasic::AppendContextVersion(m_Window);
 	m_Window->SetEventCallback(APP_BIND_EVENT_FN(Application::OnEvent));
 }
 
@@ -789,6 +790,29 @@ const char* Application::GetOSName()
 	return "Linux";
 #else
 	return "Unknown OS";
+#endif
+}
+
+const char* Application::GetArchitectureName()
+{
+#if defined(_M_ARM64) || defined(__aarch64__)
+	return "arm64";
+#elif defined(_M_X64) || defined(__x86_64__)
+	return "x64";
+#elif defined(_M_IX86) || defined(__i386__)
+	return "x86";
+#else
+	return "Unknown architecture";
+#endif
+}
+
+const char* Application::GetBuildConfig()
+{
+	// Empty for a single-configuration build (Makefiles, Ninja) configured without CMAKE_BUILD_TYPE
+#if defined(MORAVA_BUILD_CONFIG)
+	return MORAVA_BUILD_CONFIG[0] != '\0' ? MORAVA_BUILD_CONFIG : "No build type";
+#else
+	return "Unknown";
 #endif
 }
 

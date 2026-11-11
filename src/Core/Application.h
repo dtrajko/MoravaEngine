@@ -144,6 +144,8 @@ public:
 	static const char* GetConfigurationName();
 	static const char* GetPlatformName();
 	static const char* GetOSName(); // Windows, Linux or macOS
+	static const char* GetArchitectureName(); // x64 or arm64, the one the executable was compiled for
+	static const char* GetBuildConfig(); // Debug, RelWithDebInfo, Release or MinSizeRel, from CMake
 
 	void CaptureScreenshot(const std::string& filePath);
 
