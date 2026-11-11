@@ -44,7 +44,8 @@ Coordinates are the engine's: meters, Y up, a car facing along -Z; relative to t
   line. Put the first point in the middle of a straight, with points before and after it on the same line, so the start
   is straight.
 - **Width**: meters from wall to wall. **Bank**: degrees around the direction of travel; positive raises the left edge
-  (for a right turn), negative the right edge (for a left turn). Both blend smoothly to the next point's.
+  (for a right turn), negative the right edge (for a left turn). Both run smoothly through the points (a monotone
+  cubic along the track: no overshoot, held where the points hold them, a smoothstep between two held values).
 - **Walls**, **Curbs**, **Supports**: hold from a point to the next. Curbs go on the inner side of the turn only (the
   side it turns towards); the road runs up to the wall on the outer side.
 - **StartDistance**: how far before the start line the car starts (`Start` in the center line file).
@@ -58,6 +59,10 @@ Coordinates are the engine's: meters, Y up, a car facing along -Z; relative to t
   quad that is close but tilted folds the road at its ends, and the wheels (the colliders are these meshes) feel each
   fold as a bump. Chunk starts, curb stripes and changes of walls or curbs are always kept. The quads of
   one surface share their corners and are shaded smooth along the track. The center line keeps every sample.
+- `MeshMaxFold` (0.25 degrees): where the bank changes, the road twists, and a quad from wall to wall folds along its
+  diagonal (up to 5.6 degrees before turn 1 of the circuit, felt as a bumpy road). There the cross sections stay closer
+  together and the road is cut into strips across (1, 2, 4... up to 32, as many as the quads on either side need), so no
+  fold is larger than this; the straights and the middle of a turn stay one quad wide.
 
 The script prints the track's length, its chunks, how far its lowest and highest points are apart, and each model's
 triangles.

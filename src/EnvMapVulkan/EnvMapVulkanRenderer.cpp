@@ -1966,7 +1966,7 @@ void EnvMapVulkanRenderer::Init()
 	// startup (see Draw).
 	if (s_EnvMapFilename.empty())
 	{
-		s_EnvMapFilename = TEXTURES_DIR "/HDR/rocky_ridge_puresky_2k.hdr";
+		s_EnvMapFilename = TEXTURES_DIR "/HDR/quarry_04_puresky_2k.hdr";
 	}
 	s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap(s_EnvMapFilename);
 

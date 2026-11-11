@@ -54,7 +54,20 @@ SETTINGS = {
     "MeshTolerance": 0.05,  # meters: the models keep a cross section only where leaving it out would move the surface more
     "MeshMaxLength": 50.0,  # meters: the longest a model's quad gets along the track (a long straight: a few of them)
     "MeshMaxAngle": 0.1,    # degrees: how far a quad's slope along the track may be from the surface's it replaces
+    "MeshMaxFold": 0.25,    # degrees: the largest fold between two of the road's triangles where the bank changes (road_twist)
 }
+
+
+def road_twist(s0, s1):
+    """Meters the road's quad from sample s0 to s1 is twisted (where the bank changes): its last corner's height off the
+    plane of the other three. A twisted quad is two triangles with a fold along their diagonal; for a quad Width wide
+    and L long the fold is about twist / L along the track (the car pitches crossing it) and twist / Width across it
+    (it rolls). Before MeshMaxFold the road was one quad wall to wall: up to 5.6 degrees where the circuit's turn 1
+    banks, which the car felt as a bumpy road."""
+    def edge(sample, side):
+        return add(sample["Position"], mul(sample["Right"], side * 0.5 * sample["Width"]))
+    a, b, c, d = edge(s0, -1.0), edge(s0, 1.0), edge(s1, 1.0), edge(s1, -1.0)
+    return dot(sub(sub(c, b), sub(d, a)), normalize(add(s0["Up"], s1["Up"])))
 
 
 def wall_heights(value):
@@ -104,6 +117,54 @@ def catmull_rom(p0, p1, p2, p3, t, alpha=0.5):
     return blend(b1, b2, t1, t2)
 
 
+def smooth_values(knots, values, total):
+    """A value along a closed track through its points' values: a monotone cubic (PCHIP, Fritsch-Carlson) over the
+    distance. It runs through each point without stopping there and never overshoots: flat where the values hold, a
+    single change between two held values a smoothstep, as before. Before, each point's value went to the next by a
+    smoothstep of its own, which stops at every point: a bank changing over several points rose in steps 12 to 15 m apart
+    on the circuit, and 10 m out from the center line each step was a dip and a rise of the road (1.2 degrees in 2 m,
+    before and after turn 1). Returns a function of the distance s (0 to total). Points at the same distance (a point
+    given twice) count once."""
+    xs, ys = [], []
+    for x, y in zip(knots, values):
+        if xs and x - xs[-1] < 1e-6:
+            continue
+        xs.append(x)
+        ys.append(float(y))
+    n = len(xs)
+    if n < 2:
+        value = ys[0] if ys else 0.0
+        return lambda s: value
+    # Closed: the interval after the last point goes to the first, one lap on
+    h = [(xs[(i + 1) % n] + (total if i == n - 1 else 0.0)) - xs[i] for i in range(n)]
+    d = [(ys[(i + 1) % n] - ys[i]) / h[i] for i in range(n)]
+    slopes = []
+    for i in range(n):
+        d0, d1, h0, h1 = d[i - 1], d[i], h[i - 1], h[i]
+        if d0 * d1 <= 0.0:
+            slopes.append(0.0)   # a peak, a dip or where a value starts or stops changing: held there
+        else:
+            w0, w1 = 2.0 * h1 + h0, h1 + 2.0 * h0
+            slopes.append((w0 + w1) / (w0 / d0 + w1 / d1))
+
+    def at(s):
+        s = s % total
+        lo, hi = 0, n          # the last point at or before s (before the first: the last point's interval)
+        while hi - lo > 1:
+            mid = (lo + hi) // 2
+            if xs[mid] <= s:
+                lo = mid
+            else:
+                hi = mid
+        i = lo if s >= xs[0] else n - 1
+        x0 = xs[i] if s >= xs[0] else xs[i] - total
+        t = (s - x0) / h[i]
+        t2, t3 = t * t, t * t * t
+        return ((2 * t3 - 3 * t2 + 1) * ys[i] + (t3 - 2 * t2 + t) * h[i] * slopes[i] +
+                (-2 * t3 + 3 * t2) * ys[(i + 1) % n] + (t3 - t2) * h[i] * slopes[(i + 1) % n])
+    return at
+
+
 def sample_track(points, spacing):
     # A dense polyline first (segment, t, position), then evenly spaced samples along its length
     n = len(points)
@@ -123,6 +184,10 @@ def sample_track(points, spacing):
     total = distances[-1]
     count = max(8, int(round(total / spacing)))
     step = total / count
+    # Width and bank through all the points at once, by the distance along the track (smooth_values)
+    point_s = [distances[i * steps] for i in range(n)]
+    width_at = smooth_values(point_s, [p["Width"] for p in points], total)
+    bank_at = smooth_values(point_s, [p["Bank"] for p in points], total)
 
     samples = []
     k = 0
@@ -140,8 +205,8 @@ def sample_track(points, spacing):
             "s": s,
             "Point": segment,
             "Position": position,
-            "Width": lerp(pa["Width"], pb["Width"], e),
-            "Bank": lerp(pa["Bank"], pb["Bank"], e),
+            "Width": width_at(s),
+            "Bank": bank_at(s),
             # wall heights blend to the next point's like the width (where the next point has walls)
             "WallLeft": lerp(pa["WallLeft"], pb["WallLeft"], e) if pb["Walls"] else pa["WallLeft"],
             "WallRight": lerp(pa["WallRight"], pb["WallRight"], e) if pb["Walls"] else pa["WallRight"],
@@ -201,11 +266,13 @@ def simplify_samples(samples, total, settings):
     is the furthest one from the last kept whose left-out samples all stay within MeshTolerance of the quad's straight
     edges (the road's edges, the walls' tops and outer feet), at most MeshMaxLength on, and whose surface between them
     runs within MeshMaxAngle of the quad's direction: a quad that is close but tilted makes a fold at its ends, which a
-    fast car feels as a bump (with 0.05 m alone, folds of up to 2.8 degrees on the circuit's crests). A sample where
+    fast car feels as a bump (with 0.05 m alone, folds of up to 2.8 degrees on the circuit's crests). Where the bank
+    changes, the quad's twist (road_twist) keeps its fold across the track within MeshMaxFold. A sample where
     something changes is always kept: a chunk's start, a curb stripe's, a change of walls, curbs or the curbs' side.
     Returns indices."""
     tolerance = settings["MeshTolerance"]
     max_angle = math.radians(settings["MeshMaxAngle"])
+    max_fold = math.radians(settings["MeshMaxFold"])
     max_length = settings["MeshMaxLength"]
     chunk_length = settings["ChunkLength"]
     stripe = settings["CurbStripe"]
@@ -236,6 +303,11 @@ def simplify_samples(samples, total, settings):
     def fits(i, j):
         first, last = profiles[i], profiles[j % count]
         span = distance[j] - distance[i]
+        # Where the bank changes, a long quad is twisted: its fold across the track (the car rolls) within MeshMaxFold.
+        # The fold along it is the road's strips' (build_track.py)
+        width = 0.5 * (samples[i]["Width"] + samples[j % count]["Width"])
+        if abs(road_twist(samples[i], samples[j % count])) / width > max_fold:
+            return False
         for k in range(i + 1, j):
             t = (distance[k] - distance[i]) / span
             for a, b, c in zip(first, last, profiles[k]):
