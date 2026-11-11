@@ -9,6 +9,7 @@
 
 #if defined(GRAPHICS_API_OPENGL)
 #include "Platform/OpenGL/OpenGLRendererBasic.h"
+#include <GL/glew.h>
 #endif
 #if defined(GRAPHICS_API_VULKAN)
 #include "Platform/Vulkan/VulkanRendererBasic.h"
@@ -85,8 +86,35 @@ void RendererBasic::AppendRendererInfo(WindowSpecification& windowSpecification)
 	}
 	if (!Project::GetOpen() || !Project::GetOpen()->Shipped)
 	{
-		windowSpecification.Title += std::string(" [OS: ") + Application::GetOSName() + ", Renderer: " + rendererName + "]";
+		windowSpecification.Title += std::string(" [OS: ") + Application::GetOSName() + ", Arch: " + Application::GetArchitectureName() +
+			", Build: " + Application::GetBuildConfig() + ", Renderer: " + rendererName + "]";
 	}
+}
+
+// OpenGL asks for a 3.3 core context and gets the driver's newest (the shaders need 4.3 to 4.6), so its version is the
+// context's: "OpenGL" in the title becomes "OpenGL 4.6". Vulkan and DirectX 11 name the version they ask for, and run at.
+void RendererBasic::AppendContextVersion(Window* window)
+{
+#if defined(GRAPHICS_API_OPENGL)
+	if (H2M::RendererAPI_H2M::Current() != H2M::RendererAPITypeH2M::OpenGL)
+	{
+		return;
+	}
+	GLint major = 0;
+	GLint minor = 0;
+	glGetIntegerv(GL_MAJOR_VERSION, &major);
+	glGetIntegerv(GL_MINOR_VERSION, &minor);
+	const std::string name = std::string("Renderer: ") + OpenGLRendererBasic::RendererName();
+	std::string title = window->GetTitle();
+	const size_t at = title.find(name + "]");
+	if (major > 0 && at != std::string::npos)
+	{
+		title.insert(at + name.size(), " " + std::to_string(major) + "." + std::to_string(minor));
+		window->SetTitle(title);
+	}
+#else
+	(void)window;
+#endif
 }
 
 void RendererBasic::InitDebug()

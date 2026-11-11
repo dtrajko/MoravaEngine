@@ -27,6 +27,7 @@ public:
 	virtual void WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix) = 0;
 
 	static void AppendRendererInfo(WindowSpecification& windowSpecification);
+	static void AppendContextVersion(Window* window); // OpenGL: the context's version, known once the window has it
 	static void InitDebug();
 	static void EnableCulling();
 	static void DisableCulling();

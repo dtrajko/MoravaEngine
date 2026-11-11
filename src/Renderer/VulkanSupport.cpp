@@ -1,4 +1,5 @@
 #include "VulkanSupport.h"
+#include "VulkanTarget.h"
 
 #include "Core/Log.h"
 
@@ -33,10 +34,10 @@ namespace VulkanSupport
 		VkPhysicalDeviceProperties properties;
 		vkGetPhysicalDeviceProperties(device, &properties);
 		const std::string name = properties.deviceName;
-		if (properties.apiVersion < VK_API_VERSION_1_2)
+		if (properties.apiVersion < MoravaVulkanVersion)
 		{
 			return "The graphics card " + name + " has Vulkan " + std::to_string(VK_API_VERSION_MAJOR(properties.apiVersion)) + "." +
-				std::to_string(VK_API_VERSION_MINOR(properties.apiVersion)) + ", and this game needs Vulkan 1.2.";
+				std::to_string(VK_API_VERSION_MINOR(properties.apiVersion)) + ", and this game needs " + MoravaVulkanVersionName() + ".";
 		}
 		VkPhysicalDeviceFeatures features;
 		vkGetPhysicalDeviceFeatures(device, &features);
@@ -88,7 +89,7 @@ namespace VulkanSupport
 
 		VkApplicationInfo application = {};
 		application.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		application.apiVersion = VK_API_VERSION_1_2;
+		application.apiVersion = MoravaVulkanVersion;
 		VkInstanceCreateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		info.pApplicationInfo = &application;

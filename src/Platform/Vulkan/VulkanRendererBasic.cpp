@@ -5,6 +5,7 @@
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
 #include "Core/Util.h"
+#include "Renderer/VulkanTarget.h"
 
 
 
@@ -42,9 +43,11 @@ void VulkanRendererBasic::SetShaders()
 {
 }
 
+// The version the renderer is made for (Renderer/VulkanTarget.h), not the driver's: Vulkan 1.2 on a 1.4 driver
 const char* VulkanRendererBasic::RendererName()
 {
-	return "Vulkan";
+	static const std::string name = MoravaVulkanVersionName();
+	return name.c_str();
 }
 
 void VulkanRendererBasic::InitDebug()

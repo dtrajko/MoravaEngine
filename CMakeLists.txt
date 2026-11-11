@@ -245,8 +245,9 @@ if(TARGET assimp AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(assimp PRIVATE -Wno-unsafe-buffer-usage -Wno-unsafe-buffer-usage-in-libc-call)
 endif()
 add_optional(${VENDOR_CROSS_PLATFORM_DIR}/nativefiledialog-extended nfd)
-# FreeType 2.11 asks for CMake 2.8.12, which CMake 4 no longer accepts: taken as 3.5 for its folder alone
-set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+# FreeType 2.11 asks for CMake 2.8.12, which CMake 4 no longer accepts (and warns about below 3.10): taken as 3.10 for
+# these folders alone
+set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
 add_optional(${VENDOR_DIR}/bc7enc bc7enc) # cooked textures: the engine's own build file, in vendor/bc7enc
 add_optional(${VENDOR_DIR}/lz4 lz4)       # the pack file: the engine's own build file, in vendor/lz4
 add_optional(${VENDOR_DIR}/msdf-atlas-gen/msdfgen/freetype freetype)
@@ -412,6 +413,9 @@ foreach(tgt ${MORAVA_ENGINE_TARGETS})
         $<$<CONFIG:Debug>:HZ_DEBUG>
         $<$<NOT:$<CONFIG:Debug>>:HZ_RELEASE>
     )
+    # The configuration's name, for the window title (Application::GetBuildConfig): per configuration, as Visual Studio
+    # and Xcode choose it when building, not when configuring
+    target_compile_definitions(${tgt} PRIVATE "MORAVA_BUILD_CONFIG=\"$<CONFIG>\"")
 
     # Many sources #define this at their top; the precompiled header now comes first, so define it for the whole target.
     # Defined empty ("=") to match those #defines exactly, otherwise MSVC warns about a redefinition (C4005).
