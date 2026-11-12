@@ -6,7 +6,7 @@ namespace Racing
 {
     /// <summary>
     /// The racing game's main menu (on its canvas): Race, Settings (SettingsMenu) and Quit, the track's records under them
-    /// (SaveData, as RaceManager keeps them), and the camera circling the track behind. The saved settings are put in place
+    /// (SaveData, as RaceManager keeps them), and the camera flying along the track behind. The saved settings are put in place
     /// here (GameOptions); the mouse is free and Race is selected, so the gamepad works at once.
     /// </summary>
     public class MainMenu : Entity
@@ -24,14 +24,24 @@ namespace Racing
         public string RaceScene = "Scenes/Circuit.mscene";
         public string TrackName = "Circuit";
 
-        // ---- The camera behind the menu: around Center, Radius away, Height above it, Speed degrees per second
+        // ---- The camera behind the menu: along the track's center line (the race's file, its Track entity's place), Height
+        // above the road and Side meters to its right, looking LookAhead meters ahead on the road, Speed meters per second;
+        // Smoothing: how quickly it follows (higher is tighter), so the turns sweep by instead of jerking
         public Entity? MenuCamera;
-        public Vector3 Center = new(0.0f, 46.0f, 40.0f);
-        public float Radius = 150.0f;
-        public float Height = 40.0f;
-        public float Speed = 4.0f;
+        public string Centerline = "Assets/Tracks/Circuit.centerline.json";
+        public Entity? Track;
+        public float Height = 25.0f;
+        public float Side = 12.0f;
+        public float LookAhead = 60.0f;
+        public float Speed = 30.0f;
+        public float Smoothing = 1.5f;
+        /// <summary>Meters along the track where the flight begins (0: the start line).</summary>
+        public float StartDistance = 0.0f;
 
-        float angle = 30.0f;
+        Racing.Centerline? line;
+        float distance;
+        Vector3 cameraPosition, cameraTarget;
+        bool placed;
 
         protected override void OnCreate()
         {
@@ -43,7 +53,19 @@ namespace Racing
             if (QuitButton?.GetComponent<UIButton>() is UIButton quit) quit.Clicked += Quit;
             if (RecordsText?.GetComponent<UIText>() is UIText records)
                 records.Text = Records();
+            line = Racing.Centerline.Load(Centerline, Track != null ? Track.WorldPosition : Vector3.Zero);
+            if (line == null)
+                Log.Warn($"Main menu: the center line '{Centerline}' was not found: the camera stays where it is");
+            distance = StartDistance;
             Show(true);
+        }
+
+        // Where the camera wants to be and look at, at this distance along the track
+        void Goal(float s, out Vector3 position, out Vector3 target)
+        {
+            Vector3 road = line!.PositionAt(s, out Vector3 right);
+            position = road + right * Side + Vector3.UnitY * Height;
+            target = line.PositionAt(s + LookAhead, out _);
         }
 
         string Records()
@@ -61,14 +83,24 @@ namespace Racing
         {
             if (SettingsScreen is SettingsMenu settings && settings.IsOpen && Input.WasPressed("Pause"))
                 settings.Back();
-            if (MenuCamera != null)
+            if (MenuCamera != null && line != null)
             {
-                angle += Speed * Time.UnscaledDeltaTime;
-                float a = angle * MathF.PI / 180.0f;
-                Vector3 position = Center + new Vector3(MathF.Sin(a) * Radius, Height, MathF.Cos(a) * Radius);
-                MenuCamera.Translation = position; // a root entity: its own transform is the world's
-                // Looking at the center, in the Inspector's angles: pitch positive down, yaw positive to the left (0 along -Z)
-                Vector3 d = Center - position;
+                float unscaled = Time.UnscaledDeltaTime;
+                distance += Speed * unscaled;
+                Goal(distance, out Vector3 goalPosition, out Vector3 goalTarget);
+                if (!placed)
+                {
+                    cameraPosition = goalPosition;
+                    cameraTarget = goalTarget;
+                    placed = true;
+                }
+                // Following its goal smoothly (the same share each second at any frame rate)
+                float follow = 1.0f - MathF.Exp(-Smoothing * unscaled);
+                cameraPosition = Vector3.Lerp(cameraPosition, goalPosition, follow);
+                cameraTarget = Vector3.Lerp(cameraTarget, goalTarget, follow);
+                MenuCamera.Translation = cameraPosition; // a root entity: its own transform is the world's
+                // Looking at the target, in the Inspector's angles: pitch positive down, yaw positive to the left (0 along -Z)
+                Vector3 d = cameraTarget - cameraPosition;
                 float yaw = MathF.Atan2(-d.X, -d.Z) * 180.0f / MathF.PI;
                 float pitch = MathF.Atan2(-d.Y, MathF.Sqrt(d.X * d.X + d.Z * d.Z)) * 180.0f / MathF.PI;
                 MenuCamera.EulerAngles = new Vector3(pitch, yaw, 0.0f);

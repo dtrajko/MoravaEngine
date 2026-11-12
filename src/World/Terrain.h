@@ -47,6 +47,9 @@ struct TerrainSettings
 	float GuideRise = 40.0f;      // meters over which the hills beside it rise to their full height
 	float GuideRaise = 0.0f;      // meters the band's ground rises over GuideRise above its level under the guide (with
 	                              // Clearance: a valley the guide crosses on its supports, hills higher than it beyond)
+	float GuideRoom = 0.0f;       // meters: where the ground between two parts of a guide (a track's straights before and
+	                              // after a hairpin) is narrower than this, it rises less (Raise) and its hills are lower,
+	                              // down to half; 0: everywhere the same
 	float GuideHills = 12.0f;     // meters the hills near a guide go above or below its height, at most
 	float GuideHillSize = 150.0f; // meters: the size of those hills
 	float GuideBand = 150.0f;     // meters from a guide the ground keeps to its height

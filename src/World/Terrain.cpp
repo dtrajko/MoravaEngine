@@ -192,6 +192,7 @@ uint64_t TerrainSettings::GetShapeHash() const
 	hash = HashOf(hash, GuideBlend);
 	hash = HashOf(hash, GuideRaise);
 	hash = HashOf(hash, GuideDetail);
+	hash = HashOf(hash, GuideRoom);
 	return hash;
 }
 
@@ -221,6 +222,7 @@ void TerrainSettings::Clamp()
 	GuideBlend = std::clamp(GuideBlend, 1.0f, Size);
 	GuideRaise = std::clamp(GuideRaise, -1000.0f, 1000.0f);
 	GuideDetail = std::clamp(GuideDetail, 0.0f, 100.0f);
+	GuideRoom = std::clamp(GuideRoom, 0.0f, Size);
 }
 
 // ---- TerrainHeights
@@ -527,6 +529,51 @@ namespace
 		}
 		Blur(smooth, count, (int)std::lround((settings.GuideShoulder + settings.GuideRise) * 0.5f / spacing));
 
+		// The room for hills: from each height, straight on away from its nearest guide, how far until a guide again (the
+		// ground between two parts of a road); 1 with room enough (GuideRoom), less where it is narrower. Smoothed: where
+		// the other part ends (around a hairpin's end) the ground has no step
+		std::vector<float> room(samples, 1.0f);
+		if (settings.GuideRoom > 0.0f)
+		{
+			const float reachOut = settings.GuideBand + settings.GuideBlend;
+			ParallelRows(count, [&](uint32_t first, uint32_t last)
+			{
+				for (uint32_t z = first; z < last; z++)
+				{
+					for (uint32_t x = 0; x < count; x++)
+					{
+						const size_t i = (size_t)z * count + x;
+						const int32_t seed = nearest[i];
+						const float sx = (float)(seed % count), sz = (float)(seed / count);
+						const float dx = (float)x - sx, dz = (float)z - sz;
+						const float length = std::sqrt(dx * dx + dz * dz);
+						if (length < 1.0f || length * spacing > reachOut)
+						{
+							continue;
+						}
+						// Straight on, a sample at a time, up to GuideRoom from the guide behind
+						const float ux = dx / length, uz = dz / length;
+						float gap = settings.GuideRoom;
+						for (float t = 1.0f; (length + t) * spacing < settings.GuideRoom; t += 1.0f)
+						{
+							const int px = (int)std::lround((float)x + ux * t), pz = (int)std::lround((float)z + uz * t);
+							if (px < 0 || pz < 0 || px >= (int)count || pz >= (int)count)
+							{
+								break;
+							}
+							if (surface[(size_t)pz * count + px] != none)
+							{
+								gap = (length + t) * spacing;
+								break;
+							}
+						}
+						room[i] = SmoothStep(0.4f * settings.GuideRoom, settings.GuideRoom, gap);
+					}
+				}
+			});
+			Blur(room, count, (int)std::lround(settings.GuideRise * 0.5f / spacing));
+		}
+
 		// The hills near the guides: their own noise, -1 to 1
 		GradientNoise noise(((uint64_t)settings.Seed << 1) ^ 0x9E3779B97F4A7C15ull);
 		const float frequency = 1.0f / settings.GuideHillSize;
@@ -548,8 +595,9 @@ namespace
 					// a hill above that level rises with it (a road through a cutting); one below it dips under the guide too (a
 					// road on its supports)
 					const float rise = SmoothStep(settings.GuideShoulder, settings.GuideShoulder + settings.GuideRise, distance);
-					const float raised = level + settings.GuideRaise * rise;
-					float value = n <= 0.0f ? raised + settings.GuideHills * n : raised + settings.GuideHills * n * rise;
+					const float raised = level + settings.GuideRaise * rise * room[i];
+					float value = n <= 0.0f ? raised + settings.GuideHills * n :
+						raised + settings.GuideHills * n * rise * (0.5f + 0.5f * room[i]);
 					// Beyond the band, the terrain's own hills
 					value += (h[i] - value) * SmoothStep(settings.GuideBand, settings.GuideBand + settings.GuideBlend, distance);
 					// Never above the guide's surface where it is over the ground
