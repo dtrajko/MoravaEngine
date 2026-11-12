@@ -82,3 +82,33 @@ most of the width (the meshes named `wheel...`; the rest of the file as it is):
 python Tools/TrackBuilder/flatten_tires.py Projects/Racing/Assets/Models/KenneyCarKit/wheel-racing.glb `
     Projects/Racing/Assets/Models/KenneyCarKit/wheel-racing-flat.glb   # [edge]: the chamfer, 0.07 of the width
 ```
+
+## Trees and bushes (`kenney_trees.py`)
+
+Plain Python, no Blender. The circuit's trees and bushes are Kenney's Nature Kit (CC0, https://kenney.nl/assets/nature-kit),
+the user's choice after comparing them with Poly Haven's on the circuit (2026-11-12: the same seed and densities; the
+Release player at Medium, 2560x1440: 166 fps on average, 1% low 121, against 138 and 98 with Poly Haven's). This writes
+copies of six of its models with natural greens and browns in place of the kit's teal (only the materials' colors change):
+
+```powershell
+python Tools/TrackBuilder/kenney_trees.py "<Nature Kit>/Models/GLTF format" Projects/Racing/Assets/Models/TreesLowPoly
+```
+
+The models are about 1.2 m tall (the bushes 0.3 m): the scenes' Foliage species scale them (Scale [6, 8.5] and [3, 4.5]).
+
+## Trees from scans (`prepare_tree.py`)
+
+Blender, without its window. Makes game trees from Poly Haven's CC0 scans (every leaf modeled: up to two million
+triangles) as the data file `Projects/Racing/Foliage/Trees.json` asks: the trunk and branches decimated to a triangle
+budget, the crown as leaf cards (the leaves grouped by k-means, each group drawn into its card's tile of an atlas, with
+alpha), and a .glb with its maps in `Textures/` beside it (the leaves alphaMode MASK: a Cutout surface in the engine).
+Each model is downloaded once into the project's `Library/PolyHaven` (Git ignores it).
+
+```powershell
+& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --factory-startup `
+    --python Tools/TrackBuilder/prepare_tree.py -- Projects/Racing/Foliage/Trees.json   # [Name ...]: only those
+```
+
+Not used by the circuit now (see above): about 1,100 triangles a tree, and far away the cards' alpha thins out in their
+smaller mipmaps (the trees look bare). A tool for later, with the impostors of Phase 8.4 and mipmaps that keep the alpha's
+coverage.

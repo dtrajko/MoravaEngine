@@ -46,6 +46,10 @@ struct ModelMaterialData
 	float MetallicFactor = 0.0f;
 	bool HasRoughnessFactor = false;
 	float RoughnessFactor = 0.0f;
+	// glTF's alphaMode MASK: the albedo map's alpha cuts the surface away below the cutoff (leaves, fences, hair cards).
+	// The engine's material is then a Cutout surface (EnvMapVulkanMaterialLibrary::ImportModelMaterial)
+	bool AlphaMask = false;
+	float AlphaCutoff = 0.5f;
 
 	std::string AlbedoMap;
 	std::string NormalMap;

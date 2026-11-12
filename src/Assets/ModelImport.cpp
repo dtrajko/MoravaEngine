@@ -4,6 +4,7 @@
 #include "Core/Math.h"
 
 #include <assimp/DefaultIOSystem.h>
+#include <assimp/GltfMaterial.h>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/Importer.hpp>
 #include <assimp/LogStream.hpp>
@@ -210,6 +211,12 @@ namespace ModelImport
 		material.HasReflectivity = source->Get(AI_MATKEY_REFLECTIVITY, material.Reflectivity) == AI_SUCCESS;
 		material.HasMetallicFactor = source->Get(AI_MATKEY_METALLIC_FACTOR, material.MetallicFactor) == AI_SUCCESS;
 		material.HasRoughnessFactor = source->Get(AI_MATKEY_ROUGHNESS_FACTOR, material.RoughnessFactor) == AI_SUCCESS;
+		aiString alphaMode;
+		if (source->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode) == AI_SUCCESS && std::string(alphaMode.C_Str()) == "MASK")
+		{
+			material.AlphaMask = true;
+			source->Get(AI_MATKEY_GLTF_ALPHACUTOFF, material.AlphaCutoff); // glTF's default 0.5 when it has none
+		}
 
 		material.AlbedoMap = GetMap(source, aiTextureType_DIFFUSE);
 		material.NormalMap = GetMap(source, aiTextureType_NORMALS);

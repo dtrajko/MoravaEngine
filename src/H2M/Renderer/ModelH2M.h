@@ -163,6 +163,17 @@ namespace H2M
 		RefH2M<MaterialH2M> GetMaterial() { return m_BaseMaterial; }
 		const std::vector<RefH2M<MaterialH2M>>& GetMaterials() const { return GetFileModel().m_Materials; }
 		std::vector<RefH2M<MaterialH2M>>& GetMaterials() { return GetFileModel().m_Materials; }
+		// A material's alpha mask, as the file has it (glTF alphaMode MASK: a cutout surface)
+		struct MaterialAlpha
+		{
+			bool Mask = false;
+			float Cutoff = 0.5f;
+		};
+		MaterialAlpha GetMaterialAlpha(uint32_t index) const
+		{
+			const std::vector<MaterialAlpha>& alpha = GetFileModel().m_MaterialAlpha;
+			return index < alpha.size() ? alpha[index] : MaterialAlpha();
+		}
 		const std::vector<RefH2M<Texture2D_H2M>>& GetTextures() const { return GetFileModel().m_Textures; }
 		std::vector<RefH2M<Texture2D_H2M>>& GetTextures() { return GetFileModel().m_Textures; }
 		const std::string& GetFilePath() const { return m_FilePath; }
@@ -306,6 +317,7 @@ namespace H2M
 		std::vector<RefH2M<Texture2D_H2M>> m_Textures;
 		std::vector<RefH2M<Texture2D_H2M>> m_NormalMaps;
 		std::vector<RefH2M<MaterialH2M>> m_Materials;
+		std::vector<MaterialAlpha> m_MaterialAlpha; // as m_Materials
 		// std::vector<RefH2M<MaterialInstanceH2M>> m_Materials;
 
 		std::unordered_map<uint32_t, std::vector<TriangleH2M>> m_TriangleCache;

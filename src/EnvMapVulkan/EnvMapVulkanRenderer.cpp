@@ -3702,11 +3702,15 @@ void EnvMapVulkanRenderer::GeometryPass()
 		VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 		EnvMapVulkanProfiler::BeginFrame(drawCommandBuffer, swapChain.GetCurrentBufferIndex());
 
+		// Where the recording's time goes (inside "3D passes recorded": the Stats panel, --frame-stats)
+		CpuStats::Timer passes("3D passes recorded");
+
 		// The shadow maps first (the sun's, then the spot and point lights'): the geometry pass below samples them
 		glm::vec3 casterBoundsMin, casterBoundsMax;
 		ComputeShadowCasterBounds(casterBoundsMin, casterBoundsMax);
 		RecordShadowPasses(drawCommandBuffer, casterBoundsMin, casterBoundsMax);
 		RecordLocalShadowPasses(drawCommandBuffer);
+		passes.Next("Shadow maps");
 		if (s_ShadowMapViewerRequest.Active)
 		{
 			const EnvMapVulkanShadowMap& map = s_ShadowMapViewerRequest.Cube ? s_PointShadowMaps : s_SpotShadowMaps;
@@ -3760,6 +3764,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 			s_PathTracer.Record(drawCommandBuffer, s_ViewOptions.PathTracer, pathCamera.GetViewProjection(), pathCamera.GetProjectionMatrix(),
 				s_PathTracerSceneVersion, s_Data.SceneData.SkyboxLod, s_RayTracing.GetDescriptorSet(), sunShadows);
 		}
+
+		passes.Next("Ray tracing scene, debug views");
 
 		// The water's caustics: the meshes under the water (in the reflection and the scene pass) are lit through them
 		if (s_WaterSettings.Enabled)
@@ -3836,6 +3842,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 			});
 		}
 
+		passes.Next("Probes, water reflection, render textures");
+
 		// The G-buffer prepass: the opaque meshes' normals, roughness, motion and depth, before the scene pass
 		CullMainView();
 		{
@@ -3855,6 +3863,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 			DrawFoliageMainView(drawCommandBuffer, MeshPass::GBuffer); // last: it binds the instance buffer where the previous transforms were
 			s_GBuffer.EndPass(drawCommandBuffer);
 		}
+
+		passes.Next("Culling, G-buffer prepass");
 
 		// The ambient occlusion, from the G-buffer just drawn, for the scene pass's mesh shaders
 		{
@@ -3887,6 +3897,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 				reflectionCamera.GetPosition(), s_ViewOptions.DebugView == DebugViewReflectionsRaw ? EnvMapVulkanReflections::Stage::Raw : EnvMapVulkanReflections::Stage::Final,
 				ReflectionsTraceRays() ? s_RayTracing.GetDescriptorSet() : VK_NULL_HANDLE, sunShadows);
 		}
+
+		passes.Next("Ambient occlusion, reflections");
 
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
 
@@ -4010,6 +4022,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 			RecordGlassPass(drawCommandBuffer, renderPassBeginInfo, viewport, scissor, s_Framebuffer, s_Glass,
 				s_Data.FrameDescriptorSet.DescriptorSets[0], s_GlassDraws);
 		}
+
+		passes.Next("Scene pass, water, glass");
 
 		// Transparent, so after the opaque meshes and the water
 		if (s_ViewOptions.Grid)

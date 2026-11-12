@@ -114,15 +114,23 @@ Entities:
       RimHeight: 60
       RimWidth: 220
       FlatCenter: [0, 0]
-      FlatRadius: 500
-      FlatBlend: 150
+      FlatRadius: 0
+      FlatBlend: 0
       Spacing: 4
       MaxVertices: 6000
       SandHeight: 4
       RockSlope: 38
-      RockHeight: 65
+      RockHeight: 120
       Friction: 0.8
       LodTolerance: 2
+      Guides: [3001]
+      GuideClearance: 4
+      GuideShoulder: 6
+      GuideRise: 40
+      GuideHills: 12
+      GuideHillSize: 150
+      GuideBand: 150
+      GuideBlend: 200
       Layers:
         Sand:
           ID: 5100000000000000002
@@ -136,6 +144,68 @@ Entities:
           ID: 5100000000000000003
           File: Assets/Materials/Terrain_Rock.mmat
           Name: Terrain_Rock
+    Foliage:
+      Enabled: true
+      Seed: 1
+      CellSize: 64
+      DrawDistance: 600
+      ShadowDistance: 250
+      ClearHeight: 100
+      Species:
+        - Model: Assets/Models/TreesLowPoly/Kenney_tree_oak.glb
+          Density: 8
+          Scale: [6, 8.5]
+          MaxSlope: 30
+          Height: [0, 120]
+          KeepOut: 3
+          MaxDistance: 150
+          AlignToSlope: 0
+          Sink: 0.3
+        - Model: Assets/Models/TreesLowPoly/Kenney_tree_detailed.glb
+          Density: 8
+          Scale: [6, 8.5]
+          MaxSlope: 30
+          Height: [0, 120]
+          KeepOut: 3
+          MaxDistance: 150
+          AlignToSlope: 0
+          Sink: 0.3
+        - Model: Assets/Models/TreesLowPoly/Kenney_tree_fat.glb
+          Density: 10
+          Scale: [6, 8.5]
+          MaxSlope: 30
+          Height: [0, 120]
+          KeepOut: 3
+          MaxDistance: 150
+          AlignToSlope: 0
+          Sink: 0.3
+        - Model: Assets/Models/TreesLowPoly/Kenney_tree_pineRoundA.glb
+          Density: 6
+          Scale: [6, 8.5]
+          MaxSlope: 30
+          Height: [0, 120]
+          KeepOut: 3
+          MaxDistance: 150
+          AlignToSlope: 0
+          Sink: 0.3
+        - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushLarge.glb
+          Density: 40
+          Scale: [3, 4.5]
+          MaxSlope: 35
+          Height: [0, 120]
+          KeepOut: 2
+          MaxDistance: 100
+          AlignToSlope: 0.5
+          Sink: 0.15
+        - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushDetailed.glb
+          Density: 40
+          Scale: [3, 4.5]
+          MaxSlope: 35
+          Height: [0, 120]
+          KeepOut: 2
+          MaxDistance: 100
+          AlignToSlope: 0.5
+          Sink: 0.15
   - ID: 3000
     Name: Track
     Parent: 0

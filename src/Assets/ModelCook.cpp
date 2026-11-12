@@ -23,7 +23,7 @@ namespace ModelCook
 
 	static const char Magic[4] = { 'M', 'M', 'S', 'H' };
 	// Raise it when the file's layout, the import's flags or what the import does changes: older files are cooked again
-	static constexpr uint32_t CookerVersion = 1;
+	static constexpr uint32_t CookerVersion = 2; // 2: a material's glTF alpha mask and cutoff
 
 	static Stats s_Stats;
 
@@ -148,6 +148,8 @@ namespace ModelCook
 		out.Value(material.MetallicFactor);
 		out.Value((uint8_t)material.HasRoughnessFactor);
 		out.Value(material.RoughnessFactor);
+		out.Value((uint8_t)material.AlphaMask);
+		out.Value(material.AlphaCutoff);
 		for (const std::string* map : { &material.AlbedoMap, &material.NormalMap, &material.ShininessMap, &material.DiffuseRoughnessMap,
 			&material.ReflectionFactorMap, &material.MetalnessMap, &material.EmissiveMap, &material.AmbientOcclusionMap })
 		{
@@ -174,7 +176,8 @@ namespace ModelCook
 			!ReadFlag(in, material.HasShininess) || !in.Value(material.Shininess) ||
 			!ReadFlag(in, material.HasReflectivity) || !in.Value(material.Reflectivity) ||
 			!ReadFlag(in, material.HasMetallicFactor) || !in.Value(material.MetallicFactor) ||
-			!ReadFlag(in, material.HasRoughnessFactor) || !in.Value(material.RoughnessFactor))
+			!ReadFlag(in, material.HasRoughnessFactor) || !in.Value(material.RoughnessFactor) ||
+			!ReadFlag(in, material.AlphaMask) || !in.Value(material.AlphaCutoff))
 		{
 			return false;
 		}

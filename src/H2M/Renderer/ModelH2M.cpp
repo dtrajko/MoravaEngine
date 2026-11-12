@@ -515,6 +515,11 @@ namespace H2M
 
 			m_Textures.resize(data.Materials.size());
 			m_Materials.resize(data.Materials.size());
+			m_MaterialAlpha.resize(data.Materials.size());
+			for (size_t i = 0; i < data.Materials.size(); i++)
+			{
+				m_MaterialAlpha[i] = { data.Materials[i].AlphaMask, data.Materials[i].AlphaCutoff };
+			}
 #if defined(GRAPHICS_API_VULKAN)
 			m_MaterialDescriptors.resize(data.Materials.size()); // TODO: to be removed from ModelH2M
 #endif

@@ -247,46 +247,36 @@ static void DrawCpuStages(double frameMs)
 		ImGui::TableNextColumn();
 		ImGui::Text("%.0f", 100.0 * ms / total);
 	};
-	double topSum = 0.0;
-	for (size_t i = 0; i < stages.size(); i++)
+	// A stage's row, then (open) the stages inside it, at any depth, and what it spent outside them
+	auto row = [&](auto&& self, const CpuStats::Stage& stage, int id) -> void
 	{
-		const CpuStats::Stage& top = stages[i];
-		if (!top.Parent.empty())
-		{
-			continue;
-		}
-		topSum += top.SmoothedMs;
 		double childSum = 0.0;
 		bool hasChildren = false;
-		for (const CpuStats::Stage& stage : stages)
+		for (const CpuStats::Stage& child : stages)
 		{
-			if (stage.Parent == top.Name)
+			if (child.Parent == stage.Name)
 			{
 				hasChildren = true;
-				childSum += stage.SmoothedMs;
+				childSum += child.SmoothedMs;
 			}
 		}
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
-		ImGui::PushID((int)i);
+		ImGui::PushID(id);
 		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanFullWidth |
 			(hasChildren ? ImGuiTreeNodeFlags_DefaultOpen : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen));
-		const bool open = ImGui::TreeNodeEx(top.Name.c_str(), flags);
-		values(top.SmoothedMs);
+		const bool open = ImGui::TreeNodeEx(stage.Name.c_str(), flags);
+		values(stage.SmoothedMs);
 		if (hasChildren && open)
 		{
-			for (const CpuStats::Stage& stage : stages)
+			for (size_t c = 0; c < stages.size(); c++)
 			{
-				if (stage.Parent != top.Name)
+				if (stages[c].Parent == stage.Name)
 				{
-					continue;
+					self(self, stages[c], (int)c);
 				}
-				ImGui::TableNextRow();
-				ImGui::TableNextColumn();
-				ImGui::TreeNodeEx(stage.Name.c_str(), ImGuiTreeNodeFlags_SpanFullWidth | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-				values(stage.SmoothedMs);
 			}
-			const double other = top.SmoothedMs - childSum;
+			const double other = stage.SmoothedMs - childSum;
 			if (other > 0.005)
 			{
 				ImGui::TableNextRow();
@@ -301,6 +291,15 @@ static void DrawCpuStages(double frameMs)
 			ImGui::TreePop();
 		}
 		ImGui::PopID();
+	};
+	double topSum = 0.0;
+	for (size_t i = 0; i < stages.size(); i++)
+	{
+		if (stages[i].Parent.empty())
+		{
+			topSum += stages[i].SmoothedMs;
+			row(row, stages[i], (int)i);
+		}
 	}
 	const double outside = frameMs - topSum;
 	if (outside > 0.005)

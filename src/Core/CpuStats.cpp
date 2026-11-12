@@ -67,20 +67,23 @@ namespace CpuStats
 			return;
 		}
 		const double frames = (double)s_CollectedFrames;
-		// The main loop's stages, each followed by its own
+		// The main loop's stages, each followed by its own (at any depth, indented)
+		auto log = [&](auto&& self, const Stage& stage, const std::string& indent) -> void
+		{
+			Log::GetLogger()->info("CPU: {0}{1}: {2:.2f} ms a frame", indent, stage.Name, stage.TotalMs / frames);
+			for (const Stage& child : s_Stages)
+			{
+				if (child.Parent == stage.Name)
+				{
+					self(self, child, indent + "  ");
+				}
+			}
+		};
 		for (const Stage& top : s_Stages)
 		{
-			if (!top.Parent.empty())
+			if (top.Parent.empty())
 			{
-				continue;
-			}
-			Log::GetLogger()->info("CPU: {0}: {1:.2f} ms a frame", top.Name, top.TotalMs / frames);
-			for (const Stage& stage : s_Stages)
-			{
-				if (stage.Parent == top.Name)
-				{
-					Log::GetLogger()->info("CPU:   {0}: {1:.2f} ms a frame", stage.Name, stage.TotalMs / frames);
-				}
+				log(log, top, "");
 			}
 		}
 	}
