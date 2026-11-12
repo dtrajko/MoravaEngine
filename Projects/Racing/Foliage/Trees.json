@@ -1,0 +1,13 @@
+{
+  "SourceDirectory": "../Library/PolyHaven",
+  "OutputDirectory": "../Assets/Models/Trees",
+  "Defaults": {"WoodTriangles": 600, "Cards": 256, "TileSize": 64},
+  "Trees": [
+    {"Name": "Tree_Island_01", "Source": "island_tree_01", "Leaves": ["island_tree_01_leaves"], "Wood": {"island_tree_01": 300, "island_tree_01_branches": 350}, "Height": 10},
+    {"Name": "Tree_Island_02", "Source": "island_tree_02", "Leaves": ["island_tree_02_leaves"], "Wood": {"island_tree_02": 250, "island_tree_02_branches": 300}, "Height": 8},
+    {"Name": "Tree_Small_02", "Source": "tree_small_02", "Leaves": ["tree_small_02_leaves"], "Wood": {"tree_small_02_trunk": 250, "tree_small_02_branches": 300}, "Height": 7},
+    {"Name": "Fir_Sapling", "Source": "fir_sapling", "Node": "fir_sapling_a", "Leaves": ["fir_sapling_twigs"], "Wood": {"fir_sapling_branches": 120}, "Height": 6},
+    {"Name": "Shrub_02", "Source": "shrub_02", "Node": "shrub_02_a", "Leaves": ["shrub_02"], "AlphaMaps": {"shrub_02": "Alpha"}, "Cards": 96, "Height": 1.0, "Clump": {"Copies": 10, "Radius": 0.35, "Tilt": 35}},
+    {"Name": "Shrub_04", "Source": "shrub_04", "Leaves": ["shrub_04"], "AlphaMaps": {"shrub_04": "Alpha"}, "Cards": 96, "Height": 0.9, "Clump": {"Copies": 10, "Radius": 0.35, "Tilt": 35}}
+  ]
+}

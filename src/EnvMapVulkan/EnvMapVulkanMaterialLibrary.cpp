@@ -316,6 +316,13 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::ImportModelMateri
 	material->m_SourceIndex = i;
 
 	material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor") = source->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
+	// A glTF alpha mask (leaves, fences): a cutout surface with the file's cutoff
+	const H2M::ModelH2M::MaterialAlpha alpha = model->GetMaterialAlpha(i);
+	if (alpha.Mask)
+	{
+		material->SetSurface(EnvMapVulkanMaterial::Surface::Cutout);
+		material->GetCutoff() = alpha.Cutoff;
+	}
 	for (const char* valueName : s_FloatValueNames)
 	{
 		material->Get<float>(valueName) = source->Get<float>(valueName);
