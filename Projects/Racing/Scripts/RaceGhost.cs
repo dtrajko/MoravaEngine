@@ -8,10 +8,12 @@ namespace Racing
 {
     /// <summary>
     /// The ghost of the best lap (docs/games/Racing_Plan.html, Phase 9): a see-through copy of the car (glass, no physics,
-    /// no collider) driving the player's best lap ever on this track, from the start line at each lap's start. Every lap is
-    /// recorded (the car's body and its four wheels, SampleRate times a second, on the lap's clock); when a lap is the best,
-    /// its samples are saved beside the best lap's time (SaveData, the track's "GhostLap") and the ghost drives it from the
-    /// next lap on. Between samples the ghost is interpolated (positions straight, turns along the shortest arc).
+    /// no collider) driving the player's best lap ever on this track, from the lap's start. Lap 1 (from standing at the
+    /// lights) and the flying laps each have their own: in lap 1 the ghost drives the best lap 1, after it the best flying
+    /// lap. Every lap is recorded (the car's body and its four wheels, SampleRate times a second, on the lap's clock); when a
+    /// lap is the best of its kind, its samples are saved beside its time (SaveData, the track's "GhostStartLap" or
+    /// "GhostLap"). Between samples the ghost is interpolated (positions straight, turns along the shortest arc).
+    /// Shown only when the player chose it (Settings: Ghost car, GameOptions.Ghost; off by default); it records either way.
     /// Before the green light, after the finish, and once it has finished its lap, the ghost is parked out of sight.
     /// </summary>
     public class RaceGhost : Entity
@@ -19,8 +21,6 @@ namespace Racing
         /// <summary>The player's car: its root entity (the body), with the wheels named in WheelNames.</summary>
         public Entity? Car;
         public float SampleRate = 20.0f;
-        /// <summary>Off: no ghost shown (it still records and saves).</summary>
-        public bool Show = true;
 
         static readonly string[] WheelNames = { "Wheel FL", "Wheel FR", "Wheel RL", "Wheel RR" };
         const int Floats = 7 + 7 * 4; // the body's position and turn, then each wheel's (in the car)
@@ -30,7 +30,8 @@ namespace Racing
         readonly Entity?[] carWheels = new Entity?[4];
         readonly Entity?[] ghostWheels = new Entity?[4];
         readonly List<float> recording = new();   // this lap's samples
-        float[] best = Array.Empty<float>();      // the best lap's, as saved
+        float[] best = Array.Empty<float>();      // the best flying lap's, as saved
+        float[] bestStart = Array.Empty<float>(); // the best lap 1's
         int lapsSeen = -1, restartsSeen = -1;
         bool loaded, parked;
 
@@ -52,8 +53,9 @@ namespace Racing
             if (!loaded)
             {
                 loaded = true;
+                bestStart = Load(SaveData.GetString(race.RecordKey("GhostStartLap")));
                 best = Load(SaveData.GetString(race.RecordKey("GhostLap")));
-                Log.Info(best.Length > 0 ? $"Ghost: the best lap's, {Samples(best)} samples ({Samples(best) / SampleRate:0.0} s)" : "Ghost: none saved yet");
+                Log.Info($"Ghost: {(GameOptions.Ghost ? "shown" : "off (Settings)")}; lap 1 {Describe(bestStart)}, flying lap {Describe(best)}");
             }
             // A restart: a new recording. A lap finished: what was recorded is the best lap, or nothing
             if (race.RestartCount != restartsSeen)
@@ -67,10 +69,12 @@ namespace Racing
                 lapsSeen = race.LapsDone;
                 if (race.LastLapBest && recording.Count >= Floats * 2)
                 {
-                    best = recording.ToArray();
-                    SaveData.SetString(race.RecordKey("GhostLap"), Save(best));
+                    float[] lap = recording.ToArray();
+                    if (race.LastLapStart) bestStart = lap;
+                    else best = lap;
+                    SaveData.SetString(race.RecordKey(race.LastLapStart ? "GhostStartLap" : "GhostLap"), Save(lap));
                     SaveData.Save();
-                    Log.Info($"Ghost: the new best lap saved, {Samples(best)} samples");
+                    Log.Info($"Ghost: the new best {(race.LastLapStart ? "lap 1" : "flying lap")} saved, {Samples(lap)} samples");
                 }
                 recording.Clear();
             }
@@ -78,7 +82,7 @@ namespace Racing
             if (race.State == RaceManager.RaceState.Racing)
             {
                 Record(race.LapTime);
-                if (Show && Replay(race.LapTime))
+                if (GameOptions.Ghost && Replay(race.StartLap ? bestStart : best, race.LapTime))
                     return;
             }
             Park();
@@ -103,8 +107,8 @@ namespace Racing
         void Add(Vector3 v) { recording.Add(v.X); recording.Add(v.Y); recording.Add(v.Z); }
         void Add(Quaternion q) { recording.Add(q.X); recording.Add(q.Y); recording.Add(q.Z); recording.Add(q.W); }
 
-        // ---- Replay: the best lap at this lap time (false: none, or it has finished its lap)
-        bool Replay(float lapTime)
+        // ---- Replay: a best lap at this lap time (false: none, or it has finished its lap)
+        bool Replay(float[] best, float lapTime)
         {
             int count = Samples(best);
             float at = lapTime * SampleRate;
@@ -113,23 +117,23 @@ namespace Racing
             int i = (int)at;
             float t = at - i;
             int a = i * Floats, b = (i + 1) * Floats;
-            Translation = Vector3.Lerp(Position(a), Position(b), t);
-            Rotation = Quaternion.Slerp(Turn(a + 3), Turn(b + 3), t);
+            Translation = Vector3.Lerp(Position(best, a), Position(best, b), t);
+            Rotation = Quaternion.Slerp(Turn(best, a + 3), Turn(best, b + 3), t);
             for (int w = 0; w < 4; w++)
             {
                 Entity? wheel = ghostWheels[w];
                 if (wheel == null)
                     continue;
                 int offset = 7 + 7 * w;
-                wheel.Translation = Vector3.Lerp(Position(a + offset), Position(b + offset), t);
-                wheel.Rotation = Quaternion.Slerp(Turn(a + offset + 3), Turn(b + offset + 3), t);
+                wheel.Translation = Vector3.Lerp(Position(best, a + offset), Position(best, b + offset), t);
+                wheel.Rotation = Quaternion.Slerp(Turn(best, a + offset + 3), Turn(best, b + offset + 3), t);
             }
             parked = false;
             return true;
         }
 
-        Vector3 Position(int i) => new(best[i], best[i + 1], best[i + 2]);
-        Quaternion Turn(int i) => Quaternion.Normalize(new Quaternion(best[i], best[i + 1], best[i + 2], best[i + 3]));
+        static Vector3 Position(float[] data, int i) => new(data[i], data[i + 1], data[i + 2]);
+        static Quaternion Turn(float[] data, int i) => Quaternion.Normalize(new Quaternion(data[i], data[i + 1], data[i + 2], data[i + 3]));
 
         void Park()
         {
@@ -141,6 +145,8 @@ namespace Racing
 
         // ---- Saved as text: "1;rate;samples;" and the floats in base64 (little-endian)
         static int Samples(float[] data) => data.Length / Floats;
+
+        string Describe(float[] data) => data.Length > 0 ? $"{Samples(data)} samples ({Samples(data) / SampleRate:0.0} s)" : "none saved yet";
 
         string Save(float[] data)
         {

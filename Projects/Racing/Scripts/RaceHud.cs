@@ -72,7 +72,9 @@ namespace Racing
         public Entity? LapText;
         public Entity? RaceTimeText;
         public Entity? LapTimeText;
+        /// <summary>The best of the lap being driven's kind (lap 1's, then the flying laps'), and its label (BEST LAP 1, BEST LAP).</summary>
         public Entity? BestLapText;
+        public Entity? BestLapLabel;
 
         // ---- The popups
         /// <summary>The split popup's panel (hidden between splits), its texts: the split's name and time, the difference.</summary>
@@ -318,7 +320,8 @@ namespace Racing
             SetText(lapText, $"{race.Lap}/{race.Laps}");
             SetText(raceTimeText, Clock(race.RaceTime));
             SetText(lapTimeText, race.State == RaceManager.RaceState.Racing ? Clock(race.LapTime) : "-");
-            SetText(bestLapText, RaceManager.Format(race.BestLap));
+            SetText(bestLapText, RaceManager.Format(race.BestOfThisLap));
+            SetText(BestLapLabel?.GetComponent<UIText>(), race.StartLap ? "BEST LAP 1" : "BEST LAP");
 
             // GO when the light turns green, FINAL LAP when it starts
             if (lastState == RaceManager.RaceState.Lights && race.State == RaceManager.RaceState.Racing)
@@ -419,7 +422,7 @@ namespace Racing
         void ShowSplit(RaceManager race)
         {
             bool lap = race.LastSplitCheckpoint >= race.Sectors;
-            string name = lap ? (race.LastLapBest ? "BEST LAP" : "LAP") : $"CHECKPOINT {race.LastSplitCheckpoint}";
+            string name = lap ? (race.LastLapBest ? (race.LastLapStart ? "BEST LAP 1" : "BEST LAP") : "LAP") : $"CHECKPOINT {race.LastSplitCheckpoint}";
             SetText(splitText, $"{name}   {RaceManager.Format(race.LastSplit)}");
             float delta = race.LastSplitDelta;
             if (splitDeltaText != null)
@@ -496,14 +499,16 @@ namespace Racing
             }
             if (FinishLaps?.GetComponent<UIText>() is UIText laps)
             {
+                // "fastest": of the flying laps (lap 1, from standing, is always the slowest)
                 float[] times = race.LapTimes;
-                float fastest = times.Length > 0 ? times[0] : 0.0f;
-                foreach (float lap in times)
-                    fastest = MathF.Min(fastest, lap);
+                float fastest = float.MaxValue;
+                for (int i = 1; i < times.Length; i++)
+                    fastest = MathF.Min(fastest, times[i]);
                 var lines = new System.Text.StringBuilder();
                 for (int i = 0; i < times.Length; i++)
-                    lines.Append($"Lap {i + 1}   {RaceManager.Format(times[i])}{(times[i] == fastest && times.Length > 1 ? "   fastest" : "")}\n");
-                lines.Append($"Best lap ever   {RaceManager.Format(race.BestLap)}");
+                    lines.Append($"Lap {i + 1}   {RaceManager.Format(times[i])}{(i > 0 && times[i] == fastest && times.Length > 2 ? "   fastest" : "")}\n");
+                lines.Append($"Best lap 1 ever   {RaceManager.Format(race.BestStartLap)}\n");
+                lines.Append($"Best flying lap ever   {RaceManager.Format(race.BestLap)}");
                 laps.Text = lines.ToString();
             }
             ShowFinish(true);

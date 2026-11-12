@@ -20,9 +20,8 @@ namespace Racing
         /// <summary>A UI Text for the track's best race, best lap and medal.</summary>
         public Entity? RecordsText;
 
-        /// <summary>The race's scene, and its track's name in the records (the center line's Name).</summary>
+        /// <summary>The race's scene (its track's records: those of the center line's version, Centerline.RecordKey).</summary>
         public string RaceScene = "Scenes/Circuit.mscene";
-        public string TrackName = "Circuit";
 
         // ---- The camera behind the menu: along the track's center line (the race's file, its Track entity's place), Height
         // above the road and Side meters to its right, looking LookAhead meters ahead on the road, Speed meters per second;
@@ -51,9 +50,9 @@ namespace Racing
             if (RaceButton?.GetComponent<UIButton>() is UIButton race) race.Clicked += Race;
             if (SettingsButton?.GetComponent<UIButton>() is UIButton settings) settings.Clicked += OpenSettings;
             if (QuitButton?.GetComponent<UIButton>() is UIButton quit) quit.Clicked += Quit;
+            line = Racing.Centerline.Load(Centerline, Track != null ? Track.WorldPosition : Vector3.Zero);
             if (RecordsText?.GetComponent<UIText>() is UIText records)
                 records.Text = Records();
-            line = Racing.Centerline.Load(Centerline, Track != null ? Track.WorldPosition : Vector3.Zero);
             if (line == null)
                 Log.Warn($"Main menu: the center line '{Centerline}' was not found: the camera stays where it is");
             distance = StartDistance;
@@ -70,12 +69,15 @@ namespace Racing
 
         string Records()
         {
-            float bestRace = SaveData.GetFloat($"{TrackName}.BestRace");
-            float bestLap = SaveData.GetFloat($"{TrackName}.BestLap");
-            string medal = RaceManager.MedalTitle(SaveData.GetInt($"{TrackName}.Medal"));
-            if (bestRace <= 0.0f && bestLap <= 0.0f)
+            if (line == null)
+                return "";
+            float bestRace = SaveData.GetFloat(line.RecordKey("BestRace"));
+            float bestStart = SaveData.GetFloat(line.RecordKey("BestStartLap"));
+            float bestLap = SaveData.GetFloat(line.RecordKey("BestLap"));
+            string medal = RaceManager.MedalTitle(SaveData.GetInt(line.RecordKey("Medal")));
+            if (bestRace <= 0.0f && bestStart <= 0.0f && bestLap <= 0.0f)
                 return "No records yet: 3 laps, beat the medal times";
-            return $"Best race {RaceManager.Format(bestRace)}     Best lap {RaceManager.Format(bestLap)}" +
+            return $"Best race {RaceManager.Format(bestRace)}     Lap 1 {RaceManager.Format(bestStart)}     Flying lap {RaceManager.Format(bestLap)}" +
                 (medal.Length > 0 ? $"     {medal} medal" : "");
         }
 

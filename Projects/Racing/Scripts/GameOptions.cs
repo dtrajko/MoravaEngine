@@ -4,7 +4,7 @@ namespace Racing
 {
     /// <summary>
     /// The player's choices the game keeps itself (Settings): the mouse's sensitivity (VehicleCamera multiplies its own by
-    /// it) and the gearbox (automatic, or manual: the player shifts; CarController). The engine keeps the others and puts them in place when the game starts: the volumes (Audio.SetBusVolume),
+    /// it), the gearbox (automatic, or manual: the player shifts; CarController) and the ghost car (RaceGhost, off by default). The engine keeps the others and puts them in place when the game starts: the volumes (Audio.SetBusVolume),
     /// fullscreen, the resolution, VSync, the quality and the bindings. ApplyAtStart reads the sensitivity once per run, from
     /// whichever scene the run starts in (the main menu, or a level played directly in the editor).
     /// </summary>
@@ -12,12 +12,16 @@ namespace Racing
     {
         public const string MouseKey = "MouseSensitivity";
         public const string GearboxKey = "ManualGearbox";
+        public const string GhostKey = "GhostCar";
 
         /// <summary>Times each camera's own mouse sensitivity (1: as the scene has it).</summary>
         public static float MouseSensitivity { get; private set; } = 1.0f;
 
         /// <summary>The player shifts (ShiftUp, ShiftDown); false (the default): the gearbox is automatic.</summary>
         public static bool ManualGearbox { get; private set; }
+
+        /// <summary>The ghost of the best lap drives beside the car (RaceGhost); false (the default): no ghost.</summary>
+        public static bool Ghost { get; private set; }
 
         static bool applied;
 
@@ -29,8 +33,9 @@ namespace Racing
             applied = true;
             MouseSensitivity = Settings.GetFloat(MouseKey, 1.0f);
             ManualGearbox = Settings.GetBool(GearboxKey, false);
+            Ghost = Settings.GetBool(GhostKey, false);
             Log.Info($"Options: music {Audio.GetBusVolume(AudioBus.Music):0.00}, effects {Audio.GetBusVolume(AudioBus.Effects):0.00}, " +
-                $"mouse x{MouseSensitivity:0.00}, gearbox {(ManualGearbox ? "manual" : "automatic")}, quality {Quality.Level}{(Quality.IsAutomatic ? " (automatic)" : "")}, " +
+                $"mouse x{MouseSensitivity:0.00}, gearbox {(ManualGearbox ? "manual" : "automatic")}, ghost {(Ghost ? "on" : "off")}, quality {Quality.Level}{(Quality.IsAutomatic ? " (automatic)" : "")}, " +
                 $"{(Application.Fullscreen ? "fullscreen" : "a window")}, VSync {(Application.VSync ? "on" : "off")}");
         }
 
@@ -44,6 +49,12 @@ namespace Racing
         {
             ManualGearbox = manual;
             Settings.SetBool(GearboxKey, manual);
+        }
+
+        public static void SetGhost(bool shown)
+        {
+            Ghost = shown;
+            Settings.SetBool(GhostKey, shown);
         }
     }
 }

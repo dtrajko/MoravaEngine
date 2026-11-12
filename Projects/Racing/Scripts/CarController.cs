@@ -7,12 +7,16 @@ namespace Racing
     /// <summary>
     /// The race car's arcade handling (docs/games/Racing_Plan.html, Phase 3): it reads the driver's input and drives the
     /// car's Vehicle (set to Controls: Script) with assists that make it fast, fun and forgiving:
-    /// - Steering: keys turn the wheel gradually and let it come back faster; the faster the car, the less the wheel turns
-    ///   (at full speed a fraction of the slow-speed angle), so it doesn't spin out at 300 km/h.
+    /// - Steering: keys turn the wheel gradually and let it come back faster. Full input turns the front wheels only as far
+    ///   as the tires can hold at this speed: the angle of the tightest turn their grip allows (SteerGrip, more with the
+    ///   downforce) plus the slip at which a tire grips best (SteerSlip). Slow, that's the full lock; fast, a few degrees,
+    ///   so the car turns as hard as it can without skidding. If a tire still slides past SlipLimit (a bump, a crest), the
+    ///   steering eases until it grips again.
     /// - Downforce: pressed down harder the faster it goes (the square of its speed), along its own down: it holds the road
     ///   in fast turns, on banked turns and over crests.
     /// - Grip: in ordinary driving the tires grip DrivingGrip times the Inspector's (Front Grip, Rear Grip), so the car
-    ///   doesn't slide under throttle and braking; the handbrake's drift keeps the Inspector's grip (DriftRearGrip at the rear).
+    ///   doesn't slide under throttle and braking; braking, the rear grips more still (BrakingRearGrip); the handbrake's drift
+    ///   keeps the Inspector's grip (DriftRearGrip at the rear).
     /// - Drift (Handbrake at speed): the rear tires lose grip for as long as it is held and get it back gradually after; the
     ///   throttle stays on. Slow, the handbrake is a handbrake.
     /// - ABS: braking hard, the brake eases while a wheel locks, so it stops sooner and still steers.
@@ -35,20 +39,30 @@ namespace Racing
         public float SteerSpeed = 5.0f;
         /// <summary>How fast the wheel comes back when the keys let go (full lock per second).</summary>
         public float SteerReturnSpeed = 8.0f;
-        /// <summary>The share of the wheel's turn left at FullSpeedSteerAt and above (1: the same at any speed).</summary>
-        public float FullSpeedSteer = 0.2f;
-        /// <summary>km/h at which the wheel turns only FullSpeedSteer of its slow-speed angle.</summary>
-        public float FullSpeedSteerAt = 250.0f;
+        /// <summary>The Vehicle's Max Steer Angle (Inspector), degrees: full input's angle when slow.</summary>
+        public float MaxSteerAngle = 30.0f;
+        /// <summary>Meters between the front and the rear axle (the Vehicle's wheels).</summary>
+        public float Wheelbase = 3.04f;
+        /// <summary>The sideways g the steering aims for at full input, without the downforce (which adds to it as it presses
+        /// the tires down). Higher: more angle at speed (and skids sooner); lower: wider turns.</summary>
+        public float SteerGrip = 3.0f;
+        /// <summary>Degrees the front tires may slip on top of the turn's angle: where they grip best (the tire curve's peak, 3).</summary>
+        public float SteerSlip = 3.0f;
+        /// <summary>Degrees of sideways slide (any wheel) above which the steering eases, until the tires grip again. 0: off.</summary>
+        public float SlipLimit = 6.0f;
 
         // ---- Downforce
         /// <summary>The downforce at DownforceSpeed, in g (1: as much again as the car's weight).</summary>
-        public float Downforce = 1.5f;
+        public float Downforce = 1.8f;
         /// <summary>km/h of the downforce above (it grows with the square of the speed).</summary>
         public float DownforceSpeed = 300.0f;
 
         // ---- Grip
         /// <summary>The tires' grip in ordinary driving, times the Inspector's (1: as set there). The drift doesn't use it.</summary>
-        public float DrivingGrip = 1.5f;
+        public float DrivingGrip = 1.65f;
+        /// <summary>Braking: the rear tires' sideways grip rises by this share at full brake (the weight moves to the front and
+        /// the rear would slide out), so the car brakes straight and turns in under braking without skidding. 0: off.</summary>
+        public float BrakingRearGrip = 0.5f;
 
         // ---- Drift
         /// <summary>km/h above which the handbrake drifts (below: it is a handbrake).</summary>
@@ -129,6 +143,7 @@ namespace Racing
         float steer;          // the wheel, -1 left to 1 right, before the speed's share
         float rearGrip = 1.0f;
         float absShare = 1.0f;   // the share of the brake ABS lets through
+        float slipShare = 1.0f;  // the share of the steering the slide lets through (SlipLimit)
         float wallTime;          // seconds the wall assist still holds after the last touch
         Vector3 wallNormal;      // towards the wall, level
         bool manual;             // the vehicle's gearbox is manual (as GameOptions says, the test driver aside)
@@ -192,6 +207,28 @@ namespace Racing
         }
 
         // The gearbox as the player chose it (also changed in the pause menu's Settings), and the paddles' presses
+        // The share of the wheel's full lock that full input turns at this speed: the turn the tires can hold (a car turning
+        // on a circle of radius R pulls v² / R sideways; its front wheels point Wheelbase / R off its way), plus the slip at
+        // which they grip best. The downforce presses them down as the square of the speed, so they hold more. Then less
+        // while a tire slides past SlipLimit (not in a drift, nor while the rear gets its grip back after one)
+        float SteerShare(float speed, bool drift, float dt)
+        {
+            float lockAngle = MathF.Max(MaxSteerAngle, 1.0f);
+            float v = MathF.Abs(speed);
+            float angle = lockAngle;
+            if (v > 1.0f && SteerGrip > 0.0f)
+            {
+                float ratio = v / MathF.Max(DownforceSpeed / 3.6f, 1.0f);
+                float sideways = SteerGrip * 9.81f * (1.0f + MathF.Max(Downforce, 0.0f) * ratio * ratio); // m/s²
+                float turn = MathF.Atan(sideways * MathF.Max(Wheelbase, 0.5f) / (v * v)) * 180.0f / MathF.PI;
+                angle = MathF.Min(lockAngle, turn + MathF.Max(SteerSlip, 0.0f));
+            }
+            bool sliding = SlipLimit > 0.0f && !drift && rearGrip >= MathF.Max(DrivingGrip, 0.0f) && v > 10.0f &&
+                vehicle!.LateralSlip > SlipLimit;
+            slipShare = sliding ? MathF.Max(0.4f, slipShare - 3.0f * dt) : MathF.Min(1.0f, slipShare + 2.0f * dt);
+            return angle / lockAngle * slipShare;
+        }
+
         void UpdateGearbox()
         {
             bool wanted = GameOptions.ManualGearbox && driver == null;
@@ -259,8 +296,7 @@ namespace Racing
 
             UpdateGearbox();
 
-            // Less of the wheel the faster it goes
-            float share = 1.0f - (1.0f - Math.Clamp(FullSpeedSteer, 0.0f, 1.0f)) * Math.Clamp(kmh / MathF.Max(FullSpeedSteerAt, 1.0f), 0.0f, 1.0f);
+            float share = SteerShare(speed, drift, dt);
 
             // Drift: fast, the handbrake lowers the rear grip instead of locking the wheels; the grip comes back gradually
             // (from DriftRearGrip up to DrivingGrip); the front keeps the Inspector's grip while the handbrake is held
@@ -270,7 +306,9 @@ namespace Racing
                 rearGrip = Math.Clamp(DriftRearGrip, 0.0f, 1.0f);
             else
                 rearGrip = MathF.Min(driving, rearGrip + driving * dt / MathF.Max(DriftRecovery, 0.01f));
-            vehicle.SetGrip(drift ? 1.0f : driving, rearGrip);
+            // Braking forward (not drifting): more grip at the rear, as much more as the brake is pressed
+            float braking = !drifting && throttle <= 0.0f && speed > 1.0f ? brake : 0.0f;
+            vehicle.SetGrip(drift ? 1.0f : driving, rearGrip * (1.0f + MathF.Max(BrakingRearGrip, 0.0f) * braking));
 
             // ABS: the brake eases while a wheel locks, and comes back once it rolls
             if (AbsSlip > 0.0f && brake > 0.0f && kmh > 10.0f)
