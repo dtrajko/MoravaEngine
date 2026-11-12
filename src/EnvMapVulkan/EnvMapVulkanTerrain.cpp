@@ -2,6 +2,7 @@
 
 #include "EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkanScene.h"
+#include "EnvMapVulkanSceneData.h"
 
 #include "Assets/AssetFiles.h"
 #include "Core/Log.h"
@@ -70,17 +71,107 @@ namespace EnvMapVulkanTerrain
 		layer.Material = material;
 	}
 
-	// The heights and the chunks the settings ask for
-	static void Generate(TerrainComponent& terrain, const std::string& name)
+	static uint64_t MixHash(uint64_t hash, const void* data, size_t size)
 	{
-		const uint64_t hash = terrain.Settings.GetShapeHash();
-		if (terrain.Heights && terrain.Heights->ShapeHash == hash && terrain.Model && terrain.Lods)
+		const uint8_t* bytes = static_cast<const uint8_t*>(data);
+		for (size_t i = 0; i < size; i++)
 		{
-			return;
+			hash = (hash ^ bytes[i]) * 1099511628211ull; // FNV-1a
 		}
-		if (!terrain.Heights || terrain.Heights->ShapeHash != hash)
+		return hash;
+	}
+
+	// A guide's place in the terrain's space (a terrain is only moved: its translation)
+	static glm::mat4 GuideTransform(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID terrainEntity, EnvMapVulkanEntityID guide)
+	{
+		glm::mat4 transform = scene.GetWorldTransform(guide);
+		transform[3] -= glm::vec4(glm::vec3(scene.GetWorldTransform(terrainEntity)[3]), 0.0f);
+		return transform;
+	}
+
+	uint64_t GetGuidesHash(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, const TerrainComponent& terrain)
+	{
+		uint64_t hash = 14695981039346656037ull;
+		bool any = false;
+		for (EnvMapVulkanEntityID guide : terrain.Guides)
+		{
+			H2M::RefH2M<H2M::ModelH2M> model = scene.Exists(guide) && scene.Has<ModelComponent>(guide) ?
+				EnvMapVulkanSceneData::GetModel(scene, guide) : H2M::RefH2M<H2M::ModelH2M>();
+			if (!model)
+			{
+				continue; // gone, or not a model: nothing to follow
+			}
+			any = true;
+			const glm::mat4 transform = GuideTransform(scene, entity, guide);
+			const H2M::ModelH2M* raw = model.Raw();
+			const size_t meshes = model->GetMeshes().size();
+			hash = MixHash(hash, &guide, sizeof(guide));
+			hash = MixHash(hash, &raw, sizeof(raw));
+			hash = MixHash(hash, &meshes, sizeof(meshes));
+			hash = MixHash(hash, &transform, sizeof(transform));
+			const std::string& file = model->GetFilePath();
+			hash = MixHash(hash, file.data(), file.size());
+		}
+		return any ? (hash == 0 ? 1 : hash) : 0;
+	}
+
+	TerrainGuides GatherGuides(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, const TerrainComponent& terrain)
+	{
+		TerrainGuides guides;
+		guides.Hash = GetGuidesHash(scene, entity, terrain);
+		for (EnvMapVulkanEntityID guide : terrain.Guides)
+		{
+			H2M::RefH2M<H2M::ModelH2M> model = scene.Exists(guide) && scene.Has<ModelComponent>(guide) ?
+				EnvMapVulkanSceneData::GetModel(scene, guide) : H2M::RefH2M<H2M::ModelH2M>();
+			if (!model)
+			{
+				continue;
+			}
+			const glm::mat4 guideTransform = GuideTransform(scene, entity, guide);
+			const auto& meshes = model->GetMeshes();
+			for (uint32_t m = 0; m < (uint32_t)meshes.size(); m++)
+			{
+				// Each mesh where it is drawn (as physics makes a mesh collider of it)
+				const glm::mat4 transform = EnvMapVulkanSceneData::GetMeshTransform(model, meshes[m], guideTransform);
+				for (const H2M::TriangleH2M& triangle : model->GetTriangleCache(m))
+				{
+					guides.Triangles.push_back({ glm::vec3(transform * glm::vec4(triangle.V0.Position, 1.0f)),
+						glm::vec3(transform * glm::vec4(triangle.V1.Position, 1.0f)), glm::vec3(transform * glm::vec4(triangle.V2.Position, 1.0f)) });
+				}
+			}
+		}
+		return guides;
+	}
+
+	bool UpdateHeights(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, TerrainComponent& terrain)
+	{
+		const uint64_t hash = Terrain::GetShapeHash(terrain.Settings, GetGuidesHash(scene, entity, terrain));
+		if (terrain.Heights && terrain.Heights->ShapeHash == hash)
+		{
+			return false;
+		}
+		if (terrain.Guides.empty())
 		{
 			terrain.Heights = Terrain::GenerateHeights(terrain.Settings);
+			return true;
+		}
+		const auto start = std::chrono::steady_clock::now();
+		const TerrainGuides guides = GatherGuides(scene, entity, terrain);
+		const float gatherMilliseconds = std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - start).count();
+		terrain.Heights = Terrain::GenerateHeights(terrain.Settings, &guides);
+		Log::GetLogger()->info("Terrain '{0}': follows {1} guide triangles (gathered in {2:.0f} ms)", scene.Get<NameComponent>(entity).Name,
+			guides.Triangles.size(), gatherMilliseconds);
+		return true;
+	}
+
+	// The heights and the chunks the settings ask for
+	static void Generate(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, TerrainComponent& terrain, const std::string& name)
+	{
+		UpdateHeights(scene, entity, terrain);
+		// The chunks of these heights (physics may have made them again first: a game starts before its first frame)
+		if (terrain.Model && terrain.Lods && terrain.ModelShapeHash == terrain.Heights->ShapeHash)
+		{
+			return;
 		}
 		const auto start = std::chrono::steady_clock::now();
 		auto lods = std::make_shared<TerrainLods>();
@@ -93,6 +184,7 @@ namespace EnvMapVulkanTerrain
 		const size_t chunks = data.Meshes.size(), vertices = data.StaticVertices.size(), levelTriangles = data.Indices.size() - triangles;
 		terrain.Lods = lods;
 		terrain.Model = H2M::RefH2M<H2M::ModelH2M>::Create("Terrain '" + name + "'", std::move(data));
+		terrain.ModelShapeHash = terrain.Heights->ShapeHash;
 		const float meshMilliseconds = std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - start).count();
 		const glm::vec2 flat = terrain.Settings.FlatCenter;
 		Log::GetLogger()->info("Terrain '{0}': {1:.0f} m, seed {2}, heights {3:.1f} to {4:.1f} m, the flat area at {5:.1f} m: {6} chunks, {7} vertices, "
@@ -118,7 +210,7 @@ namespace EnvMapVulkanTerrain
 		scene.Each<TerrainComponent>([&](EnvMapVulkanEntityID entity, TerrainComponent& terrain)
 		{
 			const std::string& name = scene.Get<NameComponent>(entity).Name;
-			Generate(terrain, name);
+			Generate(scene, entity, terrain, name);
 			if (!terrain.Model)
 			{
 				return;

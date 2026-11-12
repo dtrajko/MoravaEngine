@@ -74,11 +74,20 @@ Entities:
       Seed: 12345
       Size: 2048
       FlatCenter: [0, 0]
-      FlatRadius: 500
-      FlatBlend: 150
+      FlatRadius: 0
+      FlatBlend: 0
       Spacing: 4
       MaxVertices: 30000
+      RockHeight: 120
       LodTolerance: 2
+      Guides: [3001]
+      GuideClearance: 4
+      GuideShoulder: 6
+      GuideRise: 40
+      GuideHills: 12
+      GuideHillSize: 150
+      GuideBand: 150
+      GuideBlend: 200
       Layers:
         Sand: {ID: 5100000000000000002, File: Assets/Materials/Terrain_Sand.mmat}
         Grass: {ID: 5100000000000000001, File: Assets/Materials/Terrain_Grass.mmat}

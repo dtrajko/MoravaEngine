@@ -159,7 +159,15 @@ namespace EnvMapVulkanFoliage
 			const glm::vec3 top = glm::vec3(world * glm::vec4(ground + glm::vec3(0.0f, std::max(height, 0.0f), 0.0f), 1.0f));
 			return query->OverlapsCapsule(bottom, top, std::max(radius, 0.05f), ObjectLayers::StaticBit);
 		};
-		foliage.Instances = Foliage::Scatter(foliage.Settings, *terrain.Heights, keepOut);
+		// Each species' footprint: how far its model reaches sideways from the copy's place, turned any way
+		std::vector<float> footprints;
+		for (const Species& kind : s_Components[entity].Kinds)
+		{
+			const float x = std::max(std::fabs(kind.BoundsMin.x), std::fabs(kind.BoundsMax.x));
+			const float z = std::max(std::fabs(kind.BoundsMin.z), std::fabs(kind.BoundsMax.z));
+			footprints.push_back(kind.Model ? std::sqrt(x * x + z * z) : 0.0f);
+		}
+		foliage.Instances = Foliage::Scatter(foliage.Settings, *terrain.Heights, keepOut, &footprints);
 
 		const FoliageInstances& instances = *foliage.Instances;
 		std::string counts;

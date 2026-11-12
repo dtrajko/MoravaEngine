@@ -6,6 +6,7 @@
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h" // a terrain's layer materials (TerrainComponent)
 #include "EnvMapVulkan/EnvMapVulkanScene.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
+#include "EnvMapVulkan/EnvMapVulkanTerrain.h"
 
 #include "Core/Log.h"
 
@@ -360,10 +361,7 @@ bool ScenePhysics::CreateTerrainBody(Body& body, TerrainComponent& terrain)
 	const std::string& name = m_Scene->Get<NameComponent>(body.Entity).Name;
 	// Its heights as the renderer has them (the same settings give the same heights), or made now: a game can start before
 	// the first frame is drawn
-	if (!terrain.Heights || terrain.Heights->ShapeHash != terrain.Settings.GetShapeHash())
-	{
-		terrain.Heights = Terrain::GenerateHeights(terrain.Settings);
-	}
+	EnvMapVulkanTerrain::UpdateHeights(*m_Scene, body.Entity, terrain);
 	const TerrainHeights& heights = *terrain.Heights;
 	if (heights.SampleCount < 2)
 	{

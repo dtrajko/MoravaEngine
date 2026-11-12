@@ -11,6 +11,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include <algorithm>
 #include <string>
 
 
@@ -98,6 +99,72 @@ static void LayerMaterialControl(TerrainComponent& terrain, uint32_t layer)
 		Tooltip("Shows this material in the Material Editor: its maps, its color, its roughness, its tiling (repeats per meter: 0.25 is a 4 m tile)");
 	}
 	ImGui::PopID();
+}
+
+// The guides: model entities the ground follows (a road). A change makes the terrain again (the renderer sees it next frame)
+static void GuidesControls(EnvMapVulkanEntityID entity, TerrainComponent& terrain)
+{
+	ImGui::SeparatorText("Guides");
+	auto name = [](EnvMapVulkanEntityID id)
+	{
+		return s_Scene.Exists(id) ? s_Scene.Get<NameComponent>(id).Name : std::string("(missing)");
+	};
+	auto add = [&](EnvMapVulkanEntityID id)
+	{
+		if (id != entity && s_Scene.Exists(id) && s_Scene.Has<ModelComponent>(id) &&
+			std::find(terrain.Guides.begin(), terrain.Guides.end(), id) == terrain.Guides.end())
+		{
+			terrain.Guides.push_back(id);
+		}
+	};
+	for (size_t g = 0; g < terrain.Guides.size(); g++)
+	{
+		ImGui::PushID((int)g);
+		const EnvMapVulkanEntityID guide = terrain.Guides[g];
+		const bool usable = s_Scene.Exists(guide) && s_Scene.Has<ModelComponent>(guide);
+		if (ImGui::SmallButton("X"))
+		{
+			terrain.Guides.erase(terrain.Guides.begin() + g);
+			ImGui::PopID();
+			break;
+		}
+		Tooltip("The ground no longer follows it");
+		ImGui::SameLine();
+		if (usable)
+		{
+			ImGui::TextUnformatted(name(guide).c_str());
+		}
+		else
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "%s: not a model, not followed", name(guide).c_str());
+		}
+		ImGui::PopID();
+	}
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
+	if (ImGui::BeginCombo("Add Guide", "(a model entity)"))
+	{
+		s_Scene.Each<ModelComponent>([&](EnvMapVulkanEntityID id, ModelComponent&)
+		{
+			const bool followed = std::find(terrain.Guides.begin(), terrain.Guides.end(), id) != terrain.Guides.end();
+			const std::string label = name(id) + "##" + std::to_string(id);
+			if (!followed && ImGui::Selectable(label.c_str()))
+			{
+				add(id);
+			}
+		});
+		ImGui::EndCombo();
+	}
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("VULKAN_SCENE_ENTITY"))
+		{
+			add(*static_cast<const EnvMapVulkanEntityID*>(payload->Data));
+		}
+		ImGui::EndDragDropTarget();
+	}
+	Tooltip("A model the ground follows (a race track's road; an entity can be dropped here from the Scene Hierarchy):\n"
+		"just below its surface and beside it, then hills at about its height (Hills: some higher, some lower), and the\n"
+		"terrain's own hills beyond the Band. Its triangles as drawn: moving it makes the terrain again");
 }
 
 void TerrainControls(EnvMapVulkanEntityID entity)
@@ -199,6 +266,33 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 	shapeEdited();
 	Tooltip("Meters over which the ground rises from it back into the hills");
 
+	GuidesControls(entity, terrain);
+	if (!terrain.Guides.empty())
+	{
+		ImGui::DragFloat("Clearance", &s.GuideClearance, 0.05f, 0.0f, 100.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+		shapeEdited();
+		Tooltip("How far the ground stays below a guide's surface, under it and beside it (a road's slab is then partly in the ground)");
+		ImGui::DragFloat("Shoulder", &s.GuideShoulder, 0.5f, 0.0f, 1000.0f, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
+		shapeEdited();
+		Tooltip("Meters beside a guide where the ground stays at its height, before a hill rises (an embankment's top)");
+		ImGui::DragFloat("Rise", &s.GuideRise, 0.5f, 1.0f, 2000.0f, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
+		shapeEdited();
+		Tooltip("Meters over which the hills beside a guide rise to their full height: short is steep");
+		ImGui::DragFloat("Hills", &s.GuideHills, 0.25f, 0.0f, 1000.0f, "%.1f m", ImGuiSliderFlags_AlwaysClamp);
+		shapeEdited();
+		Tooltip("How far the hills near a guide go above or below its height, at most. Where one dips below a road,\n"
+			"the road stands on its supports over it");
+		ImGui::DragFloat("Hill Size", &s.GuideHillSize, 1.0f, 8.0f, 20000.0f, "%.0f m", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+		shapeEdited();
+		Tooltip("The size of those hills");
+		ImGui::DragFloat("Band", &s.GuideBand, 1.0f, 0.0f, s.Size, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
+		shapeEdited();
+		Tooltip("Meters from a guide the ground keeps to its height (what a driver on the road sees)");
+		ImGui::DragFloat("Band Blend", &s.GuideBlend, 1.0f, 1.0f, s.Size, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
+		shapeEdited();
+		Tooltip("Meters over which it turns into the terrain's own hills beyond the band");
+	}
+
 	if (commit)
 	{
 		s.Clamp();
@@ -218,6 +312,13 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 		t.FlatBlend = s.FlatBlend;
 		t.Spacing = s.Spacing;
 		t.MaxVertices = s.MaxVertices;
+		t.GuideClearance = s.GuideClearance;
+		t.GuideShoulder = s.GuideShoulder;
+		t.GuideRise = s.GuideRise;
+		t.GuideHills = s.GuideHills;
+		t.GuideHillSize = s.GuideHillSize;
+		t.GuideBand = s.GuideBand;
+		t.GuideBlend = s.GuideBlend;
 	}
 
 	// The look and physics: at once

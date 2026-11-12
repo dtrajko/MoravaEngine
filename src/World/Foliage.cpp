@@ -89,7 +89,8 @@ namespace Foliage
 		return Mix(settings.GetScatterHash() ^ terrain.ShapeHash);
 	}
 
-	std::shared_ptr<const FoliageInstances> Scatter(const FoliageSettings& settings, const TerrainHeights& terrain, const KeepOutQuery& keepOut)
+	std::shared_ptr<const FoliageInstances> Scatter(const FoliageSettings& settings, const TerrainHeights& terrain, const KeepOutQuery& keepOut,
+		const std::vector<float>* footprints)
 	{
 		const auto start = std::chrono::steady_clock::now();
 		auto result = std::make_shared<FoliageInstances>();
@@ -119,6 +120,7 @@ namespace Foliage
 			const float step = std::sqrt(10000.0f / species.Density);
 			const int squares = (int)std::ceil(terrain.Size / step);
 			const float minNormalY = std::cos(glm::radians(species.MaxSlope));
+			const float footprint = footprints && s < footprints->size() ? std::max((*footprints)[s], 0.0f) : 0.0f;
 			for (int iz = 0; iz < squares; iz++)
 			{
 				for (int ix = 0; ix < squares; ix++)
@@ -148,7 +150,8 @@ namespace Foliage
 					{
 						continue; // too far from everything (from the track)
 					}
-					if (keepOut && keepOut(ground, species.KeepOut, settings.ClearHeight))
+					// From the copy's edge: no crown or bush over a road, whatever its size
+					if (keepOut && keepOut(ground, species.KeepOut + footprint * scale, settings.ClearHeight))
 					{
 						result->KeptOut++;
 						continue;

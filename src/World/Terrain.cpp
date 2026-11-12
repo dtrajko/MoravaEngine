@@ -183,6 +183,13 @@ uint64_t TerrainSettings::GetShapeHash() const
 	hash = HashOf(hash, FlatBlend);
 	hash = HashOf(hash, Spacing);
 	hash = HashOf(hash, MaxVertices);
+	hash = HashOf(hash, GuideClearance);
+	hash = HashOf(hash, GuideShoulder);
+	hash = HashOf(hash, GuideRise);
+	hash = HashOf(hash, GuideHills);
+	hash = HashOf(hash, GuideHillSize);
+	hash = HashOf(hash, GuideBand);
+	hash = HashOf(hash, GuideBlend);
 	return hash;
 }
 
@@ -203,6 +210,13 @@ void TerrainSettings::Clamp()
 	RockSlope = std::clamp(RockSlope, 0.0f, 90.0f);
 	Friction = std::clamp(Friction, 0.0f, 2.0f);
 	LodTolerance = std::clamp(LodTolerance, 0.0f, 20.0f);
+	GuideClearance = std::clamp(GuideClearance, 0.0f, 100.0f);
+	GuideShoulder = std::clamp(GuideShoulder, 0.0f, 1000.0f);
+	GuideRise = std::clamp(GuideRise, 1.0f, 2000.0f);
+	GuideHills = std::clamp(GuideHills, 0.0f, 1000.0f);
+	GuideHillSize = std::clamp(GuideHillSize, 8.0f, 20000.0f);
+	GuideBand = std::clamp(GuideBand, 0.0f, Size);
+	GuideBlend = std::clamp(GuideBlend, 1.0f, Size);
 }
 
 // ---- TerrainHeights
@@ -317,11 +331,246 @@ bool TerrainHeights::Raycast(const glm::vec3& origin, const glm::vec3& direction
 	}
 }
 
+// ---- The guides
+
+namespace
+{
+	// The point of a triangle nearest to p in x and z (the triangle seen from above): how far it is and the triangle's height
+	// there. False: the triangle is edge-on from above (a wall's side), no surface to follow
+	bool NearestFromAbove(const std::array<glm::vec3, 3>& triangle, const glm::vec2& p, float& distance, float& height)
+	{
+		const glm::vec2 a(triangle[0].x, triangle[0].z), b(triangle[1].x, triangle[1].z), c(triangle[2].x, triangle[2].z);
+		const glm::vec2 ab = b - a, ac = c - a;
+		const float area = ab.x * ac.y - ab.y * ac.x;
+		if (std::fabs(area) < 1e-6f)
+		{
+			return false;
+		}
+		// Inside: the height on the plane
+		const glm::vec2 ap = p - a;
+		const float v = (ap.x * ac.y - ap.y * ac.x) / area, w = (ab.x * ap.y - ab.y * ap.x) / area;
+		if (v >= 0.0f && w >= 0.0f && v + w <= 1.0f)
+		{
+			distance = 0.0f;
+			height = triangle[0].y + v * (triangle[1].y - triangle[0].y) + w * (triangle[2].y - triangle[0].y);
+			return true;
+		}
+		// Outside: the nearest point of its edges
+		distance = std::numeric_limits<float>::max();
+		for (int e = 0; e < 3; e++)
+		{
+			const glm::vec2 from(triangle[e].x, triangle[e].z), to(triangle[(e + 1) % 3].x, triangle[(e + 1) % 3].z);
+			const glm::vec2 along = to - from;
+			const float lengthSquared = glm::dot(along, along);
+			const float t = lengthSquared > 1e-12f ? std::clamp(glm::dot(p - from, along) / lengthSquared, 0.0f, 1.0f) : 0.0f;
+			const float d = glm::length(p - (from + along * t));
+			if (d < distance)
+			{
+				distance = d;
+				height = triangle[e].y + t * (triangle[(e + 1) % 3].y - triangle[e].y);
+			}
+		}
+		return true;
+	}
+
+	// Each row's values averaged over radius samples either side (twice: a tent, smooth), then each column's
+	void Blur(std::vector<float>& values, uint32_t count, int radius)
+	{
+		if (radius < 1)
+		{
+			return;
+		}
+		auto pass = [&](bool rows)
+		{
+			std::vector<float> source = values;
+			ParallelRows(count, [&](uint32_t first, uint32_t last)
+			{
+				std::vector<double> sums(count + 1);
+				for (uint32_t line = first; line < last; line++)
+				{
+					auto at = [&](uint32_t i) -> size_t { return rows ? (size_t)line * count + i : (size_t)i * count + line; };
+					sums[0] = 0.0;
+					for (uint32_t i = 0; i < count; i++)
+					{
+						sums[i + 1] = sums[i] + source[at(i)];
+					}
+					for (uint32_t i = 0; i < count; i++)
+					{
+						const int from = std::max((int)i - radius, 0), to = std::min((int)i + radius, (int)count - 1);
+						values[at(i)] = (float)((sums[to + 1] - sums[from]) / (double)(to - from + 1));
+					}
+				}
+			});
+		};
+		for (int repeat = 0; repeat < 2; repeat++)
+		{
+			pass(true);
+			pass(false);
+		}
+	}
+
+	// The ground near the guides (TerrainSettings' Guide values), over the terrain's own heights h (the terrain's space)
+	void FollowGuides(const TerrainSettings& settings, const TerrainGuides& guides, TerrainHeights& heights)
+	{
+		const uint32_t count = heights.SampleCount;
+		std::vector<float>& h = heights.Heights;
+		const float half = settings.Size * 0.5f, spacing = settings.Spacing;
+		const size_t samples = (size_t)count * count;
+		auto position = [&](uint32_t x, uint32_t z) { return glm::vec2(-half + x * spacing, -half + z * spacing); };
+
+		// The guide's surface at each sample under it or near it: the lowest it is within a sample and a half (so the ground
+		// between two samples, a straight line, stays below a road that slopes or banks away from them)
+		const float reach = 1.5f * spacing;
+		constexpr float none = std::numeric_limits<float>::max();
+		std::vector<float> surface(samples, none);
+		for (const std::array<glm::vec3, 3>& triangle : guides.Triangles)
+		{
+			const float minX = std::min({ triangle[0].x, triangle[1].x, triangle[2].x }) - reach;
+			const float maxX = std::max({ triangle[0].x, triangle[1].x, triangle[2].x }) + reach;
+			const float minZ = std::min({ triangle[0].z, triangle[1].z, triangle[2].z }) - reach;
+			const float maxZ = std::max({ triangle[0].z, triangle[1].z, triangle[2].z }) + reach;
+			if (maxX < -half || minX > half || maxZ < -half || minZ > half)
+			{
+				continue; // beyond the terrain
+			}
+			const uint32_t x0 = (uint32_t)std::clamp(std::ceil((minX + half) / spacing), 0.0f, (float)(count - 1));
+			const uint32_t x1 = (uint32_t)std::clamp(std::floor((maxX + half) / spacing), 0.0f, (float)(count - 1));
+			const uint32_t z0 = (uint32_t)std::clamp(std::ceil((minZ + half) / spacing), 0.0f, (float)(count - 1));
+			const uint32_t z1 = (uint32_t)std::clamp(std::floor((maxZ + half) / spacing), 0.0f, (float)(count - 1));
+			for (uint32_t z = z0; z <= z1; z++)
+			{
+				for (uint32_t x = x0; x <= x1; x++)
+				{
+					float distance = 0.0f, height = 0.0f;
+					if (NearestFromAbove(triangle, position(x, z), distance, height) && distance <= reach)
+					{
+						float& value = surface[(size_t)z * count + x];
+						value = std::min(value, height);
+					}
+				}
+			}
+		}
+
+		// The nearest of those samples to every sample (two sweeps over the grid, each passing on its neighbors' nearest:
+		// within a fraction of a sample of the true nearest)
+		std::vector<int32_t> nearest(samples, -1);
+		bool any = false;
+		for (size_t i = 0; i < samples; i++)
+		{
+			if (surface[i] != none)
+			{
+				nearest[i] = (int32_t)i;
+				any = true;
+			}
+		}
+		if (!any)
+		{
+			return; // no guide over the terrain
+		}
+		auto distanceSquared = [&](size_t i, int32_t to)
+		{
+			const int64_t dx = (int64_t)(i % count) - (int64_t)(to % count), dz = (int64_t)(i / count) - (int64_t)(to / count);
+			return dx * dx + dz * dz;
+		};
+		auto consider = [&](uint32_t x, uint32_t z, int ox, int oz)
+		{
+			const int nx = (int)x + ox, nz = (int)z + oz;
+			if (nx < 0 || nz < 0 || nx >= (int)count || nz >= (int)count)
+			{
+				return;
+			}
+			const size_t i = (size_t)z * count + x;
+			const int32_t candidate = nearest[(size_t)nz * count + nx];
+			if (candidate >= 0 && (nearest[i] < 0 || distanceSquared(i, candidate) < distanceSquared(i, nearest[i])))
+			{
+				nearest[i] = candidate;
+			}
+		};
+		for (int sweep = 0; sweep < 2; sweep++)
+		{
+			for (uint32_t z = 0; z < count; z++)
+			{
+				for (uint32_t x = 0; x < count; x++)
+				{
+					consider(x, z, -1, 0); consider(x, z, -1, -1); consider(x, z, 0, -1); consider(x, z, 1, -1);
+				}
+				for (uint32_t x = count; x-- > 0;)
+				{
+					consider(x, z, 1, 0);
+				}
+			}
+			for (uint32_t z = count; z-- > 0;)
+			{
+				for (uint32_t x = count; x-- > 0;)
+				{
+					consider(x, z, 1, 0); consider(x, z, 1, 1); consider(x, z, 0, 1); consider(x, z, -1, 1);
+				}
+				for (uint32_t x = 0; x < count; x++)
+				{
+					consider(x, z, -1, 0);
+				}
+			}
+		}
+
+		// The guide's height at the nearest point, and smoothed: where two parts of a road at different heights are near
+		// each other, the ground between them has no step where the nearest changes from one to the other
+		heights.Ceiling.assign(samples, none);
+		std::vector<float> guide(samples), smooth(samples);
+		for (size_t i = 0; i < samples; i++)
+		{
+			guide[i] = smooth[i] = surface[nearest[i]];
+		}
+		Blur(smooth, count, (int)std::lround((settings.GuideShoulder + settings.GuideRise) * 0.5f / spacing));
+
+		// The hills near the guides: their own noise, -1 to 1
+		GradientNoise noise(((uint64_t)settings.Seed << 1) ^ 0x9E3779B97F4A7C15ull);
+		const float frequency = 1.0f / settings.GuideHillSize;
+		ParallelRows(count, [&](uint32_t first, uint32_t last)
+		{
+			for (uint32_t z = first; z < last; z++)
+			{
+				for (uint32_t x = 0; x < count; x++)
+				{
+					const size_t i = (size_t)z * count + x;
+					const float distance = std::sqrt((float)distanceSquared(i, nearest[i])) * spacing;
+					const glm::vec2 p = position(x, z);
+					// Just below the guide, then below its smoothed height further out
+					const float level = guide[i] + (smooth[i] - guide[i]) * SmoothStep(0.0f, settings.GuideShoulder + settings.GuideRise, distance)
+						- settings.GuideClearance;
+					const float n = std::clamp((noise.Sample(p.x * frequency + 17.3f, p.y * frequency + 41.9f) +
+						0.5f * noise.Sample(p.x * frequency * 2.3f + 63.1f, p.y * frequency * 2.3f + 5.7f)) / 1.5f * 1.4f, -1.0f, 1.0f);
+					const float hill = level + settings.GuideHills * n;
+					// A hill above the guide rises beside it, past the shoulder (a road through a cutting); one below it dips
+					// under the guide too (a road on its supports)
+					float value = hill <= level ? hill :
+						level + (hill - level) * SmoothStep(settings.GuideShoulder, settings.GuideShoulder + settings.GuideRise, distance);
+					// Beyond the band, the terrain's own hills
+					value += (h[i] - value) * SmoothStep(settings.GuideBand, settings.GuideBand + settings.GuideBlend, distance);
+					// Never above the guide's surface where it is over the ground
+					if (surface[i] != none)
+					{
+						value = std::min(value, surface[i] - settings.GuideClearance);
+					}
+					h[i] = value;
+					// And the drawn ground's limit there: half way down to the ground physics has
+					heights.Ceiling[i] = surface[i] == none ? none : surface[i] - 0.5f * settings.GuideClearance;
+				}
+			}
+		});
+	}
+}
+
 // ---- Terrain
 
 namespace Terrain
 {
-	std::shared_ptr<const TerrainHeights> GenerateHeights(const TerrainSettings& input)
+	uint64_t GetShapeHash(const TerrainSettings& settings, uint64_t guidesHash)
+	{
+		const uint64_t hash = settings.GetShapeHash();
+		return guidesHash == 0 ? hash : HashOf(hash, guidesHash);
+	}
+
+	std::shared_ptr<const TerrainHeights> GenerateHeights(const TerrainSettings& input, const TerrainGuides* guides)
 	{
 		const auto start = std::chrono::steady_clock::now();
 		TerrainSettings settings = input;
@@ -331,7 +580,8 @@ namespace Terrain
 		heights->Spacing = settings.Spacing;
 		heights->Size = settings.Size;
 		heights->SampleCount = (uint32_t)std::lround(settings.Size / settings.Spacing) + 1;
-		heights->ShapeHash = input.GetShapeHash();
+		const bool guided = guides && !guides->Triangles.empty();
+		heights->ShapeHash = GetShapeHash(input, guides ? guides->Hash : 0);
 		const uint32_t count = heights->SampleCount;
 		heights->Heights.resize((size_t)count * count);
 
@@ -410,6 +660,15 @@ namespace Terrain
 		}
 		heights->MinHeight = 0.0f;
 		heights->MaxHeight = *newHighest - shift;
+
+		// The guides are in the terrain's space: the ground near them is at their heights, wherever its lowest point is
+		if (guided)
+		{
+			FollowGuides(settings, *guides, *heights);
+			const auto [guidedLowest, guidedHighest] = std::minmax_element(h.begin(), h.end());
+			heights->MinHeight = *guidedLowest;
+			heights->MaxHeight = *guidedHighest;
+		}
 		heights->Milliseconds = std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - start).count();
 		return heights;
 	}
@@ -433,6 +692,10 @@ namespace Terrain
 			z = std::clamp(z, 0, (int)count - 1);
 			return heights.Heights[(size_t)z * count + x];
 		};
+		// Under and beside a guide: the highest the drawn ground may be (TerrainHeights::Ceiling)
+		const bool hasCeiling = heights.Ceiling.size() == heights.Heights.size();
+		auto ceiling = [&](int x, int z) { return heights.Ceiling[(size_t)z * count + x]; };
+		constexpr float Forbidden = std::numeric_limits<float>::infinity(); // a level's error there: never drawn
 		// A level's spacing in heights, when it fits the chunk (else the level before it is used again)
 		auto levelFits = [](uint32_t level, uint32_t w, uint32_t d) { const uint32_t step = 1u << level; return w % step == 0 && d % step == 0; };
 
@@ -472,6 +735,7 @@ namespace Terrain
 						}
 						const uint32_t step = 1u << level;
 						float error = 0.0f;
+						bool aboveCeiling = false;
 						for (uint32_t z = 0; z <= d; z++)
 						{
 							for (uint32_t x = 0; x <= w; x++)
@@ -482,9 +746,10 @@ namespace Terrain
 								const float ha = at(gx, gz), hb = at(gx + gs, gz), hc = at(gx, gz + gs), he = at(gx + gs, gz + gs);
 								const float level_h = v >= u ? ha + u * (he - hc) + v * (hc - ha) : ha + u * (hb - ha) + v * (he - hb);
 								error = std::max(error, std::fabs(level_h - at((int)(x0 + x), (int)(z0 + z))));
+								aboveCeiling = aboveCeiling || (hasCeiling && level_h > ceiling((int)(x0 + x), (int)(z0 + z)));
 							}
 						}
-						shape.Error[level] = std::max(error, shape.Error[level - 1]); // never less than a finer level's
+						shape.Error[level] = aboveCeiling ? Forbidden : std::max(error, shape.Error[level - 1]); // never less than a finer level's
 						if (shape.Error[level] <= ExactError)
 						{
 							shape.Base = level;
@@ -510,9 +775,11 @@ namespace Terrain
 			{
 				ChunkShape& shape = shapes[c];
 				shape.Base = 0;
-				for (uint32_t level = 1; level < TerrainLods::LevelCount && shape.Fits[level]; level++)
+				// The levels that fit a chunk are the first ones (a coarser step fits only if a finer does); one above a
+				// guide's ceiling isn't one: the finer levels a road needs are taken whatever the budget
+				for (uint32_t level = 1; level < TerrainLods::LevelCount && shape.Fits[level] && shape.Error[level] != Forbidden; level++)
 				{
-					shape.Base = level; // the levels that fit a chunk are the first ones (a coarser step fits only if a finer does)
+					shape.Base = level;
 				}
 				total += vertexCost(shape, shape.Base);
 				if (shape.Base > 0 && shape.Error[shape.Base] > ExactError)
