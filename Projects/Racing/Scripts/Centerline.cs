@@ -86,6 +86,28 @@ namespace Racing
             return i;
         }
 
+        /// <summary>
+        /// The middle of the road s meters along the track (around it: any s), between the two points either side, and the
+        /// road's right there (level: without the bank). For what moves along the track smoothly (the menu's camera).
+        /// </summary>
+        public Vector3 PositionAt(float s, out Vector3 right)
+        {
+            s = ((s % Length) + Length) % Length;
+            int low = 0, high = points.Count - 1;
+            while (low < high) // the last point at or before s
+            {
+                int middle = (low + high + 1) / 2;
+                if (points[middle].S <= s) low = middle; else high = middle - 1;
+            }
+            int next = Next(low);
+            float span = next > low ? points[next].S - points[low].S : Length - points[low].S;
+            float t = span > 1e-4f ? Math.Clamp((s - points[low].S) / span, 0.0f, 1.0f) : 0.0f;
+            Vector3 forward = points[next].Position - points[low].Position;
+            Vector3 level = Vector3.Cross(new Vector3(forward.X, 0.0f, forward.Z), Vector3.UnitY);
+            right = level.LengthSquared() > 1e-8f ? Vector3.Normalize(level) : Vector3.UnitX;
+            return Vector3.Lerp(points[low].Position, points[next].Position, t);
+        }
+
         /// <summary>The point nearest to s meters along the track.</summary>
         public int IndexAt(float s)
         {

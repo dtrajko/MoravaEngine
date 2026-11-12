@@ -85,6 +85,7 @@ Entities:
       GuideShoulder: 6
       GuideRise: 40
       GuideRaise: 20
+      GuideRoom: 200
       GuideHills: 12
       GuideHillSize: 150
       GuideBand: 150
@@ -156,6 +157,122 @@ Entities:
           MaxDistance: 100
           AlignToSlope: 0.5
           Sink: 0.6
+  - ID: 2100
+    Name: Ghost
+    Parent: 0
+    Transform:
+      Translation: [0, -1000, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Racing.RaceGhost
+      Fields:
+        Car: {Entity: 2001}
+  - ID: 2110
+    Name: Ghost Model
+    Parent: 2100
+    Transform:
+      Translation: [0, -0.6, 0]
+      Rotation: [0, 180, 0]
+      Scale: [2, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/race.glb
+  - ID: 2111
+    Name: Ghost Body
+    Parent: 2110
+    Transform:
+      Translation: [0, 0.1, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7135945332564073308
+        File: Assets/Materials/Ghost.mmat
+  - ID: 2112
+    Name: Ghost Wheel FL
+    Parent: 2100
+    Transform:
+      Translation: [-1.05, 0, -1.28]
+      Rotation: [0, 180, 0]
+      Scale: [2.25, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2116
+    Name: Ghost Wheel FL Tire
+    Parent: 2112
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7135945332564073308
+        File: Assets/Materials/Ghost.mmat
+  - ID: 2113
+    Name: Ghost Wheel FR
+    Parent: 2100
+    Transform:
+      Translation: [1.05, 0, -1.28]
+      Rotation: [0, 0, 0]
+      Scale: [2.25, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2117
+    Name: Ghost Wheel FR Tire
+    Parent: 2113
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7135945332564073308
+        File: Assets/Materials/Ghost.mmat
+  - ID: 2114
+    Name: Ghost Wheel RL
+    Parent: 2100
+    Transform:
+      Translation: [-1.14, 0, 1.76]
+      Rotation: [0, 180, 0]
+      Scale: [2.7, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2118
+    Name: Ghost Wheel RL Tire
+    Parent: 2114
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7135945332564073308
+        File: Assets/Materials/Ghost.mmat
+  - ID: 2115
+    Name: Ghost Wheel RR
+    Parent: 2100
+    Transform:
+      Translation: [1.14, 0, 1.76]
+      Rotation: [0, 0, 0]
+      Scale: [2.7, 2, 2]
+    Model:
+      File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2119
+    Name: Ghost Wheel RR Tire
+    Parent: 2115
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7135945332564073308
+        File: Assets/Materials/Ghost.mmat
   - ID: 3000
     Name: Track
     Parent: 0

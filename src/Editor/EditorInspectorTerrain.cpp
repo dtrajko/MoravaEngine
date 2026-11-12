@@ -282,6 +282,10 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 		shapeEdited();
 		Tooltip("How far the ground rises over Rise, above its level under the guide (Clearance below it): with both,\n"
 			"the guide crosses a valley on its supports and the hills beyond are higher than it. 0: the hills are at that level");
+		ImGui::DragFloat("Room", &s.GuideRoom, 1.0f, 0.0f, s.Size, s.GuideRoom > 0.0f ? "%.0f m" : "off", ImGuiSliderFlags_AlwaysClamp);
+		shapeEdited();
+		Tooltip("Where the ground between two parts of a guide (a track's straights before and after a hairpin) is narrower\n"
+			"than this, it rises less and its hills are lower (down to half): no high ridge squeezed between two roads. 0: off");
 		ImGui::DragFloat("Hills", &s.GuideHills, 0.25f, 0.0f, 1000.0f, "%.1f m", ImGuiSliderFlags_AlwaysClamp);
 		shapeEdited();
 		Tooltip("How far the hills near a guide go above or below its height, at most. Where one dips below a road,\n"
@@ -328,6 +332,7 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 		t.GuideBand = s.GuideBand;
 		t.GuideBlend = s.GuideBlend;
 		t.GuideRaise = s.GuideRaise;
+		t.GuideRoom = s.GuideRoom;
 		t.GuideDetail = s.GuideDetail;
 	}
 

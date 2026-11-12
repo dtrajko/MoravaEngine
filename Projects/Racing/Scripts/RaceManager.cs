@@ -84,6 +84,8 @@ namespace Racing
         public int LightsOn { get; private set; }
         /// <summary>The lap being driven, 1 to Laps (Laps when finished).</summary>
         public int Lap => Math.Clamp(lapsDone + 1, 1, Math.Max(Laps, 1));
+        /// <summary>The laps finished in this race (the ghost: a lap just ended when it grows).</summary>
+        public int LapsDone => lapsDone;
         /// <summary>Seconds since the light turned green.</summary>
         public float RaceTime { get; private set; }
         /// <summary>Seconds of the lap being driven.</summary>
@@ -144,6 +146,8 @@ namespace Racing
         readonly System.Collections.Generic.List<float> lapTimes = new();
 
         string Key(string name) => $"{line?.Name ?? "Track"}.{name}";
+        /// <summary>The save data key of one of this track's records (the ghost keeps its lap beside them).</summary>
+        public string RecordKey(string name) => Key(name);
 
         protected override void OnCreate()
         {

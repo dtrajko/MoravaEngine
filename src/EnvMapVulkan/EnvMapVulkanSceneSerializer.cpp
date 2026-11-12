@@ -592,6 +592,7 @@ namespace EnvMapVulkanSceneSerializer
 				out << YAML::Key << "GuideShoulder" << YAML::Value << t.GuideShoulder;
 				out << YAML::Key << "GuideRise" << YAML::Value << t.GuideRise;
 				out << YAML::Key << "GuideRaise" << YAML::Value << t.GuideRaise;
+				out << YAML::Key << "GuideRoom" << YAML::Value << t.GuideRoom;
 				out << YAML::Key << "GuideHills" << YAML::Value << t.GuideHills;
 				out << YAML::Key << "GuideHillSize" << YAML::Value << t.GuideHillSize;
 				out << YAML::Key << "GuideBand" << YAML::Value << t.GuideBand;
@@ -836,6 +837,7 @@ namespace EnvMapVulkanSceneSerializer
 			Read(terrainNode, "GuideShoulder", t.GuideShoulder);
 			Read(terrainNode, "GuideRise", t.GuideRise);
 			Read(terrainNode, "GuideRaise", t.GuideRaise);
+			Read(terrainNode, "GuideRoom", t.GuideRoom);
 			Read(terrainNode, "GuideHills", t.GuideHills);
 			Read(terrainNode, "GuideHillSize", t.GuideHillSize);
 			Read(terrainNode, "GuideBand", t.GuideBand);
