@@ -9,7 +9,7 @@
 # and every path with "Vulkan"): their functions aren't linked in that build.
 #
 # (from Git Bash: MSYS_NO_PATHCONV=1 wsl bash ...). Paths are relative to the repository root. Prints each file and its
-# errors; exit code 1 when any file has one. Warnings are left out: the old headers have many.
+# errors; exit code 1 when any file has one. Warnings are left out (only "error:" lines): the old headers have many.
 
 cd "$(dirname "$0")/../.." || exit 2
 repo=$(pwd)
@@ -37,7 +37,8 @@ fi
 failed=0
 for file in "$@"; do
 	echo "== $file"
-	errors=$(g++ -std=c++17 -fsyntax-only -w -DGRAPHICS_API_$api -DMORAVA_SCRIPTING "${includes[@]}" "$repo/$file" 2>&1 | grep -E "error" | head -10)
+	# No -w: it also hides the errors GCC only "permits" (-fpermissive), like a member named as its type ([-Wchanges-meaning])
+	errors=$(g++ -std=c++17 -fsyntax-only -DGRAPHICS_API_$api -DMORAVA_SCRIPTING -DMORAVA_BUILD_CONFIG=\"Release\" "${includes[@]}" "$repo/$file" 2>&1 | grep -E "error:" | head -10)
 	# Built for another API, the Vulkan-only sources (every path with "Vulkan", as CMakeLists.txt sorts them) aren't
 	# compiled: a header of theirs included here compiles, but its functions are missing when the build links
 	if [ "$api" != "VULKAN" ] && [ -z "$errors" ]; then
