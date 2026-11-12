@@ -92,6 +92,8 @@ struct EnvMapVulkanViewOptions
 	// each chunk by its level (every height green, then yellow, orange, red, purple, blue, gray)
 	bool TerrainLod = true;
 	bool ShowTerrainLod = false;
+	bool Foliage = true;           // the foliage's copies drawn (off: to compare the frame times)
+	bool ShowFoliageCells = false; // the foliage's cells as boxes: green drawn by the main view, gray culled or too far
 
 	bool Grid = false;
 	float GridScale = 16.025f; // cells across the grid (it spans 32 x 32 units)

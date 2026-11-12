@@ -158,6 +158,9 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Cutout_Static.glsl"); // SceneEnvMapVulkan: the prepass of cutout materials
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Cutout_Anim.glsl");
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Terrain.glsl"); // SceneEnvMapVulkan: the prepass of a terrain
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/HazelPBR_Instanced.glsl");              // SceneEnvMapVulkan: the foliage's copies
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Instanced.glsl");        // SceneEnvMapVulkan: their prepass
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/GBufferPrepass_Cutout_Instanced.glsl"); // SceneEnvMapVulkan: the same, cut out (leaves)
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Water.glsl");         // SceneEnvMapVulkan: the water plane
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/WaterFog.glsl");      // SceneEnvMapVulkan: the water volume (underwater fog)
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/WaterCaustics.glsl"); // SceneEnvMapVulkan: the light the waves focus under the water
@@ -171,6 +174,8 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Cutout.glsl");      // SceneEnvMapVulkan: shadows of cutout materials
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Cutout_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Instanced.glsl");        // SceneEnvMapVulkan: the foliage's shadows
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowDepth_Cutout_Instanced.glsl"); // SceneEnvMapVulkan: the same, cut out (leaves)
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowTransmittance.glsl"); // SceneEnvMapVulkan: light through tinted glass
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowMapView.glsl");    // SceneEnvMapVulkan: spot / point shadow map viewer
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeEnvFill.glsl");     // SceneEnvMapVulkan: the probe volume, filled from the environment

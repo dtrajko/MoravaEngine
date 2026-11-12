@@ -604,6 +604,35 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::EndMap;
 			out << YAML::EndMap;
 		}
+		if (const FoliageComponent* foliage = scene.TryGet<FoliageComponent>(entity))
+		{
+			// The settings only: the places are made from them and the terrain when the scene opens
+			const FoliageSettings& f = foliage->Settings;
+			out << YAML::Key << "Foliage" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Enabled" << YAML::Value << foliage->Enabled;
+			out << YAML::Key << "Seed" << YAML::Value << f.Seed;
+			out << YAML::Key << "CellSize" << YAML::Value << f.CellSize;
+			out << YAML::Key << "DrawDistance" << YAML::Value << f.DrawDistance;
+			out << YAML::Key << "ShadowDistance" << YAML::Value << f.ShadowDistance;
+			out << YAML::Key << "ClearHeight" << YAML::Value << f.ClearHeight;
+			out << YAML::Key << "Species" << YAML::Value << YAML::BeginSeq;
+			for (const FoliageSpecies& species : f.Species)
+			{
+				out << YAML::BeginMap;
+				AssetReference::Write(out, "Model", species.Model);
+				out << YAML::Key << "Density" << YAML::Value << species.Density;
+				out << YAML::Key << "Scale" << YAML::Value << YAML::Flow << YAML::BeginSeq << species.MinScale << species.MaxScale << YAML::EndSeq;
+				out << YAML::Key << "MaxSlope" << YAML::Value << species.MaxSlope;
+				out << YAML::Key << "Height" << YAML::Value << YAML::Flow << YAML::BeginSeq << species.MinHeight << species.MaxHeight << YAML::EndSeq;
+				out << YAML::Key << "KeepOut" << YAML::Value << species.KeepOut;
+				out << YAML::Key << "MaxDistance" << YAML::Value << species.MaxDistance;
+				out << YAML::Key << "AlignToSlope" << YAML::Value << species.AlignToSlope;
+				out << YAML::Key << "Sink" << YAML::Value << species.Sink;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
 		if (const ProbeVolumeComponent* probes = scene.TryGet<ProbeVolumeComponent>(entity))
 		{
 			// Its placement (center and size) is the entity's transform
@@ -789,6 +818,43 @@ namespace EnvMapVulkanSceneSerializer
 					}
 				}
 			}
+		}
+		if (YAML::Node foliageNode = node["Foliage"])
+		{
+			FoliageComponent& foliage = scene.Add<FoliageComponent>(entity);
+			FoliageSettings& f = foliage.Settings;
+			Read(foliageNode, "Enabled", foliage.Enabled);
+			Read(foliageNode, "Seed", f.Seed);
+			Read(foliageNode, "CellSize", f.CellSize);
+			Read(foliageNode, "DrawDistance", f.DrawDistance);
+			Read(foliageNode, "ShadowDistance", f.ShadowDistance);
+			Read(foliageNode, "ClearHeight", f.ClearHeight);
+			if (YAML::Node speciesNode = foliageNode["Species"]; speciesNode && speciesNode.IsSequence())
+			{
+				for (const YAML::Node& item : speciesNode)
+				{
+					FoliageSpecies species;
+					species.Model = AssetReference::Read(item, "Model");
+					Read(item, "Density", species.Density);
+					if (YAML::Node scale = item["Scale"]; scale && scale.IsSequence() && scale.size() == 2)
+					{
+						species.MinScale = scale[0].as<float>(species.MinScale);
+						species.MaxScale = scale[1].as<float>(species.MaxScale);
+					}
+					Read(item, "MaxSlope", species.MaxSlope);
+					if (YAML::Node height = item["Height"]; height && height.IsSequence() && height.size() == 2)
+					{
+						species.MinHeight = height[0].as<float>(species.MinHeight);
+						species.MaxHeight = height[1].as<float>(species.MaxHeight);
+					}
+					Read(item, "KeepOut", species.KeepOut);
+					Read(item, "MaxDistance", species.MaxDistance);
+					Read(item, "AlignToSlope", species.AlignToSlope);
+					Read(item, "Sink", species.Sink);
+					f.Species.push_back(species);
+				}
+			}
+			f.Clamp();
 		}
 		if (YAML::Node cameraNode = node["Camera"])
 		{

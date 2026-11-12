@@ -479,6 +479,8 @@ void AddTerrain();
 // The Inspector's Terrain section: the shape (Randomize: a new seed), the look (the layers' materials, where they are) and
 // physics. A changed shape makes the terrain again when the edit ends (a drag let go, a number typed), not while dragging
 void TerrainControls(EnvMapVulkanEntityID entity);
+// The Inspector's Foliage section of a terrain (EditorInspectorFoliage.cpp): Add Foliage, the species, the scatter's settings
+void FoliageControls(EnvMapVulkanEntityID entity);
 
 // ---- The scene's file (EditorDocument.cpp)
 
