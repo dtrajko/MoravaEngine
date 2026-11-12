@@ -35,7 +35,7 @@ namespace EnvMapVulkanFoliage
 
 	struct ComponentState
 	{
-		std::vector<Species> Species;
+		std::vector<Species> Kinds; // by species index
 		bool Seen = false;
 	};
 
@@ -188,8 +188,8 @@ namespace EnvMapVulkanFoliage
 			key = HashMatrix(key, scene.GetWorldTransform(entity));
 			key = Mix(key, std::hash<float>()(foliage.Settings.DrawDistance));
 			key = Mix(key, std::hash<float>()(foliage.Settings.ShadowDistance));
-			key = Mix(key, (uint64_t)(uintptr_t)it->second.Species.data()); // the ranges point into it
-			for (const Species& species : it->second.Species)
+			key = Mix(key, (uint64_t)(uintptr_t)it->second.Kinds.data()); // the ranges point into it
+			for (const Species& species : it->second.Kinds)
 			{
 				key = Mix(key, (uint64_t)(uintptr_t)species.Model.Raw());
 			}
@@ -210,7 +210,7 @@ namespace EnvMapVulkanFoliage
 				return;
 			}
 			const FoliageInstances& instances = *foliage.Instances;
-			const std::vector<Species>& kinds = it->second.Species;
+			const std::vector<Species>& kinds = it->second.Kinds;
 			const glm::mat4 world = scene.GetWorldTransform(entity);
 			const uint32_t firstCell = (uint32_t)s_CellBoxes.size();
 			for (size_t c = 0; c < instances.Cells.size(); c++)
@@ -298,11 +298,11 @@ namespace EnvMapVulkanFoliage
 			ComponentState& state = s_Components[entity];
 			state.Seen = true;
 			const std::string& name = scene.Get<NameComponent>(entity).Name;
-			state.Species.resize(foliage.Settings.Species.size());
+			state.Kinds.resize(foliage.Settings.Species.size());
 			for (size_t s = 0; s < foliage.Settings.Species.size(); s++)
 			{
-				LoadSpecies(state.Species[s], foliage.Settings.Species[s].Model, name);
-				speciesCount += state.Species[s].Model ? 1 : 0;
+				LoadSpecies(state.Kinds[s], foliage.Settings.Species[s].Model, name);
+				speciesCount += state.Kinds[s].Model ? 1 : 0;
 			}
 			Scatter(scene, entity, foliage, *terrain, physics);
 		});
