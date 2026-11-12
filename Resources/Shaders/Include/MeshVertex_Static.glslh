@@ -1,6 +1,7 @@
 // The vertex stage of static meshes, shared by HazelPBR_Static.glsl and GBufferPrepass_Static.glsl. The scene pass tests
 // its depth EQUAL against the prepass's, so both must compute bit-identical positions: one source, and gl_Position is
-// invariant (the compiler may not optimize it differently in the two pipelines).
+// invariant (the compiler may not optimize it differently in the two pipelines). With MESH_VERTEX_INSTANCED (the
+// foliage's copies: Include/MeshInstance.glslh) the transform is the instance's, not the push constants'.
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
@@ -10,6 +11,7 @@ layout(location = 4) in vec2 a_TexCoord;
 
 #include "FrameCamera.glslh"
 #include "MeshVertexOutput.glslh"
+#include "MeshInstance.glslh"
 #include "MeshVertexMotion.glslh"
 
 layout (push_constant) uniform Transform
@@ -17,20 +19,26 @@ layout (push_constant) uniform Transform
 	mat4 u_Transform;
 };
 
+#ifdef MESH_VERTEX_INSTANCED
+#define MESH_TRANSFORM a_InstanceTransform
+#else
+#define MESH_TRANSFORM u_Transform
+#endif
+
 layout (location = 0) out VertexOutput Output;
 
 invariant gl_Position;
 
 void main()
 {
-	Output.WorldPosition = vec3(u_Transform * vec4(a_Position, 1.0));
-	Output.Normal = mat3(u_Transform) * a_Normal;
+	Output.WorldPosition = vec3(MESH_TRANSFORM * vec4(a_Position, 1.0));
+	Output.Normal = mat3(MESH_TRANSFORM) * a_Normal;
 	Output.TexCoord = a_TexCoord;//vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
-	Output.WorldNormals = mat3(u_Transform) * mat3(a_Tangent, a_Binormal, a_Normal);
-	Output.WorldTransform = mat3(u_Transform);
+	Output.WorldNormals = mat3(MESH_TRANSFORM) * mat3(a_Tangent, a_Binormal, a_Normal);
+	Output.WorldTransform = mat3(MESH_TRANSFORM);
 	Output.Binormal = a_Binormal;
 
-	gl_Position = u_ViewProjectionMatrix * u_Transform * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProjectionMatrix * MESH_TRANSFORM * vec4(a_Position, 1.0);
 
 #ifdef MESH_VERTEX_MOTION
 	v_ClipPosition = gl_Position;

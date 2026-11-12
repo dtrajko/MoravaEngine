@@ -1,6 +1,7 @@
 // The Renderer Stats panel
 
 
+#include "EnvMapVulkan/EnvMapVulkanFoliage.h"
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkan/EnvMapVulkanProfiler.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
@@ -563,6 +564,26 @@ void OnImGuiRenderRendererStats()
 	{
 		ImGui::SetTooltip("Each terrain chunk tinted by its level: every height green, then yellow, orange, red, purple, blue,\n"
 			"and gray for every 64th height (a chunk as two triangles)");
+	}
+	ImGui::Checkbox("Foliage", &s_ViewOptions.Foliage);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The terrains' foliage (trees, bushes): off, none is drawn, to compare the frame times");
+	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Show Foliage Cells", &s_ViewOptions.ShowFoliageCells);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The foliage's cells as boxes: green the ones the camera's view draws, gray the ones culled (outside\n"
+			"the view, or beyond the foliage's Draw Distance). With Freeze, the frozen view's");
+	}
+	{
+		const EnvMapVulkanFoliage::Stats& foliage = EnvMapVulkanFoliage::GetStats();
+		if (foliage.Copies > 0)
+		{
+			ImGui::Text("Foliage: %u of %u copies drawn, %u of %u cells, %u species", foliage.CopiesDrawn, foliage.Copies, foliage.CellsDrawn, foliage.Cells,
+				foliage.Species);
+		}
 	}
 	uint32_t shadowedPointLights = 0, shadowedSpotLights = 0;
 	EnvMapVulkanRenderer::GetShadowedLightCounts(shadowedPointLights, shadowedSpotLights);

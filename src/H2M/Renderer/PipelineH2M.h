@@ -35,6 +35,9 @@ namespace H2M
 		RefH2M<ShaderH2M> Shader;
 		VertexBufferLayoutH2M Layout;
 		VertexBufferLayoutH2M InstanceLayout;
+		// Vulkan: the first location of the per-instance attributes (binding 1); 0: right after the per-vertex ones. The
+		// instanced mesh shaders read the instance's transform at 7 to 10 in every pass (Include/MeshInstance.glslh)
+		uint32_t InstanceLocation = 0;
 		RefH2M<RenderPassH2M> RenderPass;
 		PrimitiveTopologyH2M Topology = PrimitiveTopologyH2M::Triangles;
 		bool BackfaceCulling = true;

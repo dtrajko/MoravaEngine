@@ -251,4 +251,6 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 			heights.SampleCount, meshes, heights.MinHeight, heights.MaxHeight, heights.GetHeight(terrain.Settings.FlatCenter.x, terrain.Settings.FlatCenter.y),
 			heights.Milliseconds);
 	}
+
+	FoliageControls(entity);
 }

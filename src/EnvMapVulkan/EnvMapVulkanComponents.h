@@ -11,6 +11,7 @@
 
 #include "Scripting/ScriptField.h"
 
+#include "World/Foliage.h"
 #include "World/Terrain.h"
 
 #include <glm/glm.hpp>
@@ -185,6 +186,19 @@ struct TerrainComponent
 	std::shared_ptr<const TerrainHeights> Heights;
 	H2M::RefH2M<H2M::ModelH2M> Model; // the chunks
 	std::shared_ptr<const TerrainLods> Lods; // the chunks' levels of detail (in the model's index buffer)
+};
+
+// Trees, bushes and rocks scattered over the terrain of the same entity (World/Foliage.h; the racing game's Phase 8): the
+// settings only are saved (Foliage: in the .mscene, each species' model by file and ID). The places are made from them and
+// the terrain's heights when the scene opens, and again when a setting or the terrain's shape changes (EnvMapVulkanFoliage).
+// The copies are drawn only: no colliders
+struct FoliageComponent
+{
+	FoliageSettings Settings;
+	bool Enabled = true;
+
+	// Runtime: made from the settings, shared by the copies of the scene (Play)
+	std::shared_ptr<const FoliageInstances> Instances;
 };
 
 // A game camera (docs/engine/Game_Engine_Runtime_Guide.html, 6.3): the game is seen through the primary one (the first
@@ -632,6 +646,6 @@ struct ComponentList
 // The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
-	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
+	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, VehicleComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent,
 	PrefabComponent, UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;

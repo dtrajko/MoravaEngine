@@ -1,0 +1,13 @@
+// The instanced mesh vertex stages (the foliage: EnvMapVulkanFoliage), compiled in where MESH_VERTEX_INSTANCED is defined:
+// each copy's transform comes from an instance-rate vertex buffer (binding 1) instead of the push constants. Locations 7 to
+// 10 in every pass: in the G-buffer prepass that is where the other meshes have their previous transform, and a copy's
+// previous transform is its transform (the copies don't move: no motion of their own).
+#ifndef MESH_INSTANCE_GLSLH
+#define MESH_INSTANCE_GLSLH
+
+#ifdef MESH_VERTEX_INSTANCED
+layout(location = 7) in mat4 a_InstanceTransform;
+#define a_PreviousTransform a_InstanceTransform
+#endif
+
+#endif

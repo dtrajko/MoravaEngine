@@ -323,6 +323,10 @@ namespace H2M
 				instanceInputBinding.stride = instanceLayout.GetStride();
 				instanceInputBinding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
+				if (m_Specification.InstanceLocation > 0)
+				{
+					location = m_Specification.InstanceLocation;
+				}
 				for (auto element : instanceLayout)
 				{
 					VkVertexInputAttributeDescription& attribute = vertexInputAttributes.emplace_back();
@@ -598,10 +602,11 @@ namespace H2M
 				location++;
 			}
 
+			uint32_t instanceLocation = m_Specification.InstanceLocation > 0 ? m_Specification.InstanceLocation : location;
 			for (auto element : instanceLayout)
 			{
 				vertexInputAttributes[location].binding = 1;
-				vertexInputAttributes[location].location = location;
+				vertexInputAttributes[location].location = instanceLocation++;
 				vertexInputAttributes[location].format = ShaderDataTypeToVulkanFormat(element.Type);
 				vertexInputAttributes[location].offset = element.Offset;
 				location++;

@@ -207,8 +207,9 @@ struct EnvMapVulkanShadowPipeline
 	// layout: another pipeline's layout to draw with (the cutout variants: the PBR pipelines', so a mesh's material sets
 	// bind as in the scene pass); it must outlive this pipeline. None: one made from the shader.
 	// transmittance: for the render pass of EnvMapVulkanGlassShadowMap: colors multiply, the depth is only tested.
+	// instanced: a second vertex buffer (binding 1) with a transform per instance, at locations 7 to 10 (the foliage)
 	void Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader, const H2M::VertexBufferLayoutH2M& vertexLayout, const std::vector<uint32_t>& usedLocations,
-		VkRenderPass renderPass, VkPipelineLayout layout = VK_NULL_HANDLE, bool transmittance = false);
+		VkRenderPass renderPass, VkPipelineLayout layout = VK_NULL_HANDLE, bool transmittance = false, bool instanced = false);
 	void Destroy();
 };
 

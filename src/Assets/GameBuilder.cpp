@@ -149,18 +149,31 @@ namespace GameBuilder
 		return fs::is_regular_file(folder / platform.PlayerFile(), error);
 	}
 
-	// Where the player to ship is: a folder of templates beside the editor (an installed editor, or CI's templates downloaded by
-	// Tools/Get-PlayerTemplates.ps1); for this platform also the Release build beside a Debug editor's folder (Visual Studio's
-	// build folders), or the editor's own folder. Empty: none
+	// Where the player to ship is. For this platform, an optimized editor (Release, RelWithDebInfo, MinSizeRel) ships the
+	// player built beside it first: the same engine and configuration, so a RelWithDebInfo editor makes a RelWithDebInfo game
+	// (it took build/Release's player before, which could also be older than the editor). Then a folder of templates beside
+	// the editor (an installed editor, or CI's templates downloaded by Tools/Get-PlayerTemplates.ps1). A Debug editor takes
+	// the templates, then the Release build beside its folder (Visual Studio's build folders), its own Debug player last.
+	// Empty: none
 	static fs::path FindPlayerTemplate(const Platform& platform)
 	{
 		const fs::path editorFolder = Process::GetExecutablePath().parent_path();
-		std::vector<fs::path> candidates = { fs::u8path(GetTemplatesFolder()) / platform.Name };
-		if (platform.Name == GetPlatformName())
+		std::vector<fs::path> candidates;
+		const bool thisPlatform = platform.Name == GetPlatformName();
+#if defined(NDEBUG)
+		if (thisPlatform)
+		{
+			candidates.push_back(editorFolder);
+		}
+#endif
+		candidates.push_back(fs::u8path(GetTemplatesFolder()) / platform.Name);
+#if !defined(NDEBUG)
+		if (thisPlatform)
 		{
 			candidates.push_back(editorFolder.parent_path() / "Release");
 			candidates.push_back(editorFolder);
 		}
+#endif
 		for (const fs::path& candidate : candidates)
 		{
 			if (HasPlayer(candidate, platform))
@@ -254,7 +267,26 @@ namespace GameBuilder
 		fs::permissions(layout.Executable, fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec, fs::perm_options::add, error);
 #endif
 
-		// What the player finds beside itself (ScriptHost): ScriptCore and the host. Not its symbols and documentation
+		// The player's symbols, only for a game made to be debugged: the player is the editor's own, built Debug or RelWithDebInfo
+		// (MORAVA_BUILD_CONFIG). Beside the renamed executable under their own name, where a debugger looks for the name the
+		// executable records. A Release game ships without them (CI keeps the Release player's as an artifact of their own)
+		const std::string configuration = MORAVA_BUILD_CONFIG;
+		const fs::path symbols = templateFolder / "MoravaPlayer.pdb";
+		if (templateFolder == Process::GetExecutablePath().parent_path() && (configuration == "Debug" || configuration == "RelWithDebInfo") &&
+			fs::is_regular_file(symbols, error))
+		{
+			if (!CopyOneFile(symbols, layout.Executable.parent_path() / symbols.filename()))
+			{
+				return false;
+			}
+			Log::GetLogger()->info("Build Game: the player's symbols go with the game ({0} build)", configuration);
+		}
+		else
+		{
+			fs::remove(layout.Executable.parent_path() / symbols.filename(), error); // an earlier build's, into the same folder
+		}
+
+		// What the player finds beside itself (ScriptHost): ScriptCore and the host. Not its documentation
 		for (const char* name : { "Morava.ScriptCore.dll", "Morava.ScriptCore.deps.json", "Morava.ScriptCore.runtimeconfig.json", "nethost.dll", s_NoticesFile })
 		{
 			if (fs::exists(templateFolder / name, error) && !CopyOneFile(templateFolder / name, layout.Resources / name))

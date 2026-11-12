@@ -561,7 +561,7 @@ static VkFormat ToVulkanFormat(H2M::ShaderDataTypeH2M type)
 }
 
 void EnvMapVulkanShadowPipeline::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader, const H2M::VertexBufferLayoutH2M& vertexLayout,
-	const std::vector<uint32_t>& usedLocations, VkRenderPass renderPass, VkPipelineLayout layout, bool transmittance)
+	const std::vector<uint32_t>& usedLocations, VkRenderPass renderPass, VkPipelineLayout layout, bool transmittance, bool instanced)
 {
 	Destroy();
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
@@ -587,7 +587,7 @@ void EnvMapVulkanShadowPipeline::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader
 	}
 
 	// Vertex input: the model's full vertex (stride), with only the attributes the shader reads
-	VkVertexInputBindingDescription binding = { 0, vertexLayout.GetStride(), VK_VERTEX_INPUT_RATE_VERTEX };
+	std::vector<VkVertexInputBindingDescription> bindings = { { 0, vertexLayout.GetStride(), VK_VERTEX_INPUT_RATE_VERTEX } };
 	std::vector<VkVertexInputAttributeDescription> attributes;
 	uint32_t location = 0;
 	for (const auto& element : vertexLayout)
@@ -598,10 +598,19 @@ void EnvMapVulkanShadowPipeline::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader
 		}
 		location++;
 	}
+	// Instanced (the foliage: Include/MeshInstance.glslh): each copy's transform, a mat4 per instance at locations 7 to 10
+	if (instanced)
+	{
+		bindings.push_back({ 1, (uint32_t)sizeof(glm::mat4), VK_VERTEX_INPUT_RATE_INSTANCE });
+		for (uint32_t column = 0; column < 4; column++)
+		{
+			attributes.push_back({ 7 + column, 1, VK_FORMAT_R32G32B32A32_SFLOAT, column * (uint32_t)sizeof(glm::vec4) });
+		}
+	}
 	VkPipelineVertexInputStateCreateInfo vertexInput = {};
 	vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInput.vertexBindingDescriptionCount = 1;
-	vertexInput.pVertexBindingDescriptions = &binding;
+	vertexInput.vertexBindingDescriptionCount = (uint32_t)bindings.size();
+	vertexInput.pVertexBindingDescriptions = bindings.data();
 	vertexInput.vertexAttributeDescriptionCount = (uint32_t)attributes.size();
 	vertexInput.pVertexAttributeDescriptions = attributes.data();
 

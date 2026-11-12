@@ -58,6 +58,9 @@ public:
 
 	// The bodies of the scene's entities; collisions: the layers that collide (the project's)
 	void Start(EnvMapVulkanScene& scene, const PhysicsCollisionMatrix& collisions = PhysicsCollisionMatrix());
+	// Only the static colliders (an entity with a Collider and no Rigid Body; not the terrains, characters or vehicles), for
+	// asking what stands where while no game runs: the queries below, never Step (the foliage's keep-out: World/Foliage.h)
+	void StartStatic(EnvMapVulkanScene& scene);
 	void Stop();
 	bool IsRunning() const { return m_World != nullptr; }
 	// Entities new in the running game: their bodies and characters, where the entities are now
@@ -183,6 +186,8 @@ public:
 	std::vector<EnvMapVulkanEntityID> OverlapSphere(const glm::vec3& center, float radius, uint32_t layers = ObjectLayers::Solid) const;
 	std::vector<EnvMapVulkanEntityID> OverlapBox(const glm::vec3& center, const glm::vec3& halfExtents, const glm::quat& rotation,
 		uint32_t layers = ObjectLayers::Solid) const;
+	// Anything in an upright capsule from bottom up to top (the centers of its end spheres), radius wide
+	bool OverlapsCapsule(const glm::vec3& bottom, const glm::vec3& top, float radius, uint32_t layers = ObjectLayers::Solid) const;
 
 	// ---- Debug views and statistics (3.6)
 

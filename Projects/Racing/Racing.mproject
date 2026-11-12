@@ -6,15 +6,16 @@ Project:
   InputMap: Settings/Input.minput
   ScriptAssembly: Scripts/bin/Racing.dll
   ScriptProject: Scripts/Racing.csproj
-  Window: {Width: 1600, Height: 900, Fullscreen: false, VSync: false, Title: Racing}
+  Window: {Width: 1600, Height: 900, Fullscreen: true, VSync: false, Title: Racing}
   Physics: {Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, Dynamic-Character, Dynamic-Trigger, Character-Character, Character-Trigger]}
   Audio: {Master: 1, Music: 0.5, Effects: 1, UI: 0.7}
   Build:
     ProductName: Racing
     Company: Morava Games
     Version: 0.1.0
+    Icon: ""
     DefaultQuality: Medium
     Scenes:
-      - {File: Scenes/MainMenu.mscene}
-      - {File: Scenes/Circuit.mscene}
-      - {File: Scenes/TestTrack.mscene}
+      - {File: Scenes/MainMenu.mscene, FileID: 16292005194375746811}
+      - {File: Scenes/Circuit.mscene, FileID: 8575278329156684924}
+      - {File: Scenes/TestTrack.mscene, FileID: 8683214287429253336}

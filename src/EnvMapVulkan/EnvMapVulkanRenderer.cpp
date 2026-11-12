@@ -25,6 +25,7 @@
 #include "EnvMapVulkanPathTracer.h"
 #include "EnvMapVulkanReflections.h"
 #include "EnvMapVulkanSSAO.h"
+#include "EnvMapVulkanFoliage.h"
 #include "EnvMapVulkanTerrain.h"
 #include "EnvMapVulkanTextureViews.h"
 #include "EnvMapVulkanUI.h"
@@ -171,6 +172,9 @@ static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnim; // skinned models (Haze
 // The same with depth EQUAL and no depth write: the scene pass, after the G-buffer prepass wrote the depth. The two above
 // draw where there is no prepass (the water's reflection) and lend their layouts to the prepass pipelines.
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineDepthEqual;
+// The foliage's copies in the scene pass (HazelPBR_Instanced.glsl): each copy's transform from the instance buffer at binding 1
+// (EnvMapVulkanFoliage), depth EQUAL as s_MeshPipelineDepthEqual, on the PBR static pipeline's layout
+static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineInstancedDepthEqual;
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnimDepthEqual;
 // Cutout materials (Surface::Cutout) in the passes without the prepass's depth (the water's reflection): the PBR pipelines
 // with the pixels the material cuts away discarded (HazelPBR_Cutout_*.glsl), on the PBR pipelines' layouts
@@ -389,6 +393,9 @@ static EnvMapVulkanShadowPipeline s_ShadowPipelineAnim; // ShadowDepth_Anim.glsl
 // Meshes with a cutout material (ShadowDepth_Cutout*.glsl): the holes let the light through. On the PBR pipelines' layouts
 static EnvMapVulkanShadowPipeline s_ShadowPipelineCutout;
 static EnvMapVulkanShadowPipeline s_ShadowPipelineAnimCutout;
+// The foliage's copies (ShadowDepth_Instanced.glsl, ShadowDepth_Cutout_Instanced.glsl): their transforms from the instance buffer
+static EnvMapVulkanShadowPipeline s_ShadowPipelineInstanced;
+static EnvMapVulkanShadowPipeline s_ShadowPipelineInstancedCutout;
 // Shadow maps of the spot and point lights (see EnvMapVulkanShadows.h): a layer per shadowed spot light, a cube per
 // shadowed point light (only when the GPU supports cube map arrays)
 static EnvMapVulkanShadowMap s_SpotShadowMaps;
@@ -1407,6 +1414,27 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 				EnvMapVulkanProfiler::CountDraw(0);
 			}
 		}
+
+		// The foliage's cells (Show Foliage Cells): green drawn by the main view, gray culled or beyond the draw distance
+		if (s_ViewOptions.ShowFoliageCells && !EnvMapVulkanFoliage::GetCellBoxes().empty())
+		{
+			H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_BoundingBoxPipeline.As<H2M::VulkanPipelineH2M>();
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+			VkBuffer vertexBuffer = s_BoundingBoxVertexBuffer.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+			vkCmdSetLineWidth(commandBuffer, lineWidth);
+			const glm::vec4 drawnColor(0.3f, 0.95f, 0.4f, 1.0f), skippedColor(0.55f, 0.55f, 0.6f, 1.0f);
+			for (const EnvMapVulkanFoliage::CellBox& cell : EnvMapVulkanFoliage::GetCellBoxes())
+			{
+				const glm::mat4 mvp = viewProjection * glm::translate(glm::mat4(1.0f), cell.Min) * glm::scale(glm::mat4(1.0f), cell.Max - cell.Min);
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), cell.Drawn ? &drawnColor : &skippedColor);
+				vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
+				EnvMapVulkanProfiler::CountDraw(0);
+			}
+		}
 	}
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -1520,6 +1548,8 @@ void EnvMapVulkanRenderer::OnResize(uint32_t width, uint32_t height)
 // flight may still use the old shadow map.
 static void CreateShadowMap(uint32_t resolution, bool writeDescriptor)
 {
+	s_ShadowPipelineInstancedCutout.Destroy();
+	s_ShadowPipelineInstanced.Destroy();
 	s_ShadowPipelineAnimCutout.Destroy();
 	s_ShadowPipelineCutout.Destroy();
 	s_ShadowPipelineAnim.Destroy();
@@ -1549,6 +1579,10 @@ static void CreateShadowMap(uint32_t resolution, bool writeDescriptor)
 			s_ShadowMap.GetRenderPass(), s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout());
 		s_ShadowPipelineAnimCutout.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth_Cutout_Anim").As<H2M::VulkanShaderH2M>(), animLayout, { 0, 4, 5, 6 },
 			s_ShadowMap.GetRenderPass(), s_MeshPipelineAnim.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout());
+		s_ShadowPipelineInstanced.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth_Instanced").As<H2M::VulkanShaderH2M>(), staticLayout, { 0 },
+			s_ShadowMap.GetRenderPass(), VK_NULL_HANDLE, false, true);
+		s_ShadowPipelineInstancedCutout.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth_Cutout_Instanced").As<H2M::VulkanShaderH2M>(), staticLayout,
+			{ 0, 4 }, s_ShadowMap.GetRenderPass(), s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout(), false, true);
 	}
 	if (writeDescriptor)
 	{
@@ -1750,6 +1784,20 @@ void EnvMapVulkanRenderer::Init()
 		terrainSpecification.LayoutFrom = s_MeshPipeline;
 		terrainSpecification.DebugName = "PBR-Terrain-DepthEqual";
 		s_MeshPipelineTerrainDepthEqual = H2M::PipelineH2M::Create(terrainSpecification);
+
+		// The foliage's copies: depth EQUAL against their instanced prepass, a transform per instance at locations 7 to 10
+		H2M::PipelineSpecificationH2M instancedSpecification = s_MeshPipelineDepthEqual->GetSpecification();
+		instancedSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Instanced");
+		instancedSpecification.InstanceLayout = {
+			{ H2M::ShaderDataTypeH2M::Float4, "a_InstanceTransform0" },
+			{ H2M::ShaderDataTypeH2M::Float4, "a_InstanceTransform1" },
+			{ H2M::ShaderDataTypeH2M::Float4, "a_InstanceTransform2" },
+			{ H2M::ShaderDataTypeH2M::Float4, "a_InstanceTransform3" },
+		};
+		instancedSpecification.InstanceLocation = 7;
+		instancedSpecification.LayoutFrom = s_MeshPipeline;
+		instancedSpecification.DebugName = "PBR-Instanced-DepthEqual";
+		s_MeshPipelineInstancedDepthEqual = H2M::PipelineH2M::Create(instancedSpecification);
 	}
 	/**** END: to be removed from VulkanRenderer ****/
 
@@ -2072,6 +2120,8 @@ void EnvMapVulkanRenderer::Shutdown()
 		vkDestroyRenderPass(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), s_GlassShadowRenderPass, nullptr);
 		s_GlassShadowRenderPass = VK_NULL_HANDLE;
 	}
+	s_ShadowPipelineInstancedCutout.Destroy();
+	s_ShadowPipelineInstanced.Destroy();
 	s_ShadowPipelineAnimCutout.Destroy();
 	s_ShadowPipelineCutout.Destroy();
 	s_ShadowPipelineAnim.Destroy();
@@ -2104,6 +2154,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	// main returns, when Vulkan (its validation layer) may already be torn down
 	s_Scene = nullptr;
 	EnvMapVulkanTerrain::Shutdown();
+	EnvMapVulkanFoliage::Shutdown();
 	EnvMapVulkanMaterialLibrary::Clear();
 	s_SubmittedModels.clear();
 	s_GlassDraws.clear();
@@ -2146,6 +2197,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_MeshPipelineAnimCutout = {};
 	s_MeshPipelineTerrain = {};
 	s_MeshPipelineTerrainDepthEqual = {};
+	s_MeshPipelineInstancedDepthEqual = {};
 	s_EnvMapCompute = EnvMapComputeResources();
 	s_Data = VulkanRendererData();
 }
@@ -2159,6 +2211,63 @@ static void DrawTerrainChunk(VkCommandBuffer commandBuffer, const EnvMapVulkanTe
 	{
 		vkCmdDrawIndexed(commandBuffer, chunk.Skirt.IndexCount, 1, chunk.Skirt.BaseIndex, (int32_t)baseVertex, firstInstance);
 		EnvMapVulkanProfiler::CountDraw(chunk.Skirt.IndexCount / 3);
+	}
+}
+
+// Binds a foliage species' model (its vertex and index buffers) when the draw is of another model than the last
+static void BindFoliageModel(VkCommandBuffer commandBuffer, const H2M::ModelH2M*& bound, const EnvMapVulkanFoliage::Draw& draw)
+{
+	if (draw.Model == bound)
+	{
+		return;
+	}
+	H2M::ModelH2M* model = const_cast<H2M::ModelH2M*>(draw.Model);
+	VkBuffer vertexBuffer = model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+	VkDeviceSize offset = 0;
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
+	vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(model->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+	bound = draw.Model;
+}
+
+// The foliage's copies in the main view (EnvMapVulkanFoliage::CullMainView), in the G-buffer prepass or the scene pass: a draw
+// per mesh of a species for each run of its cells in view, the copies' transforms from the instance buffer at binding 1 (in
+// the prepass that is where the other meshes' previous transforms were: drawn after them). The set 0 of the pass is bound
+static void DrawFoliageMainView(VkCommandBuffer commandBuffer, EnvMapVulkanRenderer::MeshPass pass)
+{
+	const std::vector<EnvMapVulkanFoliage::Draw>& draws = EnvMapVulkanFoliage::GetMainViewDraws();
+	VkBuffer instances = EnvMapVulkanFoliage::GetInstanceBuffer();
+	if (!s_ViewOptions.Foliage || draws.empty() || instances == VK_NULL_HANDLE)
+	{
+		return;
+	}
+	const VkPipelineLayout layout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
+	VkDeviceSize offset = 0;
+	vkCmdBindVertexBuffers(commandBuffer, EnvMapVulkanGBuffer::InstanceBinding, 1, &instances, &offset);
+	const H2M::ModelH2M* boundModel = nullptr;
+	VkPipeline boundPipeline = VK_NULL_HANDLE;
+	const glm::mat4 unused(1.0f); // the vertex push constants: the instanced shaders read the instance's transform
+	for (const EnvMapVulkanFoliage::Draw& draw : draws)
+	{
+		const VkDescriptorSet materialSet = draw.Material->GetDescriptorSet();
+		if (materialSet == VK_NULL_HANDLE)
+		{
+			continue;
+		}
+		const VkPipeline pipeline = pass == EnvMapVulkanRenderer::MeshPass::GBuffer ? s_GBuffer.GetInstancedPipeline(draw.Material->IsCutout()) :
+			s_MeshPipelineInstancedDepthEqual.As<H2M::VulkanPipelineH2M>()->GetVulkanPipeline();
+		if (pipeline != boundPipeline)
+		{
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+			boundPipeline = pipeline;
+		}
+		BindFoliageModel(commandBuffer, boundModel, draw);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::MaterialDescriptorSet, 1, &materialSet, 0, nullptr);
+		const H2M::BufferH2M values = draw.Material->GetUniformStorageBuffer();
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &unused);
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), values.Size, values.Data);
+		const H2M::RefH2M<H2M::MeshH2M>& mesh = draw.Model->GetMeshes()[draw.Mesh];
+		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, draw.InstanceCount, mesh->BaseIndex, mesh->BaseVertex, draw.FirstInstance);
+		EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3 * draw.InstanceCount);
 	}
 }
 
@@ -2578,6 +2687,60 @@ static bool IsMeshOutsideFrustum(const glm::vec4 planes[6], const glm::mat4& tra
 // still casts into it). With a light sphere (center, radius), only the models whose bounds reach into it: a spot or point
 // light can't shadow anything beyond its range. The shadow pipelines were built for the sun's render pass; the spot and
 // point light passes are compatible with it (one depth attachment of the same format). Returns the number of models drawn.
+// The foliage's copies into a shadow map (EnvMapVulkanFoliage::CollectShadowDraws: the cells in its view, within the
+// foliage's shadow distance of the camera), instanced as in the main view: the leaves' holes let the light through
+static void DrawFoliageShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4& viewProjection, const glm::vec4 planes[6], const glm::vec3* lightCenter,
+	float lightRadius)
+{
+	VkBuffer instances = EnvMapVulkanFoliage::GetInstanceBuffer();
+	if (!s_ViewOptions.Foliage || !EnvMapVulkanFoliage::HasCopies() || instances == VK_NULL_HANDLE || s_ShadowPipelineInstanced.Pipeline == VK_NULL_HANDLE)
+	{
+		return;
+	}
+	static std::vector<EnvMapVulkanFoliage::Draw> draws;
+	EnvMapVulkanFoliage::CollectShadowDraws(planes, s_Data.SceneData.SceneCamera.Camera.GetPosition(), draws, lightCenter, lightRadius);
+	if (draws.empty())
+	{
+		return;
+	}
+	VkDeviceSize offset = 0;
+	vkCmdBindVertexBuffers(commandBuffer, 1, 1, &instances, &offset);
+	const H2M::ModelH2M* boundModel = nullptr;
+	const EnvMapVulkanShadowPipeline* boundPipeline = nullptr;
+	for (const EnvMapVulkanFoliage::Draw& draw : draws)
+	{
+		const VkDescriptorSet materialSet = draw.Material->IsCutout() ? draw.Material->GetDescriptorSet() : VK_NULL_HANDLE;
+		const bool cutout = materialSet != VK_NULL_HANDLE && s_ShadowPipelineInstancedCutout.Pipeline != VK_NULL_HANDLE;
+		const EnvMapVulkanShadowPipeline& pipeline = cutout ? s_ShadowPipelineInstancedCutout : s_ShadowPipelineInstanced;
+		if (&pipeline != boundPipeline)
+		{
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+			if (cutout)
+			{
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
+					&s_Data.FrameDescriptorSet.DescriptorSets[0], 0, nullptr);
+			}
+			boundPipeline = &pipeline;
+		}
+		BindFoliageModel(commandBuffer, boundModel, draw);
+		if (cutout)
+		{
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, H2M::VulkanShaderH2M::MaterialDescriptorSet, 1, &materialSet, 0, nullptr);
+			const H2M::BufferH2M values = draw.Material->GetUniformStorageBuffer();
+			vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &viewProjection);
+			vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), values.Size, values.Data);
+		}
+		else
+		{
+			const glm::mat4 matrices[2] = { viewProjection, glm::mat4(1.0f) };
+			vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
+		}
+		const H2M::RefH2M<H2M::MeshH2M>& mesh = draw.Model->GetMeshes()[draw.Mesh];
+		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, draw.InstanceCount, mesh->BaseIndex, mesh->BaseVertex, draw.FirstInstance);
+		EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3 * draw.InstanceCount);
+	}
+}
+
 static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4& viewProjection, const glm::vec3* lightCenter = nullptr, float lightRadius = 0.0f)
 {
 	glm::vec4 planes[6];
@@ -2683,6 +2846,7 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 		}
 		drawn++;
 	}
+	DrawFoliageShadowCasters(commandBuffer, viewProjection, planes, lightCenter, lightRadius);
 	return drawn;
 }
 
@@ -2971,6 +3135,8 @@ static void CullMainView()
 			}
 		}
 	}
+	// The foliage's cells, against the same frustum (frozen with it), within its draw distance of the camera
+	EnvMapVulkanFoliage::CullMainView(planes, s_Data.SceneData.SceneCamera.Camera.GetPosition(), s_ViewOptions.FrustumCulling);
 }
 
 const EnvMapVulkanRenderer::CullingStats& EnvMapVulkanRenderer::GetCullingStats()
@@ -3686,6 +3852,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 			{
 				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::GBuffer, submitted.FirstDraw);
 			}
+			DrawFoliageMainView(drawCommandBuffer, MeshPass::GBuffer); // last: it binds the instance buffer where the previous transforms were
 			s_GBuffer.EndPass(drawCommandBuffer);
 		}
 
@@ -3784,6 +3951,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 			{
 				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::Scene, submitted.FirstDraw);
 			}
+			DrawFoliageMainView(drawCommandBuffer, MeshPass::Scene);
 		}
 		if (s_Probes.ShowsSpheres())
 		{
@@ -4721,6 +4889,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	// The terrains' chunks and layers (made again when a shape's settings changed), before the models are listed below;
 	// their levels of detail from this camera, in every pass
 	EnvMapVulkanTerrain::Update(*s_Scene);
+	EnvMapVulkanFoliage::Update(*s_Scene); // on the terrains' heights
 	EnvMapVulkanTerrain::SetViewPosition(glm::vec3(glm::inverse(camera->GetViewMatrix())[3]));
 	stages.Next("Environment, lights, water, probes, terrains");
 

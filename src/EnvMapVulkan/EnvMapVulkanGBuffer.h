@@ -80,6 +80,10 @@ public:
 	}
 	// For a terrain's chunks (EnvMapVulkanTerrain: its layers mixed by height and slope)
 	VkPipeline GetTerrainPipeline() const { return m_TerrainPipeline; }
+	// The foliage's copies (EnvMapVulkanFoliage): their transforms from the instance buffer, bound at binding 1 where the other
+	// meshes have their previous transforms (BindInstances)
+	VkPipeline GetInstancedPipeline(bool cutout) const { return cutout ? m_InstancedCutoutPipeline : m_InstancedPipeline; }
+	static constexpr uint32_t InstanceBinding = 1;
 	uint32_t GetWidth() const { return m_Width; }
 	uint32_t GetHeight() const { return m_Height; }
 	// For descriptor sets that sample the G-buffer (nearest filtering, SHADER_READ_ONLY_OPTIMAL)
@@ -115,6 +119,8 @@ private:
 	VkPipeline m_StaticCutoutPipeline = VK_NULL_HANDLE;
 	VkPipeline m_SkinnedCutoutPipeline = VK_NULL_HANDLE;
 	VkPipeline m_TerrainPipeline = VK_NULL_HANDLE;
+	VkPipeline m_InstancedPipeline = VK_NULL_HANDLE;
+	VkPipeline m_InstancedCutoutPipeline = VK_NULL_HANDLE;
 	// Vertex buffer binding 1 of the prepass pipelines (instance rate): a mat4 per draw
 	VkBuffer m_PreviousTransformBuffer = VK_NULL_HANDLE;
 	VkDeviceMemory m_PreviousTransformMemory = VK_NULL_HANDLE;

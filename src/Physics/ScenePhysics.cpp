@@ -1128,6 +1128,23 @@ void ScenePhysics::Start(EnvMapVulkanScene& scene, const PhysicsCollisionMatrix&
 		counts.Failed > 0 ? ", " + std::to_string(counts.Failed) + " could not be made" : std::string());
 }
 
+void ScenePhysics::StartStatic(EnvMapVulkanScene& scene)
+{
+	Stop();
+	m_Scene = &scene;
+	m_World = std::make_unique<PhysicsWorld>(PhysicsWorldSettings());
+	AddCounts counts;
+	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, ColliderComponent&)
+	{
+		if (!scene.Has<TerrainComponent>(entity) && !scene.Has<RigidBodyComponent>(entity) && !scene.Has<CharacterControllerComponent>(entity) &&
+			!scene.Has<VehicleComponent>(entity))
+		{
+			AddEntity(entity, counts);
+		}
+	});
+	m_World->GetSystem().OptimizeBroadPhase();
+}
+
 void ScenePhysics::AddEntities(const std::vector<EnvMapVulkanEntityID>& entities)
 {
 	if (!m_World)
@@ -1919,6 +1936,24 @@ std::vector<EnvMapVulkanEntityID> ScenePhysics::OverlapBox(const glm::vec3& cent
 	JPH::BoxShape box(ToJolt(glm::max(halfExtents, glm::vec3(0.001f))), 0.0f);
 	box.SetEmbedded();
 	return Overlap(box, JPH::RMat44::sRotationTranslation(ToJolt(rotation), ToJolt(center)), layers);
+}
+
+bool ScenePhysics::OverlapsCapsule(const glm::vec3& bottom, const glm::vec3& top, float radius, uint32_t layers) const
+{
+	if (!m_World)
+	{
+		return false;
+	}
+	const float halfHeight = std::max(0.5f * glm::length(top - bottom), 0.001f);
+	JPH::CapsuleShape capsule(halfHeight, std::max(radius, 0.001f)); // along its y: the capsule is upright
+	capsule.SetEmbedded();
+	JPH::CollideShapeSettings settings;
+	settings.mBackFaceMode = JPH::EBackFaceMode::CollideWithBackFaces; // a mesh's triangles from either side (a road seen from below)
+	JPH::AnyHitCollisionCollector<JPH::CollideShapeCollector> collector;
+	const LayerMaskFilter layerFilter(layers);
+	m_World->GetSystem().GetNarrowPhaseQuery().CollideShape(&capsule, JPH::Vec3::sOne(), JPH::RMat44::sTranslation(ToJolt(0.5f * (bottom + top))), settings,
+		JPH::RVec3::sZero(), collector, JPH::BroadPhaseLayerFilter(), layerFilter);
+	return collector.HadHit();
 }
 
 // ---- Debug views
