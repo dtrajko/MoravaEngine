@@ -182,9 +182,14 @@ struct TerrainComponent
 	};
 	std::array<LayerMaterial, LayerCount> Layers;
 
+	// What the ground follows (Settings' Guide values): model entities (a road) whose surfaces it keeps just below and its
+	// hills near at their heights. Their triangles as drawn (EnvMapVulkanTerrain::GatherGuides); moving one makes the terrain again
+	std::vector<EnvMapVulkanEntityID> Guides;
+
 	// Runtime: made from the settings, shared by the copies of the scene (Play)
 	std::shared_ptr<const TerrainHeights> Heights;
 	H2M::RefH2M<H2M::ModelH2M> Model; // the chunks
+	uint64_t ModelShapeHash = 0;      // of the heights they were made from
 	std::shared_ptr<const TerrainLods> Lods; // the chunks' levels of detail (in the model's index buffer)
 };
 

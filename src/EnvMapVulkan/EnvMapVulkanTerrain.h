@@ -37,6 +37,14 @@ namespace EnvMapVulkanTerrain
 	void Update(EnvMapVulkanScene& scene);
 	void Shutdown();
 
+	// The guides of a terrain (TerrainComponent::Guides): what they are now, cheaply (each frame: their models and where they
+	// are from the terrain, not their triangles; 0: none), and their triangles in the terrain's space
+	uint64_t GetGuidesHash(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, const TerrainComponent& terrain);
+	TerrainGuides GatherGuides(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, const TerrainComponent& terrain);
+	// The heights its settings and guides give, made again when either changed (the renderer, physics: a game can start
+	// before the first frame is drawn). True: made now
+	bool UpdateHeights(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, TerrainComponent& terrain);
+
 	// The fragment push constants of the terrain shaders: must match the block in Include/TerrainMaterial.glslh (64 bytes,
 	// at offset 64, where a material's values are)
 	struct Uniforms

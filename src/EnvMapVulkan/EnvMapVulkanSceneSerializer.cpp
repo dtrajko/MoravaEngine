@@ -579,6 +579,23 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "RockHeight" << YAML::Value << t.RockHeight;
 			out << YAML::Key << "Friction" << YAML::Value << t.Friction;
 			out << YAML::Key << "LodTolerance" << YAML::Value << t.LodTolerance;
+			// What it follows (a road), and how: only for a terrain with guides
+			if (!terrain->Guides.empty())
+			{
+				out << YAML::Key << "Guides" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+				for (EnvMapVulkanEntityID guide : terrain->Guides)
+				{
+					out << guide;
+				}
+				out << YAML::EndSeq;
+				out << YAML::Key << "GuideClearance" << YAML::Value << t.GuideClearance;
+				out << YAML::Key << "GuideShoulder" << YAML::Value << t.GuideShoulder;
+				out << YAML::Key << "GuideRise" << YAML::Value << t.GuideRise;
+				out << YAML::Key << "GuideHills" << YAML::Value << t.GuideHills;
+				out << YAML::Key << "GuideHillSize" << YAML::Value << t.GuideHillSize;
+				out << YAML::Key << "GuideBand" << YAML::Value << t.GuideBand;
+				out << YAML::Key << "GuideBlend" << YAML::Value << t.GuideBlend;
+			}
 			// Each layer's material by ID (and its file, as a part's material is written)
 			out << YAML::Key << "Layers" << YAML::Value << YAML::BeginMap;
 			for (uint32_t layer = 0; layer < TerrainComponent::LayerCount; layer++)
@@ -806,6 +823,20 @@ namespace EnvMapVulkanSceneSerializer
 			Read(terrainNode, "RockHeight", t.RockHeight);
 			Read(terrainNode, "Friction", t.Friction);
 			Read(terrainNode, "LodTolerance", t.LodTolerance);
+			if (YAML::Node guidesNode = terrainNode["Guides"]; guidesNode && guidesNode.IsSequence())
+			{
+				for (const YAML::Node& guide : guidesNode)
+				{
+					terrain.Guides.push_back(guide.as<uint64_t>(NoEntity));
+				}
+			}
+			Read(terrainNode, "GuideClearance", t.GuideClearance);
+			Read(terrainNode, "GuideShoulder", t.GuideShoulder);
+			Read(terrainNode, "GuideRise", t.GuideRise);
+			Read(terrainNode, "GuideHills", t.GuideHills);
+			Read(terrainNode, "GuideHillSize", t.GuideHillSize);
+			Read(terrainNode, "GuideBand", t.GuideBand);
+			Read(terrainNode, "GuideBlend", t.GuideBlend);
 			t.Clamp();
 			if (YAML::Node layersNode = terrainNode["Layers"])
 			{

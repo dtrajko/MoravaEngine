@@ -35,7 +35,8 @@ struct FoliageSpecies
 	float MaxSlope = 30.0f;     // degrees: none on steeper ground
 	float MinHeight = -1.0e6f;  // meters, the terrain's y: none below or above (sand, bare peaks)
 	float MaxHeight = 1.0e6f;
-	float KeepOut = 4.0f;       // meters: none this close to a collider other than the terrain (a road, its walls)
+	float KeepOut = 4.0f;       // meters: none this close to a collider other than the terrain (a road, its walls), from
+	                            // the copy's edge (its footprint: its crown, not its trunk), so none reaches over a road
 	float MaxDistance = 0.0f;   // meters: only this close to one (along a road: what its driver sees). 0: anywhere
 	float AlignToSlope = 0.0f;  // 0: upright (trees); 1: tilted with the ground (bushes, rocks); between: part of the way
 	float Sink = 0.2f;          // meters below the ground: no gap under a copy on a slope
@@ -90,6 +91,9 @@ namespace Foliage
 	// What the scatter's result depends on: the settings that move copies and the terrain's shape (FoliageInstances::ScatterHash)
 	uint64_t GetScatterHash(const FoliageSettings& settings, const TerrainHeights& terrain);
 
-	// The copies of every species over the terrain. keepOut: may be empty (no keep-out)
-	std::shared_ptr<const FoliageInstances> Scatter(const FoliageSettings& settings, const TerrainHeights& terrain, const KeepOutQuery& keepOut);
+	// The copies of every species over the terrain. keepOut: may be empty (no keep-out). footprints (optional, by species):
+	// meters from a copy's place to the farthest its model reaches sideways at scale 1, whichever way it is turned; Keep Out
+	// counts from there
+	std::shared_ptr<const FoliageInstances> Scatter(const FoliageSettings& settings, const TerrainHeights& terrain, const KeepOutQuery& keepOut,
+		const std::vector<float>* footprints = nullptr);
 }

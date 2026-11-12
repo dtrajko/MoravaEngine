@@ -4,6 +4,7 @@
 
 #include <glm/glm.hpp>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <vector>
@@ -38,6 +39,17 @@ struct TerrainSettings
 	glm::vec2 FlatCenter = glm::vec2(0.0f); // where the flat area is (a start for the player), in the terrain's space
 	float FlatRadius = 30.0f;     // meters of level ground there (0: none)
 	float FlatBlend = 60.0f;      // meters over which it rises back into the hills
+	// Guides (TerrainGuides: a road): near them the ground follows them rather than its own hills. Just below a guide and
+	// beside it (an embankment), then hills at about its height (some higher, some lower: where they dip below it, the
+	// guide stands on its supports), and beyond Guide Band the terrain's own hills again. Without guides, these do nothing
+	float GuideClearance = 0.5f;  // meters the ground stays below a guide's surface, under it and beside it
+	float GuideShoulder = 6.0f;   // meters beside a guide where the ground stays at its height (before the hills rise)
+	float GuideRise = 40.0f;      // meters over which the hills beside it rise to their full height
+	float GuideHills = 12.0f;     // meters the hills near a guide go above or below its height, at most
+	float GuideHillSize = 150.0f; // meters: the size of those hills
+	float GuideBand = 150.0f;     // meters from a guide the ground keeps to its height
+	float GuideBlend = 200.0f;    // meters over which it turns into the terrain's own hills beyond the band
+
 	float Spacing = 1.0f;         // meters between two heights: 1, 2 or 4. Coarser is a quarter of the triangles (and of the
 	                              // heights physics has) per step, with the same hills: the small bumps go
 	uint32_t MaxVertices = 0;     // the drawn mesh's vertices at the most (0: as many as its exact shape needs). Drawing only:
@@ -67,6 +79,15 @@ struct TerrainSettings
 	void Clamp();
 };
 
+// What a terrain follows (TerrainSettings' Guide values): the surfaces of its guides (a road's driven surface), as triangles
+// in the terrain's space. The renderer, physics and the editor gather them from the guide entities the same way
+// (EnvMapVulkanTerrain::GatherGuides), so they all have the same heights
+struct TerrainGuides
+{
+	std::vector<std::array<glm::vec3, 3>> Triangles;
+	uint64_t Hash = 0; // what they were gathered from (0: no guides): part of the heights' ShapeHash
+};
+
 // The heights of a terrain: SampleCount x SampleCount of them, a row per z (Heights[z * SampleCount + x]), Spacing meters
 // apart, the first at (-Size/2, -Size/2)
 struct TerrainHeights
@@ -75,8 +96,12 @@ struct TerrainHeights
 	float Spacing = 1.0f;
 	float Size = 0.0f;
 	std::vector<float> Heights;
+	// Under and beside the guides (TerrainGuides): the highest the drawn ground may be at each height (as Heights; empty:
+	// no guides), a little below their surface. A level of detail whose triangles would rise above it there is never drawn
+	// (BuildModelData), so the ground never shows through a road, however far away
+	std::vector<float> Ceiling;
 	float MinHeight = 0.0f, MaxHeight = 0.0f;
-	uint64_t ShapeHash = 0;  // of the settings they were made from
+	uint64_t ShapeHash = 0;  // of the settings and the guides they were made from (Terrain::GetShapeHash)
 	float Milliseconds = 0.0f;
 
 	// The height at a point of the terrain's space (between the samples: on the triangles physics has), clamped to its edge
@@ -107,7 +132,8 @@ struct TerrainLods
 	{
 		Range Surface[LevelCount]; // the base level's (and every finer one's): the mesh's own range
 		Range Skirt[LevelCount];
-		float Error[LevelCount] = {}; // meters: the most a level's triangles are above or below a height (level 0: none)
+		float Error[LevelCount] = {}; // meters: the most a level's triangles are above or below a height (level 0: none);
+		                              // infinite: above the ceiling under a guide, never drawn
 	};
 	std::vector<Chunk> Chunks; // as the model's meshes
 
@@ -118,8 +144,11 @@ struct TerrainLods
 
 namespace Terrain
 {
-	// The heights the settings give (on several threads: about 1 s in Debug for 1024 m)
-	std::shared_ptr<const TerrainHeights> GenerateHeights(const TerrainSettings& settings);
+	// What the heights depend on: the shape's settings and the guides (guidesHash: TerrainGuides::Hash, 0: none)
+	uint64_t GetShapeHash(const TerrainSettings& settings, uint64_t guidesHash);
+
+	// The heights the settings give (on several threads: about 1 s in Debug for 1024 m), following the guides (optional)
+	std::shared_ptr<const TerrainHeights> GenerateHeights(const TerrainSettings& settings, const TerrainGuides* guides = nullptr);
 
 	// The meshes: one per chunk (ChunkCells heights square), with normals from the heights, tangents along +x, texture
 	// coordinates in meters (x, z of the terrain's space: a material's tiling is then repeats per meter) and one material.

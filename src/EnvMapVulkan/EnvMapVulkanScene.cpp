@@ -548,6 +548,13 @@ void EnvMapVulkanScene::RemapEntityReferences(EnvMapVulkanEntityID entity, const
 	{
 		remap(button->OnClickTarget);
 	}
+	if (TerrainComponent* terrain = TryGet<TerrainComponent>(entity))
+	{
+		for (EnvMapVulkanEntityID& guide : terrain->Guides)
+		{
+			remap(guide);
+		}
+	}
 	if (UISliderComponent* slider = TryGet<UISliderComponent>(entity))
 	{
 		remap(slider->OnValueChangedTarget);
