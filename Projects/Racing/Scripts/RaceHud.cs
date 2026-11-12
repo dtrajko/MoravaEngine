@@ -543,8 +543,8 @@ namespace Racing
 
         // ---- Helpers
 
-        // A running clock, in hundredths: 0.00 at the start (RaceManager.Format shows "-" for none)
-        static string Clock(float seconds) => seconds > 0.0f ? RaceManager.Format(seconds, 2) : "0.00";
+        // A running clock, in thousandths as every time: 0.000 at the start (RaceManager.Format shows "-" for none)
+        static string Clock(float seconds) => seconds > 0.0f ? RaceManager.Format(seconds) : "0.000";
 
         static void SetVisible(UIRect? rect, bool shown)
         {

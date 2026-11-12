@@ -45,10 +45,14 @@ struct TerrainSettings
 	float GuideClearance = 0.5f;  // meters the ground stays below a guide's surface, under it and beside it
 	float GuideShoulder = 6.0f;   // meters beside a guide where the ground stays at its height (before the hills rise)
 	float GuideRise = 40.0f;      // meters over which the hills beside it rise to their full height
+	float GuideRaise = 0.0f;      // meters the band's ground rises over GuideRise above its level under the guide (with
+	                              // Clearance: a valley the guide crosses on its supports, hills higher than it beyond)
 	float GuideHills = 12.0f;     // meters the hills near a guide go above or below its height, at most
 	float GuideHillSize = 150.0f; // meters: the size of those hills
 	float GuideBand = 150.0f;     // meters from a guide the ground keeps to its height
 	float GuideBlend = 200.0f;    // meters over which it turns into the terrain's own hills beyond the band
+	float GuideDetail = 0.25f;    // meters the drawn ground may sink below the heights within the band (what stands on it,
+	                              // the foliage, would float above a coarser level of detail there). 0: no limit
 
 	float Spacing = 1.0f;         // meters between two heights: 1, 2 or 4. Coarser is a quarter of the triangles (and of the
 	                              // heights physics has) per step, with the same hills: the small bumps go
@@ -100,6 +104,9 @@ struct TerrainHeights
 	// no guides), a little below their surface. A level of detail whose triangles would rise above it there is never drawn
 	// (BuildModelData), so the ground never shows through a road, however far away
 	std::vector<float> Ceiling;
+	// Within the guides' band: the lowest the drawn ground may be (as Heights; empty: no guides), GuideDetail below them.
+	// A level of detail whose triangles sink below it there is never drawn: the foliage stands on the ground at any distance
+	std::vector<float> Floor;
 	float MinHeight = 0.0f, MaxHeight = 0.0f;
 	uint64_t ShapeHash = 0;  // of the settings and the guides they were made from (Terrain::GetShapeHash)
 	float Milliseconds = 0.0f;

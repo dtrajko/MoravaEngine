@@ -591,10 +591,12 @@ namespace EnvMapVulkanSceneSerializer
 				out << YAML::Key << "GuideClearance" << YAML::Value << t.GuideClearance;
 				out << YAML::Key << "GuideShoulder" << YAML::Value << t.GuideShoulder;
 				out << YAML::Key << "GuideRise" << YAML::Value << t.GuideRise;
+				out << YAML::Key << "GuideRaise" << YAML::Value << t.GuideRaise;
 				out << YAML::Key << "GuideHills" << YAML::Value << t.GuideHills;
 				out << YAML::Key << "GuideHillSize" << YAML::Value << t.GuideHillSize;
 				out << YAML::Key << "GuideBand" << YAML::Value << t.GuideBand;
 				out << YAML::Key << "GuideBlend" << YAML::Value << t.GuideBlend;
+				out << YAML::Key << "GuideDetail" << YAML::Value << t.GuideDetail;
 			}
 			// Each layer's material by ID (and its file, as a part's material is written)
 			out << YAML::Key << "Layers" << YAML::Value << YAML::BeginMap;
@@ -833,10 +835,12 @@ namespace EnvMapVulkanSceneSerializer
 			Read(terrainNode, "GuideClearance", t.GuideClearance);
 			Read(terrainNode, "GuideShoulder", t.GuideShoulder);
 			Read(terrainNode, "GuideRise", t.GuideRise);
+			Read(terrainNode, "GuideRaise", t.GuideRaise);
 			Read(terrainNode, "GuideHills", t.GuideHills);
 			Read(terrainNode, "GuideHillSize", t.GuideHillSize);
 			Read(terrainNode, "GuideBand", t.GuideBand);
 			Read(terrainNode, "GuideBlend", t.GuideBlend);
+			Read(terrainNode, "GuideDetail", t.GuideDetail);
 			t.Clamp();
 			if (YAML::Node layersNode = terrainNode["Layers"])
 			{

@@ -190,6 +190,8 @@ uint64_t TerrainSettings::GetShapeHash() const
 	hash = HashOf(hash, GuideHillSize);
 	hash = HashOf(hash, GuideBand);
 	hash = HashOf(hash, GuideBlend);
+	hash = HashOf(hash, GuideRaise);
+	hash = HashOf(hash, GuideDetail);
 	return hash;
 }
 
@@ -217,6 +219,8 @@ void TerrainSettings::Clamp()
 	GuideHillSize = std::clamp(GuideHillSize, 8.0f, 20000.0f);
 	GuideBand = std::clamp(GuideBand, 0.0f, Size);
 	GuideBlend = std::clamp(GuideBlend, 1.0f, Size);
+	GuideRaise = std::clamp(GuideRaise, -1000.0f, 1000.0f);
+	GuideDetail = std::clamp(GuideDetail, 0.0f, 100.0f);
 }
 
 // ---- TerrainHeights
@@ -515,6 +519,7 @@ namespace
 		// The guide's height at the nearest point, and smoothed: where two parts of a road at different heights are near
 		// each other, the ground between them has no step where the nearest changes from one to the other
 		heights.Ceiling.assign(samples, none);
+		heights.Floor.assign(samples, -none);
 		std::vector<float> guide(samples), smooth(samples);
 		for (size_t i = 0; i < samples; i++)
 		{
@@ -539,11 +544,12 @@ namespace
 						- settings.GuideClearance;
 					const float n = std::clamp((noise.Sample(p.x * frequency + 17.3f, p.y * frequency + 41.9f) +
 						0.5f * noise.Sample(p.x * frequency * 2.3f + 63.1f, p.y * frequency * 2.3f + 5.7f)) / 1.5f * 1.4f, -1.0f, 1.0f);
-					const float hill = level + settings.GuideHills * n;
-					// A hill above the guide rises beside it, past the shoulder (a road through a cutting); one below it dips
-					// under the guide too (a road on its supports)
-					float value = hill <= level ? hill :
-						level + (hill - level) * SmoothStep(settings.GuideShoulder, settings.GuideShoulder + settings.GuideRise, distance);
+					// Past the shoulder the ground rises by GuideRaise (a valley under the guide, hills higher than it beyond), and
+					// a hill above that level rises with it (a road through a cutting); one below it dips under the guide too (a
+					// road on its supports)
+					const float rise = SmoothStep(settings.GuideShoulder, settings.GuideShoulder + settings.GuideRise, distance);
+					const float raised = level + settings.GuideRaise * rise;
+					float value = n <= 0.0f ? raised + settings.GuideHills * n : raised + settings.GuideHills * n * rise;
 					// Beyond the band, the terrain's own hills
 					value += (h[i] - value) * SmoothStep(settings.GuideBand, settings.GuideBand + settings.GuideBlend, distance);
 					// Never above the guide's surface where it is over the ground
@@ -552,8 +558,10 @@ namespace
 						value = std::min(value, surface[i] - settings.GuideClearance);
 					}
 					h[i] = value;
-					// And the drawn ground's limit there: half way down to the ground physics has
+					// And the drawn ground's limits: under the guide half way down to the ground physics has; within the band
+					// no lower than GuideDetail under it
 					heights.Ceiling[i] = surface[i] == none ? none : surface[i] - 0.5f * settings.GuideClearance;
+					heights.Floor[i] = settings.GuideDetail > 0.0f && distance <= settings.GuideBand ? value - settings.GuideDetail : -none;
 				}
 			}
 		});
@@ -692,9 +700,11 @@ namespace Terrain
 			z = std::clamp(z, 0, (int)count - 1);
 			return heights.Heights[(size_t)z * count + x];
 		};
-		// Under and beside a guide: the highest the drawn ground may be (TerrainHeights::Ceiling)
+		// Under and beside a guide: the highest the drawn ground may be (TerrainHeights::Ceiling); within its band the lowest (Floor)
 		const bool hasCeiling = heights.Ceiling.size() == heights.Heights.size();
 		auto ceiling = [&](int x, int z) { return heights.Ceiling[(size_t)z * count + x]; };
+		const bool hasFloor = heights.Floor.size() == heights.Heights.size();
+		auto floorAt = [&](int x, int z) { return heights.Floor[(size_t)z * count + x]; };
 		constexpr float Forbidden = std::numeric_limits<float>::infinity(); // a level's error there: never drawn
 		// A level's spacing in heights, when it fits the chunk (else the level before it is used again)
 		auto levelFits = [](uint32_t level, uint32_t w, uint32_t d) { const uint32_t step = 1u << level; return w % step == 0 && d % step == 0; };
@@ -735,7 +745,7 @@ namespace Terrain
 						}
 						const uint32_t step = 1u << level;
 						float error = 0.0f;
-						bool aboveCeiling = false;
+						bool outsideLimits = false;
 						for (uint32_t z = 0; z <= d; z++)
 						{
 							for (uint32_t x = 0; x <= w; x++)
@@ -746,10 +756,11 @@ namespace Terrain
 								const float ha = at(gx, gz), hb = at(gx + gs, gz), hc = at(gx, gz + gs), he = at(gx + gs, gz + gs);
 								const float level_h = v >= u ? ha + u * (he - hc) + v * (hc - ha) : ha + u * (hb - ha) + v * (he - hb);
 								error = std::max(error, std::fabs(level_h - at((int)(x0 + x), (int)(z0 + z))));
-								aboveCeiling = aboveCeiling || (hasCeiling && level_h > ceiling((int)(x0 + x), (int)(z0 + z)));
+								outsideLimits = outsideLimits || (hasCeiling && level_h > ceiling((int)(x0 + x), (int)(z0 + z))) ||
+									(hasFloor && level_h < floorAt((int)(x0 + x), (int)(z0 + z)));
 							}
 						}
-						shape.Error[level] = aboveCeiling ? Forbidden : std::max(error, shape.Error[level - 1]); // never less than a finer level's
+						shape.Error[level] = outsideLimits ? Forbidden : std::max(error, shape.Error[level - 1]); // never less than a finer level's
 						if (shape.Error[level] <= ExactError)
 						{
 							shape.Base = level;
