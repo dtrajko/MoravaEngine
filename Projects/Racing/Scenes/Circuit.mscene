@@ -81,13 +81,15 @@ Entities:
       RockHeight: 120
       LodTolerance: 2
       Guides: [3001]
-      GuideClearance: 4
+      GuideClearance: 10
       GuideShoulder: 6
       GuideRise: 40
+      GuideRaise: 20
       GuideHills: 12
       GuideHillSize: 150
       GuideBand: 150
       GuideBlend: 200
+      GuideDetail: 1.5
       Layers:
         Sand: {ID: 5100000000000000002, File: Assets/Materials/Terrain_Sand.mmat}
         Grass: {ID: 5100000000000000001, File: Assets/Materials/Terrain_Grass.mmat}
@@ -108,7 +110,7 @@ Entities:
           KeepOut: 3
           MaxDistance: 150
           AlignToSlope: 0
-          Sink: 0.3
+          Sink: 1.6
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_detailed.glb
           Density: 8
           Scale: [6, 8.5]
@@ -117,7 +119,7 @@ Entities:
           KeepOut: 3
           MaxDistance: 150
           AlignToSlope: 0
-          Sink: 0.3
+          Sink: 1.6
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_fat.glb
           Density: 10
           Scale: [6, 8.5]
@@ -126,7 +128,7 @@ Entities:
           KeepOut: 3
           MaxDistance: 150
           AlignToSlope: 0
-          Sink: 0.3
+          Sink: 1.6
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_pineRoundA.glb
           Density: 6
           Scale: [6, 8.5]
@@ -135,7 +137,7 @@ Entities:
           KeepOut: 3
           MaxDistance: 150
           AlignToSlope: 0
-          Sink: 0.3
+          Sink: 1.6
         - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushLarge.glb
           Density: 40
           Scale: [3, 4.5]
@@ -144,7 +146,7 @@ Entities:
           KeepOut: 2
           MaxDistance: 100
           AlignToSlope: 0.5
-          Sink: 0.15
+          Sink: 0.6
         - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushDetailed.glb
           Density: 40
           Scale: [3, 4.5]
@@ -153,7 +155,7 @@ Entities:
           KeepOut: 2
           MaxDistance: 100
           AlignToSlope: 0.5
-          Sink: 0.15
+          Sink: 0.6
   - ID: 3000
     Name: Track
     Parent: 0
@@ -629,7 +631,7 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [1, 0], AnchorMax: [1, 0], Pivot: [1, 0], Position: [-24, 98], Size: [200, 36], Visible: true}
     UIText:
-      Text: "0.00"
+      Text: "0.000"
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
       Size: 30
       Color: [1, 1, 1, 1]

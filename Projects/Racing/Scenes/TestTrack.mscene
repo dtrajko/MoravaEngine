@@ -553,7 +553,7 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [1, 0], AnchorMax: [1, 0], Pivot: [1, 0], Position: [-24, 98], Size: [200, 36], Visible: true}
     UIText:
-      Text: "0.00"
+      Text: "0.000"
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
       Size: 30
       Color: [1, 1, 1, 1]

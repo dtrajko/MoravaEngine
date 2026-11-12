@@ -3,7 +3,7 @@
  "Comment": "Phase 7's circuit, laid out as straights and arcs. Engine coordinates (Y up, the start line in the middle of the straight along -Z), relative to the Track entity. Built by Tools/TrackBuilder/build_track.py.",
  "ModelsDirectory": "../Assets/Models",
  "StartDistance": 12,
- "Settings": {"GroundHeight": -20, "WallHeight": 2, "WallThickness": 1, "Gantry": true},
+ "Settings": {"GroundHeight": -40, "WallHeight": 2, "WallThickness": 1, "Gantry": true},
  "Defaults": {"Width": 16, "Bank": 0, "Walls": true, "Curbs": false, "Supports": true},
  "Points": [
   {"Position": [0.0, 25.986, 0.0], "Width": 19.34},

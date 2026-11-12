@@ -278,6 +278,10 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 		ImGui::DragFloat("Rise", &s.GuideRise, 0.5f, 1.0f, 2000.0f, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
 		shapeEdited();
 		Tooltip("Meters over which the hills beside a guide rise to their full height: short is steep");
+		ImGui::DragFloat("Raise", &s.GuideRaise, 0.25f, -1000.0f, 1000.0f, "%.1f m", ImGuiSliderFlags_AlwaysClamp);
+		shapeEdited();
+		Tooltip("How far the ground rises over Rise, above its level under the guide (Clearance below it): with both,\n"
+			"the guide crosses a valley on its supports and the hills beyond are higher than it. 0: the hills are at that level");
 		ImGui::DragFloat("Hills", &s.GuideHills, 0.25f, 0.0f, 1000.0f, "%.1f m", ImGuiSliderFlags_AlwaysClamp);
 		shapeEdited();
 		Tooltip("How far the hills near a guide go above or below its height, at most. Where one dips below a road,\n"
@@ -291,6 +295,10 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 		ImGui::DragFloat("Band Blend", &s.GuideBlend, 1.0f, 1.0f, s.Size, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
 		shapeEdited();
 		Tooltip("Meters over which it turns into the terrain's own hills beyond the band");
+		ImGui::DragFloat("Drawn Detail", &s.GuideDetail, 0.01f, 0.0f, 100.0f, s.GuideDetail > 0.0f ? "%.2f m" : "no limit", ImGuiSliderFlags_AlwaysClamp);
+		shapeEdited();
+		Tooltip("Within the band, how far the drawn ground may sink below the true heights (the foliage stands on those):\n"
+			"a coarser level of detail that sinks further isn't drawn there, near or far. 0: no limit (fewer vertices)");
 	}
 
 	if (commit)
@@ -319,6 +327,8 @@ void TerrainControls(EnvMapVulkanEntityID entity)
 		t.GuideHillSize = s.GuideHillSize;
 		t.GuideBand = s.GuideBand;
 		t.GuideBlend = s.GuideBlend;
+		t.GuideRaise = s.GuideRaise;
+		t.GuideDetail = s.GuideDetail;
 	}
 
 	// The look and physics: at once
