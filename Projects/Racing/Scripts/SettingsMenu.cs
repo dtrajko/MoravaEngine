@@ -6,11 +6,11 @@ namespace Racing
     /// <summary>
     /// The racing game's Settings screen (Sample's, with the car's actions on its Controls screen), on its canvas, its Panel
     /// hidden until Open: sliders for the music's and the effects' volumes and the mouse's sensitivity, the gearbox
-    /// (automatic or manual), drop-down lists of the quality, fullscreen or a window, fullscreen's resolution and VSync, and
+    /// (automatic or manual), the ghost car (off or on), drop-down lists of the quality, fullscreen or a window, fullscreen's resolution and VSync, and
     /// a Controls screen where the keys and the gamepad's buttons are bound anew. The sliders count at once; the lists'
-    /// choices (the gearbox's too) wait for Apply (Back without it gives them up). The engine keeps the player's choices of the
-    /// window, the quality, the volumes and the bindings for the next runs (GameOptions keeps the mouse's sensitivity and
-    /// the gearbox), and Back saves them. Opened by the main menu and the pause menu,
+    /// choices (the gearbox's and the ghost's too) wait for Apply (Back without it gives them up). The engine keeps the player's choices of the
+    /// window, the quality, the volumes and the bindings for the next runs (GameOptions keeps the mouse's sensitivity,
+    /// the gearbox and the ghost), and Back saves them. Opened by the main menu and the pause menu,
     /// which get the selection back when it closes; their Pause action (Escape, Start) is Back while it is open (an open
     /// list: closed first).
     /// </summary>
@@ -30,6 +30,8 @@ namespace Racing
 
         /// <summary>The gearbox: Automatic (0), Manual (1) (UIDropdown; waits for Apply like the other lists).</summary>
         public Entity? GearboxDropdown;
+        /// <summary>The ghost car: Off (0), On (1) (UIDropdown; waits for Apply).</summary>
+        public Entity? GhostDropdown;
 
         /// <summary>Drop-down lists of the settings (UIDropdown).</summary>
         public Entity? QualityDropdown;
@@ -52,6 +54,10 @@ namespace Racing
         public Entity? SteerRightKey;
         public Entity? HandbrakeKey;
         public Entity? HandbrakePad;
+        public Entity? ShiftDownKey;
+        public Entity? ShiftDownPad;
+        public Entity? ShiftUpKey;
+        public Entity? ShiftUpPad;
         public Entity? RespawnKey;
         public Entity? RespawnPad;
 
@@ -114,6 +120,10 @@ namespace Racing
                 new Binding(SteerRightKey, "Steer", false, BindingPart.Right),
                 new Binding(HandbrakeKey, "Handbrake", false),
                 new Binding(HandbrakePad, "Handbrake", true),
+                new Binding(ShiftDownKey, "ShiftDown", false),
+                new Binding(ShiftDownPad, "ShiftDown", true),
+                new Binding(ShiftUpKey, "ShiftUp", false),
+                new Binding(ShiftUpPad, "ShiftUp", true),
                 new Binding(RespawnKey, "Respawn", false),
                 new Binding(RespawnPad, "Respawn", true),
             };
@@ -180,12 +190,14 @@ namespace Racing
             then?.Invoke();
         }
 
-        Entity?[] Lists => new[] { GearboxDropdown, QualityDropdown, DisplayDropdown, ResolutionDropdown, VSyncDropdown };
+        Entity?[] Lists => new[] { GearboxDropdown, GhostDropdown, QualityDropdown, DisplayDropdown, ResolutionDropdown, VSyncDropdown };
 
         // A list's choice differs from what is in place (a list set back to it: nothing to apply)
         bool Differs()
         {
             if (Dropdown(GearboxDropdown) is UIDropdown gearbox && (gearbox.Value == 1) != GameOptions.ManualGearbox)
+                return true;
+            if (Dropdown(GhostDropdown) is UIDropdown ghost && (ghost.Value == 1) != GameOptions.Ghost)
                 return true;
             if (Dropdown(QualityDropdown) is UIDropdown quality &&
                 quality.Value != (Quality.IsAutomatic ? 0 : Math.Max(0, Array.IndexOf(QualityOptions, Quality.Level))))
@@ -206,6 +218,8 @@ namespace Racing
                 return;
             if (Dropdown(GearboxDropdown) is UIDropdown gearbox && (gearbox.Value == 1) != GameOptions.ManualGearbox)
                 GameOptions.SetManualGearbox(gearbox.Value == 1);
+            if (Dropdown(GhostDropdown) is UIDropdown ghost && (ghost.Value == 1) != GameOptions.Ghost)
+                GameOptions.SetGhost(ghost.Value == 1);
             if (Dropdown(QualityDropdown) is UIDropdown quality)
             {
                 QualityLevel? chosen = QualityOptions[Math.Clamp(quality.Value, 0, QualityOptions.Length - 1)];
@@ -254,6 +268,8 @@ namespace Racing
         {
             if (Dropdown(GearboxDropdown) is UIDropdown gearbox && !gearbox.IsOpen)
                 gearbox.Value = GameOptions.ManualGearbox ? 1 : 0;
+            if (Dropdown(GhostDropdown) is UIDropdown ghost && !ghost.IsOpen)
+                ghost.Value = GameOptions.Ghost ? 1 : 0;
             if (Dropdown(QualityDropdown) is UIDropdown quality && !quality.IsOpen)
                 quality.Value = Quality.IsAutomatic ? 0 : Math.Max(0, Array.IndexOf(QualityOptions, Quality.Level));
             if (Dropdown(DisplayDropdown) is UIDropdown display && !display.IsOpen)

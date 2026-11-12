@@ -90,11 +90,18 @@ namespace Racing
         public float RaceTime { get; private set; }
         /// <summary>Seconds of the lap being driven.</summary>
         public float LapTime => RaceTime - lapStart;
-        /// <summary>The best lap ever on this track (saved), 0 when none yet.</summary>
+        /// <summary>The best flying lap ever (lap 2 on, over the line at speed) on this track (saved), 0 when none yet.</summary>
         public float BestLap { get; private set; }
+        /// <summary>The best lap 1 ever (from standing at the lights) on this track (saved), 0 when none yet.</summary>
+        public float BestStartLap { get; private set; }
+        /// <summary>The lap being driven is lap 1, from the standing start: it is compared with lap 1s only.</summary>
+        public bool StartLap => lapsDone == 0;
+        /// <summary>The best of the lap being driven's kind: BestStartLap in lap 1, BestLap after.</summary>
+        public float BestOfThisLap => StartLap ? BestStartLap : BestLap;
         /// <summary>The best race ever on this track (saved), 0 when none yet.</summary>
         public float BestRace { get; private set; }
-        /// <summary>The last split: its time in the lap, and against the best lap's there (negative: faster; NaN: no best yet).</summary>
+        /// <summary>The last split: its time in the lap, and against the best lap of its kind there (lap 1 against the best
+        /// lap 1, the others against the best flying lap; negative: faster; NaN: no best yet).</summary>
         public float LastSplit { get; private set; }
         public float LastSplitDelta { get; private set; } = float.NaN;
         /// <summary>The car drives the wrong way (the warning shows).</summary>
@@ -109,8 +116,10 @@ namespace Racing
         public int SplitCount { get; private set; }
         /// <summary>The last split's checkpoint, 1 to Sectors - 1; Sectors: the line (a lap).</summary>
         public int LastSplitCheckpoint { get; private set; }
-        /// <summary>The last lap was the best ever.</summary>
+        /// <summary>The last lap was the best ever of its kind (lap 1, or a flying lap).</summary>
         public bool LastLapBest { get; private set; }
+        /// <summary>The last lap finished was lap 1 (the standing start).</summary>
+        public bool LastLapStart { get; private set; }
         /// <summary>Counts the restarts: the HUD clears its popups when it changes.</summary>
         public int RestartCount { get; private set; }
         /// <summary>Set by the menus while they are open: Restart and Respawn wait (their keys are the menus' too).</summary>
@@ -139,20 +148,23 @@ namespace Racing
         int lapsDone;
         float lapStart;
         float[] lapSplits = Array.Empty<float>();
-        float[] bestSplits = Array.Empty<float>();
+        float[] bestSplits = Array.Empty<float>();      // the best flying lap's
+        float[] bestStartSplits = Array.Empty<float>(); // the best lap 1's
         float offTime, wrongTime;
         bool respawnAsked, restartAsked, started;
         int respawns;
         readonly System.Collections.Generic.List<float> lapTimes = new();
 
-        string Key(string name) => $"{line?.Name ?? "Track"}.{name}";
-        /// <summary>The save data key of one of this track's records (the ghost keeps its lap beside them).</summary>
+        // The records are the track version's (Centerline.RecordKey): a rebuilt track starts with none
+        string Key(string name) => line != null ? line.RecordKey(name) : $"Track.{name}";
+        /// <summary>The save data key of one of this track's records (the ghost keeps its laps beside them).</summary>
         public string RecordKey(string name) => Key(name);
 
         protected override void OnCreate()
         {
             Current = this;
-            line = Racing.Centerline.Load(Centerline, Track != null ? Track.WorldPosition : Vector3.Zero);
+            GameOptions.ApplyAtStart(); // a race played directly in the editor: the player's choices too (the ghost, the gearbox)
+            line =Racing.Centerline.Load(Centerline, Track != null ? Track.WorldPosition : Vector3.Zero);
             if (line == null)
             {
                 Log.Error($"RaceManager: the center line '{Centerline}' wasn't found: no race");
@@ -163,13 +175,15 @@ namespace Racing
             BestLap = SaveData.GetFloat(Key("BestLap"));
             BestRace = SaveData.GetFloat(Key("BestRace"));
             bestSplits = ParseSplits(SaveData.GetString(Key("BestLapSplits")));
+            BestStartLap = SaveData.GetFloat(Key("BestStartLap"));
+            bestStartSplits = ParseSplits(SaveData.GetString(Key("BestStartLapSplits")));
             for (int i = 0; i < lights.Length; i++)
                 lights[i] = Scene.FindEntityByName($"Light {i + 1}")?.GetComponent<UIImage>();
             lightsPanel = StartLights?.GetComponent<UIRect>();
             wrongWayRect = WrongWayText?.GetComponent<UIRect>();
             if (wrongWayRect != null)
                 wrongWayRect.Visible = false;
-            Log.Info($"Race: '{line.Name}', {line.Length:0} m, {Laps} laps, {Sectors - 1} checkpoints; best lap {Format(BestLap)}, best race {Format(BestRace)}");
+            Log.Info($"Race: '{line.Name}', {line.Length:0} m, {Laps} laps, {Sectors - 1} checkpoints; best lap 1 {Format(BestStartLap)}, best flying lap {Format(BestLap)}, best race {Format(BestRace)} (records of version {line.Version})");
         }
 
         protected override void OnUpdate(float dt)
@@ -341,17 +355,23 @@ namespace Racing
             float lap = RaceTime - lapStart;
             lapSplits[Sectors - 1] = lap;
             Split(Sectors - 1, lap);
+            // Lap 1 (from standing at the lights) and the flying laps each have a best of their own
+            bool start = StartLap;
+            float bestBefore = start ? BestStartLap : BestLap;
             lapsDone++;
             lapTimes.Add(lap);
-            bool bestLap = BestLap <= 0.0f || lap < BestLap;
+            bool bestLap = bestBefore <= 0.0f || lap < bestBefore;
             LastLapBest = bestLap;
-            Log.Info($"Race: lap {lapsDone}/{Laps}: {Format(lap)}{(bestLap ? " (best lap)" : "")}, race {Format(RaceTime)}");
+            LastLapStart = start;
+            Log.Info($"Race: lap {lapsDone}/{Laps}: {Format(lap)}{(bestLap ? (start ? " (best lap 1)" : " (best flying lap)") : "")}, race {Format(RaceTime)}");
             if (bestLap)
             {
-                BestLap = lap;
-                bestSplits = (float[])lapSplits.Clone();
-                SaveData.SetFloat(Key("BestLap"), BestLap);
-                SaveData.SetString(Key("BestLapSplits"), FormatSplits(bestSplits));
+                float[] splits = (float[])lapSplits.Clone();
+                string name = start ? "BestStartLap" : "BestLap";
+                if (start) { BestStartLap = lap; bestStartSplits = splits; }
+                else { BestLap = lap; bestSplits = splits; }
+                SaveData.SetFloat(Key(name), lap);
+                SaveData.SetString(Key(name + "Splits"), FormatSplits(splits));
                 SaveData.Save();
             }
             lapStart = RaceTime;
@@ -370,13 +390,15 @@ namespace Racing
             nextCheckpoint++;
         }
 
-        // The split at sector index (0 the first checkpoint, Sectors - 1 the line) against the best lap's
+        // The split at sector index (0 the first checkpoint, Sectors - 1 the line) against the best lap's of its kind (the
+        // lap being driven: lap 1 against the best lap 1, the others against the best flying lap)
         void Split(int index, float time)
         {
             LastSplitCheckpoint = index + 1;
             SplitCount++;
             LastSplit = time;
-            LastSplitDelta = index < bestSplits.Length && bestSplits[index] > 0.0f ? time - bestSplits[index] : float.NaN;
+            float[] best = StartLap ? bestStartSplits : bestSplits;
+            LastSplitDelta = index < best.Length && best[index] > 0.0f ? time - best[index] : float.NaN;
         }
 
         string DeltaText() => float.IsNaN(LastSplitDelta) ? "" : $" ({(LastSplitDelta <= 0.0f ? "-" : "+")}{MathF.Abs(LastSplitDelta):0.00} {(LastSplitDelta <= 0.0f ? "faster" : "slower")})";
@@ -399,7 +421,7 @@ namespace Racing
             if (Medal > SaveData.GetInt(Key("Medal")))
                 SaveData.SetInt(Key("Medal"), Medal);
             SaveData.Save();
-            Log.Info($"Race: finished in {Format(time)}{(record ? " (new record)" : "")}, {MedalNames[Medal]}, best lap {Format(BestLap)}, {respawns} respawns");
+            Log.Info($"Race: finished in {Format(time)}{(record ? " (new record)" : "")}, {MedalNames[Medal]}, best lap 1 {Format(BestStartLap)}, best flying lap {Format(BestLap)}, {respawns} respawns");
         }
 
         // ---- Respawn: the last checkpoint passed

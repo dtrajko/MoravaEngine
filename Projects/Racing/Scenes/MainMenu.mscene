@@ -156,6 +156,7 @@ Entities:
       ClearHeight: 100
       Species:
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_oak.glb
+          ModelID: 14401469474261753097
           Density: 8
           Scale: [6, 8.5]
           MaxSlope: 30
@@ -165,6 +166,7 @@ Entities:
           AlignToSlope: 0
           Sink: 1.6
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_detailed.glb
+          ModelID: 11862246646186168013
           Density: 8
           Scale: [6, 8.5]
           MaxSlope: 30
@@ -174,6 +176,7 @@ Entities:
           AlignToSlope: 0
           Sink: 1.6
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_fat.glb
+          ModelID: 4756551559163791362
           Density: 10
           Scale: [6, 8.5]
           MaxSlope: 30
@@ -183,6 +186,7 @@ Entities:
           AlignToSlope: 0
           Sink: 1.6
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_pineRoundA.glb
+          ModelID: 1290202029348316991
           Density: 6
           Scale: [6, 8.5]
           MaxSlope: 30
@@ -192,6 +196,7 @@ Entities:
           AlignToSlope: 0
           Sink: 1.6
         - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushLarge.glb
+          ModelID: 8117074855333258471
           Density: 40
           Scale: [3, 4.5]
           MaxSlope: 35
@@ -201,6 +206,7 @@ Entities:
           AlignToSlope: 0.5
           Sink: 0.6
         - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushDetailed.glb
+          ModelID: 8575203206653652710
           Density: 40
           Scale: [3, 4.5]
           MaxSlope: 35
@@ -235,6 +241,487 @@ Entities:
       Friction: 1
       Restitution: 0
       IsTrigger: false
+  - ID: 10231822086763064383
+    Name: Curb_Red_10
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 11195176395871849241
+        File: Assets/Materials/Curb_Red_2.mmat
+        Name: Curb_Red
+  - ID: 11998122429288105752
+    Name: Curb_Red_11
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 11195176395871849241
+        File: Assets/Materials/Curb_Red_2.mmat
+        Name: Curb_Red
+  - ID: 17665359738184029699
+    Name: Curb_Red_16
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 11195176395871849241
+        File: Assets/Materials/Curb_Red_2.mmat
+        Name: Curb_Red
+  - ID: 15010819601928487726
+    Name: Curb_Red_17
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 11195176395871849241
+        File: Assets/Materials/Curb_Red_2.mmat
+        Name: Curb_Red
+  - ID: 6467266573747222507
+    Name: Curb_Red_18
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 11195176395871849241
+        File: Assets/Materials/Curb_Red_2.mmat
+        Name: Curb_Red
+  - ID: 7067874369752022951
+    Name: Curb_Red_19
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 11195176395871849241
+        File: Assets/Materials/Curb_Red_2.mmat
+        Name: Curb_Red
+  - ID: 13249078059635564106
+    Name: Curb_White_10
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 15085814392738078753
+        File: Assets/Materials/Curb_White_2.mmat
+        Name: Curb_White
+  - ID: 6182118220548342848
+    Name: Curb_White_11
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 15085814392738078753
+        File: Assets/Materials/Curb_White_2.mmat
+        Name: Curb_White
+  - ID: 11065757587444814328
+    Name: Curb_White_16
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 15085814392738078753
+        File: Assets/Materials/Curb_White_2.mmat
+        Name: Curb_White
+  - ID: 944484092278944570
+    Name: Curb_White_17
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 15085814392738078753
+        File: Assets/Materials/Curb_White_2.mmat
+        Name: Curb_White
+  - ID: 11987914426187669957
+    Name: Curb_White_18
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 15085814392738078753
+        File: Assets/Materials/Curb_White_2.mmat
+        Name: Curb_White
+  - ID: 17786297552461342353
+    Name: Curb_White_19
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 15085814392738078753
+        File: Assets/Materials/Curb_White_2.mmat
+        Name: Curb_White
+  - ID: 6821727170615030702
+    Name: Road_00
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 11485996875671152247
+    Name: Road_01
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 12156401287674553876
+    Name: Road_02
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 8662516245258084889
+    Name: Road_03
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 15
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 7706687090825765156
+    Name: Road_04
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 16
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 11576540918633327466
+    Name: Road_05
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 17
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 12723319442048052656
+    Name: Road_06
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 18
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 8254972778675440222
+    Name: Road_07
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 19
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 8381336272877958309
+    Name: Road_08
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 20
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 5569603976379704385
+    Name: Road_09
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 21
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 9742754606928276740
+    Name: Road_10
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 22
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 17239896812507951329
+    Name: Road_11
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 23
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 480805245854322439
+    Name: Road_12
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 24
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 5577661727335410694
+    Name: Road_13
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 25
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 11181791345665278643
+    Name: Road_14
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 26
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 11897102822354121017
+    Name: Road_15
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 27
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 3858986527377285545
+    Name: Road_16
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 28
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 9976292909040804921
+    Name: Road_17
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 29
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 8146744044934013110
+    Name: Road_18
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 30
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 13952314256310973860
+    Name: Road_19
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 31
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 2948641150503890156
+    Name: Road_20
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 32
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 12975766593034961186
+    Name: Road_21
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 33
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 18041763953588929571
+    Name: Road_22
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 34
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 12767660460697591536
+    Name: Road_23
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 35
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
+  - ID: 16671012324814315415
+    Name: Road_24
+    Parent: 3001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 36
+      Material:
+        ID: 6332577005044584381
+        File: Assets/Materials/Road_2.mmat
+        Name: Road
   - ID: 3002
     Name: Walls
     Parent: 3000
@@ -255,6 +742,331 @@ Entities:
       Friction: 0.05
       Restitution: 0
       IsTrigger: false
+  - ID: 6260770543903553466
+    Name: Wall_00
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 13230351672291266730
+    Name: Wall_01
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 12334671066595205035
+    Name: Wall_02
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 13315362149735580953
+    Name: Wall_03
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 14521964835306319522
+    Name: Wall_04
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 13163165419121400932
+    Name: Wall_05
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 14232482729063857431
+    Name: Wall_06
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 8442113679941987855
+    Name: Wall_07
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 6880163058788143472
+    Name: Wall_08
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 2201280156241130683
+    Name: Wall_09
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 1436534417866342231
+    Name: Wall_10
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 5238208190239728381
+    Name: Wall_11
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 654496135981797484
+    Name: Wall_12
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 759551793079868385
+    Name: Wall_13
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 372878031311911558
+    Name: Wall_14
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 5328512024259123031
+    Name: Wall_15
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 15
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 16871916893593469154
+    Name: Wall_16
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 16
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 7533981888121050511
+    Name: Wall_17
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 17
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 18255623598912241998
+    Name: Wall_18
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 18
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 249177792862610024
+    Name: Wall_19
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 19
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 13320819328526077275
+    Name: Wall_20
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 20
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 16571153507492050056
+    Name: Wall_21
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 21
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 6345889528420902458
+    Name: Wall_22
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 22
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 13509335039886767031
+    Name: Wall_23
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 23
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
+  - ID: 6621581710326875206
+    Name: Wall_24
+    Parent: 3002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 24
+      Material:
+        ID: 1305564977876612713
+        File: Assets/Materials/Wall_2.mmat
+        Name: Wall
   - ID: 3003
     Name: Structure
     Parent: 3000
@@ -265,6 +1077,695 @@ Entities:
     Model:
       File: Assets/Models/Track_Circuit_Structure.glb
       FileID: 365674231726838572
+  - ID: 13160020093436130807
+    Name: Gantry_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15007991989825007560
+        File: Assets/Materials/Gantry_2.mmat
+        Name: Gantry
+  - ID: 947307943375173960
+    Name: Line_Black_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 11107951794689953571
+        File: Assets/Materials/Line_Black_2.mmat
+        Name: Line_Black
+  - ID: 6307298997764885739
+    Name: Line_White_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 17804913656134916073
+        File: Assets/Materials/Line_White_2.mmat
+        Name: Line_White
+  - ID: 469133886090152310
+    Name: Structure_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 10486162343075766060
+    Name: Structure_01
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 12647765172633937129
+    Name: Structure_02
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 12771162550366828895
+    Name: Structure_03
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 4476264246970400084
+    Name: Structure_04
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 17848676523353729837
+    Name: Structure_05
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 7141934489226049999
+    Name: Structure_06
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 273057233294666649
+    Name: Structure_07
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 12147606403083161000
+    Name: Structure_08
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 7934365439498374144
+    Name: Structure_09
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 15535302076347600311
+    Name: Structure_10
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 6945712360213584530
+    Name: Structure_11
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 5063541219934539740
+    Name: Structure_12
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 15
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 13884738658718055821
+    Name: Structure_13
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 16
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 8221200882275282703
+    Name: Structure_14
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 17
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 3121898294242873068
+    Name: Structure_15
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 18
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 12082275421300987618
+    Name: Structure_16
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 19
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 5415809114794767349
+    Name: Structure_17
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 20
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 14527331572482416492
+    Name: Structure_18
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 21
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 16847582619976554820
+    Name: Structure_19
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 22
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 13053082319504554112
+    Name: Structure_20
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 23
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 1435458582344519813
+    Name: Structure_21
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 24
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 3023896220566272831
+    Name: Structure_22
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 25
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 18325381210165051786
+    Name: Structure_23
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 26
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 1229269750413984551
+    Name: Structure_24
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 27
+      Material:
+        ID: 5619882180035392970
+        File: Assets/Materials/Structure_2.mmat
+        Name: Structure
+  - ID: 5880511068339405565
+    Name: Support_00
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 28
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 16228907545309728736
+    Name: Support_01
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 29
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 15975391162887417400
+    Name: Support_02
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 30
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 8946724446156522226
+    Name: Support_03
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 31
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 3086743519046572888
+    Name: Support_04
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 32
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 4162327539789158325
+    Name: Support_05
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 33
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 5316525799466913658
+    Name: Support_06
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 34
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 5411812913910202905
+    Name: Support_07
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 35
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 14984849433089748827
+    Name: Support_08
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 36
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 5901507679218369188
+    Name: Support_09
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 37
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 15458522168009016181
+    Name: Support_10
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 38
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 11451604783367642953
+    Name: Support_11
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 39
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 16710011107288516882
+    Name: Support_12
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 40
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 4039119846215844939
+    Name: Support_13
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 41
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 3258371007360177156
+    Name: Support_14
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 42
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 8395295676483229849
+    Name: Support_15
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 43
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 8754410723361612581
+    Name: Support_16
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 44
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 6364801757785324373
+    Name: Support_17
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 45
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 8194126370353931711
+    Name: Support_18
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 46
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 9111800517862884723
+    Name: Support_19
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 47
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 12381264264658076643
+    Name: Support_20
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 48
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 575519065488899297
+    Name: Support_21
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 49
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 11819476286775522977
+    Name: Support_22
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 50
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 9816465445203981590
+    Name: Support_23
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 51
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
+  - ID: 17503821765060543009
+    Name: Support_24
+    Parent: 3003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 52
+      Material:
+        ID: 16166804403098375966
+        File: Assets/Materials/Support_2.mmat
+        Name: Support
   - ID: 2001
     Name: Car
     Parent: 0
@@ -407,7 +1908,6 @@ Entities:
         Track: {Entity: 3000}
         Side: {Float: -12}
         RaceScene: {String: Scenes/Circuit.mscene}
-        TrackName: {String: Circuit}
     UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
   - ID: 8001
     Name: Menu
@@ -606,6 +2106,7 @@ Entities:
         EffectsValue: {Entity: 7022}
         MouseValue: {Entity: 7032}
         GearboxDropdown: {Entity: 7036}
+        GhostDropdown: {Entity: 7038}
         QualityDropdown: {Entity: 7041}
         DisplayDropdown: {Entity: 7051}
         ResolutionDropdown: {Entity: 7061}
@@ -883,6 +2384,55 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7037
+    Name: Ghost Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -45], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Ghost car
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7038
+    Name: Ghost Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -45], Size: [560, 66], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [Off, On]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
   - ID: 7040
     Name: Quality Label
     Parent: 7001
@@ -890,7 +2440,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -45], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 30], Size: [420, 70], Visible: true}
     UIText:
       Text: Quality
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -908,7 +2458,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -45], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 30], Size: [560, 66], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -939,7 +2489,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 30], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 105], Size: [420, 70], Visible: true}
     UIText:
       Text: Display
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -957,7 +2507,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 30], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 105], Size: [560, 66], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -988,7 +2538,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 105], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 180], Size: [420, 70], Visible: true}
     UIText:
       Text: Resolution
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -1006,7 +2556,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 105], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 180], Size: [560, 66], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -1037,7 +2587,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 180], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 255], Size: [420, 70], Visible: true}
     UIText:
       Text: VSync
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -1055,7 +2605,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 180], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 255], Size: [560, 66], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -1086,7 +2636,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 330], Size: [360, 84], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 350], Size: [360, 84], Visible: true}
     UIText:
       Text: Controls
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -1113,7 +2663,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 330], Size: [360, 84], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 350], Size: [360, 84], Visible: true}
     UIText:
       Text: Apply
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -1140,7 +2690,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 330], Size: [360, 84], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 350], Size: [360, 84], Visible: true}
     UIText:
       Text: Back
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf

@@ -23,6 +23,11 @@ namespace Racing
         }
 
         public string Name { get; private set; } = "";
+        /// <summary>The track's version: 8 hex digits of a hash of the center line's file (its line ends left out). A rebuilt
+        /// track with another shape has another one, and so records of its own (RecordKey).</summary>
+        public string Version { get; private set; } = "";
+        /// <summary>The save data key of one of this version of the track's records: "Name-Version.name".</summary>
+        public string RecordKey(string name) => $"{Name}-{Version}.{name}";
         /// <summary>Meters around the track (the start line is at 0).</summary>
         public float Length { get; private set; }
         public IReadOnlyList<Point> Points => points;
@@ -47,6 +52,7 @@ namespace Racing
             {
                 Name = root.GetProperty("Name").GetString() ?? "",
                 Length = root.GetProperty("Length").GetSingle(),
+                Version = Hash(text),
             };
             foreach (JsonElement point in root.GetProperty("Points").EnumerateArray())
             {
@@ -63,6 +69,19 @@ namespace Racing
             line.StartPosition = ReadVector(start.GetProperty("Position")) + trackPosition;
             line.StartForward = Vector3.Normalize(ReadVector(start.GetProperty("Forward")));
             return line;
+        }
+
+        // FNV-1a (32 bits) of the text without its '\r's: the same on every platform, whatever Git did to the line ends
+        static string Hash(string text)
+        {
+            uint hash = 2166136261;
+            foreach (char c in text)
+            {
+                if (c == '\r')
+                    continue;
+                hash = (hash ^ c) * 16777619;
+            }
+            return hash.ToString("x8");
         }
 
         static Vector3 ReadVector(JsonElement e) => new(e[0].GetSingle(), e[1].GetSingle(), e[2].GetSingle());
