@@ -5,6 +5,12 @@
 #include "Haze.glslh"
 #include "Tonemap.glslh"
 
+#ifdef MESH_FRAGMENT_INSTANCED
+// The foliage copy's cross-fade and debug tint (Include/MeshInstance.glslh): y is 1 for an impostor's card while the debug
+// view Show Impostors is on
+layout (location = 12) flat in vec2 v_InstanceData;
+#endif
+
 void main()
 {
 	//	Standard PBR inputs
@@ -29,6 +35,12 @@ void main()
 	}
 
 	m_Params.Albedo = MaterialAlbedo(texCoord);
+#ifdef MESH_FRAGMENT_INSTANCED
+	if (v_InstanceData.y > 0.5)
+	{
+		m_Params.Albedo = mix(m_Params.Albedo, vec3(1.0, 0.05, 0.6), 0.75); // Show Impostors: the cards magenta
+	}
+#endif
 	m_Params.Metalness = MaterialMetalness(texCoord);
 	m_Params.Roughness = MaterialRoughness(texCoord);
 	m_Params.Normal = MaterialNormal(texCoord, Input.Normal, Input.WorldNormals);

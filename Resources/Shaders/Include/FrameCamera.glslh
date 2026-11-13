@@ -7,6 +7,7 @@ layout (std140, set = 0, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjectionMatrix;
 	mat4 u_PreviousViewProjectionMatrix; // the previous frame's, for the motion vectors (Include/MeshVertexMotion.glslh)
+	vec4 u_CameraWorldPosition;          // xyz: where the camera is (the foliage's impostor cards face it: Include/MeshInstance.glslh)
 };
 
 #endif

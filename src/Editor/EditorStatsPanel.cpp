@@ -577,11 +577,34 @@ void OnImGuiRenderRendererStats()
 			"the view, or beyond the foliage's Draw Distance). With Freeze, the frozen view's");
 	}
 	{
+		static const char* lodModes[] = { "By distance", "Models only", "Impostors only" };
+		int lodMode = (int)s_ViewOptions.FoliageLod;
+		ImGui::SetNextItemWidth(160.0f);
+		if (ImGui::Combo("Foliage LOD", &lodMode, lodModes, IM_ARRAYSIZE(lodModes)))
+		{
+			s_ViewOptions.FoliageLod = (EnvMapVulkanViewOptions::FoliageLodMode)lodMode;
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("How the foliage's copies are drawn: by distance (a species' model near the camera, its impostor beyond its\n"
+				"Impostor Distance), its models only (to compare), or its impostors only, at any distance (to look at them up close).\n"
+				"A species without an impostor is its model in every mode");
+		}
+		ImGui::SameLine();
+		ImGui::Checkbox("Show Impostors", &s_ViewOptions.ShowImpostors);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The impostors' cards tinted magenta: which copies are drawn as cards (beyond their species' Impostor\n"
+				"Distance), and where the models cross-fade into them");
+		}
+	}
+	{
 		const EnvMapVulkanFoliage::Stats& foliage = EnvMapVulkanFoliage::GetStats();
 		if (foliage.Copies > 0)
 		{
-			ImGui::Text("Foliage: %u of %u copies drawn, %u of %u cells, %u species", foliage.CopiesDrawn, foliage.Copies, foliage.CellsDrawn, foliage.Cells,
-				foliage.Species);
+			ImGui::Text("Foliage: %u of %u copies drawn, %u of %u cells, %u species", foliage.CopiesDrawn + foliage.ImpostorsDrawn, foliage.Copies,
+				foliage.CellsDrawn, foliage.Cells, foliage.Species);
+			ImGui::Text("  %u as models, %u as impostors (%u cross-fading)", foliage.CopiesDrawn, foliage.ImpostorsDrawn, foliage.Fading);
 		}
 	}
 	uint32_t shadowedPointLights = 0, shadowedSpotLights = 0;

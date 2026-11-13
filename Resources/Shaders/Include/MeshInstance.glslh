@@ -1,13 +1,78 @@
 // The instanced mesh vertex stages (the foliage: EnvMapVulkanFoliage), compiled in where MESH_VERTEX_INSTANCED is defined:
 // each copy's transform comes from an instance-rate vertex buffer (binding 1) instead of the push constants. Locations 7 to
 // 10 in every pass: in the G-buffer prepass that is where the other meshes have their previous transform, and a copy's
-// previous transform is its transform (the copies don't move: no motion of their own).
+// previous transform is its transform (the copies don't move: no motion of their own; an impostor's card turns a little
+// as the camera moves, too little to count).
+//
+// A transform of the foliage is affine: its bottom row is (0, 0, 0, 1), and its first three elements carry the copy's draw:
+// - the first, its cross-fade between its model and its impostor (Phase 8.4): 0 drawn whole; in (0, 1] the share v of the
+//   pixels drawn (those whose dither threshold is below v: the impostor fading in); in (1, 2) the others, 2 - v of them (the
+//   model fading out), so a model and its card at the same fade cover each pixel once;
+// - the second, 1 for an impostor's card while the debug view Show Impostors is on (the scene pass tints it);
+// - the third, 1 for an impostor's card. A card's instance is its copy's transform (its place, size and turn): the card
+//   (a square in its x-y plane, Tools/TrackBuilder/bake_impostors.py) is turned about the copy's vertical axis to face the
+//   camera, and shows the view of its 4 x 4 atlases nearest to the camera's direction in the copy's own space (view k seen
+//   from k * 360 / 16 degrees about its vertical axis, 0 from +z): its texture coordinates are view 0's, moved to the view.
+// InstanceTransform() is the transform to draw with, InstanceTexCoord() the texture coordinates.
 #ifndef MESH_INSTANCE_GLSLH
 #define MESH_INSTANCE_GLSLH
 
 #ifdef MESH_VERTEX_INSTANCED
-layout(location = 7) in mat4 a_InstanceTransform;
-#define a_PreviousTransform a_InstanceTransform
+layout(location = 7) in mat4 a_InstanceData;
+
+bool InstanceIsCard()
+{
+	return a_InstanceData[2].w > 0.5;
+}
+
+// The direction to the camera on the ground (x, z), from the copy
+vec2 InstanceToCamera()
+{
+	vec2 ground = u_CameraWorldPosition.xz - a_InstanceData[3].xz;
+	float length2 = dot(ground, ground);
+	return length2 > 1e-8 ? ground * inversesqrt(length2) : vec2(0.0, 1.0);
+}
+
+mat4 InstanceTransform()
+{
+	if (!InstanceIsCard())
+	{
+		return mat4(vec4(a_InstanceData[0].xyz, 0.0), vec4(a_InstanceData[1].xyz, 0.0), vec4(a_InstanceData[2].xyz, 0.0), a_InstanceData[3]);
+	}
+	// The card's +z towards the camera: a turn by atan(x, z) about y, at the copy's place and size (its up axis' length)
+	vec2 toCamera = InstanceToCamera();
+	float scale = length(a_InstanceData[1].xyz);
+	return mat4(vec4(toCamera.y * scale, 0.0, -toCamera.x * scale, 0.0), vec4(0.0, scale, 0.0, 0.0),
+		vec4(toCamera.x * scale, 0.0, toCamera.y * scale, 0.0), vec4(a_InstanceData[3].xyz, 1.0));
+}
+
+vec2 InstanceTexCoord(vec2 texCoord)
+{
+	if (!InstanceIsCard())
+	{
+		return texCoord;
+	}
+	// The camera's direction in the copy's own space (its x and z axes on the ground), and the nearest of the 16 views
+	vec2 toCamera = InstanceToCamera();
+	vec2 axisX = normalize(a_InstanceData[0].xz + vec2(1e-6, 0.0));
+	vec2 axisZ = normalize(a_InstanceData[2].xz + vec2(0.0, 1e-6));
+	float angle = atan(dot(toCamera, axisX), dot(toCamera, axisZ));
+	int view = int(round(angle * (16.0 / 6.28318531))) & 15;
+	return texCoord + vec2(float(view & 3), float(view >> 2)) * 0.25;
+}
+
+float InstanceFade()
+{
+	return a_InstanceData[0].w;
+}
+
+float InstanceTint()
+{
+	return a_InstanceData[1].w;
+}
+
+#define a_InstanceTransform InstanceTransform()
+#define a_PreviousTransform InstanceTransform()
 #endif
 
 #endif

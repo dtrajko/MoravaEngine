@@ -102,6 +102,7 @@ Entities:
       DrawDistance: 600
       ShadowDistance: 250
       ClearHeight: 100
+      ImpostorFade: 15
       Species:
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_oak.glb
           Density: 8
@@ -112,6 +113,8 @@ Entities:
           MaxDistance: 150
           AlignToSlope: 0
           Sink: 1.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_tree_oak_Impostor.glb
+          ImpostorDistance: 80
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_detailed.glb
           Density: 8
           Scale: [6, 8.5]
@@ -121,6 +124,8 @@ Entities:
           MaxDistance: 150
           AlignToSlope: 0
           Sink: 1.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_tree_detailed_Impostor.glb
+          ImpostorDistance: 80
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_fat.glb
           Density: 10
           Scale: [6, 8.5]
@@ -130,6 +135,8 @@ Entities:
           MaxDistance: 150
           AlignToSlope: 0
           Sink: 1.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_tree_fat_Impostor.glb
+          ImpostorDistance: 80
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_pineRoundA.glb
           Density: 6
           Scale: [6, 8.5]
@@ -139,6 +146,8 @@ Entities:
           MaxDistance: 150
           AlignToSlope: 0
           Sink: 1.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_tree_pineRoundA_Impostor.glb
+          ImpostorDistance: 80
         - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushLarge.glb
           Density: 40
           Scale: [3, 4.5]
@@ -148,6 +157,8 @@ Entities:
           MaxDistance: 100
           AlignToSlope: 0.5
           Sink: 0.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_plant_bushLarge_Impostor.glb
+          ImpostorDistance: 40
         - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushDetailed.glb
           Density: 40
           Scale: [3, 4.5]
@@ -157,6 +168,8 @@ Entities:
           MaxDistance: 100
           AlignToSlope: 0.5
           Sink: 0.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_plant_bushDetailed_Impostor.glb
+          ImpostorDistance: 40
   - ID: 2100
     Name: Ghost
     Parent: 0

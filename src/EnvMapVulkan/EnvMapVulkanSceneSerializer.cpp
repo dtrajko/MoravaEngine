@@ -635,6 +635,7 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "DrawDistance" << YAML::Value << f.DrawDistance;
 			out << YAML::Key << "ShadowDistance" << YAML::Value << f.ShadowDistance;
 			out << YAML::Key << "ClearHeight" << YAML::Value << f.ClearHeight;
+			out << YAML::Key << "ImpostorFade" << YAML::Value << f.ImpostorFade;
 			out << YAML::Key << "Species" << YAML::Value << YAML::BeginSeq;
 			for (const FoliageSpecies& species : f.Species)
 			{
@@ -648,6 +649,11 @@ namespace EnvMapVulkanSceneSerializer
 				out << YAML::Key << "MaxDistance" << YAML::Value << species.MaxDistance;
 				out << YAML::Key << "AlignToSlope" << YAML::Value << species.AlignToSlope;
 				out << YAML::Key << "Sink" << YAML::Value << species.Sink;
+				if (!species.Impostor.empty())
+				{
+					AssetReference::Write(out, "Impostor", species.Impostor);
+				}
+				out << YAML::Key << "ImpostorDistance" << YAML::Value << species.ImpostorDistance;
 				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
@@ -866,6 +872,7 @@ namespace EnvMapVulkanSceneSerializer
 			Read(foliageNode, "DrawDistance", f.DrawDistance);
 			Read(foliageNode, "ShadowDistance", f.ShadowDistance);
 			Read(foliageNode, "ClearHeight", f.ClearHeight);
+			Read(foliageNode, "ImpostorFade", f.ImpostorFade);
 			if (YAML::Node speciesNode = foliageNode["Species"]; speciesNode && speciesNode.IsSequence())
 			{
 				for (const YAML::Node& item : speciesNode)
@@ -888,6 +895,8 @@ namespace EnvMapVulkanSceneSerializer
 					Read(item, "MaxDistance", species.MaxDistance);
 					Read(item, "AlignToSlope", species.AlignToSlope);
 					Read(item, "Sink", species.Sink);
+					species.Impostor = AssetReference::Read(item, "Impostor");
+					Read(item, "ImpostorDistance", species.ImpostorDistance);
 					f.Species.push_back(species);
 				}
 			}

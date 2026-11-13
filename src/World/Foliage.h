@@ -24,6 +24,11 @@ struct TerrainHeights;
  * (along a track: none on the far sides of the hills, which nobody sees). The copies are grouped by cells (CellSize meters square),
  * which the renderer culls and draws one by one.
  *
+ * Far from the camera a species with an impostor is drawn as it instead (Phase 8.4): a card turned to face the camera, showing
+ * the model as seen from the nearest of the directions its impostor was baked from (Tools/TrackBuilder/bake_impostors.py:
+ * a card and its atlases of 16 views, beside the species' model). Between ImpostorDistance and ImpostorDistance + ImpostorFade the
+ * two cross-fade (dithered: each pixel is the model's or the card's).
+ *
  * Space: the terrain's (its entity's), as TerrainHeights.
  */
 struct FoliageSpecies
@@ -40,6 +45,8 @@ struct FoliageSpecies
 	float MaxDistance = 0.0f;   // meters: only this close to one (along a road: what its driver sees). 0: anywhere
 	float AlignToSlope = 0.0f;  // 0: upright (trees); 1: tilted with the ground (bushes, rocks); between: part of the way
 	float Sink = 0.2f;          // meters below the ground: no gap under a copy on a slope
+	std::string Impostor;       // the impostor's model (bake_impostors.py: one card, atlases of 16 views); empty: none
+	float ImpostorDistance = 80.0f; // meters from the camera beyond which a copy is its impostor (with one)
 
 	static constexpr float MaxDensity = 2000.0f; // per hectare: a copy every 2.2 m
 };
@@ -52,6 +59,7 @@ struct FoliageSettings
 	float DrawDistance = 600.0f;  // meters from the camera: cells farther away aren't drawn
 	float ShadowDistance = 250.0f; // meters from the camera: cells farther away cast no shadow
 	float ClearHeight = 100.0f;   // meters above the ground the keep-out looks for colliders (a bridge or a road overhead)
+	float ImpostorFade = 15.0f;   // meters over which a copy cross-fades from its model to its impostor
 
 	static constexpr uint32_t MaxCopies = 500000;
 

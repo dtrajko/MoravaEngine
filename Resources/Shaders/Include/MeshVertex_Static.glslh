@@ -26,6 +26,11 @@ layout (push_constant) uniform Transform
 #endif
 
 layout (location = 0) out VertexOutput Output;
+#ifdef MESH_VERTEX_INSTANCED
+// The copy's cross-fade and debug tint (Include/MeshInstance.glslh): the instanced prepass dithers by the fade
+// (Include/GBufferPrepass_Fragment.glslh), the instanced scene pass tints (Include/HazelPBR_Fragment.glslh)
+layout (location = 12) flat out vec2 v_InstanceData;
+#endif
 
 invariant gl_Position;
 
@@ -33,13 +38,20 @@ void main()
 {
 	Output.WorldPosition = vec3(MESH_TRANSFORM * vec4(a_Position, 1.0));
 	Output.Normal = mat3(MESH_TRANSFORM) * a_Normal;
-	Output.TexCoord = a_TexCoord;//vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
+#ifdef MESH_VERTEX_INSTANCED
+	Output.TexCoord = InstanceTexCoord(a_TexCoord); // an impostor's card: its view's part of the atlases
+#else
+	Output.TexCoord = a_TexCoord;
+#endif
 	Output.WorldNormals = mat3(MESH_TRANSFORM) * mat3(a_Tangent, a_Binormal, a_Normal);
 	Output.WorldTransform = mat3(MESH_TRANSFORM);
 	Output.Binormal = a_Binormal;
 
 	gl_Position = u_ViewProjectionMatrix * MESH_TRANSFORM * vec4(a_Position, 1.0);
 
+#ifdef MESH_VERTEX_INSTANCED
+	v_InstanceData = vec2(InstanceFade(), InstanceTint());
+#endif
 #ifdef MESH_VERTEX_MOTION
 	v_ClipPosition = gl_Position;
 	v_PreviousClipPosition = u_PreviousViewProjectionMatrix * a_PreviousTransform * vec4(a_Position, 1.0);

@@ -841,8 +841,14 @@ static void UpdateFrameUniforms()
 	s_PreviousDrawnViewProjection = drawnViewProjection;
 	s_PreviousJitter = jitter;
 	s_HasPreviousViewProjection = true;
+	// Then where the camera is (the foliage's impostor cards turn to it in the vertex stage: Include/MeshInstance.glslh)
+	struct CameraBlock
+	{
+		glm::mat4 ViewProjection, PreviousViewProjection;
+		glm::vec4 Position;
+	} cameraBlock = { cameraMatrices[0], cameraMatrices[1], glm::vec4(camera.GetPosition(), 1.0f) };
 	void* ubPtr = shader->MapUniformBuffer(0, frameSet);
-	memcpy(ubPtr, cameraMatrices, sizeof(cameraMatrices));
+	memcpy(ubPtr, &cameraBlock, sizeof(cameraBlock));
 	shader->UnmapUniformBuffer(0, frameSet);
 
 	// binding 1: SceneData (fragment stage), see EnvMapVulkanSceneDataGPU: with the water, the light under it (the
@@ -2235,7 +2241,7 @@ static void BindFoliageModel(VkCommandBuffer commandBuffer, const H2M::ModelH2M*
 static void DrawFoliageMainView(VkCommandBuffer commandBuffer, EnvMapVulkanRenderer::MeshPass pass)
 {
 	const std::vector<EnvMapVulkanFoliage::Draw>& draws = EnvMapVulkanFoliage::GetMainViewDraws();
-	VkBuffer instances = EnvMapVulkanFoliage::GetInstanceBuffer();
+	VkBuffer instances = EnvMapVulkanFoliage::GetMainViewInstanceBuffer(); // this frame's: models near, impostors' cards far
 	if (!s_ViewOptions.Foliage || draws.empty() || instances == VK_NULL_HANDLE)
 	{
 		return;
@@ -3136,7 +3142,8 @@ static void CullMainView()
 		}
 	}
 	// The foliage's cells, against the same frustum (frozen with it), within its draw distance of the camera
-	EnvMapVulkanFoliage::CullMainView(planes, s_Data.SceneData.SceneCamera.Camera.GetPosition(), s_ViewOptions.FrustumCulling);
+	EnvMapVulkanFoliage::CullMainView(planes, s_Data.SceneData.SceneCamera.Camera.GetPosition(), s_ViewOptions.FrustumCulling,
+		(EnvMapVulkanFoliage::LodMode)s_ViewOptions.FoliageLod, s_ViewOptions.ShowImpostors);
 }
 
 const EnvMapVulkanRenderer::CullingStats& EnvMapVulkanRenderer::GetCullingStats()

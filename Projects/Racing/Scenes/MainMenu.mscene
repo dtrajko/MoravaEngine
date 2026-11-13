@@ -154,6 +154,7 @@ Entities:
       DrawDistance: 600
       ShadowDistance: 250
       ClearHeight: 100
+      ImpostorFade: 15
       Species:
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_oak.glb
           ModelID: 14401469474261753097
@@ -165,6 +166,8 @@ Entities:
           MaxDistance: 150
           AlignToSlope: 0
           Sink: 1.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_tree_oak_Impostor.glb
+          ImpostorDistance: 80
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_detailed.glb
           ModelID: 11862246646186168013
           Density: 8
@@ -175,6 +178,8 @@ Entities:
           MaxDistance: 150
           AlignToSlope: 0
           Sink: 1.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_tree_detailed_Impostor.glb
+          ImpostorDistance: 80
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_fat.glb
           ModelID: 4756551559163791362
           Density: 10
@@ -185,6 +190,8 @@ Entities:
           MaxDistance: 150
           AlignToSlope: 0
           Sink: 1.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_tree_fat_Impostor.glb
+          ImpostorDistance: 80
         - Model: Assets/Models/TreesLowPoly/Kenney_tree_pineRoundA.glb
           ModelID: 1290202029348316991
           Density: 6
@@ -195,6 +202,8 @@ Entities:
           MaxDistance: 150
           AlignToSlope: 0
           Sink: 1.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_tree_pineRoundA_Impostor.glb
+          ImpostorDistance: 80
         - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushLarge.glb
           ModelID: 8117074855333258471
           Density: 40
@@ -205,6 +214,8 @@ Entities:
           MaxDistance: 100
           AlignToSlope: 0.5
           Sink: 0.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_plant_bushLarge_Impostor.glb
+          ImpostorDistance: 40
         - Model: Assets/Models/TreesLowPoly/Kenney_plant_bushDetailed.glb
           ModelID: 8575203206653652710
           Density: 40
@@ -215,6 +226,8 @@ Entities:
           MaxDistance: 100
           AlignToSlope: 0.5
           Sink: 0.6
+          Impostor: Assets/Models/TreesLowPoly/Kenney_plant_bushDetailed_Impostor.glb
+          ImpostorDistance: 40
   - ID: 3000
     Name: Track
     Parent: 0

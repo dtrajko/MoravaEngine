@@ -12,12 +12,38 @@ layout (location = 0) in VertexOutput Input;
 // From the vertex stage (Include/MeshVertexMotion.glslh): the clip-space position in this frame and in the previous one
 layout (location = 10) in vec4 v_ClipPosition;
 layout (location = 11) in vec4 v_PreviousClipPosition;
+#ifdef MESH_FRAGMENT_INSTANCED
+// The foliage copy's cross-fade between its model and its impostor (Include/MeshInstance.glslh): 0 whole
+layout (location = 12) flat in vec2 v_InstanceData; // x the fade, y the debug tint (the scene pass's)
+
+// A 4 x 4 ordered dither: each pixel's threshold in [0, 1), the same for the model and its card, so the two fades split
+// the pixels between them (the scene pass then shades only what the prepass kept: its depth test is EQUAL)
+void InstanceFadeCutAway()
+{
+	float fade = v_InstanceData.x;
+	if (fade <= 0.0)
+	{
+		return;
+	}
+	const float bayer[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+	ivec2 pixel = ivec2(gl_FragCoord.xy) & 3;
+	float threshold = (bayer[pixel.y * 4 + pixel.x] + 0.5) / 16.0;
+	bool kept = fade <= 1.0 ? threshold < fade : threshold >= fade - 1.0;
+	if (!kept)
+	{
+		discard;
+	}
+}
+#endif
 
 layout (location = 0) out vec4 o_NormalRoughness; // xyz = world-space shading normal, w = roughness
 layout (location = 1) out vec2 o_Motion;          // screen-space motion in UV units: this frame's position minus the previous one's
 
 void main()
 {
+#ifdef MESH_FRAGMENT_INSTANCED
+	InstanceFadeCutAway(); // the instanced variants (the foliage): a copy cross-fading with its impostor
+#endif
 	MaterialSetup(Input.WorldPosition, Input.Normal);
 	vec2 texCoord = MaterialTexCoord(Input.TexCoord);
 #ifdef MATERIAL_CUTOUT

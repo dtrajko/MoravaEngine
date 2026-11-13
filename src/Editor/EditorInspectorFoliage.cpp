@@ -32,16 +32,16 @@ static void FoliageTooltip(const char* text)
 	}
 }
 
-// A species' model: shown by its path in the project, dropped from the Content Browser or picked in a dialog
-static bool SpeciesModelControl(FoliageSpecies& species)
+// A species' model (or its impostor's): shown by its path in the project, dropped from the Content Browser or picked in a dialog
+static bool SpeciesModelControl(std::string& model, const char* id, const char* button, const char* empty, const char* tooltip)
 {
 	bool changed = false;
-	const std::string shown = species.Model.empty() ? std::string("(drop a model here)") : ProjectPaths::ToStored(species.Model);
+	const std::string shown = model.empty() ? std::string(empty) : ProjectPaths::ToStored(model);
 	char buffer[512] = {};
 	snprintf(buffer, sizeof(buffer), "%s", shown.c_str());
 	ImGui::SetNextItemWidth(-90.0f);
 	ImGui::BeginDisabled(true);
-	ImGui::InputText("##Model", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputText(id, buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 	ImGui::EndDisabled();
 	if (ImGui::BeginDragDropTarget())
 	{
@@ -50,7 +50,7 @@ static bool SpeciesModelControl(FoliageSpecies& species)
 			const std::string path = std::filesystem::u8path(Util::to_str((const wchar_t*)payload->Data)).lexically_normal().generic_u8string();
 			if (EnvMapVulkanSceneLoader::IsModelFile(path))
 			{
-				species.Model = ProjectPaths::Normalize(path);
+				model = ProjectPaths::Normalize(path);
 				changed = true;
 			}
 			else
@@ -60,18 +60,16 @@ static bool SpeciesModelControl(FoliageSpecies& species)
 		}
 		ImGui::EndDragDropTarget();
 	}
-	FoliageTooltip("The model each copy is (static: no bones). Its meshes keep the materials the file gives them, from the\n"
-		"Material Library: a leaves' material set to Cutout there cuts the leaves' cards in every pass.\n"
-		"Drop a model from the Content Browser, or pick one");
+	FoliageTooltip(tooltip);
 	ImGui::SameLine();
-	if (ImGui::Button("Model..."))
+	if (ImGui::Button(button))
 	{
 		const std::string file = FileDialogs::OpenFile({}, GetAssetFolderForDialog());
 		if (!file.empty())
 		{
 			if (EnvMapVulkanSceneLoader::IsModelFile(file))
 			{
-				species.Model = ProjectPaths::Normalize(file);
+				model = ProjectPaths::Normalize(file);
 				changed = true;
 			}
 			else
@@ -149,8 +147,12 @@ void FoliageControls(EnvMapVulkanEntityID entity)
 	ImGui::DragFloat("Shadow Distance", &foliage->Settings.ShadowDistance, 5.0f, 0.0f, foliage->Settings.DrawDistance, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
 	FoliageTooltip("Cells farther than this from the camera cast no shadow (the shadow maps are drawn for each light and\n"
 		"cascade: far shadows cost as much as near ones and are hardly seen)");
+	ImGui::DragFloat("Impostor Fade", &foliage->Settings.ImpostorFade, 0.5f, 0.0f, 1000.0f, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
+	FoliageTooltip("Meters over which a copy goes from its model to its impostor, beyond its species' Impostor Distance: the\n"
+		"two cross-fade, each pixel the model's or the card's (smoothed by the anti-aliasing). 0: a sudden switch");
 	s.DrawDistance = foliage->Settings.DrawDistance;
 	s.ShadowDistance = foliage->Settings.ShadowDistance;
+	s.ImpostorFade = foliage->Settings.ImpostorFade;
 
 	int removeSpecies = -1;
 	for (size_t i = 0; i < s.Species.size(); i++)
@@ -161,7 +163,10 @@ void FoliageControls(EnvMapVulkanEntityID entity)
 			(species.Model.empty() ? std::string("no model") : std::filesystem::u8path(species.Model).stem().u8string()) + "###Species";
 		if (ImGui::TreeNodeEx(title.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			commit = SpeciesModelControl(species) || commit;
+			commit = SpeciesModelControl(species.Model, "##Model", "Model...", "(drop a model here)",
+				"The model each copy is (static: no bones). Its meshes keep the materials the file gives them, from the\n"
+				"Material Library: a leaves' material set to Cutout there cuts the leaves' cards in every pass.\n"
+				"Drop a model from the Content Browser, or pick one") || commit;
 			ImGui::DragFloat("Density", &species.Density, 0.5f, 0.0f, FoliageSpecies::MaxDensity, "%.1f per ha", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
 			scatterEdited();
 			FoliageTooltip("Copies per hectare (100 m x 100 m) where the rules let them stand: 10 a sparse wood, 100 a dense one,\n"
@@ -191,6 +196,29 @@ void FoliageControls(EnvMapVulkanEntityID entity)
 			ImGui::DragFloat("Sink", &species.Sink, 0.01f, 0.0f, 10.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
 			scatterEdited();
 			FoliageTooltip("How deep each copy stands in the ground: no gap under its downhill side on a slope");
+			// The impostor: drawing only, at once (not a scatter setting): the component's own species, kept the same in the edited copy
+			FoliageSpecies& drawn = i < foliage->Settings.Species.size() ? foliage->Settings.Species[i] : species;
+			if (SpeciesModelControl(drawn.Impostor, "##Impostor", "Impostor...", "(no impostor: the model at any distance)",
+				"Far from the camera, a copy is drawn as this: a card turned to face the camera, showing the model as seen\n"
+				"from the nearest of the directions it was baked from (Tools/TrackBuilder/bake_impostors.py writes\n"
+				"<model>_Impostor.glb beside the model: a card with atlases of 16 views). Its shadow is still the model's"))
+			{
+				species.Impostor = drawn.Impostor;
+			}
+			if (!drawn.Impostor.empty())
+			{
+				ImGui::SameLine();
+				if (ImGui::SmallButton("X##Impostor"))
+				{
+					drawn.Impostor.clear();
+					species.Impostor.clear();
+				}
+				FoliageTooltip("No impostor: the model at any distance");
+			}
+			ImGui::DragFloat("Impostor Distance", &drawn.ImpostorDistance, 1.0f, 0.0f, 5000.0f, "%.0f m", ImGuiSliderFlags_AlwaysClamp);
+			FoliageTooltip("Copies farther than this from the camera are drawn as the impostor (with one), after the foliage's\n"
+				"Impostor Fade");
+			species.ImpostorDistance = drawn.ImpostorDistance;
 			if (ImGui::Button("Remove Species"))
 			{
 				removeSpecies = (int)i;
