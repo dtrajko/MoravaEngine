@@ -68,6 +68,7 @@ void FoliageSettings::Clamp()
 	DrawDistance = std::max(DrawDistance, 0.0f);
 	ShadowDistance = std::clamp(ShadowDistance, 0.0f, DrawDistance);
 	ClearHeight = std::max(ClearHeight, 0.0f);
+	ImpostorFade = std::clamp(ImpostorFade, 0.0f, 1000.0f);
 	for (FoliageSpecies& species : Species)
 	{
 		species.Density = std::clamp(species.Density, 0.0f, FoliageSpecies::MaxDensity);
@@ -78,6 +79,7 @@ void FoliageSettings::Clamp()
 		species.KeepOut = std::max(species.KeepOut, 0.0f);
 		species.MaxDistance = species.MaxDistance > 0.0f ? std::max(species.MaxDistance, species.KeepOut) : 0.0f;
 		species.AlignToSlope = std::clamp(species.AlignToSlope, 0.0f, 1.0f);
+		species.ImpostorDistance = std::max(species.ImpostorDistance, 0.0f);
 		species.Sink = std::max(species.Sink, 0.0f);
 	}
 }

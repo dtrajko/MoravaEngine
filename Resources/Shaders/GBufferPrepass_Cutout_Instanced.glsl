@@ -13,5 +13,7 @@
 #type fragment
 #version 450 core
 
+#define MESH_FRAGMENT_INSTANCED
+
 #define MATERIAL_CUTOUT
 #include "Include/GBufferPrepass_Fragment.glslh"

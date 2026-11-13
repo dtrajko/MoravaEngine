@@ -94,6 +94,11 @@ struct EnvMapVulkanViewOptions
 	bool ShowTerrainLod = false;
 	bool Foliage = true;           // the foliage's copies drawn (off: to compare the frame times)
 	bool ShowFoliageCells = false; // the foliage's cells as boxes: green drawn by the main view, gray culled or too far
+	// The foliage's models and impostors (Phase 8.4): by distance (each species' Impostor Distance), its models only, or its
+	// impostors only (at any distance: to look at them up close)
+	enum class FoliageLodMode : int { Distance = 0, ModelsOnly = 1, ImpostorsOnly = 2 };
+	FoliageLodMode FoliageLod = FoliageLodMode::Distance;
+	bool ShowImpostors = false; // the impostors' cards tinted magenta: which copies are cards
 
 	bool Grid = false;
 	float GridScale = 16.025f; // cells across the grid (it spans 32 x 32 units)
