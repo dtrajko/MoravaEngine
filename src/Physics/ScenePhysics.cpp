@@ -609,6 +609,7 @@ bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& setti
 	// The engine through an automatic gearbox to the driven wheels: a differential per axle, the torque shared evenly
 	JPH::Ref<JPH::WheeledVehicleControllerSettings> controller = new JPH::WheeledVehicleControllerSettings();
 	controller->mEngine.mMaxTorque = std::max(settings.EngineTorque, 0.0f);
+	vehicle.EngineTorque = controller->mEngine.mMaxTorque;
 	// Max RPM: the most the throttle takes it to. Over-revving (a downshift) to Over-Rev RPM more: Jolt's limit is the sum,
 	// the throttle cut at Max RPM in each step (LimiterRpm), and the torque curve kept on the same rpm (Jolt's is relative)
 	const float maxRpm = std::max(settings.MaxRpm, controller->mEngine.mMinRPM + 500.0f);
@@ -625,6 +626,7 @@ bool ScenePhysics::CreateVehicle(Vehicle& vehicle, const VehicleComponent& setti
 		vehicle.LimiterRpm = maxRpm;
 	}
 	controller->mTransmission.mSwitchTime = glm::clamp(settings.ShiftTime, 0.0f, 2.0f);
+	controller->mTransmission.mShiftDownRPM = glm::clamp(settings.ShiftDownRpm, controller->mEngine.mMinRPM, maxRpm - 100.0f);
 	controller->mTransmission.mShiftUpRPM = glm::clamp(settings.ShiftUpRpm, controller->mTransmission.mShiftDownRPM + 100.0f, maxRpm);
 	// The vehicle's own gears (each above a tenth: a ratio near 0 would let the engine spin free); none: Jolt's
 	if (!settings.GearRatios.empty())
@@ -817,6 +819,18 @@ bool ScenePhysics::SetVehicleGrip(EnvMapVulkanEntityID entity, float front, floa
 	return true;
 }
 
+bool ScenePhysics::SetVehicleEngineTorque(EnvMapVulkanEntityID entity, float times)
+{
+	Vehicle* vehicle = const_cast<Vehicle*>(FindVehicle(entity));
+	if (!vehicle)
+	{
+		return false;
+	}
+	JPH::VehicleEngine& engine = static_cast<JPH::WheeledVehicleController*>(vehicle->Constraint->GetController())->GetEngine();
+	engine.mMaxTorque = vehicle->EngineTorque * (std::isfinite(times) ? std::max(times, 0.0f) : 1.0f);
+	return true;
+}
+
 bool ScenePhysics::SetVehicleManual(EnvMapVulkanEntityID entity, bool manual)
 {
 	Vehicle* vehicle = const_cast<Vehicle*>(FindVehicle(entity));
@@ -874,13 +888,14 @@ ScenePhysics::ShiftResult ScenePhysics::ShiftVehicleGear(EnvMapVulkanEntityID en
 		}
 		next = gear - 1;
 		// The engine in the lower gear, at the wheels' speed or the body's (locked or spinning wheels say little): past Max
-		// RPM, it would be thrown over its limit
+		// RPM plus Over-Rev RPM plus a tolerance (the Racing car: 9000), it would be thrown too far over its limit. Within the
+		// tolerance the engine stays at its limit (Jolt holds it there) and the clutch brakes the wheels down to it
 		const float ratio = transmission.GetCurrentRatio();
 		const float lower = transmission.mGearRatios[next - 1];
 		const JPH::BodyInterface& bodies = m_World->GetSystem().GetBodyInterface();
 		const float speed = std::abs((bodies.GetRotation(vehicle->Body).Conjugated() * bodies.GetLinearVelocity(vehicle->Body)).Dot(VehicleForward));
 		const float atWheels = ratio != 0.0f ? std::abs(controller->GetWheelSpeedAtClutch()) / ratio * lower : 0.0f;
-		if (std::max(atWheels, speed * vehicle->RpmPerSpeed * lower) > controller->GetEngine().mMaxRPM)
+		if (std::max(atWheels, speed * vehicle->RpmPerSpeed * lower) > controller->GetEngine().mMaxRPM + DownshiftToleranceRpm)
 		{
 			return ShiftResult::Refused;
 		}
@@ -925,8 +940,10 @@ void ScenePhysics::UpdateManualGearbox(Vehicle& vehicle, VehicleInput& applied, 
 		vehicle.ClutchReleaseLeft = std::max(vehicle.ClutchReleaseLeft - fixedStep, 0.0f);
 		clutch = transmission.mClutchReleaseTime > 0.0f ? 1.0f - vehicle.ClutchReleaseLeft / transmission.mClutchReleaseTime : 1.0f;
 	}
-	// Slow without throttle: the clutch out (in gear it would creep at idle; the automatic goes to neutral there)
-	if (applied.Forward == 0.0f && std::abs(controller->GetWheelSpeedAtClutch()) < transmission.mShiftDownRPM)
+	// Slow without throttle: the clutch out (in gear it would creep at idle; the automatic goes to neutral there). At Jolt's
+	// default Shift Down RPM, not the component's: an automatic that shifts down late doesn't make the manual's clutch slip
+	constexpr float ClutchOutRpm = 2000.0f;
+	if (applied.Forward == 0.0f && std::abs(controller->GetWheelSpeedAtClutch()) < ClutchOutRpm)
 	{
 		clutch = 0.0f;
 	}

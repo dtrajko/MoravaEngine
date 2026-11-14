@@ -148,6 +148,7 @@ namespace Morava
         public delegate* unmanaged<ulong, int, int> Vehicle_SetManual;
         public delegate* unmanaged<ulong, int, int> Vehicle_Shift;
         public delegate* unmanaged<ulong, int, int> Vehicle_SetGear;
+        public delegate* unmanaged<ulong, float, int> Vehicle_SetEngineTorque;
     }
 
     [StructLayout(LayoutKind.Sequential)]

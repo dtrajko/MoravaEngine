@@ -644,6 +644,12 @@ static int32_t VehicleShift(uint64_t entity, int32_t direction)
 	}
 }
 
+static int32_t VehicleSetEngineTorque(uint64_t entity, float times)
+{
+	ScenePhysics* physics = GetPhysics();
+	return physics && physics->SetVehicleEngineTorque(entity, times) ? 1 : 0;
+}
+
 static int32_t VehicleSetGrip(uint64_t entity, float front, float rear)
 {
 	ScenePhysics* physics = GetPhysics();
@@ -1776,6 +1782,7 @@ namespace ScriptBindings
 		api.Vehicle_SetManual = VehicleSetManual;
 		api.Vehicle_Shift = VehicleShift;
 		api.Vehicle_SetGear = VehicleSetGear;
+		api.Vehicle_SetEngineTorque = VehicleSetEngineTorque;
 	}
 
 	void SetContext(ScriptContext* context)

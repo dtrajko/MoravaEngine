@@ -791,6 +791,11 @@ static void VehicleControls(EnvMapVulkanEntityID entity, VehicleComponent& vehic
 	{
 		ImGui::SetTooltip("The automatic gearbox shifts up when the engine turns this fast (near Max RPM: the most acceleration)");
 	}
+	ImGui::DragFloat("Shift Down RPM", &vehicle.ShiftDownRpm, 50.0f, 500.0f, 20000.0f, "%.0f", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The automatic gearbox shifts down when the engine turns this slowly (keep it below where an upshift lands in the next gear, or it shifts back and forth)");
+	}
 	ImGui::DragFloat("Engine Braking", &vehicle.EngineBraking, 0.005f, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 	if (ImGui::IsItemHovered())
 	{
