@@ -38,7 +38,9 @@ failed=0
 for file in "$@"; do
 	echo "== $file"
 	# No -w: it also hides the errors GCC only "permits" (-fpermissive), like a member named as its type ([-Wchanges-meaning])
-	errors=$(g++ -std=c++17 -fsyntax-only -DGRAPHICS_API_$api -DMORAVA_SCRIPTING -DMORAVA_BUILD_CONFIG=\"Release\" "${includes[@]}" "$repo/$file" 2>&1 | grep -E "error:" | head -10)
+	# The precompiled header first, as CMake gives it to every source (it also brings the Vulkan calls' frames in flight
+	# shim, src/H2M/Platform/Vulkan/VulkanSyncShimH2M.h)
+	errors=$(g++ -std=c++17 -fsyntax-only -DGRAPHICS_API_$api -DMORAVA_SCRIPTING -DMORAVA_BUILD_CONFIG=\"Release\" "${includes[@]}" 		-include "$repo/src/PrecompiledHeader.h" "$repo/$file" 2>&1 | grep -E "error:" | head -10)
 	# Built for another API, the Vulkan-only sources (every path with "Vulkan", as CMakeLists.txt sorts them) aren't
 	# compiled: a header of theirs included here compiles, but its functions are missing when the build links
 	if [ "$api" != "VULKAN" ] && [ -z "$errors" ]; then

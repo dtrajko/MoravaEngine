@@ -1,4 +1,5 @@
 #include "EnvMapVulkanRayTracing.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 #include "Core/EnginePaths.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -179,7 +180,11 @@ void EnvMapVulkanRayTracing::Structure::Create(VkDeviceSize size, VkAcceleration
 
 void EnvMapVulkanRayTracing::Structure::Destroy()
 {
-	if (Handle) s_Vk.DestroyAccelerationStructure(GetDevice(), Handle, nullptr);
+	if (Handle)
+	{
+		H2M::VulkanFrameSync::WaitForGpu(); // frames in flight: the last frame may still trace against it
+		s_Vk.DestroyAccelerationStructure(GetDevice(), Handle, nullptr);
+	}
 	Storage.Destroy();
 	Handle = VK_NULL_HANDLE;
 	Address = 0;
@@ -192,6 +197,16 @@ bool EnvMapVulkanRayTracing::IsSupported()
 
 void EnvMapVulkanRayTracing::CopyFrameSet(VkDescriptorSet frameDescriptorSet, VkDescriptorSet computeSet)
 {
+	// Again only when a descriptor set was written since this set's last copy: the probes' tracer asks every frame, and
+	// a copy into a set the last frame (still on the GPU) uses waits for it (frames in flight)
+	static std::unordered_map<VkDescriptorSet, std::pair<VkDescriptorSet, uint64_t>> s_Copied; // to: from, the update count then
+	const uint64_t updates = H2M::VulkanFrameSync::GetDescriptorUpdateCount();
+	auto copied = s_Copied.find(computeSet);
+	if (copied != s_Copied.end() && copied->second.first == frameDescriptorSet && copied->second.second == updates)
+	{
+		return;
+	}
+
 	// The bindings of Include/FrameSet.glslh: all of set 0 but the camera, which is the vertex stage's
 	static constexpr uint32_t bindings[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
 	static constexpr uint32_t count = (uint32_t)(sizeof(bindings) / sizeof(bindings[0]));
@@ -206,7 +221,11 @@ void EnvMapVulkanRayTracing::CopyFrameSet(VkDescriptorSet frameDescriptorSet, Vk
 		copies[i].dstBinding = bindings[i];
 		copies[i].descriptorCount = 1;
 	}
-	vkUpdateDescriptorSets(GetDevice(), 0, nullptr, count, copies);
+	// Waits for the GPU as the shim's form does, without counting: two sets copied in turn would otherwise copy each other
+	// every frame
+	H2M::VulkanFrameSync::WaitForGpu();
+	(vkUpdateDescriptorSets)(GetDevice(), 0, nullptr, count, copies);
+	s_Copied[computeSet] = { frameDescriptorSet, updates };
 }
 
 void EnvMapVulkanRayTracing::Create()
@@ -736,8 +755,9 @@ void EnvMapVulkanRayTracing::Record(VkCommandBuffer commandBuffer)
 	}
 	if (instanceCount > 0)
 	{
-		memcpy(m_InstanceInput.Mapped, instanceInputs.data(), instanceCount * sizeof(VkAccelerationStructureInstanceKHR));
-		memcpy(m_InstanceTable.Mapped, instanceTable.data(), instanceCount * sizeof(GPUInstance));
+		// Written when the last frame is done (frames in flight: its TLAS build and rays may still read them)
+		H2M::VulkanFrameSync::WriteMapped(m_InstanceInput.Memory, m_InstanceInput.Mapped, instanceInputs.data(), instanceCount * sizeof(VkAccelerationStructureInstanceKHR));
+		H2M::VulkanFrameSync::WriteMapped(m_InstanceTable.Memory, m_InstanceTable.Mapped, instanceTable.data(), instanceCount * sizeof(GPUInstance));
 	}
 
 	// Working memory: a part for each skinned mesh's build or update, then the TLAS's

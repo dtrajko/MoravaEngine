@@ -5,6 +5,7 @@
  */
 
 #include "VulkanRenderCommandBufferH2M.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
@@ -219,6 +220,7 @@ namespace H2M {
 
 			VK_CHECK_RESULT_H2M(vkWaitForFences(device->GetVulkanDevice(), 1, &m_WaitFences[frameIndex], VK_TRUE, UINT64_MAX));
 			VK_CHECK_RESULT_H2M(vkResetFences(device->GetVulkanDevice(), 1, &m_WaitFences[frameIndex]));
+			VulkanFrameSync::FlushWrites(); // frames in flight: the writes kept for Present first
 			VK_CHECK_RESULT_H2M(vkQueueSubmit(device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[frameIndex]));
 
 			// Retrieve timestamp query results

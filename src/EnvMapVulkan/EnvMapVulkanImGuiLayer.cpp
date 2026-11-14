@@ -5,6 +5,7 @@
  */
 
 #include "EnvMapVulkanImGuiLayer.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -143,7 +144,11 @@ void EnvMapVulkanImGuiLayer::OnAttach()
 	// The images of ImGui::Image (textures, the viewport, shadow maps) are registered with ImGui's Vulkan backend
 	H2M::VulkanUIImagesH2M::SetBackend(
 		[](VkSampler sampler, VkImageView view, VkImageLayout layout) { return (uint64_t)(uintptr_t)ImGui_ImplVulkan_AddTexture(sampler, view, layout); },
-		[](uint64_t id) { ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)id); });
+		[](uint64_t id)
+		{
+			H2M::VulkanFrameSync::WaitForGpu(); // frames in flight: the last frame may still draw the image (ImGui's source isn't the engine's: no shim)
+			ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)id);
+		});
 
 	// Load Fonts
 	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.

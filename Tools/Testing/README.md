@@ -108,6 +108,7 @@ What `-Extra` can pass (both executables read them; `src/Core/Application.cpp` h
 | `--scene <file or name>` | Opens this scene instead of the project's start scene. A name (without `.mscene`, or with a subfolder: `Levels/Level1`) is looked for in the project's folder and its `Scenes` folder, without `--project` in the repository's `Scenes` folder (`--scene Old_Stove_Corner`). The log says what a name became, or where it looked |
 | `--debug-view <n>` | Starts with entry n of the Environment panel's Debug View list (0 Off, 7 Diffuse Surface Shading, 8 Probe Irradiance Only, 10 Ambient Occlusion, 18 Path Traced) |
 | `--no-ray-tracing` | Vulkan without the ray tracing extensions, as on a GPU that has none |
+| `--frames-in-flight 1\|2` | Vulkan: 2 (default) records the next frame while the GPU draws the last; 1 waits for the GPU after each frame, as before 2026-11-14 (to compare). With `--frame-stats`, the log adds the waits for the GPU outside Present: one a frame means something in the frame loses the overlap |
 | `--no-texture-compression` | Material maps as on a GPU without BC formats: from their images, or decoded from a pack's cooked maps |
 | `--pack <file>` | The player runs the game in this pack (`Game.mpak` here or beside the executable is found without it) |
 | `--build-pack <file.mproject>`, `--pack-output <folder>` | The editor builds the project's pack and exits, without a window (not through `-Extra`: run it directly) |

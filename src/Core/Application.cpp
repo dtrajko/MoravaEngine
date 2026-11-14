@@ -5,6 +5,7 @@
 #include "H2M/ImGui/ImGuiLayerH2M.h"
 #if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 #endif
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RendererH2M.h"
@@ -71,6 +72,8 @@ Application* Application::Get()
 //   --debug-view <number>   start with this debug view (SceneEnvMapVulkan: the entry of the Environment panel's Debug View
 //                           list, 0 = Off, e.g. 8 = Probe Irradiance Only, 10 = Ambient Occlusion)
 //   --no-ray-tracing        Vulkan without the ray tracing extensions, as on a GPU that has none (to check the fallbacks)
+//   --frames-in-flight 1|2  Vulkan: 2 (default) records the next frame while the GPU draws the last; 1 waits for the GPU
+//                           after each frame, as before 2026-11-14 (to compare, or if a frame shows another's data)
 //   --quality <tier>        the player draws with this quality tier: Low, Medium, High, Ultra, or Auto (the GPU's)
 //   --select <name>        select the entity of this name in the scene opened with --scene (SceneEnvMapVulkan: a name of
 //                           the Scene Hierarchy, e.g. Gladiator.fbx)
@@ -301,6 +304,18 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		{
 			commandLine.NoRayTracing = true;
 		}
+		else if (option == "--frames-in-flight" && hasValue)
+		{
+			const std::string value = argv[++i];
+			if (value == "1" || value == "2")
+			{
+				commandLine.FramesInFlight = value == "1" ? 1 : 2;
+			}
+			else
+			{
+				Log::GetLogger()->warn("Command line: --frames-in-flight takes 1 or 2, got '{0}' (ignored)", value);
+			}
+		}
 		else if (option == "--select" && hasValue)
 		{
 			commandLine.SelectName = argv[++i];
@@ -317,7 +332,8 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		{
 			commandLine.SaveScene = true;
 		}
-		else if (option == "--project" || option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select")
+		else if (option == "--project" || option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select" ||
+			option == "--frames-in-flight")
 		{
 			Log::GetLogger()->warn("Command line: {0} needs a value (ignored)", option);
 		}
@@ -581,6 +597,17 @@ void Application::LogFrameStats(std::vector<float> frameTimes, float warmup)
 		"median {5:.2f} ms, 1% low {6:.1f} fps ({7:.2f} ms), worst {8:.2f} ms; slower than 120 fps: {9:.1f}%, than 60 fps: {10:.1f}%",
 		frameTimes.size(), total, warmup, 1.0 / average, average * 1000.0, median * 1000.0f, 1.0 / low, low * 1000.0,
 		frameTimes.front() * 1000.0f, 100.0 * slowerThan120 / frameTimes.size(), 100.0 * slowerThan60 / frameTimes.size());
+#if defined(GRAPHICS_API_VULKAN)
+	// Frames in flight: the waits for the GPU outside Present (each loses part of the overlap of the CPU's next frame with
+	// the GPU's last) and the bytes written at Present; over the whole run
+	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
+	{
+		const H2M::VulkanFrameSync::Stats sync = H2M::VulkanFrameSync::GetStats();
+		const double frames = (double)std::max<uint64_t>(sync.Frames, 1);
+		Log::GetLogger()->info("Frames in flight: {0}; waits for the GPU outside Present: {1} ({2:.3f} a frame, {3:.1f} ms in all); written at Present: {4:.1f} KB a frame",
+			H2M::VulkanFrameSync::GetFramesInFlight(), sync.BlockingWaits, sync.BlockingWaits / frames, sync.BlockedMs, sync.DeferredBytes / frames / 1024.0);
+	}
+#endif
 }
 
 void Application::OnEvent(H2M::EventH2M& e)

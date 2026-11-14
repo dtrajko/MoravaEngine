@@ -1,4 +1,5 @@
 #include "EnvMapVulkanGBuffer.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -288,11 +289,8 @@ void EnvMapVulkanGBuffer::SetPreviousTransforms(const std::vector<glm::mat4>& tr
 	{
 		return;
 	}
-	VkDeviceSize size = transforms.size() * sizeof(glm::mat4);
-	void* mapped;
-	VK_CHECK_RESULT_H2M(vkMapMemory(device, m_PreviousTransformMemory, 0, size, 0, &mapped));
-	memcpy(mapped, transforms.data(), size);
-	vkUnmapMemory(device, m_PreviousTransformMemory);
+	// Written when the last frame is done (frames in flight: it may still draw with the buffer)
+	H2M::VulkanFrameSync::WriteMemory(m_PreviousTransformMemory, 0, transforms.data(), transforms.size() * sizeof(glm::mat4));
 }
 
 void EnvMapVulkanGBuffer::BeginPass(VkCommandBuffer commandBuffer)

@@ -6,6 +6,8 @@
 
 #include "VulkanSwapChainH2M.h"
 
+#include "VulkanFrameSyncH2M.h"
+
 #include "Core/Log.h"
 
 #include <GLFW/glfw3.h>
@@ -312,10 +314,14 @@ namespace H2M
 		VkSemaphoreCreateInfo semaphoreCreateInfo{};
 		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-		// Signaled when the acquired image can be rendered to (waited on by the frame's queue submission)
-		if (m_Semaphores.PresentComplete == VK_NULL_HANDLE)
+		// Frames in flight (VulkanFrameSyncH2M.h): two, unless the command line asks for one or there are fewer images
+		m_FramesInFlight = std::min(VulkanFrameSync::GetFramesInFlight(), std::max(m_ImageCount, 1u));
+		VulkanFrameSync::SetDevice(m_Device->GetVulkanDevice());
+
+		// Signaled when the acquired image can be rendered to (waited on by the frame's queue submission), one per frame slot
+		while (m_AcquireSemaphores.size() < VulkanFrameSync::MaxFramesInFlight)
 		{
-			VK_CHECK_RESULT_H2M(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete));
+			VK_CHECK_RESULT_H2M(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_AcquireSemaphores.emplace_back()));
 		}
 
 		// Signaled when rendering to an image is done (waited on by its presentation), one per swapchain image
@@ -324,14 +330,15 @@ namespace H2M
 			VK_CHECK_RESULT_H2M(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_RenderCompleteSemaphores.emplace_back()));
 		}
 
-		// Wait fences to sync command buffer access (one per draw command buffer)
+		// A fence per frame slot: its frame is done on the GPU (created signaled: no frame yet)
 		VkFenceCreateInfo fenceCreateInfo{};
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-		while (m_WaitFences.size() < m_DrawCommandBuffers.size())
+		while (m_WaitFences.size() < VulkanFrameSync::MaxFramesInFlight)
 		{
 			VK_CHECK_RESULT_H2M(vkCreateFence(m_Device->GetVulkanDevice(), &fenceCreateInfo, nullptr, &m_WaitFences.emplace_back()));
 		}
+		m_FrameSlot = std::min(m_FrameSlot, m_FramesInFlight - 1);
 
 		CreateDepthStencil();
 
@@ -528,15 +535,19 @@ namespace H2M
 
 	void VulkanSwapChainH2M::CreateDrawBuffers()
 	{
-		// Create one command buffer for each swap chain image and reuse for rendering
-		m_DrawCommandBuffers.resize(m_ImageCount);
+		// A command buffer per frame slot (the frame's: GetCurrentDrawCommandBuffer), at least one per swapchain image for
+		// the older renderers that record one per image (VulkanRenderCommandBufferH2M)
+		m_DrawCommandBuffers.resize(std::max(m_ImageCount, VulkanFrameSync::MaxFramesInFlight));
 
-		// TODO: Move this somewhere maybe?
-		VkCommandPoolCreateInfo cmdPoolInfo = {};
-		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		cmdPoolInfo.queueFamilyIndex = m_QueueNodeIndex;
-		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		VK_CHECK_RESULT_H2M(vkCreateCommandPool(m_Device->GetVulkanDevice(), &cmdPoolInfo, nullptr, &m_CommandPool));
+		// The pool once: its buffers are freed and allocated again on a resize
+		if (m_CommandPool == VK_NULL_HANDLE)
+		{
+			VkCommandPoolCreateInfo cmdPoolInfo = {};
+			cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			cmdPoolInfo.queueFamilyIndex = m_QueueNodeIndex;
+			cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+			VK_CHECK_RESULT_H2M(vkCreateCommandPool(m_Device->GetVulkanDevice(), &cmdPoolInfo, nullptr, &m_CommandPool));
+		}
 
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -588,14 +599,15 @@ namespace H2M
 
 	void VulkanSwapChainH2M::BeginFrame()
 	{
-		VkResult result = AcquireNextImage(m_Semaphores.PresentComplete, &m_CurrentBufferIndex);
+		// The frame slot's command buffer, semaphore and fence are free: the slot's last frame was waited for (Present)
+		VkResult result = AcquireNextImage(m_AcquireSemaphores[m_FrameSlot], &m_CurrentBufferIndex);
 		// The window changed size before its resize event arrived (X11 and Wayland do this while an edge is dragged):
 		// recreate the swapchain at the surface's current size (Create reads it) and acquire again.
 		// Suboptimal still delivers an image; Present recreates the swapchain after it.
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
 			OnResize(m_Width, m_Height);
-			result = AcquireNextImage(m_Semaphores.PresentComplete, &m_CurrentBufferIndex);
+			result = AcquireNextImage(m_AcquireSemaphores[m_FrameSlot], &m_CurrentBufferIndex);
 		}
 		if (result != VK_SUBOPTIMAL_KHR)
 		{
@@ -605,11 +617,12 @@ namespace H2M
 
 	void VulkanSwapChainH2M::Present()
 	{
-		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
-
-		// Use a fence to wait until the command buffer has finished execution before using it again
-		VK_CHECK_RESULT_H2M(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
-		VK_CHECK_RESULT_H2M(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
+		// Frames in flight (VulkanFrameSyncH2M.h): the last frame finishes on the GPU while this one was recorded. Now it
+		// must be done: this frame's writes into what the frames read (kept until now) are made, then it is submitted
+		VulkanFrameSync::WaitForLastFrame();
+		VulkanFrameSync::FlushWrites();
+		VkFence fence = m_WaitFences[m_FrameSlot];
+		VK_CHECK_RESULT_H2M(vkResetFences(m_Device->GetVulkanDevice(), 1, &fence));
 
 		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -620,15 +633,19 @@ namespace H2M
 		// The render-complete semaphore of the acquired image (see m_RenderCompleteSemaphores)
 		VkSemaphore renderComplete = m_RenderCompleteSemaphores[m_CurrentBufferIndex];
 
-		submitInfo.pWaitSemaphores = &m_Semaphores.PresentComplete;
+		submitInfo.pWaitSemaphores = &m_AcquireSemaphores[m_FrameSlot];
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = &renderComplete;
 		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pCommandBuffers = &m_DrawCommandBuffers[m_CurrentBufferIndex];
+		submitInfo.pCommandBuffers = &m_DrawCommandBuffers[m_FrameSlot];
 		submitInfo.commandBufferCount = 1;
 
 		// Submit to the graphics queue passing a wait fence
-		VK_CHECK_RESULT_H2M(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
+		VK_CHECK_RESULT_H2M(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, fence));
+		VulkanFrameSync::SetInFlight(fence);
+		VulkanFrameSync::CountFrame();
+		// The next frame in the other slot (with one frame in flight, the same one: it is waited for below)
+		m_FrameSlot = (m_FrameSlot + 1) % m_FramesInFlight;
 
 		// Present the current buffer to the swap chain
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
@@ -649,7 +666,11 @@ namespace H2M
 			}
 		}
 
-		VK_CHECK_RESULT_H2M(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+		// One frame in flight: the CPU waits for the GPU before the next frame, as before (--frames-in-flight 1)
+		if (m_FramesInFlight == 1)
+		{
+			VulkanFrameSync::WaitForLastFrame();
+		}
 
 		// vkQueueWaitIdle(m_Queue);
 
@@ -702,11 +723,12 @@ namespace H2M
 
 		// Synchronization objects (created once in Create(), see there)
 		vkDeviceWaitIdle(device);
-		if (m_Semaphores.PresentComplete != VK_NULL_HANDLE)
+		VulkanFrameSync::SetInFlight(VK_NULL_HANDLE); // its fence goes below; the GPU is idle
+		for (VkSemaphore semaphore : m_AcquireSemaphores)
 		{
-			vkDestroySemaphore(device, m_Semaphores.PresentComplete, nullptr);
-			m_Semaphores.PresentComplete = VK_NULL_HANDLE;
+			vkDestroySemaphore(device, semaphore, nullptr);
 		}
+		m_AcquireSemaphores.clear();
 		for (VkSemaphore semaphore : m_RenderCompleteSemaphores)
 		{
 			vkDestroySemaphore(device, semaphore, nullptr);

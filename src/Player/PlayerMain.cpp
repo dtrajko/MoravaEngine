@@ -14,6 +14,7 @@
 
 #include "H2M/Core/LogH2M.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "Project/Project.h"
@@ -80,6 +81,7 @@ int main(int argc, char** argv)
 	{
 		H2M::VulkanPhysicalDeviceH2M::DisableRayTracing(); // before the window creates the Vulkan device
 	}
+	H2M::VulkanFrameSync::SetFramesInFlight((uint32_t)Application::Get()->GetCommandLine().FramesInFlight); // before the swapchain
 
 	// The project's window; without a project (a scene alone, as in tests) a window that presents without waiting for the
 	// display, as the editor's
