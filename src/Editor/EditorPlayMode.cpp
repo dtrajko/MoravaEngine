@@ -86,6 +86,7 @@ static EnvMapVulkanRenderSettings s_EditedRenderSettings;
 static std::vector<std::pair<H2M::RefH2M<H2M::ModelH2M>, std::vector<glm::mat4>>> s_EditedMeshTransforms;
 static std::string s_EditedSceneText; // the edited scene as text: at Stop, the scene that came back must be the same
 static std::string s_PlayedScenePath; // a scene the game loaded (Scene.Load), empty: the edited one
+static std::string s_PlayedSceneName; // the scene the game plays: the edited one's name, or the one Scene.Load opened
 
 // The game's view: the editor's view options without the grid and the selection's overlays
 static EnvMapVulkanViewOptions s_GameViewOptions;
@@ -93,6 +94,16 @@ static EnvMapVulkanViewOptions s_GameViewOptions;
 bool IsPlaying()
 {
 	return s_PlayState != PlayState::Edit;
+}
+
+const std::string& GetPlayedSceneName()
+{
+	return IsPlaying() && !s_PlayedSceneName.empty() ? s_PlayedSceneName : s_SceneName;
+}
+
+std::string GetPlayedScenePath()
+{
+	return IsPlaying() && !s_PlayedScenePath.empty() ? s_PlayedScenePath : s_SceneFilePath;
 }
 
 bool IsSimulating()
@@ -191,6 +202,7 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 	s_GameLoop.Reset();
 	s_ScriptExceptionsSeen = 0;
 	s_GameSystems.SetSceneInfo(s_SceneName, s_SceneFilePath);
+	s_PlayedSceneName = s_SceneName;
 	if (state == PlayState::Play)
 	{
 		// The project's input file is read at each Play: an edit of it counts at the next Play
@@ -236,6 +248,7 @@ static void LoadSceneInPlay(const std::string& requested)
 {
 	const auto start = std::chrono::steady_clock::now();
 	const std::string path = requested.empty() ? s_PlayedScenePath : ProjectPaths::Normalize(requested);
+	RememberUIListeners(GetPlayedScenePath()); // the scene's scripts and their buttons' listeners go now
 	EnvMapVulkanRenderer::WaitIdle(); // the game's models may still be drawn by frames in flight
 	std::string name;
 	if (path.empty())
@@ -256,6 +269,7 @@ static void LoadSceneInPlay(const std::string& requested)
 		s_RenderSettings = settings;
 	}
 	s_PlayedScenePath = path;
+	s_PlayedSceneName = name;
 
 	// As when a scene opens: nothing selected, the probes start again, and the sun stays as the scene has it when the
 	// scene brings another map (a map loaded for it doesn't turn the sun to the map's)
@@ -318,6 +332,7 @@ static void StopPlay()
 {
 	// Models the game loaded may still be drawn by frames in flight
 	EnvMapVulkanRenderer::WaitIdle();
+	RememberUIListeners(GetPlayedScenePath()); // before the scripts go: who listened to the UI, for the Inspector
 
 	// The mouse back to the editor
 	s_GameInput.Reset(s_GameWindow ? s_GameWindow : Application::Get()->GetWindow()->GetHandle());
@@ -334,6 +349,7 @@ static void StopPlay()
 	s_EditedScene.Clear();
 	s_EditedMeshTransforms.clear();
 	s_PlayedScenePath.clear();
+	s_PlayedSceneName.clear();
 
 	const EnvironmentComponent* environment = s_Scene.TryGet<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
 	if (environment && (environment->FilePath != playedMap || environment->ExtractSun != playedSunExtracted))
@@ -652,7 +668,7 @@ void UpdateDebugOverlay()
 		EnvMapVulkanRenderer::SetDebugOverlay(true, nullptr, scaleY);
 		return;
 	}
-	const DebugOverlayGame game = DebugOverlayGame::Gather(s_GameLoop, s_GameSystems, s_Scene, s_SceneName);
+	const DebugOverlayGame game = DebugOverlayGame::Gather(s_GameLoop, s_GameSystems, s_Scene, GetPlayedSceneName());
 	EnvMapVulkanRenderer::SetDebugOverlay(true, &game, scaleY);
 }
 

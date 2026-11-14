@@ -439,6 +439,13 @@ struct ScriptManagedApi
 	int (*InvokeMethodInt)(void* instance, const char16_t* name, int length, int32_t value);
 	// The drop-down's ValueChanged event, to its C# listeners: 0, or 1 when one threw
 	int (*InvokeDropdownChanged)(uint64_t dropdown, int32_t value);
+	// Who listens to the UI's events (the editor's Inspector), for one element or all (0): a line per listener, "element \t
+	// event \t entity \t class \t method \t lambda" (event 0 Clicked, 1 a slider's ValueChanged, 2 a drop-down's). The
+	// length written, -1 when it doesn't fit
+	int (*DescribeUIListeners)(uint64_t element, char16_t* buffer, int capacity);
+	// The methods a UI element can call on a script class (parameters 0 none, 1 a float, 2 an int): a name per line; the
+	// length written, -1 when it doesn't fit, 0 without such a class
+	int (*DescribeMethods)(const char16_t* className, int length, int parameters, char16_t* buffer, int capacity);
 };
 
 enum class ScriptCollisionKind : int32_t { CollisionEnter = 0, CollisionExit = 1, TriggerEnter = 2, TriggerExit = 3 };

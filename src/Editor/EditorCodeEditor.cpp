@@ -15,6 +15,7 @@
 #include "imgui.h"
 #include "imgui_internal.h" // ImGuiSettingsHandler
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -23,6 +24,7 @@
 #include <sstream>
 #include <string>
 #include <system_error>
+#include <vector>
 
 
 #include "EditorState.h"
@@ -321,6 +323,149 @@ bool FindScriptClassFile(const std::string& className, std::string& file, int& l
 		return true;
 	});
 	return found;
+}
+
+// The class's file as lines, from the class's own line on (its members come after it)
+static bool ReadScriptClassLines(const std::string& className, std::string& file, int& classLine, std::vector<std::string>& lines)
+{
+	if (!FindScriptClassFile(className, file, classLine))
+	{
+		return false;
+	}
+	std::ifstream input(fs::u8path(file));
+	std::string text;
+	while (std::getline(input, text))
+	{
+		lines.push_back(text);
+	}
+	return true;
+}
+
+// Each place the name stands as a whole word in the line
+template<typename F>
+static void ForEachWord(const std::string& text, const std::string& word, F&& each)
+{
+	for (size_t at = text.find(word); at != std::string::npos; at = text.find(word, at + 1))
+	{
+		const size_t after = at + word.size();
+		if ((at == 0 || !IsIdentifierChar(text[at - 1])) && (after == text.size() || !IsIdentifierChar(text[after])))
+		{
+			each(at, after);
+		}
+	}
+}
+
+bool FindScriptMemberLine(const std::string& className, const std::string& member, std::string& file, int& line)
+{
+	std::vector<std::string> lines;
+	int classLine = 0;
+	if (member.empty() || !ReadScriptClassLines(className, file, classLine, lines))
+	{
+		return false;
+	}
+	// A declaration: the name after its type ("void Race(", "Entity? RaceButton;", "string RaceScene ="), not a use
+	// ("+= Race;", "Load(RaceScene)", "Race();", "return Race();")
+	static const char* const notTypes[] = { "return", "new", "await", "else", "throw", "case", "yield", "in", "out", "ref", "is", "as", "nameof" };
+	for (size_t i = (size_t)std::max(classLine - 1, 0); i < lines.size(); i++)
+	{
+		const std::string& text = lines[i];
+		bool declared = false;
+		ForEachWord(text, member, [&](size_t at, size_t after)
+		{
+			size_t next = after;
+			while (next < text.size() && (text[next] == ' ' || text[next] == '\t'))
+			{
+				next++;
+			}
+			if (declared || next >= text.size() || (text[next] != '(' && text[next] != ';' && text[next] != '=' && text[next] != '{'))
+			{
+				return;
+			}
+			if (text[next] == '=' && next + 1 < text.size() && (text[next + 1] == '=' || text[next + 1] == '>'))
+			{
+				return; // a comparison, or an expression-bodied member's arrow after a call
+			}
+			size_t before = at;
+			while (before > 0 && (text[before - 1] == ' ' || text[before - 1] == '\t'))
+			{
+				before--;
+			}
+			if (before == at || before == 0)
+			{
+				return; // no type in front of it
+			}
+			const char previous = text[before - 1];
+			if (previous != '?' && previous != '>' && previous != ']' && !IsIdentifierChar(previous))
+			{
+				return;
+			}
+			size_t wordStart = before;
+			while (wordStart > 0 && IsIdentifierChar(text[wordStart - 1]))
+			{
+				wordStart--;
+			}
+			const std::string typeWord = text.substr(wordStart, before - wordStart);
+			for (const char* notType : notTypes)
+			{
+				if (typeWord == notType)
+				{
+					return;
+				}
+			}
+			declared = true;
+		});
+		if (declared)
+		{
+			line = (int)i + 1;
+			return true;
+		}
+	}
+	line = classLine; // not found: the class itself
+	return true;
+}
+
+bool FindScriptEventSubscription(const std::string& className, const std::string& field, const std::string& eventName, std::string& method,
+	std::string& file, int& line)
+{
+	std::vector<std::string> lines;
+	int classLine = 0;
+	if (field.empty() || !ReadScriptClassLines(className, file, classLine, lines))
+	{
+		return false;
+	}
+	// A line using the field and adding to the event: "RaceButton?.GetComponent<UIButton>() ... race.Clicked += Race;"
+	const std::string adding = eventName + " +=";
+	for (size_t i = (size_t)std::max(classLine - 1, 0); i < lines.size(); i++)
+	{
+		const std::string& text = lines[i];
+		bool usesField = false;
+		ForEachWord(text, field, [&](size_t, size_t) { usesField = true; });
+		const size_t at = text.find(adding);
+		if (!usesField || at == std::string::npos)
+		{
+			continue;
+		}
+		size_t start = at + adding.size();
+		while (start < text.size() && (text[start] == ' ' || text[start] == '\t'))
+		{
+			start++;
+		}
+		size_t end = start;
+		while (end < text.size() && IsIdentifierChar(text[end]))
+		{
+			end++;
+		}
+		size_t next = end;
+		while (next < text.size() && (text[next] == ' ' || text[next] == '\t'))
+		{
+			next++;
+		}
+		// A method's name ends the statement; anything else ("() => ...", "v => ...") is a lambda: empty
+		method = end > start && next < text.size() && (text[next] == ';' || text[next] == ')') ? text.substr(start, end - start) : std::string();
+		line = (int)i + 1;
+		return true;
+	}
+	return false;
 }
 
 // The namespace new scripts go in: the scripts' own (the loaded classes'), else the project's RootNamespace

@@ -218,6 +218,12 @@ namespace Morava
         }
 
         internal static void ClearListeners() => s_Clicked.Clear();
+
+        // Each button's listeners (the editor's Inspector shows who handles a click)
+        internal static IEnumerable<KeyValuePair<ulong, Delegate?>> Listeners()
+        {
+            foreach (var pair in s_Clicked) yield return new KeyValuePair<ulong, Delegate?>(pair.Key, pair.Value);
+        }
     }
 
     /// <summary>
@@ -334,6 +340,12 @@ namespace Morava
         }
 
         internal static void ClearListeners() => s_ValueChanged.Clear();
+
+        // Each one's listeners (the editor's Inspector shows who handles a change)
+        internal static IEnumerable<KeyValuePair<ulong, Delegate?>> Listeners()
+        {
+            foreach (var pair in s_ValueChanged) yield return new KeyValuePair<ulong, Delegate?>(pair.Key, pair.Value);
+        }
     }
 
     /// <summary>
@@ -453,6 +465,12 @@ namespace Morava
         }
 
         internal static void ClearListeners() => s_ValueChanged.Clear();
+
+        // Each one's listeners (the editor's Inspector shows who handles a change)
+        internal static IEnumerable<KeyValuePair<ulong, Delegate?>> Listeners()
+        {
+            foreach (var pair in s_ValueChanged) yield return new KeyValuePair<ulong, Delegate?>(pair.Key, pair.Value);
+        }
     }
 
     /// <summary>The game UI as a whole.</summary>

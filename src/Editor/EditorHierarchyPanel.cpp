@@ -202,6 +202,10 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 		{
 			ImGui::SetTooltip("%s\n%s", GetEntityKindName(kind), model->FilePath.c_str());
 		}
+		else if (const ScriptComponent* script = s_Scene.TryGet<ScriptComponent>(entity); script && !script->ClassName.empty())
+		{
+			ImGui::SetTooltip("%s with the script %s\n(Inspector: Script, Edit Script opens its file)", GetEntityKindName(kind), script->ClassName.c_str());
+		}
 		else
 		{
 			ImGui::SetTooltip("%s", GetEntityKindName(kind));
@@ -291,6 +295,16 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 	{
 		// A prefab's instance: a blue ring around the marker (its parts have the blue name in the Inspector)
 		ImGui::GetWindowDrawList()->AddCircle(ImVec2(markerX, centerY), 7.0f, IM_COL32(115, 190, 255, 255), 0, 1.5f);
+	}
+	// A script's class after the name, dimmed: which entities have scripts, and which, can be seen at a glance
+	const ScriptComponent* script = s_Scene.TryGet<ScriptComponent>(entity);
+	if (script && !script->ClassName.empty() && s_RenamingEntity != entity)
+	{
+		const size_t dot = script->ClassName.rfind('.');
+		const std::string className = "  " + (dot == std::string::npos ? script->ClassName : script->ClassName.substr(dot + 1));
+		const float nameX = itemMin.x + ImGui::GetTreeNodeToLabelSpacing() + ImGui::CalcTextSize(("    " + name).c_str()).x;
+		ImGui::GetWindowDrawList()->AddText(ImVec2(nameX, itemMin.y + ImGui::GetStyle().FramePadding.y),
+			ImGui::GetColorU32(ImGuiCol_TextDisabled), className.c_str());
 	}
 	if (s_RenamingEntity == entity)
 	{
@@ -482,7 +496,14 @@ void OnImGuiRenderSceneHierarchy()
 	}
 	ImGui::SameLine();
 	ImGui::Checkbox("Light Icons", &s_ShowLightGizmos);
-	ImGui::TextDisabled("Scene: %s%s", s_SceneName.c_str(), s_SceneHasUnsavedChanges ? " *" : "");
+	if (IsPlaying() && GetPlayedSceneName() != s_SceneName)
+	{
+		ImGui::TextDisabled("Scene: %s (playing %s)", s_SceneName.c_str(), GetPlayedSceneName().c_str());
+	}
+	else
+	{
+		ImGui::TextDisabled("Scene: %s%s", s_SceneName.c_str(), s_SceneHasUnsavedChanges ? " *" : "");
+	}
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("%s%s", s_SceneFilePath.empty() ? "Not saved yet (File > Save Scene)" : s_SceneFilePath.c_str(),
