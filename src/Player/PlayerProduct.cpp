@@ -11,23 +11,27 @@
 
 #include "Project/Project.h"
 
-#include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/sinks/base_sink.h"
 
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <exception>
 #include <filesystem>
+#include <mutex>
 #include <system_error>
+#include <thread>
 #include <vector>
 
 #if defined(_WIN32)
 #include <windows.h>
 #include <dbghelp.h>
+#include <io.h>
 #else
 #include <unistd.h>
 #endif
@@ -99,6 +103,94 @@ namespace PlayerProduct
 #endif
 	}
 
+	// The log file: spdlog's file sink, and while durable (SetDurableLog) each flush also put on the disk by a thread of its
+	// own (FlushFileBuffers, fsync: the system's cache written out, which a power cut would lose)
+	class LogFileSink final : public spdlog::sinks::base_sink<std::mutex>
+	{
+	public:
+		explicit LogFileSink(const fs::path& file)
+		{
+#if defined(_WIN32)
+			m_File = _wfopen(file.c_str(), L"wb");
+#else
+			m_File = std::fopen(file.c_str(), "wb");
+#endif
+			if (!m_File)
+			{
+				throw spdlog::spdlog_ex("can't open the file for writing");
+			}
+			m_Syncer = std::thread([this]() { SyncLoop(); });
+		}
+
+		~LogFileSink() override
+		{
+			{
+				std::lock_guard<std::mutex> lock(m_SyncMutex);
+				m_Stop = true;
+			}
+			m_SyncWanted.notify_one();
+			m_Syncer.join();
+			std::fclose(m_File);
+		}
+
+		void SetDurable(bool durable)
+		{
+			m_Durable.store(durable);
+		}
+
+	protected:
+		void sink_it_(const spdlog::details::log_msg& message) override
+		{
+			spdlog::memory_buf_t formatted;
+			formatter_->format(message, formatted);
+			std::fwrite(formatted.data(), 1, formatted.size(), m_File);
+		}
+
+		void flush_() override
+		{
+			std::fflush(m_File);
+			if (m_Durable.load())
+			{
+				{
+					std::lock_guard<std::mutex> lock(m_SyncMutex);
+					m_Sync = true;
+				}
+				m_SyncWanted.notify_one();
+			}
+		}
+
+	private:
+		void SyncLoop()
+		{
+			std::unique_lock<std::mutex> lock(m_SyncMutex);
+			while (true)
+			{
+				m_SyncWanted.wait(lock, [this]() { return m_Sync || m_Stop; });
+				if (m_Stop)
+				{
+					return;
+				}
+				m_Sync = false;
+				lock.unlock();
+#if defined(_WIN32)
+				FlushFileBuffers((HANDLE)_get_osfhandle(_fileno(m_File)));
+#else
+				fsync(fileno(m_File));
+#endif
+				lock.lock();
+			}
+		}
+
+		std::FILE* m_File = nullptr;
+		std::atomic<bool> m_Durable{ false };
+		std::thread m_Syncer;
+		std::mutex m_SyncMutex;
+		std::condition_variable m_SyncWanted;
+		bool m_Sync = false, m_Stop = false;
+	};
+
+	static std::shared_ptr<LogFileSink> s_LogSink;
+
 	void FlushLog()
 	{
 		for (const std::shared_ptr<spdlog::logger>& logger : { Log::GetCoreLogger(), Log::GetClientLogger(), H2M::LogH2M::GetCoreLogger(), H2M::LogH2M::GetClientLogger() })
@@ -140,7 +232,7 @@ namespace PlayerProduct
 
 		try
 		{
-			auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(file.u8string(), true);
+			auto sink = std::make_shared<LogFileSink>(file);
 			sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %n: %v");
 			for (const std::shared_ptr<spdlog::logger>& logger : loggers)
 			{
@@ -148,12 +240,35 @@ namespace PlayerProduct
 				logger->flush_on(spdlog::level::warn); // each line on a slow disk would hold up the game; the rest every two seconds
 			}
 			spdlog::flush_every(std::chrono::seconds(2));
+			s_LogSink = sink;
 			Log::GetLogger()->info("{0} {1}: log started in '{2}'", project.GetProductName(), project.Build.Version, folder);
 		}
 		catch (const spdlog::spdlog_ex& exception)
 		{
 			Log::GetLogger()->warn("The log file '{0}' can't be written: {1}", file.u8string(), exception.what());
 		}
+	}
+
+	void SetDurableLog(bool durable)
+	{
+		if (!s_LogSink)
+		{
+			return;
+		}
+		s_LogSink->SetDurable(durable);
+		for (const std::shared_ptr<spdlog::logger>& logger : { Log::GetCoreLogger(), Log::GetClientLogger(), H2M::LogH2M::GetCoreLogger(), H2M::LogH2M::GetClientLogger() })
+		{
+			logger->flush_on(durable ? spdlog::level::trace : spdlog::level::warn);
+		}
+		if (durable)
+		{
+			FlushLog(); // what came before, on the disk too
+		}
+	}
+
+	bool HasLogFile()
+	{
+		return s_LogSink != nullptr;
 	}
 
 	// A line for the log. On Windows on another thread and with a time limit: the game may have crashed holding the log's lock

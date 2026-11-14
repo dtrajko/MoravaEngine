@@ -59,6 +59,8 @@ struct ApplicationCommandLine
 	bool DebugOverlay = false;     // --debug-overlay: the debug overlay (7.4) shown at startup
 	float FrameStatsWarmup = -1.0f; // --frame-stats [seconds]: log frame-time statistics at exit, the first seconds left out (default 5; -1: off)
 	int FramesInFlight = 2;        // --frames-in-flight 1|2: Vulkan records the next frame while the GPU draws the last (2), or waits for it (1)
+	int FrameRateLimit = -1;       // --fps-limit <n>: the player's frame rate limit for this run, whatever was chosen (0: none; -1: not given)
+	bool OnBattery = false;        // --on-battery: the player acts as on a laptop's battery (its battery limit applies), to check it on a desktop
 
 	static ApplicationCommandLine Parse(int argc, char** argv);
 };

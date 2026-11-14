@@ -11,6 +11,7 @@
 #include "H2M/Renderer/RendererH2M.h"
 
 #include "Core/CpuStats.h"
+#include "Core/FrameLimiter.h"
 #include "Core/FileDialogs.h"
 #include "Core/ResourceManager.h"
 #include "Core/Timer.h"
@@ -75,6 +76,8 @@ Application* Application::Get()
 //   --frames-in-flight 1|2  Vulkan: 2 (default) records the next frame while the GPU draws the last; 1 waits for the GPU
 //                           after each frame, as before 2026-11-14 (to compare, or if a frame shows another's data)
 //   --quality <tier>        the player draws with this quality tier: Low, Medium, High, Ultra, or Auto (the GPU's)
+//   --fps-limit <n>         the player's frame rate limit for this run (0: none), whatever the player chose
+//   --on-battery            the player acts as if the computer ran on its battery: its battery frame rate limit applies
 //   --select <name>        select the entity of this name in the scene opened with --scene (SceneEnvMapVulkan: a name of
 //                           the Scene Hierarchy, e.g. Gladiator.fbx)
 //   --play                  the editor starts the game (Play) once the scene is open; with --exit-after it is stopped
@@ -316,6 +319,24 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 				Log::GetLogger()->warn("Command line: --frames-in-flight takes 1 or 2, got '{0}' (ignored)", value);
 			}
 		}
+		else if (option == "--fps-limit" && hasValue)
+		{
+			const std::string value = argv[++i];
+			char* end = nullptr;
+			const long limit = std::strtol(value.c_str(), &end, 10);
+			if (end != value.c_str() && *end == '\0' && limit >= 0 && limit <= 1000)
+			{
+				commandLine.FrameRateLimit = (int)limit;
+			}
+			else
+			{
+				Log::GetLogger()->warn("Command line: --fps-limit takes a number of frames a second (0: none), got '{0}' (ignored)", value);
+			}
+		}
+		else if (option == "--on-battery")
+		{
+			commandLine.OnBattery = true;
+		}
 		else if (option == "--select" && hasValue)
 		{
 			commandLine.SelectName = argv[++i];
@@ -333,7 +354,7 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 			commandLine.SaveScene = true;
 		}
 		else if (option == "--project" || option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select" ||
-			option == "--frames-in-flight")
+			option == "--frames-in-flight" || option == "--fps-limit")
 		{
 			Log::GetLogger()->warn("Command line: {0} needs a value (ignored)", option);
 		}
@@ -542,6 +563,10 @@ void Application::Run()
 			// Swap buffers and poll events
 			m_Window->SwapBuffers();
 			stages.Next(CpuStats::StagePresent);
+
+			// The frame rate limit (the player's, and on battery): the CPU and the GPU rest until the next frame is due
+			FrameLimiter::Wait();
+			stages.Next(CpuStats::StageFrameLimit);
 		}
 
 		// The frame's time, for the layers next frame. Measured here: the Timer is ticked only by an older scene class

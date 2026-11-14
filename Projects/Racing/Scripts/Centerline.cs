@@ -26,8 +26,10 @@ namespace Racing
         /// <summary>The track's version: 8 hex digits of a hash of the center line's file (its line ends left out). A rebuilt
         /// track with another shape has another one, and so records of its own (RecordKey).</summary>
         public string Version { get; private set; } = "";
-        /// <summary>The save data key of one of this version of the track's records: "Name-Version.name".</summary>
-        public string RecordKey(string name) => $"{Name}-{Version}.{name}";
+        /// <summary>The save data key of one of this version of the track's records: "Name-Version.name" with the engine's
+        /// Buffed power (the keys from before the power had records of its own), "Name-Version-Realistic.name" with the
+        /// Realistic one (GameOptions.RealisticPower): each power has records of its own.</summary>
+        public string RecordKey(string name, bool realistic = false) => $"{Name}-{Version}{(realistic ? "-Realistic" : "")}.{name}";
         /// <summary>Meters around the track (the start line is at 0).</summary>
         public float Length { get; private set; }
         public IReadOnlyList<Point> Points => points;

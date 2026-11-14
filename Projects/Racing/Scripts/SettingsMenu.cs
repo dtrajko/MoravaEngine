@@ -6,7 +6,7 @@ namespace Racing
     /// <summary>
     /// The racing game's Settings screen (Sample's, with the car's actions on its Controls screen), on its canvas, its Panel
     /// hidden until Open: sliders for the music's and the effects' volumes and the mouse's sensitivity, the gearbox
-    /// (automatic or manual), the engine's power (Buffed or Realistic), the ghost car (off or on), drop-down lists of the quality, fullscreen or a window, fullscreen's resolution and VSync, and
+    /// (automatic or manual), the engine's power (Buffed or Realistic), the ghost car (off or on), drop-down lists of the quality, fullscreen or a window, fullscreen's resolution, VSync, the frame rate limit and the limit on a laptop's battery, and
     /// a Controls screen where the keys and the gamepad's buttons are bound anew. The sliders count at once; the lists'
     /// choices (the gearbox's, the power's and the ghost's too) wait for Apply (Back without it gives them up). The engine keeps the player's choices of the
     /// window, the quality, the volumes and the bindings for the next runs (GameOptions keeps the mouse's sensitivity,
@@ -40,6 +40,14 @@ namespace Racing
         public Entity? DisplayDropdown;
         public Entity? ResolutionDropdown;
         public Entity? VSyncDropdown;
+        /// <summary>The frame rate limit: Off, 60, 120, 144, 240 (FrameRateOptions).</summary>
+        public Entity? FrameRateDropdown;
+        /// <summary>On a laptop's battery: 60 fps (0), As plugged in (1).</summary>
+        public Entity? BatteryDropdown;
+
+        // The frame rate limit's choices (0: none), and the battery's limit when it has one
+        static readonly int[] FrameRateOptions = { 0, 60, 120, 144, 240 };
+        const int BatteryLimit = 60;
 
         /// <summary>The button that puts the lists' choices in place (shown dimmed while there is nothing to apply).</summary>
         public Entity? ApplyButton;
@@ -192,7 +200,21 @@ namespace Racing
             then?.Invoke();
         }
 
-        Entity?[] Lists => new[] { GearboxDropdown, PowerDropdown, GhostDropdown, QualityDropdown, DisplayDropdown, ResolutionDropdown, VSyncDropdown };
+        Entity?[] Lists => new[] { GearboxDropdown, PowerDropdown, GhostDropdown, QualityDropdown, DisplayDropdown, ResolutionDropdown, VSyncDropdown, FrameRateDropdown, BatteryDropdown };
+
+        // The frame rate limit in force as the list's entry (a limit the list doesn't have: the nearest above it, else Off)
+        static int FrameRateIndex()
+        {
+            int limit = Application.FrameRateLimit;
+            if (limit <= 0)
+                return 0;
+            for (int i = 1; i < FrameRateOptions.Length; i++)
+                if (FrameRateOptions[i] >= limit)
+                    return i;
+            return 0;
+        }
+
+        static int BatteryIndex() => Application.BatteryFrameRateLimit > 0 ? 0 : 1;
 
         // A list's choice differs from what is in place (a list set back to it: nothing to apply)
         bool Differs()
@@ -210,6 +232,10 @@ namespace Racing
                 return true;
             if (Dropdown(ResolutionDropdown) is UIDropdown resolution && resolution.Value >= 0 && resolution.Value < resolutions.Length &&
                 !resolutions[resolution.Value].Equals(Application.Resolution))
+                return true;
+            if (Dropdown(FrameRateDropdown) is UIDropdown frameRate && frameRate.Value != FrameRateIndex())
+                return true;
+            if (Dropdown(BatteryDropdown) is UIDropdown battery && battery.Value != BatteryIndex())
                 return true;
             return Dropdown(VSyncDropdown) is UIDropdown vsync && (vsync.Value == 1) != Application.VSync;
         }
@@ -239,6 +265,10 @@ namespace Racing
                 Application.Fullscreen = display.Value == 0;
             if (Dropdown(VSyncDropdown) is UIDropdown vsync && (vsync.Value == 1) != Application.VSync)
                 Application.VSync = vsync.Value == 1;
+            if (Dropdown(FrameRateDropdown) is UIDropdown frameRate && frameRate.Value != FrameRateIndex())
+                Application.FrameRateLimit = FrameRateOptions[Math.Clamp(frameRate.Value, 0, FrameRateOptions.Length - 1)];
+            if (Dropdown(BatteryDropdown) is UIDropdown battery && battery.Value != BatteryIndex())
+                Application.BatteryFrameRateLimit = battery.Value == 0 ? BatteryLimit : 0;
             pending = false;
             settling = 3;
             refill = true; // "Automatic" names the level it chose
@@ -286,6 +316,10 @@ namespace Racing
                 resolution.Value = Math.Max(0, Array.IndexOf(resolutions, Application.Resolution));
             if (Dropdown(VSyncDropdown) is UIDropdown vsync && !vsync.IsOpen)
                 vsync.Value = Application.VSync ? 1 : 0;
+            if (Dropdown(FrameRateDropdown) is UIDropdown frameRate && !frameRate.IsOpen)
+                frameRate.Value = FrameRateIndex();
+            if (Dropdown(BatteryDropdown) is UIDropdown battery && !battery.IsOpen)
+                battery.Value = BatteryIndex();
         }
 
         void OpenControls()

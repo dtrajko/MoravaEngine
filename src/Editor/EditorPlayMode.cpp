@@ -315,6 +315,12 @@ static void ProcessSceneLoad()
 	{
 		Log::GetLogger()->info("Application.VSync = {0}: kept as the player's choice (the editor runs without VSync)", vsync ? "true" : "false");
 	}
+	int limit = 0, batteryLimit = 0;
+	if (s_GameSystems.TakeFrameRateLimitRequest(limit, batteryLimit))
+	{
+		Log::GetLogger()->info("Application.FrameRateLimit = {0}, BatteryFrameRateLimit = {1}: kept as the player's choice (the editor runs without a limit)",
+			limit, batteryLimit);
+	}
 	QualityTier tier = QualityTier::Auto;
 	if (s_GameSystems.TakeQualityRequest(tier))
 	{

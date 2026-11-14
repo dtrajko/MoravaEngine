@@ -19,6 +19,8 @@ struct ProjectWindow
 	uint32_t Width = 1280, Height = 720;
 	bool Fullscreen = false; // the primary monitor, at its resolution
 	bool VSync = true;
+	int FrameRateLimit = 0;         // frames a second at most (0: none), until the player chooses (FrameLimiter)
+	int BatteryFrameRateLimit = 60; // on a laptop's battery, the lower of this and the limit (0: as plugged in)
 	std::string Title;       // empty: the project's name
 };
 
