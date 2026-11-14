@@ -1,4 +1,5 @@
 #include "EnvMapVulkanFoliage.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 
 #include "EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkanScene.h"
@@ -539,11 +540,8 @@ namespace EnvMapVulkanFoliage
 			VK_CHECK_RESULT_H2M(vkBindBufferMemory(device, s_MainBuffer, s_MainMemory, 0));
 			s_MainCapacity = capacity;
 		}
-		const VkDeviceSize size = s_MainTransforms.size() * sizeof(glm::mat4);
-		void* mapped = nullptr;
-		VK_CHECK_RESULT_H2M(vkMapMemory(device, s_MainMemory, 0, size, 0, &mapped));
-		std::memcpy(mapped, s_MainTransforms.data(), (size_t)size);
-		vkUnmapMemory(device, s_MainMemory);
+		// Written when the last frame is done (frames in flight: it may still draw with the buffer)
+		H2M::VulkanFrameSync::WriteMemory(s_MainMemory, 0, s_MainTransforms.data(), s_MainTransforms.size() * sizeof(glm::mat4));
 	}
 
 	// A species' copies in the main view this frame: as its model, and as its impostor's cards

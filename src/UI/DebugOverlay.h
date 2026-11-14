@@ -55,6 +55,7 @@ struct DebugOverlayFrame
 	double Fps = 0.0;
 	double CpuMs = 0.0;              // the time between frames, smoothed
 	std::string VSync;               // the window's present mode in words: "on", "off (mailbox)"... (empty: not shown)
+	uint32_t FramesInFlight = 0;     // 2: the CPU records the next frame while the GPU draws the last; 1: it waits (0: not shown)
 	std::string Antialiasing;        // the main view's mode, cost and share of the frame: "SMAA, 0.24 ms  1.1 %", "Off" (empty: not shown)
 	bool GpuValid = false;           // the GPU's timestamps are measured
 	double GpuMs = 0.0;              // smoothed

@@ -340,8 +340,9 @@ void GameSystems::FixedUpdate(float fixedStep)
 	m_ScriptContext.FixedStepCount++;
 	m_Scripts.RemoveDestroyed(); // the editor may have removed an entity
 
-	// The game's logic (not in Simulate: no input)
-	if (m_Scene && m_Input)
+	// The game's logic (not in Simulate: no input). The input test's actions only with an input test in the scene: a game
+	// without Move and Jump in its input map (the racing game) isn't asked for them
+	if (m_Scene && m_Input && m_Scene->FindFirst<InputTestComponent>() != NoEntity)
 	{
 		// The input test: Move, Jump and a fall back to the ground (its height when the game started)
 		const InputActionState& move = m_Input->Get("Move");

@@ -4,6 +4,7 @@
  * @licence Apache License 2.0
  */
 #include "VulkanAllocatorH2M.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "Renderer/VulkanTarget.h"
@@ -11,6 +12,9 @@
 
 #include "Core/Log.h"
 
+// VMA calls Vulkan through its table of functions ("GetVulkanFunctions().vkDestroyBuffer(...)"), which the frames in flight
+// shim would also take for a call: off for VMA's own code (the engine's frees above wait in Free, DestroyImage, DestroyBuffer)
+#include "VulkanSyncShimUndefH2M.h"
 #define VMA_IMPLEMENTATION
 #include "VulkanMemoryAllocator/vk_mem_alloc.h"
 
@@ -112,6 +116,7 @@ namespace H2M
 
 	void VulkanAllocatorH2M::Free(VmaAllocation allocation)
 	{
+		VulkanFrameSync::WaitForGpu(); // frames in flight: the last frame may still use it
 		vmaFreeMemory(s_Data->Allocator, allocation);
 	}
 
@@ -119,6 +124,7 @@ namespace H2M
 	{
 		H2M_CORE_ASSERT(image);
 		H2M_CORE_ASSERT(allocation);
+		VulkanFrameSync::WaitForGpu(); // frames in flight: the last frame may still use it
 		vmaDestroyImage(s_Data->Allocator, image, allocation);
 	}
 
@@ -126,6 +132,7 @@ namespace H2M
 	{
 		H2M_CORE_ASSERT(buffer);
 		H2M_CORE_ASSERT(allocation);
+		VulkanFrameSync::WaitForGpu(); // frames in flight: the last frame may still use it
 		vmaDestroyBuffer(s_Data->Allocator, buffer, allocation);
 	}
 

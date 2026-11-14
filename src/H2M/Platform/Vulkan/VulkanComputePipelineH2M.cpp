@@ -5,6 +5,7 @@
  */
 
 #include "VulkanComputePipelineH2M.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 
 #include "H2M/Core/TimerH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -115,6 +116,7 @@ namespace H2M
 		computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		computeSubmitInfo.commandBufferCount = 1;
 		computeSubmitInfo.pCommandBuffers = &computeCommandBuffer;
+		VulkanFrameSync::FlushWrites(); // frames in flight: the writes kept for Present first (the dispatch may read them)
 		VK_CHECK_RESULT_H2M(vkQueueSubmit(computeQueue, 1, &computeSubmitInfo, s_ComputeFence));
 
 		// Wait for execution of compute shader to complete
@@ -165,6 +167,7 @@ namespace H2M
 		computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		computeSubmitInfo.commandBufferCount = 1;
 		computeSubmitInfo.pCommandBuffers = &m_ActiveComputeCommandBuffer;
+		VulkanFrameSync::FlushWrites(); // frames in flight: the writes kept for Present first (the dispatch may read them)
 		VK_CHECK_RESULT_H2M(vkQueueSubmit(computeQueue, 1, &computeSubmitInfo, s_ComputeFence));
 
 		// Wait for execution of compute shader to complete

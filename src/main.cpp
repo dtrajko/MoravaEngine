@@ -13,6 +13,7 @@
 #include "Assets/TextureCook.h"
 #include "Editor/Editor.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 #endif
 
 #include <memory>
@@ -77,6 +78,7 @@ int main(int argc, char** argv)
 	{
 		H2M::VulkanPhysicalDeviceH2M::DisableRayTracing(); // before the window creates the Vulkan device
 	}
+	H2M::VulkanFrameSync::SetFramesInFlight((uint32_t)Application::Get()->GetCommandLine().FramesInFlight); // before the swapchain
 #endif
 
 	WindowSpecification window("Morava Engine", 1280, 720);

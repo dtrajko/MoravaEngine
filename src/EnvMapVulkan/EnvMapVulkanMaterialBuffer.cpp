@@ -1,4 +1,5 @@
 #include "EnvMapVulkanMaterialBuffer.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -94,11 +95,8 @@ bool EnvMapVulkanMaterialBuffer::Update(EnvMapVulkanTextureTable* textures)
 	{
 		if (!entries.empty())
 		{
-			const VkDeviceSize size = entries.size() * sizeof(GPUMaterial);
-			void* mapped;
-			VK_CHECK_RESULT_H2M(vkMapMemory(device, m_Memory, 0, size, 0, &mapped));
-			memcpy(mapped, entries.data(), size);
-			vkUnmapMemory(device, m_Memory);
+			// Written when the last frame is done (frames in flight: it may still draw with the buffer)
+			H2M::VulkanFrameSync::WriteMemory(m_Memory, 0, entries.data(), entries.size() * sizeof(GPUMaterial));
 		}
 		m_Entries = std::move(entries);
 	}

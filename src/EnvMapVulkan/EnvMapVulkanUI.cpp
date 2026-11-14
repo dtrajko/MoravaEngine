@@ -1,4 +1,5 @@
 #include "EnvMapVulkanUI.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 
 #include "EnvMapVulkanProfiler.h"
 #include "UI/UILayout.h"
@@ -169,8 +170,9 @@ void EnvMapVulkanUI::Record(VkCommandBuffer commandBuffer, const UIDrawList& lis
 	const VkDeviceSize indexBytes = list.Indices.size() * sizeof(uint32_t);
 	Reserve(m_Vertices, vertexBytes, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 	Reserve(m_Indices, indexBytes, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-	memcpy(m_Vertices.Mapped, list.Vertices.data(), vertexBytes);
-	memcpy(m_Indices.Mapped, list.Indices.data(), indexBytes);
+	// Written when the last frame is done (frames in flight: it may still draw with the buffers)
+	H2M::VulkanFrameSync::WriteMapped(m_Vertices.Memory, m_Vertices.Mapped, list.Vertices.data(), (size_t)vertexBytes);
+	H2M::VulkanFrameSync::WriteMapped(m_Indices.Memory, m_Indices.Mapped, list.Indices.data(), (size_t)indexBytes);
 
 	H2M::RefH2M<H2M::VulkanPipelineH2M> pipeline = m_Pipeline.As<H2M::VulkanPipelineH2M>();
 	VkPipelineLayout layout = pipeline->GetVulkanPipelineLayout();

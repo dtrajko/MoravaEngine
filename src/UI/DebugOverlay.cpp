@@ -125,6 +125,10 @@ namespace
 		{
 			AddRow(rows, "VSync", frame.VSync);
 		}
+		if (frame.FramesInFlight > 0)
+		{
+			AddRow(rows, "Frames in flight", Format("%u", frame.FramesInFlight));
+		}
 		if (!frame.Antialiasing.empty())
 		{
 			AddRow(rows, "Antialiasing", frame.Antialiasing);

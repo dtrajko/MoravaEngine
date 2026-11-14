@@ -5,6 +5,7 @@
  */
 
 #include "VulkanShaderH2M.h"
+#include "VulkanFrameSyncH2M.h"
 
 #include "H2M/Core/AssertH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -1290,21 +1291,34 @@ namespace H2M
 
 	void VulkanShaderH2M::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 
+	// With two frames in flight (VulkanFrameSyncH2M.h) the last frame may still read the buffer: the CPU writes a copy
+	// of it, which Present copies into the buffer once that frame is done. With one, the buffer itself is mapped
 	void* VulkanShaderH2M::MapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
 		H2M_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		const UniformBufferH2M& buffer = m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint);
+		if (VulkanFrameSync::IsDeferring())
+		{
+			return VulkanFrameSync::BeginUniformWrite(buffer.Memory, buffer.Size);
+		}
 		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		uint8_t* pData;
-		VK_CHECK_RESULT_H2M(vkMapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory, 0, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Size, 0, (void**)&pData));
+		VK_CHECK_RESULT_H2M(vkMapMemory(device, buffer.Memory, 0, buffer.Size, 0, (void**)&pData));
 		return pData;
 	}
 
 	void VulkanShaderH2M::UnmapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
 		H2M_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		const UniformBufferH2M& buffer = m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint);
+		if (VulkanFrameSync::IsDeferring())
+		{
+			VulkanFrameSync::EndUniformWrite(buffer.Memory);
+			return;
+		}
 		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
-		vkUnmapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory);
+		vkUnmapMemory(device, buffer.Memory);
 	}
 
 }

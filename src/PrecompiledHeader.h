@@ -43,3 +43,10 @@
 #endif
 
 // (The editor's target adds Dear ImGui: imgui.h. The core and the player have no ImGui.)
+
+// Vulkan: the calls that change or destroy what a frame on the GPU may still use wait for it first (frames in flight).
+// The one engine header here, on purpose: it must come before any source file calls those functions, and it is small
+// and rarely changed (src/H2M/Platform/Vulkan/VulkanSyncShimH2M.h)
+#if defined(GRAPHICS_API_VULKAN)
+#include "H2M/Platform/Vulkan/VulkanSyncShimH2M.h"
+#endif

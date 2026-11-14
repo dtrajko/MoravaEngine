@@ -5,6 +5,7 @@
  */
 
 #include "VulkanDeviceH2M.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 
 #include "VulkanContextH2M.h"
 #include "H2M/Core/AssertH2M.h"
@@ -472,6 +473,8 @@ namespace H2M
 		VkFence fence;
 		VK_CHECK_RESULT_H2M(vkCreateFence(m_LogicalDevice, &fenceCreateInfo, nullptr, &fence));
 
+		// Frames in flight: the writes kept for Present first (this work may read them; the GPU is waited for)
+		VulkanFrameSync::FlushWrites();
 		// Submit to the queue
 		VK_CHECK_RESULT_H2M(vkQueueSubmit(queue, 1, &submitInfo, fence));
 		// Wait for the fence to signal that command buffer has finished executing
@@ -559,6 +562,7 @@ namespace H2M
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &commandBuffer;
 
+		VulkanFrameSync::FlushWrites(); // frames in flight: the writes kept for Present first
 		vkQueueSubmit(m_Queue, 1, &submitInfo, VK_NULL_HANDLE);
 		vkQueueWaitIdle(m_Queue);
 

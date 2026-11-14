@@ -51,7 +51,12 @@ namespace H2M
 		VkRenderPass GetRenderPass() { return m_RenderPass; }
 
 		VkFramebuffer GetCurrentFramebuffer() { return GetFramebuffer(m_CurrentBufferIndex); }
-		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentBufferIndex); }
+		// The frame's command buffer: its frame slot's (frames in flight: the slot alternates, the image is the driver's choice)
+		VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_FrameSlot); }
+		// The frame slot (0 or 1 with two frames in flight, always 0 with one): what is kept per frame on the GPU
+		// (the profiler's queries) is indexed by it. The slot's last frame has finished when the slot comes around again
+		uint32_t GetCurrentFrameSlot() const { return m_FrameSlot; }
+		uint32_t GetFramesInFlight() const { return m_FramesInFlight; }
 
 		VkFormat GetColorFormat() { return m_ColorFormat; }
 
@@ -109,20 +114,22 @@ namespace H2M
 		} m_DepthStencil;
 
 		std::vector<VkFramebuffer> m_Framebuffers;
-		VkCommandPool m_CommandPool;
+		VkCommandPool m_CommandPool = VK_NULL_HANDLE;
 		std::vector<VkCommandBuffer> m_DrawCommandBuffers;
 
-		struct
-		{
-			// Swap chain: signaled when the acquired image can be rendered to
-			VkSemaphore PresentComplete = VK_NULL_HANDLE;
-		} m_Semaphores;
+		// Swap chain: signaled when the acquired image can be rendered to, one per frame slot (a slot's last frame has
+		// waited for it by the time the slot comes around again)
+		std::vector<VkSemaphore> m_AcquireSemaphores;
 
 		// Command buffer: signaled when rendering is done, waited on by presentation. One per swapchain image,
 		// indexed by the acquired image: a presentation may keep using its semaphore until that image is acquired again.
 		std::vector<VkSemaphore> m_RenderCompleteSemaphores;
 
+		// One per frame slot: signaled when the slot's frame is done on the GPU
 		std::vector<VkFence> m_WaitFences;
+
+		uint32_t m_FramesInFlight = 1;
+		uint32_t m_FrameSlot = 0;
 
 		VkRenderPass m_RenderPass;
 		uint32_t m_CurrentBufferIndex = 0;

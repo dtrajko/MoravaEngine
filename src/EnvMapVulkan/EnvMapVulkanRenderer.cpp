@@ -15,6 +15,7 @@
 #include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkanProfiler.h"
+#include "H2M/Platform/Vulkan/VulkanFrameSyncH2M.h"
 #include "EnvMapVulkanQuality.h"
 #include "EnvMapVulkanRenderSettings.h"
 #include "EnvMapVulkanGlass.h"
@@ -100,8 +101,14 @@ namespace Utils
 bool EnvMapVulkanRenderer::s_MipMapsEnabled = true;
 bool EnvMapVulkanRenderer::s_ViewportFBNeedsResize = false;
 
-static VkCommandBuffer s_UserInterfaceCommandBuffer; // the user interface's commands (SetUserInterface)
-static VkCommandBuffer s_CompositeCommandBuffer;     // to be removed from VulkanRenderer
+// Secondary command buffers of the window's pass, one per frame slot (frames in flight: the last frame's primary command
+// buffer, still on the GPU, executes the other slot's)
+static VkCommandBuffer s_UserInterfaceCommandBuffers[H2M::VulkanFrameSync::MaxFramesInFlight]; // the user interface's commands (SetUserInterface)
+static VkCommandBuffer s_CompositeCommandBuffers[H2M::VulkanFrameSync::MaxFramesInFlight];
+static VkCommandBuffer CurrentSlot(const VkCommandBuffer (&buffers)[H2M::VulkanFrameSync::MaxFramesInFlight])
+{
+	return buffers[Application::Get()->GetWindow()->GetSwapChain().GetCurrentFrameSlot()];
+}
 static H2M::RefH2M<H2M::FramebufferH2M> s_Framebuffer;          // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::FramebufferH2M> s_CompositeFramebuffer; // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::PipelineH2M> s_CompositePipeline;            // to be removed from VulkanRenderer
@@ -1656,8 +1663,11 @@ void EnvMapVulkanRenderer::Init()
 	/**** BEGIN: to be removed from VulkanRenderer ****/
 	// H2M::RendererH2M::Submit([=]() {});
 	{
-		s_UserInterfaceCommandBuffer = H2M::VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
-		s_CompositeCommandBuffer = H2M::VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+		for (uint32_t slot = 0; slot < H2M::VulkanFrameSync::MaxFramesInFlight; slot++)
+		{
+			s_UserInterfaceCommandBuffers[slot] = H2M::VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+			s_CompositeCommandBuffers[slot] = H2M::VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+		}
 	}
 	EnvMapVulkanProfiler::Init();
 	/**** END: to be removed from VulkanRenderer ****/
@@ -3707,7 +3717,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 		VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
-		EnvMapVulkanProfiler::BeginFrame(drawCommandBuffer, swapChain.GetCurrentBufferIndex());
+		EnvMapVulkanProfiler::BeginFrame(drawCommandBuffer, swapChain.GetCurrentFrameSlot());
 
 		// Where the recording's time goes (inside "3D passes recorded": the Stats panel, --frame-stats)
 		CpuStats::Timer passes("3D passes recorded");
@@ -4481,6 +4491,7 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 	DebugOverlayFrame frame;
 	Window* window = Application::Get()->GetWindow();
 	frame.VSync = DescribeVSync(window->GetSwapChain(), GetWindowRefreshRate(window->GetHandle()));
+	frame.FramesInFlight = window->GetSwapChain().GetFramesInFlight();
 	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
 	frame.Fps = EnvMapVulkanProfiler::GetFps();
 	frame.CpuMs = EnvMapVulkanProfiler::GetSmoothedCpuFrameMs();
@@ -4743,7 +4754,7 @@ void EnvMapVulkanRenderer::CompositePass()
 		EnvMapVulkanProfiler::CountRenderPass(renderPassBeginInfo.renderArea.extent.width, renderPassBeginInfo.renderArea.extent.height);
 		// vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-		VkCommandBuffer commandBuffer = s_CompositeCommandBuffer;
+		VkCommandBuffer commandBuffer = CurrentSlot(s_CompositeCommandBuffers);
 
 		VkCommandBufferInheritanceInfo inheritanceInfo = {};
 		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
@@ -4805,7 +4816,7 @@ void EnvMapVulkanRenderer::CompositePass()
 
 		/**** END CompositeRenderPass(inheritanceInfo) ****/
 
-		commandBuffers.push_back(s_CompositeCommandBuffer);
+		commandBuffers.push_back(commandBuffer);
 
 		RecordUserInterface(inheritanceInfo, commandBuffers);
 
@@ -4836,7 +4847,8 @@ void EnvMapVulkanRenderer::RecordUserInterface(VkCommandBufferInheritanceInfo& i
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 	cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
-	VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(s_UserInterfaceCommandBuffer, &cmdBufInfo));
+	const VkCommandBuffer userInterface = CurrentSlot(s_UserInterfaceCommandBuffers);
+	VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(userInterface, &cmdBufInfo));
 
 	VkViewport viewport = {};
 	viewport.x = 0.0f;
@@ -4845,17 +4857,17 @@ void EnvMapVulkanRenderer::RecordUserInterface(VkCommandBufferInheritanceInfo& i
 	viewport.width = (float)width;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(s_UserInterfaceCommandBuffer, 0, 1, &viewport);
+	vkCmdSetViewport(userInterface, 0, 1, &viewport);
 
 	VkRect2D scissor = {};
 	scissor.extent.width = width;
 	scissor.extent.height = height;
-	vkCmdSetScissor(s_UserInterfaceCommandBuffer, 0, 1, &scissor);
+	vkCmdSetScissor(userInterface, 0, 1, &scissor);
 
-	s_RecordUserInterface(s_UserInterfaceCommandBuffer);
+	s_RecordUserInterface(userInterface);
 
-	VK_CHECK_RESULT_H2M(vkEndCommandBuffer(s_UserInterfaceCommandBuffer));
-	commandBuffers.push_back(s_UserInterfaceCommandBuffer);
+	VK_CHECK_RESULT_H2M(vkEndCommandBuffer(userInterface));
+	commandBuffers.push_back(userInterface);
 }
 
 // A frame without a scene (the player before it opens one): the window is cleared. Every frame records the window's
