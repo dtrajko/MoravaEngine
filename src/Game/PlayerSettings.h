@@ -30,13 +30,16 @@ struct PlayerResolution
  * (GameSettings), and puts them in place when the game starts: the window before it opens, the rest before the first
  * scene. A value never chosen is the project's (Auto, for the quality: the GPU's tier).
  *
- * C# sets them where they belong: Application.Fullscreen, Application.Resolution, Application.VSync, Quality.Level,
+ * C# sets them where they belong: Application.Fullscreen, Application.Resolution, Application.VSync,
+ * Application.FrameRateLimit, Application.BatteryFrameRateLimit, Quality.Level,
  * Audio.SetBusVolume, Input.Rebind.
  *
  *   Player:
  *     Fullscreen: true
  *     Resolution: [1920, 1080]
  *     VSync: true
+ *     FrameRateLimit: 144
+ *     BatteryFrameRateLimit: 60
  *     Quality: Medium
  *     Volumes: {Master: 1, Music: 0.4}
  *     Bindings:
@@ -49,6 +52,8 @@ struct PlayerSettings
 	std::optional<bool> Fullscreen;
 	std::optional<PlayerResolution> Resolution; // fullscreen: the video mode (none: the monitor's own)
 	std::optional<bool> VSync;
+	std::optional<int> FrameRateLimit;          // frames a second at most, 0: none (FrameLimiter)
+	std::optional<int> BatteryFrameRateLimit;   // on battery, 0: as plugged in
 	std::optional<QualityTier> Quality;         // never Auto: no value is Auto
 	std::optional<float> MasterVolume;
 	std::optional<float> BusVolumes[(int)AudioBus::Count];

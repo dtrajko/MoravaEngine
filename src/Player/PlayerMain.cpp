@@ -7,6 +7,7 @@
 
 #include "Assets/AssetFiles.h"
 #include "Core/Application.h"
+#include "Core/FrameLimiter.h"
 #include "Core/Log.h"
 #include "Core/Process.h"
 
@@ -82,6 +83,7 @@ int main(int argc, char** argv)
 		H2M::VulkanPhysicalDeviceH2M::DisableRayTracing(); // before the window creates the Vulkan device
 	}
 	H2M::VulkanFrameSync::SetFramesInFlight((uint32_t)Application::Get()->GetCommandLine().FramesInFlight); // before the swapchain
+	FrameLimiter::ForceOnBattery(commandLine.OnBattery);
 
 	// The project's window; without a project (a scene alone, as in tests) a window that presents without waiting for the
 	// display, as the editor's
@@ -132,6 +134,9 @@ int main(int argc, char** argv)
 		window = WindowSpecification(title, project.Window.Width, project.Window.Height);
 		window.Fullscreen = player.Fullscreen.value_or(project.Window.Fullscreen);
 		window.VSync = player.VSync.value_or(project.Window.VSync);
+		// The frame rate limits (FrameLimiter): the player's, else the project's; --fps-limit for this run
+		FrameLimiter::SetLimit(commandLine.FrameRateLimit >= 0 ? commandLine.FrameRateLimit : player.FrameRateLimit.value_or(project.Window.FrameRateLimit));
+		FrameLimiter::SetBatteryLimit(player.BatteryFrameRateLimit.value_or(project.Window.BatteryFrameRateLimit));
 		if (player.Resolution)
 		{
 			window.FullscreenWidth = player.Resolution->Width;

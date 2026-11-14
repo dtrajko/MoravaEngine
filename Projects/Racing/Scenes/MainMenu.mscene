@@ -2097,7 +2097,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [114, -110], Size: [1400, 50], Visible: true}
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [114, -110], Size: [1700, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2150,6 +2150,8 @@ Entities:
         DisplayDropdown: {Entity: 7051}
         ResolutionDropdown: {Entity: 7061}
         VSyncDropdown: {Entity: 7071}
+        FrameRateDropdown: {Entity: 7081}
+        BatteryDropdown: {Entity: 7083}
         ApplyButton: {Entity: 7091}
         ControlsPanel: {Entity: 7100}
         AccelerateKey: {Entity: 7111}
@@ -2180,7 +2182,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -440], Size: [900, 120], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -465], Size: [900, 120], Visible: true}
     UIText:
       Text: SETTINGS
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2198,7 +2200,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -350], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -375], Size: [420, 70], Visible: true}
     UIText:
       Text: Music
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2216,7 +2218,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -350], Size: [560, 14], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -375], Size: [560, 14], Visible: true}
     UIImage: {Texture: "", Color: [0.14, 0.15, 0.19, 0.95]}
     UISlider:
       Value: 0.5
@@ -2241,7 +2243,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -350], Size: [180, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -375], Size: [180, 70], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2259,7 +2261,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -280], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -313], Size: [420, 70], Visible: true}
     UIText:
       Text: Effects
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2277,7 +2279,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -280], Size: [560, 14], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -313], Size: [560, 14], Visible: true}
     UIImage: {Texture: "", Color: [0.14, 0.15, 0.19, 0.95]}
     UISlider:
       Value: 1
@@ -2302,7 +2304,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -280], Size: [180, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -313], Size: [180, 70], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2320,7 +2322,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -210], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -251], Size: [420, 70], Visible: true}
     UIText:
       Text: Mouse sensitivity
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2338,7 +2340,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -210], Size: [560, 14], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -251], Size: [560, 14], Visible: true}
     UIImage: {Texture: "", Color: [0.14, 0.15, 0.19, 0.95]}
     UISlider:
       Value: 1
@@ -2363,7 +2365,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -210], Size: [180, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -251], Size: [180, 70], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2381,7 +2383,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -140], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -189], Size: [420, 70], Visible: true}
     UIText:
       Text: Gearbox
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2399,7 +2401,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -140], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -189], Size: [560, 56], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2430,7 +2432,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -70], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -127], Size: [420, 70], Visible: true}
     UIText:
       Text: Engine power
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2448,7 +2450,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -70], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -127], Size: [560, 56], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2479,7 +2481,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 0], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -65], Size: [420, 70], Visible: true}
     UIText:
       Text: Ghost car
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2497,7 +2499,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 0], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -65], Size: [560, 56], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2528,7 +2530,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 70], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -3], Size: [420, 70], Visible: true}
     UIText:
       Text: Quality
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2546,7 +2548,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 70], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -3], Size: [560, 56], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2577,7 +2579,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 140], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 59], Size: [420, 70], Visible: true}
     UIText:
       Text: Display
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2595,7 +2597,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 140], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 59], Size: [560, 56], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2626,7 +2628,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 210], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 121], Size: [420, 70], Visible: true}
     UIText:
       Text: Resolution
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2644,7 +2646,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 210], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 121], Size: [560, 56], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2675,7 +2677,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 280], Size: [420, 70], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 183], Size: [420, 70], Visible: true}
     UIText:
       Text: VSync
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2693,7 +2695,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 280], Size: [560, 66], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 183], Size: [560, 56], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2717,6 +2719,104 @@ Entities:
       Disabled: [0.4, 0.4, 0.45, 0.5]
       FadeDuration: 0.08
       OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7080
+    Name: Frame rate limit Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 245], Size: [420, 70], Visible: true}
+    UIText:
+      Text: Frame rate limit
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7081
+    Name: Frame rate limit Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 245], Size: [560, 56], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [Off, 60, 120, 144, 240]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 7082
+    Name: On battery Label
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 307], Size: [420, 70], Visible: true}
+    UIText:
+      Text: On battery
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 42
+      Color: [0.66, 0.7, 0.78, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 7083
+    Name: On battery Dropdown
+    Parent: 7001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 307], Size: [560, 56], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/TitilliumWeb-Bold.ttf
+      FontID: 5270779390439276065
+      Size: 38
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+    UIImage: {Texture: "", Color: [0.86, 0.1, 0.14, 1]}
+    UIDropdown:
+      Options: [60 fps, As plugged in]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.07, 0.97]
+      ItemHighlight: [0.9, 0.1, 0.14, 1]
+      Normal: [0.62, 0.62, 0.66, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.45, 0.45, 0.5, 1]
+      Disabled: [0.4, 0.4, 0.45, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
   - ID: 7090
     Name: Controls Button
     Parent: 7001
@@ -2724,7 +2824,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 365], Size: [360, 84], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 383], Size: [360, 84], Visible: true}
     UIText:
       Text: Controls
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2751,7 +2851,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 365], Size: [360, 84], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 383], Size: [360, 84], Visible: true}
     UIText:
       Text: Apply
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf
@@ -2778,7 +2878,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 365], Size: [360, 84], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 383], Size: [360, 84], Visible: true}
     UIText:
       Text: Back
       Font: Assets/Fonts/TitilliumWeb-Bold.ttf

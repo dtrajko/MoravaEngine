@@ -14,7 +14,7 @@ bool PlayerSettings::IsEmpty() const
 	{
 		volumes |= bus.has_value();
 	}
-	return !Fullscreen && !Resolution && !VSync && !Quality && !volumes && Bindings.empty();
+	return !Fullscreen && !Resolution && !VSync && !FrameRateLimit && !BatteryFrameRateLimit && !Quality && !volumes && Bindings.empty();
 }
 
 PlayerSettings PlayerSettings::Read(const YAML::Node& node)
@@ -42,6 +42,8 @@ PlayerSettings PlayerSettings::Read(const YAML::Node& node)
 	};
 	read("Fullscreen", [&](const YAML::Node& value) { settings.Fullscreen = value.as<bool>(); });
 	read("VSync", [&](const YAML::Node& value) { settings.VSync = value.as<bool>(); });
+	read("FrameRateLimit", [&](const YAML::Node& value) { settings.FrameRateLimit = std::max(value.as<int>(), 0); });
+	read("BatteryFrameRateLimit", [&](const YAML::Node& value) { settings.BatteryFrameRateLimit = std::max(value.as<int>(), 0); });
 	read("Resolution", [&](const YAML::Node& value)
 	{
 		if (value.IsSequence() && value.size() == 2 && value[0].as<int>() > 0 && value[1].as<int>() > 0)
@@ -110,6 +112,14 @@ void PlayerSettings::Write(YAML::Emitter& out) const
 	if (VSync)
 	{
 		out << YAML::Key << "VSync" << YAML::Value << *VSync;
+	}
+	if (FrameRateLimit)
+	{
+		out << YAML::Key << "FrameRateLimit" << YAML::Value << *FrameRateLimit;
+	}
+	if (BatteryFrameRateLimit)
+	{
+		out << YAML::Key << "BatteryFrameRateLimit" << YAML::Value << *BatteryFrameRateLimit;
 	}
 	if (Quality)
 	{

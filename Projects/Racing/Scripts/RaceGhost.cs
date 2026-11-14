@@ -33,7 +33,7 @@ namespace Racing
         float[] best = Array.Empty<float>();      // the best flying lap's, as saved
         float[] bestStart = Array.Empty<float>(); // the best lap 1's
         int lapsSeen = -1, restartsSeen = -1;
-        bool loaded, parked;
+        bool loaded, loadedRealistic, parked;
 
         protected override void OnCreate()
         {
@@ -50,12 +50,14 @@ namespace Racing
             RaceManager? race = RaceManager.Current;
             if (race == null || Car == null)
                 return;
-            if (!loaded)
+            // The best laps of the race's records: the engine power's (they change with it)
+            if (!loaded || loadedRealistic != race.RealisticRecords)
             {
                 loaded = true;
+                loadedRealistic = race.RealisticRecords;
                 bestStart = Load(SaveData.GetString(race.RecordKey("GhostStartLap")));
                 best = Load(SaveData.GetString(race.RecordKey("GhostLap")));
-                Log.Info($"Ghost: {(GameOptions.Ghost ? "shown" : "off (Settings)")}; lap 1 {Describe(bestStart)}, flying lap {Describe(best)}");
+                Log.Info($"Ghost: {(GameOptions.Ghost ? "shown" : "off (Settings)")}; lap 1 {Describe(bestStart)}, flying lap {Describe(best)} ({RaceManager.PowerTitle(loadedRealistic)} power)");
             }
             // A restart: a new recording. A lap finished: what was recorded is the best lap, or nothing
             if (race.RestartCount != restartsSeen)

@@ -650,6 +650,11 @@ if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
     target_link_libraries(MoravaCore PUBLIC d3d11 d3dcompiler)
 endif()
 
+# macOS: whether the computer runs on its battery (src/Core/FrameLimiter.cpp, IOKit's power sources)
+if(APPLE)
+    target_link_libraries(MoravaCore PUBLIC "-framework IOKit" "-framework CoreFoundation")
+endif()
+
 # nethost finds hostfxr in the private .NET folder (src/Scripting/ScriptHost.cpp). Windows: nethost.dll through its import
 # library, not the static libnethost.lib, which is built with the static release runtime (/MT) only and clashes with
 # Debug builds and with /MD

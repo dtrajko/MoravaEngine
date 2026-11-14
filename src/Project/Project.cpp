@@ -9,6 +9,7 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -159,6 +160,8 @@ bool Project::FromYaml(const YAML::Node& root, const std::string& filepath, Proj
 		project.Window.Height = window["Height"].as<uint32_t>(project.Window.Height);
 		project.Window.Fullscreen = window["Fullscreen"].as<bool>(project.Window.Fullscreen);
 		project.Window.VSync = window["VSync"].as<bool>(project.Window.VSync);
+		project.Window.FrameRateLimit = std::max(window["FrameRateLimit"].as<int>(project.Window.FrameRateLimit), 0);
+		project.Window.BatteryFrameRateLimit = std::max(window["BatteryFrameRateLimit"].as<int>(project.Window.BatteryFrameRateLimit), 0);
 		project.Window.Title = window["Title"].as<std::string>("");
 	}
 	YAML::Node physics = node["Physics"];
@@ -231,6 +234,8 @@ bool Project::Save(std::string& error) const
 	out << YAML::Key << "Height" << YAML::Value << Window.Height;
 	out << YAML::Key << "Fullscreen" << YAML::Value << Window.Fullscreen;
 	out << YAML::Key << "VSync" << YAML::Value << Window.VSync;
+	out << YAML::Key << "FrameRateLimit" << YAML::Value << Window.FrameRateLimit;
+	out << YAML::Key << "BatteryFrameRateLimit" << YAML::Value << Window.BatteryFrameRateLimit;
 	out << YAML::Key << "Title" << YAML::Value << Window.Title;
 	out << YAML::EndMap;
 	out << YAML::Key << "Physics" << YAML::Value << YAML::Flow << YAML::BeginMap;

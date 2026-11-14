@@ -14,6 +14,7 @@
 
 #include <glm/glm.hpp>
 
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -66,6 +67,12 @@ private:
 	void ApplyPlayerRequests(GLFWwindow* window);
 	// The scripts' view of the display: the sizes (fullscreen's, or in a window those that fit), the one in use, VSync, the tier
 	void UpdateDisplayState(GLFWwindow* window);
+	// The first-frames log: the first seconds of a scene (the game's start, Scene.Load), frame by frame at first, then each
+	// second, with the GPU's time and its largest passes, and the log file put on the disk at each line
+	// (PlayerProduct::SetDurableLog): when a computer turns off then, the log says how far it got
+	void BeginFirstFrames();
+	void UpdateFirstFrames();
+
 	// A window's sizes on the monitor: the fullscreen sizes whose window, its frame included, fits in the monitor's work area
 	std::vector<PlayerResolution> GetWindowResolutions(GLFWmonitor* monitor) const;
 	// Out of fullscreen, or a new size in a window: the player's resolution (the largest that fits, no larger than it; none
@@ -88,4 +95,8 @@ private:
 	GLFWmonitor* m_ResolutionsMonitor = nullptr; // the monitor m_Resolutions are of
 	bool m_ResolutionsFullscreen = false;        // and for which: fullscreen's, or a window's
 	glm::ivec4 m_WindowFrame = glm::ivec4(8, 31, 8, 8); // the window's frame (left, top, right, bottom), as last seen in a window
+	bool m_FirstFramesOn = false;
+	std::chrono::steady_clock::time_point m_FirstFramesStart;
+	uint32_t m_FirstFramesUpdates = 0; // updates since the scene started (the frames before them were presented)
+	int m_FirstFramesSecond = 0;       // the last whole second logged
 };

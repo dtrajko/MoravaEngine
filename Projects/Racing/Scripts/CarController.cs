@@ -135,6 +135,8 @@ namespace Racing
         public bool TestDriving => driver != null;
         /// <summary>The test driver is stuck (TestDriver.Stuck): the race respawns the car.</summary>
         public bool TestDriverStuck => driver != null && driver.Stuck;
+        /// <summary>The engine has the Realistic power now (the player's choice; the test driver always has the car's own).</summary>
+        public bool RealisticPower => driver == null && GameOptions.RealisticPower;
 
         /// <summary>It touched the terrain since the last time this was read (and cleared): it has fallen off the track.</summary>
         public bool TouchedTerrain { get; set; }

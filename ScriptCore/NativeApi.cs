@@ -118,6 +118,11 @@ namespace Morava
         public delegate* unmanaged<uint, uint, void> Application_SetResolution;
         public delegate* unmanaged<int> Application_GetVSync;
         public delegate* unmanaged<int, void> Application_SetVSync;
+        public delegate* unmanaged<int> Application_GetFrameRateLimit;
+        public delegate* unmanaged<int, void> Application_SetFrameRateLimit;
+        public delegate* unmanaged<int> Application_GetBatteryFrameRateLimit;
+        public delegate* unmanaged<int, void> Application_SetBatteryFrameRateLimit;
+        public delegate* unmanaged<int> Application_IsOnBattery;
         public delegate* unmanaged<int> Quality_GetLevel;
         public delegate* unmanaged<int, void> Quality_SetLevel;
         public delegate* unmanaged<int> Quality_IsAutomatic;

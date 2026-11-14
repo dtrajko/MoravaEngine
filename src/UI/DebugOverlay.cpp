@@ -129,6 +129,10 @@ namespace
 		{
 			AddRow(rows, "Frames in flight", Format("%u", frame.FramesInFlight));
 		}
+		if (!frame.FrameRateLimit.empty())
+		{
+			AddRow(rows, "Frame rate limit", frame.FrameRateLimit);
+		}
 		if (!frame.Antialiasing.empty())
 		{
 			AddRow(rows, "Antialiasing", frame.Antialiasing);

@@ -9,6 +9,7 @@ window, read what its log says, and compile files with GCC as the Linux CI build
 | `Run-Engine.ps1` | Starts the editor or the player with a project or scene, closes it after some seconds, captures its window, summarizes the log | PowerShell |
 | `Capture-Window.ps1` | Saves a running window as a PNG (all of it, or a part enlarged) | PowerShell |
 | `gcc-check.sh` | Compiles source files with GCC for errors only | WSL (Ubuntu with `g++`) |
+| `Sync-RacingTest.ps1` | Brings the Racing test copy (`D:\Workspace\Temp\RacingTest`) up to date with `Projects/Racing`, with the test driver on | PowerShell |
 
 ## Before you start
 
@@ -109,6 +110,8 @@ What `-Extra` can pass (both executables read them; `src/Core/Application.cpp` h
 | `--debug-view <n>` | Starts with entry n of the Environment panel's Debug View list (0 Off, 7 Diffuse Surface Shading, 8 Probe Irradiance Only, 10 Ambient Occlusion, 18 Path Traced) |
 | `--no-ray-tracing` | Vulkan without the ray tracing extensions, as on a GPU that has none |
 | `--frames-in-flight 1\|2` | Vulkan: 2 (default) records the next frame while the GPU draws the last; 1 waits for the GPU after each frame, as before 2026-11-14 (to compare). With `--frame-stats`, the log adds the waits for the GPU outside Present: one a frame means something in the frame loses the overlap |
+| `--fps-limit <n>` | The player: a frame rate limit for this run (0: none), whatever the player chose. With `--frame-stats` the CPU stages show *Frame rate limit (waits)* |
+| `--on-battery` | The player acts as if the computer ran on its battery: the battery frame rate limit applies (the project's, 60 by default), to check it on a desktop |
 | `--no-texture-compression` | Material maps as on a GPU without BC formats: from their images, or decoded from a pack's cooked maps |
 | `--pack <file>` | The player runs the game in this pack (`Game.mpak` here or beside the executable is found without it) |
 | `--build-pack <file.mproject>`, `--pack-output <folder>` | The editor builds the project's pack and exits, without a window (not through `-Extra`: run it directly) |
@@ -133,6 +136,22 @@ useful while you run the engine yourself:
 
 `-Name` takes the newest process of that name that has a window; `-Id` a process by its ID. Coordinates for `-Crop`
 are pixels of the whole window, title bar included: take one full screenshot first to find them.
+
+## Sync-RacingTest.ps1
+
+The racing game is tested on a copy with its own project name (RacingTest: its own settings and save data in
+`%APPDATA%\Morava Games\RacingTest`, a window instead of fullscreen), so a test never touches the settings of the real
+game. The script mirrors the project's Assets, Scenes, Settings, Tracks and Foliage into it and copies the scripts (not
+the copy's own script project, which builds `RacingTest.dll`, nor its probe scripts), then turns on the test driver in
+its Circuit scene (`-NoTestDriver` leaves it off). Then build its game and run it:
+
+```powershell
+.\Tools\Testing\Sync-RacingTest.ps1
+build\RelWithDebInfo\MoravaEngine.exe --build-game D:\Workspace\Temp\RacingTest\RacingTest.mproject
+D:\Workspace\Temp\RacingTest\Build\win-x64\RacingTest.exe --exit-after 20 --debug-overlay --frame-stats 8 --fps-limit 120
+```
+
+A shipped game logs to `%LOCALAPPDATA%\Morava Games\RacingTest\Player.log`, not to the console.
 
 ## gcc-check.sh
 

@@ -51,7 +51,8 @@ namespace Racing
             RealisticPower = Settings.GetBool(PowerKey, false);
             Log.Info($"Options: music {Audio.GetBusVolume(AudioBus.Music):0.00}, effects {Audio.GetBusVolume(AudioBus.Effects):0.00}, " +
                 $"mouse x{MouseSensitivity:0.00}, gearbox {(ManualGearbox ? "manual" : "automatic")}, power {(RealisticPower ? "realistic" : "buffed")}, ghost {(Ghost ? "on" : "off")}, quality {Quality.Level}{(Quality.IsAutomatic ? " (automatic)" : "")}, " +
-                $"{(Application.Fullscreen ? "fullscreen" : "a window")}, VSync {(Application.VSync ? "on" : "off")}");
+                $"{(Application.Fullscreen ? "fullscreen" : "a window")}, VSync {(Application.VSync ? "on" : "off")}, " +
+                $"frame rate limit {(Application.FrameRateLimit > 0 ? Application.FrameRateLimit.ToString() : "off")}, on battery {(Application.BatteryFrameRateLimit > 0 ? Application.BatteryFrameRateLimit.ToString() : "as plugged in")}{(Application.OnBattery ? " (on battery now)" : "")}");
         }
 
         public static void SetMouseSensitivity(float times)

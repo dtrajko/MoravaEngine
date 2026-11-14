@@ -9,6 +9,7 @@
 #include "EnvMapVulkanRenderer.h"
 #include "Core/CpuStats.h"
 #include "Core/EnginePaths.h"
+#include "Core/FrameLimiter.h"
 
 #include "EnvMapVulkanPrefab.h"
 #include "EnvMapVulkanLights.h"
@@ -4492,6 +4493,11 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 	Window* window = Application::Get()->GetWindow();
 	frame.VSync = DescribeVSync(window->GetSwapChain(), GetWindowRefreshRate(window->GetHandle()));
 	frame.FramesInFlight = window->GetSwapChain().GetFramesInFlight();
+	{
+		const int limit = FrameLimiter::GetActiveLimit();
+		const std::string reason = FrameLimiter::GetActiveReason();
+		frame.FrameRateLimit = (limit > 0 ? std::to_string(limit) : std::string("off")) + (reason.empty() ? "" : " (" + reason + ")");
+	}
 	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
 	frame.Fps = EnvMapVulkanProfiler::GetFps();
 	frame.CpuMs = EnvMapVulkanProfiler::GetSmoothedCpuFrameMs();

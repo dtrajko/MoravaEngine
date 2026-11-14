@@ -77,6 +77,8 @@ public:
 	// each. The choices are in the player's settings already
 	bool TakeResolutionRequest(PlayerResolution& resolution);
 	bool TakeVSyncRequest(bool& vsync);
+	// Application.FrameRateLimit or BatteryFrameRateLimit set: the limits to use now (the player's choice, else the project's)
+	bool TakeFrameRateLimitRequest(int& limit, int& batteryLimit);
 	bool TakeQualityRequest(QualityTier& tier);
 	// The owner's view of what the scripts read (Application.Resolutions, Application.Resolution, Application.VSync,
 	// Quality.Level), each frame before the game loop

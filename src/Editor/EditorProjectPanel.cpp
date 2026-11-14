@@ -372,6 +372,29 @@ void OnImGuiRenderProjectPanel()
 			"Used by MoravaPlayer when it starts, until the player chooses (Application.VSync); the editor always runs\n"
 			"without VSync, so its frame times are what a frame really costs");
 	}
+	const auto inputLimit = [](const char* label, int& value)
+	{
+		int limit = value;
+		if (ImGui::InputInt(label, &limit, 10, 30) && std::clamp(limit, 0, 1000) != value)
+		{
+			value = std::clamp(limit, 0, 1000);
+			return true;
+		}
+		return false;
+	};
+	save |= inputLimit("Frame Rate Limit (player)", project->Window.FrameRateLimit);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Frames a second at most (0: no limit): the game waits instead of drawing frames nobody needs.\n"
+			"Until the player chooses (Application.FrameRateLimit); the editor runs without a limit");
+	}
+	save |= inputLimit("On Battery (player)", project->Window.BatteryFrameRateLimit);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Frames a second at most while a laptop runs on its battery (0: as plugged in): less power drawn, and a\n"
+			"battery or charger that can't give the GPU's full power doesn't turn the computer off.\n"
+			"Until the player chooses (Application.BatteryFrameRateLimit)");
+	}
 	ImGui::PopItemWidth();
 
 	ImGui::Spacing();
