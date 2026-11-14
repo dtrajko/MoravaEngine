@@ -34,6 +34,8 @@ namespace Morava
         public delegate* unmanaged<ulong, float, int> InvokeSliderChanged;
         public delegate* unmanaged<IntPtr, char*, int, int, int> InvokeMethodInt;
         public delegate* unmanaged<ulong, int, int> InvokeDropdownChanged;
+        public delegate* unmanaged<ulong, char*, int, int> DescribeUIListeners;
+        public delegate* unmanaged<char*, int, int, char*, int, int> DescribeMethods;
     }
 
     // The game's assembly in a context of its own that can be unloaded (hot reload). ScriptCore is the one already
@@ -110,6 +112,8 @@ namespace Morava
                 managed->InvokeSliderChanged = &InvokeSliderChanged;
                 managed->InvokeMethodInt = &InvokeMethodInt;
                 managed->InvokeDropdownChanged = &InvokeDropdownChanged;
+                managed->DescribeUIListeners = &DescribeUIListeners;
+                managed->DescribeMethods = &DescribeMethods;
                 return 0;
             }
             catch (Exception) { return 1; }
@@ -394,6 +398,102 @@ namespace Morava
         {
             try { return UIButton.RaiseClicked(button) ? 0 : 1; }
             catch (Exception e) { Log.Error($"UIButton.Clicked: {e}"); return 1; }
+        }
+
+        // Who listens to the UI's events (the editor's Inspector: "Handled in code"), for one element or all (0): a line per
+        // listener, "element \t event \t entity \t class \t method \t lambda", event 0 a button's Clicked, 1 a slider's
+        // ValueChanged, 2 a drop-down's; entity: the script instance whose method it is (0: none, a static method); lambda 1
+        // when the method is a lambda written inside the named one. The length written, -1 when it doesn't fit
+        [UnmanagedCallersOnly]
+        static int DescribeUIListeners(ulong element, char* buffer, int capacity)
+        {
+            try
+            {
+                var text = new System.Text.StringBuilder();
+                void Add(int kind, IEnumerable<KeyValuePair<ulong, Delegate?>> listeners)
+                {
+                    foreach (var pair in listeners)
+                    {
+                        if ((element != 0 && pair.Key != element) || pair.Value == null) continue;
+                        foreach (Delegate listener in pair.Value.GetInvocationList())
+                        {
+                            DescribeListener(listener, out ulong entity, out string className, out string method, out bool lambda);
+                            text.Append(pair.Key).Append('\t').Append(kind).Append('\t').Append(entity).Append('\t').Append(className)
+                                .Append('\t').Append(method).Append('\t').Append(lambda ? 1 : 0).Append('\n');
+                        }
+                    }
+                }
+                Add(0, UIButton.Listeners());
+                Add(1, UISlider.Listeners());
+                Add(2, UIDropdown.Listeners());
+                return CopyString(text.ToString(), buffer, capacity);
+            }
+            catch (Exception e) { Log.Error($"DescribeUIListeners: {e}"); return 0; }
+        }
+
+        // A listener as people wrote it: the script's class and method, also for a lambda (the compiler puts it in a class of
+        // its own, "<>c__DisplayClass..." or "<>c", with a name such as "<OnCreate>b__12_0": OnCreate, as a lambda)
+        static void DescribeListener(Delegate listener, out ulong entity, out string className, out string method, out bool lambda)
+        {
+            MethodInfo info = listener.Method;
+            object? target = listener.Target;
+            Type? type = info.DeclaringType;
+            while (type != null && type.IsNested && type.Name.StartsWith("<", StringComparison.Ordinal))
+                type = type.DeclaringType;
+            className = type?.FullName ?? "?";
+            method = info.Name;
+            lambda = false;
+            if (method.StartsWith("<", StringComparison.Ordinal))
+            {
+                int end = method.IndexOf('>');
+                method = end > 1 ? method.Substring(1, end - 1) : method;
+                lambda = true;
+            }
+            // The script instance: the target itself, or the one a lambda's closure captured (this)
+            if (target != null && target is not Entity)
+            {
+                foreach (FieldInfo field in target.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+                {
+                    if (field.GetValue(target) is Entity captured && field.Name.Contains("this", StringComparison.Ordinal))
+                    {
+                        target = captured;
+                        break;
+                    }
+                }
+            }
+            entity = target is Entity script ? script.Id : 0;
+        }
+
+        // The methods a UI element can call on a script class (the Inspector's Method list): instance methods, public or
+        // not, of the class and its base classes up to Entity, with no parameters (parameters 0: a button), one float (1: a
+        // slider) or one int (2: a drop-down); not the engine's own (OnCreate, OnUpdate, ...) nor property accessors. Names a
+        // line each; the length written, -1 when it doesn't fit, 0 without such a class
+        [UnmanagedCallersOnly]
+        static int DescribeMethods(char* className, int length, int parameters, char* buffer, int capacity)
+        {
+            try
+            {
+                Type? type = s_Game?.GetType(new string(className, 0, length));
+                if (type == null) return 0;
+                Type[] wanted = parameters == 1 ? new[] { typeof(float) } : parameters == 2 ? new[] { typeof(int) } : Type.EmptyTypes;
+                var names = new SortedSet<string>(StringComparer.Ordinal);
+                for (; type != null && type != typeof(Entity); type = type.BaseType)
+                {
+                    foreach (MethodInfo info in type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+                    {
+                        if (info.IsSpecialName || info.IsGenericMethodDefinition || info.Name.StartsWith("<", StringComparison.Ordinal) ||
+                            Enum.IsDefined(typeof(Method), info.Name) || info.GetCustomAttribute<CompilerGeneratedAttribute>() != null)
+                            continue;
+                        ParameterInfo[] given = info.GetParameters();
+                        if (given.Length != wanted.Length) continue;
+                        bool same = true;
+                        for (int i = 0; i < given.Length; i++) same &= given[i].ParameterType == wanted[i];
+                        if (same) names.Add(info.Name);
+                    }
+                }
+                return CopyString(string.Join("\n", names), buffer, capacity);
+            }
+            catch (Exception e) { Log.Error($"DescribeMethods: {e}"); return 0; }
         }
 
         // The managed heap now (bytes, without collecting) and the garbage collections since startup, for the debug overlay

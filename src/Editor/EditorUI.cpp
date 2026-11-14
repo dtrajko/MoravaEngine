@@ -11,6 +11,7 @@
 #include "Scripting/ScriptHost.h"
 
 #include "Core/FileDialogs.h"
+#include "Core/Log.h"
 #include "Core/ResourceManager.h"
 #include "Core/Util.h"
 
@@ -22,6 +23,8 @@
 #include <cstdio>
 #include <filesystem>
 #include <string>
+#include <vector>
+#include <unordered_map>
 
 
 #include "EditorState.h"
@@ -531,7 +534,234 @@ static void ButtonTargetChoices(const std::vector<EnvMapVulkanEntityID>& entitie
 	}
 }
 
-static void UIMethodControls(const char* what, EnvMapVulkanEntityID& target, std::string& methodName, const char* methodTooltip);
+// ---- Who handles a UI element's event: the On Click / On Value Changed section's "Handled in code"
+
+// A UI event as the sections name it: a button's Clicked (0), a slider's (1) or a drop-down's (2) ValueChanged
+struct UIEventKind
+{
+	int Kind;               // ScriptHost::UIListener::Event, and DescribeMethods' parameters
+	const char* What;       // "button"
+	const char* EventName;  // "Clicked"
+	const char* Happening;  // "click"
+};
+
+// The listeners each scene's UI had when Play stopped or the game loaded another scene, with their entities' names then
+struct SeenUIListener
+{
+	ScriptHost::UIListener Listener;
+	std::string EntityName;
+};
+static std::unordered_map<std::string, std::unordered_map<EnvMapVulkanEntityID, std::vector<SeenUIListener>>> s_SeenUIListeners;
+
+void RememberUIListeners(const std::string& scenePath)
+{
+	std::unordered_map<EnvMapVulkanEntityID, std::vector<SeenUIListener>>& scene = s_SeenUIListeners[scenePath];
+	scene.clear();
+	for (const ScriptHost::UIListener& listener : ScriptHost::DescribeUIListeners())
+	{
+		const NameComponent* name = listener.Entity != NoEntity ? s_Scene.TryGet<NameComponent>(listener.Entity) : nullptr;
+		scene[listener.Element].push_back({ listener, name ? name->Name : std::string() });
+	}
+	if (!scene.empty())
+	{
+		size_t count = 0;
+		for (const auto& element : scene)
+		{
+			count += element.second.size();
+		}
+		Log::GetLogger()->info("UI: {0} listener(s) of {1} element(s) in code remembered for the Inspector ('{2}')", count, scene.size(),
+			std::filesystem::u8path(scenePath).filename().u8string());
+	}
+}
+
+// What a class's .cs file says about a field's event (FindScriptEventSubscription), read again at most every two seconds:
+// the Inspector is drawn each frame
+struct CodeSubscription
+{
+	bool Found = false;
+	std::string Method; // empty: a lambda
+	std::string File;
+	int Line = 0;
+	double ReadAt = -1.0;
+};
+static std::unordered_map<std::string, CodeSubscription> s_CodeSubscriptions;
+
+static const CodeSubscription& FindCodeSubscription(const std::string& className, const std::string& field, const char* eventName)
+{
+	CodeSubscription& found = s_CodeSubscriptions[className + "\n" + field + "\n" + eventName];
+	if (found.ReadAt < 0.0 || ImGui::GetTime() - found.ReadAt > 2.0)
+	{
+		found.ReadAt = ImGui::GetTime();
+		found.Found = FindScriptEventSubscription(className, field, eventName, found.Method, found.File, found.Line);
+	}
+	return found;
+}
+
+static std::string ShortClassName(const std::string& className)
+{
+	const size_t dot = className.rfind('.');
+	return dot == std::string::npos ? className : className.substr(dot + 1);
+}
+
+// A small Edit button opening the class's file at a member (or at a line already known)
+static void EditCodeButton(const char* id, const std::string& className, const std::string& member, const std::string& knownFile = std::string(), int knownLine = 0)
+{
+	ImGui::SameLine();
+	ImGui::PushID(id);
+	if (ImGui::SmallButton("Edit"))
+	{
+		std::string file = knownFile;
+		int line = knownLine;
+		if (file.empty() && !FindScriptMemberLine(className, member, file, line))
+		{
+			ShowNotification("No file in the scripts' folder declares 'class " + ShortClassName(className) + "'", true);
+		}
+		else
+		{
+			OpenScriptFile(file, line);
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Opens %s in the code editor (%s)", knownFile.empty() ? (ShortClassName(className) + "." + member).c_str() :
+			(std::filesystem::u8path(knownFile).filename().u8string() + ":" + std::to_string(knownLine)).c_str(), GetResolvedCodeEditorName());
+	}
+	ImGui::PopID();
+}
+
+static std::string ListenerLabel(const ScriptHost::UIListener& listener, const std::string& entityName)
+{
+	const std::string who = entityName.empty() ? std::string() : entityName + "  ->  ";
+	const std::string method = listener.Lambda ? "a lambda in " + listener.Method + "()" : listener.Method + "()";
+	return who + ShortClassName(listener.ClassName) + "." + method;
+}
+
+// Scripts that listen to the element's event in code (Clicked += Race): during Play the listeners themselves, after Play
+// those of the last Play, and always the scripts whose fields refer to the element, with what their code adds to the event
+static void UIHandlersInCode(EnvMapVulkanEntityID element, const UIEventKind& event)
+{
+	ImGui::TextDisabled("Handled in code");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Scripts can listen to the %s's %s event themselves, usually in OnCreate:\n"
+			"  public Entity? RaceButton;  (a field: the Inspector's Script section points it at this %s)\n"
+			"  RaceButton.GetComponent<UI%s>().%s += Race;\n"
+			"During Play this lists the methods listening now; after Stop, those seen in the last Play.\n"
+			"Referenced by: the scripts whose fields point at this entity (read from the scene, always shown).",
+			event.What, event.EventName, event.What, event.Kind == 0 ? "Button" : event.Kind == 1 ? "Slider" : "Dropdown", event.EventName);
+	}
+	ImGui::Indent();
+	bool any = false;
+
+	// The listeners: now, or in the last Play of this scene
+	std::vector<SeenUIListener> listeners;
+	const bool playing = IsPlaying();
+	if (playing)
+	{
+		for (const ScriptHost::UIListener& listener : ScriptHost::DescribeUIListeners(element))
+		{
+			const NameComponent* name = listener.Entity != NoEntity ? s_Scene.TryGet<NameComponent>(listener.Entity) : nullptr;
+			listeners.push_back({ listener, name ? name->Name : std::string() });
+		}
+	}
+	else
+	{
+		const auto scene = s_SeenUIListeners.find(s_SceneFilePath);
+		if (scene != s_SeenUIListeners.end())
+		{
+			const auto seen = scene->second.find(element);
+			if (seen != scene->second.end())
+			{
+				listeners = seen->second;
+			}
+		}
+	}
+	int index = 0;
+	for (const SeenUIListener& seen : listeners)
+	{
+		if (seen.Listener.Event != event.Kind)
+		{
+			continue;
+		}
+		any = true;
+		ImGui::PushID(index++);
+		ImGui::TextUnformatted(ListenerLabel(seen.Listener, seen.EntityName).c_str());
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("%s.%s%s %s the %s's %s event%s", seen.Listener.ClassName.c_str(), seen.Listener.Method.c_str(),
+				seen.Listener.Lambda ? " (a lambda in it)" : "()", playing ? "listens to" : "listened to", event.What, event.EventName,
+				playing ? "" : " in the last Play");
+		}
+		EditCodeButton("method", seen.Listener.ClassName, seen.Listener.Method);
+		ImGui::SameLine();
+		ImGui::TextDisabled(playing ? "(listening now)" : "(seen in the last Play)");
+		ImGui::PopID();
+	}
+
+	// The scripts whose fields refer to the element, and the line of their code that listens (read from the .cs file)
+	s_Scene.Each<ScriptComponent>([&](EnvMapVulkanEntityID owner, ScriptComponent& ownerScript)
+	{
+		const ScriptComponent* script = &ownerScript;
+		if (script->ClassName.empty())
+		{
+			return;
+		}
+		for (const ScriptComponent::Field& field : script->Fields)
+		{
+			if (field.Value.Type != ScriptFieldType::Entity || field.Value.Entity != element)
+			{
+				continue;
+			}
+			any = true;
+			ImGui::PushID(index++);
+			const std::string ownerName = s_Scene.Get<NameComponent>(owner).Name;
+			const std::string className = ShortClassName(script->ClassName);
+			ImGui::Text("Referenced by %s  ->  %s.%s", ownerName.c_str(), className.c_str(), field.Name.c_str());
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The script %s on the entity '%s' has a field %s pointing at this %s\n(select '%s': its Inspector's Script section shows the field)",
+					script->ClassName.c_str(), ownerName.c_str(), field.Name.c_str(), event.What, ownerName.c_str());
+			}
+			EditCodeButton("field", script->ClassName, field.Name);
+			if (listeners.empty())
+			{
+				// No Play has shown the listeners yet: what the code says
+				const CodeSubscription& code = FindCodeSubscription(script->ClassName, field.Name, event.EventName);
+				if (code.Found)
+				{
+					const std::string where = std::filesystem::u8path(code.File).filename().u8string() + ":" + std::to_string(code.Line);
+					ImGui::Indent();
+					if (code.Method.empty())
+					{
+						ImGui::Text("%s += a lambda", event.EventName);
+					}
+					else
+					{
+						ImGui::Text("%s += %s  ->  %s.%s()", event.EventName, code.Method.c_str(), className.c_str(), code.Method.c_str());
+					}
+					EditCodeButton("method", script->ClassName, code.Method, code.Method.empty() ? code.File : std::string(), code.Method.empty() ? code.Line : 0);
+					ImGui::SameLine();
+					ImGui::TextDisabled("(found in %s)", where.c_str());
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Read from the script's code, line %d. Play shows the listeners for certain", code.Line);
+					}
+					ImGui::Unindent();
+				}
+			}
+			ImGui::PopID();
+		}
+	});
+
+	if (!any)
+	{
+		ImGui::TextDisabled(playing ? "No script listens to it now" : "No script refers to it (a script may still find it by name: Play shows that)");
+	}
+	ImGui::Unindent();
+}
+
+static void UIMethodControls(EnvMapVulkanEntityID element, const UIEventKind& event, EnvMapVulkanEntityID& target, std::string& methodName,
+	const char* methodTooltip);
 
 static void ButtonControls(EnvMapVulkanEntityID entity, UIButtonComponent& button, const SceneUI* gameUI)
 {
@@ -571,18 +801,40 @@ static void ButtonControls(EnvMapVulkanEntityID entity, UIButtonComponent& butto
 	}
 
 	ImGui::SeparatorText("On Click");
-	UIMethodControls("button", button.OnClickTarget, button.OnClickMethod,
+	UIMethodControls(entity, { 0, "button", "Clicked", "click" }, button.OnClickTarget, button.OnClickMethod,
 		"A method of the script without parameters, public or not: OnPlay for void OnPlay().\n"
 		"Scripts can also listen: GetComponent<UIButton>().Clicked += OnPlay");
 }
 
-// The script method a UI element calls (a button's On Click, a slider's On Value Changed): its target and its name
-static void UIMethodControls(const char* what, EnvMapVulkanEntityID& target, std::string& methodName, const char* methodTooltip)
+// The scripts a method without a target is looked for in: the element's and its parents' up to its canvas, nearest first
+static std::vector<EnvMapVulkanEntityID> ScriptsUpToCanvas(EnvMapVulkanEntityID element)
 {
-	const std::string none = ButtonTargetLabel(NoEntity, what);
-	if (ImGui::BeginCombo("Target", ButtonTargetLabel(target, what).c_str()))
+	std::vector<EnvMapVulkanEntityID> scripts;
+	for (EnvMapVulkanEntityID entity = element; entity != NoEntity; entity = s_Scene.GetParent(entity))
 	{
-		if (ImGui::Selectable(none.c_str(), target == NoEntity))
+		if (s_Scene.Has<ScriptComponent>(entity) && !s_Scene.Get<ScriptComponent>(entity).ClassName.empty())
+		{
+			scripts.push_back(entity);
+		}
+		if (s_Scene.Has<UICanvasComponent>(entity))
+		{
+			break;
+		}
+	}
+	return scripts;
+}
+
+// The script method a UI element calls (a button's On Click, a slider's On Value Changed): its target and its name, then
+// the scripts that listen to it in code
+static void UIMethodControls(EnvMapVulkanEntityID element, const UIEventKind& event, EnvMapVulkanEntityID& target, std::string& methodName,
+	const char* methodTooltip)
+{
+	// Target: none set reads "(none)" while there is no method either (nothing is called); with a method, where it is looked for
+	const std::string searched = std::string("(the ") + event.What + ", else a parent up to the canvas)";
+	const std::string preview = target != NoEntity ? ButtonTargetLabel(target, event.What) : methodName.empty() ? std::string("(none)") : searched;
+	if (ImGui::BeginCombo("Target", preview.c_str()))
+	{
+		if (ImGui::Selectable(("(none) " + searched).c_str(), target == NoEntity))
 		{
 			target = NoEntity;
 		}
@@ -599,19 +851,86 @@ static void UIMethodControls(const char* what, EnvMapVulkanEntityID& target, std
 	}
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("Whose script's method it calls (an entity can be dropped here from the Scene Hierarchy).\n"
-			"None: the first script that has the method, from the %s up to its canvas (a menu's script on the canvas)", what);
+		ImGui::SetTooltip("Whose script's method it calls (an entity can be dropped here from the Scene Hierarchy). The list\n"
+			"offers every entity with a script. None: the first script that has the method, from the %s up to its canvas\n"
+			"(a menu's script on the canvas)", event.What);
 	}
-	char method[256] = {};
-	snprintf(method, sizeof(method), "%s", methodName.c_str());
-	if (ImGui::InputText("Method", method, sizeof(method)))
+
+	// Method: chosen from the methods the target's script (or the scripts up to the canvas) has with the right parameters
+	struct Choice
 	{
-		methodName = method;
-	}
-	if (ImGui::IsItemHovered())
+		std::string Method;
+		std::string ClassName;
+	};
+	std::vector<Choice> choices;
+	const std::vector<EnvMapVulkanEntityID> scripts = target != NoEntity ? std::vector<EnvMapVulkanEntityID>{ target } : ScriptsUpToCanvas(element);
+	for (EnvMapVulkanEntityID entity : scripts)
 	{
-		ImGui::SetTooltip("%s", methodTooltip);
+		const ScriptComponent* script = s_Scene.TryGet<ScriptComponent>(entity);
+		if (!script || script->ClassName.empty())
+		{
+			continue;
+		}
+		for (const std::string& method : ScriptHost::DescribeMethods(script->ClassName, event.Kind))
+		{
+			const bool known = std::any_of(choices.begin(), choices.end(), [&](const Choice& choice) { return choice.Method == method; });
+			if (!known && !method.empty())
+			{
+				choices.push_back({ method, script->ClassName });
+			}
+		}
 	}
+	const auto chosen = std::find_if(choices.begin(), choices.end(), [&](const Choice& choice) { return choice.Method == methodName; });
+	const bool scriptsLoaded = ScriptHost::IsGameAssemblyLoaded();
+	if (scriptsLoaded)
+	{
+		const std::string methodPreview = methodName.empty() ? std::string("(none)") : chosen != choices.end() ?
+			methodName + "()   " + ShortClassName(chosen->ClassName) : methodName + "()   (not found)";
+		if (ImGui::BeginCombo("Method", methodPreview.c_str()))
+		{
+			if (ImGui::Selectable("(none)", methodName.empty()))
+			{
+				methodName.clear();
+			}
+			for (const Choice& choice : choices)
+			{
+				const std::string label = choice.Method + "()   " + ShortClassName(choice.ClassName);
+				if (ImGui::Selectable(label.c_str(), choice.Method == methodName))
+				{
+					methodName = choice.Method;
+				}
+			}
+			if (choices.empty())
+			{
+				ImGui::TextDisabled(scripts.empty() ? "No script to call: choose a Target" : event.Kind == 0 ? "Its script has no method without parameters" :
+					event.Kind == 1 ? "Its script has no method with one float parameter" : "Its script has no method with one int parameter");
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("%s\nThe list: the methods of the target's script (or of the scripts up to the canvas) that it can call", methodTooltip);
+		}
+		if (chosen != choices.end())
+		{
+			EditCodeButton("method", chosen->ClassName, chosen->Method);
+		}
+	}
+	else
+	{
+		// Without the game's scripts there is no list: the name as text
+		char method[256] = {};
+		snprintf(method, sizeof(method), "%s", methodName.c_str());
+		if (ImGui::InputText("Method", method, sizeof(method)))
+		{
+			methodName = method;
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("%s\n(the game's scripts aren't loaded: no list of methods)", methodTooltip);
+		}
+	}
+
 	if (target != NoEntity && !s_Scene.Exists(target))
 	{
 		ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.3f, 1.0f), "The target entity is gone: choose another");
@@ -620,6 +939,16 @@ static void UIMethodControls(const char* what, EnvMapVulkanEntityID& target, std
 	{
 		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "The target has no script");
 	}
+	else if (scriptsLoaded && !methodName.empty() && chosen == choices.end())
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "No script %s has a method %s with these parameters", target != NoEntity ? "of the target" : "up to the canvas", methodName.c_str());
+	}
+	else if (methodName.empty())
+	{
+		ImGui::TextDisabled("Not set here: no method is called from the Inspector");
+	}
+
+	UIHandlersInCode(element, event);
 }
 
 static void SliderControls(EnvMapVulkanEntityID entity, UISliderComponent& slider, const SceneUI* gameUI)
@@ -695,7 +1024,7 @@ static void SliderControls(EnvMapVulkanEntityID entity, UISliderComponent& slide
 	}
 
 	ImGui::SeparatorText("On Value Changed");
-	UIMethodControls("slider", slider.OnValueChangedTarget, slider.OnValueChangedMethod,
+	UIMethodControls(entity, { 1, "slider", "ValueChanged", "change" }, slider.OnValueChangedTarget, slider.OnValueChangedMethod,
 		"A method of the script with one float parameter, public or not: OnVolume for void OnVolume(float value).\n"
 		"Called when the player changes the value (at most once a frame).\n"
 		"Scripts can also listen: GetComponent<UISlider>().ValueChanged += OnVolume");
@@ -820,7 +1149,7 @@ static void DropdownControls(EnvMapVulkanEntityID entity, UIDropdownComponent& d
 	}
 
 	ImGui::SeparatorText("On Value Changed");
-	UIMethodControls("drop-down", dropdown.OnValueChangedTarget, dropdown.OnValueChangedMethod,
+	UIMethodControls(entity, { 2, "drop-down", "ValueChanged", "choice" }, dropdown.OnValueChangedTarget, dropdown.OnValueChangedMethod,
 		"A method of the script with one int parameter, public or not: OnQuality for void OnQuality(int option).\n"
 		"Called when the player chooses another option (its index).\n"
 		"Scripts can also listen: GetComponent<UIDropdown>().ValueChanged += OnQuality");

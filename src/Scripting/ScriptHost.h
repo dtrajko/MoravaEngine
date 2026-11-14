@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <string>
+#include <vector>
 
 
 // Strings between C# (UTF-16) and the engine (UTF-8)
@@ -77,6 +78,22 @@ public:
 	// A UI drop-down's choice (11.4): the method with one int parameter, and the drop-down's ValueChanged listeners
 	static int InvokeMethodInt(void* instance, const std::string& name, int32_t value);
 	static bool InvokeDropdownChanged(uint64_t dropdown, int32_t value);
+
+	// Who listens to a UI element's event in C# (the editor's Inspector: "Handled in code"): element 0 for all elements.
+	// Empty without C# or while no game runs (the listeners go with the game's scripts)
+	struct UIListener
+	{
+		uint64_t Element = 0;
+		int Event = 0;          // 0 a button's Clicked, 1 a slider's ValueChanged, 2 a drop-down's ValueChanged
+		uint64_t Entity = 0;    // the script instance's entity (0: a static method)
+		std::string ClassName;  // "Racing.MainMenu"
+		std::string Method;     // "Race"; for a lambda, the method it is written in
+		bool Lambda = false;
+	};
+	static std::vector<UIListener> DescribeUIListeners(uint64_t element = 0);
+	// The methods a UI element can call on a script class: parameters 0 none (a button), 1 a float (a slider), 2 an int
+	// (a drop-down). Empty without C# or such a class
+	static std::vector<std::string> DescribeMethods(const std::string& className, int parameters);
 
 	// The managed heap in bytes and the garbage collections since startup (false without C#)
 	static bool GetMemory(int64_t& bytes, int32_t& collections);

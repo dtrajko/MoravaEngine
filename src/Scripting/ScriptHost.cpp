@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
+#include <cstdlib>
 #include <iterator>
 #include <system_error>
 
@@ -543,6 +544,77 @@ int ScriptHost::InvokeMethodInt(void* instance, const std::string& name, int32_t
 bool ScriptHost::InvokeDropdownChanged(uint64_t dropdown, int32_t value)
 {
 	return !s_Available || s_Managed.InvokeDropdownChanged(dropdown, value) == 0;
+}
+
+// A managed text into a buffer that grows until it fits
+template <typename Read>
+static std::string ReadManagedText(Read read)
+{
+	std::u16string buffer(4096, u'\0');
+	for (int attempt = 0; attempt < 6; attempt++)
+	{
+		const int length = read(buffer.data(), int(buffer.size()));
+		if (length >= 0)
+		{
+			return length > 0 ? ScriptUtf16ToUtf8(buffer.data(), length) : std::string();
+		}
+		buffer.resize(buffer.size() * 4);
+	}
+	return std::string();
+}
+
+static std::vector<std::string> SplitText(const std::string& text, char separator)
+{
+	std::vector<std::string> parts;
+	size_t start = 0;
+	while (start < text.size())
+	{
+		size_t end = text.find(separator, start);
+		if (end == std::string::npos)
+		{
+			end = text.size();
+		}
+		parts.push_back(text.substr(start, end - start));
+		start = end + 1;
+	}
+	return parts;
+}
+
+std::vector<ScriptHost::UIListener> ScriptHost::DescribeUIListeners(uint64_t element)
+{
+	std::vector<UIListener> listeners;
+	if (!s_Available || !s_Managed.DescribeUIListeners)
+	{
+		return listeners;
+	}
+	const std::string text = ReadManagedText([element](char16_t* buffer, int capacity) { return s_Managed.DescribeUIListeners(element, buffer, capacity); });
+	for (const std::string& line : SplitText(text, '\n'))
+	{
+		const std::vector<std::string> fields = SplitText(line, '\t');
+		if (fields.size() < 6)
+		{
+			continue;
+		}
+		UIListener listener;
+		listener.Element = std::strtoull(fields[0].c_str(), nullptr, 10);
+		listener.Event = std::atoi(fields[1].c_str());
+		listener.Entity = std::strtoull(fields[2].c_str(), nullptr, 10);
+		listener.ClassName = fields[3];
+		listener.Method = fields[4];
+		listener.Lambda = fields[5] == "1";
+		listeners.push_back(listener);
+	}
+	return listeners;
+}
+
+std::vector<std::string> ScriptHost::DescribeMethods(const std::string& className, int parameters)
+{
+	if (!s_Available || !s_Managed.DescribeMethods || className.empty())
+	{
+		return {};
+	}
+	const std::u16string name = ScriptUtf8ToUtf16(className);
+	return SplitText(ReadManagedText([&](char16_t* buffer, int capacity) { return s_Managed.DescribeMethods(name.c_str(), int(name.size()), parameters, buffer, capacity); }), '\n');
 }
 
 bool ScriptHost::GetMemory(int64_t& bytes, int32_t& collections)

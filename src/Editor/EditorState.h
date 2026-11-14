@@ -161,6 +161,12 @@ void ShowNotification(const std::string& text, bool isError = false);
 
 // The game runs (Play or Simulate), also while paused: the panels show and edit the running game, not the edited scene
 bool IsPlaying();
+// The scene the game plays: the edited one, or the one a script loaded (Scene.Load); the edited one while not playing
+const std::string& GetPlayedSceneName();
+std::string GetPlayedScenePath();
+// Who listened to the UI's events in the game's scripts (EditorUI.cpp), remembered by scene file when Play stops or a
+// script loads another scene: the Inspector shows them after Stop ("seen in the last Play")
+void RememberUIListeners(const std::string& scenePath);
 
 // Simulate (3.7): the game runs with physics only (no game logic: the input test, the scripts), seen through the
 // editor's camera, and the viewport keeps the editor's tools
@@ -257,6 +263,14 @@ bool OpenScriptProjectInCodeEditor();
 bool OpenScriptFile(const std::string& file, int line);
 // The .cs file and line declaring a script class ("Sample.Spinner"); false when none is found
 bool FindScriptClassFile(const std::string& className, std::string& file, int& line);
+// The line declaring a member (a field, a method) of a script class, read from its .cs file: false without the class's
+// file; the class's own line when no declaration of it is found
+bool FindScriptMemberLine(const std::string& className, const std::string& member, std::string& file, int& line);
+// Where the class adds a method to an event of the entity a field holds, read from its .cs file: the first line using the
+// field with "<eventName> +=" ("RaceButton?.GetComponent<UIButton>() is UIButton race) race.Clicked += Race;"). method:
+// the name added, empty for a lambda. False when no such line is found
+bool FindScriptEventSubscription(const std::string& className, const std::string& field, const std::string& eventName, std::string& method,
+	std::string& file, int& line);
 // Visual Studio (EditorVisualStudio.cpp, Windows): the file at the line (empty: only the window) in the Visual Studio that
 // has the .csproj open, else in one started with it; on a thread of its own. UpdateVisualStudio: each frame, shows the
 // result when it went wrong
