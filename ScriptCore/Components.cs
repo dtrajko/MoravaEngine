@@ -232,6 +232,15 @@ namespace Morava
         }
 
         /// <summary>
+        /// The engine's torque times the Inspector's (Engine Torque): its whole torque curve scaled, so its power too (the
+        /// engine braking stays as it is). 1: as set there. Kept until set again.
+        /// </summary>
+        public void SetEngineTorque(float times)
+        {
+            if (Interop.Game->Vehicle_SetEngineTorque(Entity.Id, times) == 0) throw Missing("vehicle");
+        }
+
+        /// <summary>
         /// The gearbox is manual: the script shifts (ShiftUp, ShiftDown) and the clutch works by itself (out through a shift,
         /// and when slow without throttle, so it doesn't creep in gear). The throttle from neutral still puts it in first,
         /// the brake once stopped in reverse. False (the start): automatic, it shifts by the rpm.

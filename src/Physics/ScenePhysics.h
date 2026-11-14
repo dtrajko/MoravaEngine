@@ -114,6 +114,9 @@ public:
 	// The tires' sideways grip, front and rear, times the component's (FrontGrip, RearGrip): a drift lowers the rear's for a
 	// while. 1, 1: as the component has them. False: not a running vehicle
 	bool SetVehicleGrip(EnvMapVulkanEntityID entity, float front, float rear);
+	// The engine's torque times the component's (EngineTorque): the whole torque curve scaled, the engine braking as it is.
+	// 1: as the component has it. False: not a running vehicle
+	bool SetVehicleEngineTorque(EnvMapVulkanEntityID entity, float times);
 	// The gearbox: automatic (Jolt shifts by the rpm: the default), or manual: the game shifts (ShiftVehicleGear), and the
 	// clutch works by itself: out while it shifts, then in over Jolt's clutch release time, and out when the engine would
 	// turn slower than Jolt's Shift Down RPM without throttle (in gear it would creep at idle, where the automatic goes to
@@ -121,8 +124,10 @@ public:
 	// False: not a running vehicle
 	bool SetVehicleManual(EnvMapVulkanEntityID entity, bool manual);
 	// One gear up (direction 1) or down (-1) in a manual gearbox. Refused: an automatic one, no gear above (top) or below
-	// (first: the brake reverses once stopped), or a downshift that would turn the engine past its limit (Max RPM plus
-	// Over-Rev RPM)
+	// (first: the brake reverses once stopped), or a downshift that would turn the engine more than DownshiftToleranceRpm
+	// past its limit (Max RPM plus Over-Rev RPM; within that, the engine stays at the limit and the clutch drags the wheels
+	// down to it)
+	static constexpr float DownshiftToleranceRpm = 1000.0f;
 	enum class ShiftResult { NotVehicle, Shifted, Refused };
 	ShiftResult ShiftVehicleGear(EnvMapVulkanEntityID entity, int direction);
 	// Straight into a gear (1, 2... forward, -1 reverse, 0 neutral; clamped to the gearbox's), with no check: a car put at
@@ -288,6 +293,7 @@ private:
 		// wheels' radius): a downshift's check also when the wheels lock or spin
 		float RpmPerSpeed = 0.0f;
 		float EngineBrakeTorque = 0.0f; // newton meters at the engine at Max RPM (VehicleComponent::EngineBraking)
+		float EngineTorque = 0.0f;      // the component's Engine Torque, SetVehicleEngineTorque's 1
 		// The component's Max RPM: the rev limiter's, where the throttle is cut, when the engine may over-rev (Jolt's limit
 		// is then Max RPM + Over-Rev RPM); 0: no limiter (Jolt's limit is Max RPM)
 		float LimiterRpm = 0.0f;

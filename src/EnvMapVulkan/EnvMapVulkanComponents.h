@@ -388,6 +388,7 @@ struct VehicleComponent
 	float TopSpeed = 0.0f;
 	float ShiftTime = 0.5f;                 // seconds a gear change takes
 	float ShiftUpRpm = 4000.0f;             // the engine's speed at which it shifts up
+	float ShiftDownRpm = 2000.0f;           // the engine's speed at which it shifts down (Jolt's default)
 	// The manual gearbox's engine braking (the racing game): off the throttle in gear, the engine holds the car back with
 	// this share of Engine Torque at Max RPM (less at lower rpm, more in a lower gear). 0: none beyond Jolt's own
 	float EngineBraking = 0.0f;

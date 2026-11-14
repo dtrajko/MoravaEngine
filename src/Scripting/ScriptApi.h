@@ -395,6 +395,9 @@ struct ScriptNativeApi
 	int32_t (*Vehicle_SetManual)(uint64_t entity, int32_t manual);
 	int32_t (*Vehicle_Shift)(uint64_t entity, int32_t direction);
 	int32_t (*Vehicle_SetGear)(uint64_t entity, int32_t gear); // straight into a gear (0: not a running vehicle)
+
+	// The racing game's engine power setting: a vehicle's engine torque times the component's (0: not a running vehicle)
+	int32_t (*Vehicle_SetEngineTorque)(uint64_t entity, float times);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

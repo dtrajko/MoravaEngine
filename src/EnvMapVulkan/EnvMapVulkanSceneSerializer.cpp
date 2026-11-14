@@ -385,6 +385,7 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "TopSpeed" << YAML::Value << vehicle->TopSpeed;
 			out << YAML::Key << "ShiftTime" << YAML::Value << vehicle->ShiftTime;
 			out << YAML::Key << "ShiftUpRpm" << YAML::Value << vehicle->ShiftUpRpm;
+			out << YAML::Key << "ShiftDownRpm" << YAML::Value << vehicle->ShiftDownRpm;
 			out << YAML::Key << "EngineBraking" << YAML::Value << vehicle->EngineBraking;
 			out << YAML::Key << "OverRevRpm" << YAML::Value << vehicle->OverRevRpm;
 			if (!vehicle->GearRatios.empty())
@@ -1005,6 +1006,7 @@ namespace EnvMapVulkanSceneSerializer
 			Read(vehicleNode, "TopSpeed", vehicle.TopSpeed);
 			Read(vehicleNode, "ShiftTime", vehicle.ShiftTime);
 			Read(vehicleNode, "ShiftUpRpm", vehicle.ShiftUpRpm);
+			Read(vehicleNode, "ShiftDownRpm", vehicle.ShiftDownRpm);
 			Read(vehicleNode, "EngineBraking", vehicle.EngineBraking);
 			Read(vehicleNode, "OverRevRpm", vehicle.OverRevRpm);
 			if (YAML::Node gears = vehicleNode["GearRatios"]; gears && gears.IsSequence())

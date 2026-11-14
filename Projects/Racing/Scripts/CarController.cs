@@ -27,6 +27,8 @@ namespace Racing
     ///   and ShiftDown shift (the clutch works by itself), and the arrow keys shift instead of steering (SteerArrows: the
     ///   arrows' steering, read only with the automatic). The HUD's paddles show each press (UpPresses, DownPresses). At
     ///   the start and after each respawn it is in first gear.
+    /// - The engine's power: the car's own (Buffed), or a GT40 Mk II's (Realistic; Settings: Engine power;
+    ///   GameOptions.EngineTorque). The test driver always has the car's own.
     /// Each assist has its fields to tune in the Inspector. With TestDriver on, the test driver drives (TestDriver.cs: it
     /// follows the track's center line) through the same assists, for checks without a player.
     /// The race (RaceManager.cs, Phase 4) holds it at the start (Held), puts it back on the track (Respawn) and asks
@@ -148,6 +150,7 @@ namespace Racing
         Vector3 wallNormal;      // towards the wall, level
         bool manual;             // the vehicle's gearbox is manual (as GameOptions says, the test driver aside)
         bool toFirstGear = true; // put the manual gearbox in first at the next step (the start, a respawn)
+        float torque = 1.0f;     // the engine's torque times the car's (as GameOptions says, the test driver aside)
 
         protected override void OnCreate()
         {
@@ -231,6 +234,13 @@ namespace Racing
 
         void UpdateGearbox()
         {
+            float wantedTorque = driver == null ? GameOptions.EngineTorque : 1.0f;
+            if (wantedTorque != torque)
+            {
+                vehicle!.SetEngineTorque(wantedTorque);
+                torque = wantedTorque;
+                Log.Info($"CarController: the engine's torque x{torque:0.00}");
+            }
             bool wanted = GameOptions.ManualGearbox && driver == null;
             if (wanted != manual)
             {
