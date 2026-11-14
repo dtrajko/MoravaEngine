@@ -69,6 +69,20 @@ bool GameSystems::TakeVSyncRequest(bool& vsync)
 	return true;
 }
 
+bool GameSystems::TakeFrameRateLimitRequest(int& limit, int& batteryLimit)
+{
+	if (!m_ScriptContext.FrameRateLimitRequested)
+	{
+		return false;
+	}
+	m_ScriptContext.FrameRateLimitRequested = false;
+	const PlayerSettings& player = m_Settings.GetPlayer();
+	const Project* project = Project::GetOpen();
+	limit = player.FrameRateLimit.value_or(project ? project->Window.FrameRateLimit : 0);
+	batteryLimit = player.BatteryFrameRateLimit.value_or(project ? project->Window.BatteryFrameRateLimit : 0);
+	return true;
+}
+
 bool GameSystems::TakeQualityRequest(QualityTier& tier)
 {
 	if (!m_ScriptContext.QualityRequested)

@@ -24,6 +24,7 @@ namespace CpuStats
 	inline constexpr const char* StageSubmit = "Render queue (ImGui submitted)";
 	inline constexpr const char* ParentDraw = "Draw (the renderer)";            // the frame recorded, the UI with it
 	inline constexpr const char* StagePresent = "Present (waits for the GPU, VSync)";
+	inline constexpr const char* StageFrameLimit = "Frame rate limit (waits)";
 
 	struct Stage
 	{

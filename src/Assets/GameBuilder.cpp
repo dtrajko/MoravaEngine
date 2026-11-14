@@ -325,6 +325,67 @@ namespace GameBuilder
 		return CopyFolder(dotnetSource, layout.Resources / "dotnet");
 	}
 
+	// The project's own license files (its fonts', models', sounds' notes: a file whose name says License, Licence, OFL or
+	// Copying), after the engine's in the game's notices: a font under the OFL must ship with its license, and a CC0 kit's note
+	// says where it came from. The build folder, the Library and the scripts' build output are not looked in
+	static bool AppendProjectNotices(const Project& project, const fs::path& notices)
+	{
+		const fs::path root = fs::u8path(project.GetDirectory());
+		const auto isLicense = [](const fs::path& file)
+		{
+			std::string name = file.stem().u8string();
+			std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+			const std::string extension = file.extension().u8string();
+			return (extension.empty() || extension == ".txt" || extension == ".md") &&
+				(name.find("license") != std::string::npos || name.find("licence") != std::string::npos || name.find("ofl") != std::string::npos ||
+					name.find("copying") != std::string::npos);
+		};
+		std::vector<fs::path> files;
+		std::error_code error;
+		for (fs::recursive_directory_iterator it(root, fs::directory_options::skip_permission_denied, error), end; !error && it != end; it.increment(error))
+		{
+			const std::string name = it->path().filename().u8string();
+			if (it->is_directory(error))
+			{
+				if (it.depth() == 0 && (name == Project::BuildFolder || name == "Library"))
+				{
+					it.disable_recursion_pending();
+				}
+				else if (name == "bin" || name == "obj" || name == ".vs")
+				{
+					it.disable_recursion_pending();
+				}
+				continue;
+			}
+			if (it->is_regular_file(error) && isLicense(it->path()))
+			{
+				files.push_back(it->path());
+			}
+		}
+		if (files.empty())
+		{
+			return true;
+		}
+		std::sort(files.begin(), files.end());
+
+		std::string text = "\n\n\n" + project.GetProductName() + "'s own assets\n" + std::string(project.GetProductName().size() + 13, '=') + "\n";
+		for (const fs::path& file : files)
+		{
+			std::ifstream in(file, std::ios::binary);
+			const std::string license((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+			text += "\n\n--------------------------------------------------------------------------------\n" + fs::relative(file, root, error).generic_u8string() +
+				"\n--------------------------------------------------------------------------------\n\n" + license;
+		}
+		std::ofstream out(notices, std::ios::binary | std::ios::app);
+		out << text;
+		if (!out)
+		{
+			return Fail("The license notices '" + notices.generic_u8string() + "' could not be written");
+		}
+		Log::GetLogger()->info("Build Game: {0} license file(s) of the project in {1}", files.size(), notices.filename().u8string());
+		return true;
+	}
+
 	// ---- The game's scripts
 
 	// Publishes the scripts in Release, in the project's Library (not over the assembly the editor has loaded). True with an empty
@@ -946,7 +1007,8 @@ namespace GameBuilder
 			return 1;
 		}
 
-		if (!CopyPlayerTemplate(templateFolder, layout, platform, !open.ScriptAssembly.empty()))
+		if (!CopyPlayerTemplate(templateFolder, layout, platform, !open.ScriptAssembly.empty()) ||
+			!AppendProjectNotices(open, layout.Resources / s_NoticesFile))
 		{
 			return 1;
 		}

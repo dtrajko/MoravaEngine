@@ -3,8 +3,10 @@
 #include "PlayerProduct.h"
 
 #include "Core/Application.h"
+#include "Core/FrameLimiter.h"
 #include "Core/Log.h"
 
+#include "EnvMapVulkan/EnvMapVulkanProfiler.h"
 #include "EnvMapVulkan/EnvMapVulkanQuality.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
@@ -111,6 +113,75 @@ void PlayerLayer::OnAttach()
 	UpdateDisplayState(Application::Get()->GetWindow()->GetHandle()); // the scripts' OnCreate may ask
 	m_Systems.Begin(&m_Scene, &m_Input);
 	m_Playing = true;
+	BeginFirstFrames();
+}
+
+void PlayerLayer::BeginFirstFrames()
+{
+	m_FirstFramesOn = true;
+	m_FirstFramesStart = std::chrono::steady_clock::now();
+	m_FirstFramesUpdates = 0;
+	m_FirstFramesSecond = 0;
+	PlayerProduct::SetDurableLog(true);
+}
+
+void PlayerLayer::UpdateFirstFrames()
+{
+	constexpr uint32_t EachFrame = 5;  // frames logged one by one
+	constexpr int Seconds = 10;        // then a line each second, until
+
+	if (!m_FirstFramesOn)
+	{
+		return;
+	}
+	const uint32_t presented = m_FirstFramesUpdates++; // this update comes after that many frames
+	const double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - m_FirstFramesStart).count();
+	const bool frameLine = presented >= 1 && presented <= EachFrame;
+	const bool secondLine = presented > EachFrame && (int)elapsed > m_FirstFramesSecond;
+	if (!frameLine && !secondLine && elapsed < Seconds)
+	{
+		return;
+	}
+
+	// The GPU's time of the last frame it measured, with its largest passes
+	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
+	std::string gpu = "not measured yet";
+	if (results.Valid)
+	{
+		std::vector<const EnvMapVulkanProfiler::ScopeResult*> passes;
+		for (const EnvMapVulkanProfiler::ScopeResult& scope : results.Scopes)
+		{
+			if (scope.Depth == 0)
+			{
+				passes.push_back(&scope);
+			}
+		}
+		std::sort(passes.begin(), passes.end(), [](const auto* a, const auto* b) { return a->GpuMs > b->GpuMs; });
+		gpu = fmt::format("{0:.2f} ms", results.GpuMs);
+		for (size_t i = 0; i < passes.size() && i < 3; i++)
+		{
+			gpu += fmt::format("{0}{1} {2:.2f}", i == 0 ? " (" : ", ", passes[i]->Name, passes[i]->GpuMs);
+		}
+		gpu += passes.empty() ? "" : ")";
+	}
+	const int limit = FrameLimiter::GetActiveLimit();
+	const std::string reason = FrameLimiter::GetActiveReason();
+	const std::string limitText = (limit > 0 ? std::to_string(limit) : std::string("off")) + (reason.empty() ? "" : " (" + reason + ")");
+	if (frameLine)
+	{
+		Log::GetLogger()->info("First frames: frame {0} presented at {1:.2f} s; GPU {2}", presented, elapsed, gpu);
+	}
+	else
+	{
+		m_FirstFramesSecond = (int)elapsed;
+		Log::GetLogger()->info("First frames: {0} in {1:.1f} s ({2:.0f} fps now); GPU {3}; frame rate limit {4}", presented, elapsed,
+			EnvMapVulkanProfiler::GetFps(), gpu, limitText);
+	}
+	if (elapsed >= Seconds)
+	{
+		m_FirstFramesOn = false;
+		PlayerProduct::SetDurableLog(false);
+	}
 }
 
 void PlayerLayer::SetQuality(QualityTier tier, const char* why)
@@ -306,6 +377,9 @@ void PlayerLayer::UpdateDisplayState(GLFWwindow* window)
 		resolution = std::find(m_Resolutions.begin(), m_Resolutions.end(), own) != m_Resolutions.end() || resolution.Width == 0 ? own :
 			FitResolution(m_Resolutions, resolution);
 	}
+	// VSync stops at the display's refresh rate: a frame rate limit at or above it is left to VSync
+	const GLFWvidmode* displayMode = monitor ? glfwGetVideoMode(monitor) : nullptr;
+	FrameLimiter::SetVSyncRate(Application::Get()->GetWindow()->IsVSync() && displayMode ? displayMode->refreshRate : 0);
 	m_Systems.SetDisplayState(m_Resolutions, resolution, Application::Get()->GetWindow()->IsVSync(), EnvMapVulkanRenderer::GetQualityTier(),
 		EnvMapVulkanRenderer::IsRayTracingSupported());
 }
@@ -330,6 +404,17 @@ void PlayerLayer::ApplyPlayerRequests(GLFWwindow* window)
 	{
 		Application::Get()->GetWindow()->SetVSync(vsync);
 		Log::GetLogger()->info("Player: VSync {0}", vsync ? "on" : "off");
+	}
+	int limit = 0, batteryLimit = 0;
+	if (m_Systems.TakeFrameRateLimitRequest(limit, batteryLimit))
+	{
+		if (Application::Get()->GetCommandLine().FrameRateLimit < 0) // --fps-limit holds for the run
+		{
+			FrameLimiter::SetLimit(limit);
+		}
+		FrameLimiter::SetBatteryLimit(batteryLimit);
+		Log::GetLogger()->info("Player: frame rate limit {0}, on battery {1}", limit > 0 ? std::to_string(limit) : std::string("off"),
+			batteryLimit > 0 ? std::to_string(batteryLimit) : std::string("as plugged in"));
 	}
 	QualityTier tier = QualityTier::Auto;
 	if (m_Systems.TakeQualityRequest(tier))
@@ -365,6 +450,7 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	{
 		PlayerProduct::Crash("frame");
 	}
+	UpdateFirstFrames();
 
 	// Input (the window is the game: it has input while it has the focus), the game, then the camera where the game put the
 	// camera entity
@@ -464,6 +550,7 @@ void PlayerLayer::LoadScene(const std::string& path)
 	m_Systems.Restart();
 	Log::GetLogger()->info("Scene.Load: scene '{0}' from '{1}': {2} entities, {3:.0f} ms", name, ProjectPaths::ToStored(m_ScenePath),
 		m_Scene.GetEntityCount(), std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count());
+	BeginFirstFrames();
 }
 
 // A key's press: down now, up in the last frame

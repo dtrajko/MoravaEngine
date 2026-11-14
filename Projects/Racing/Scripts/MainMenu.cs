@@ -51,8 +51,7 @@ namespace Racing
             if (SettingsButton?.GetComponent<UIButton>() is UIButton settings) settings.Clicked += OpenSettings;
             if (QuitButton?.GetComponent<UIButton>() is UIButton quit) quit.Clicked += Quit;
             line = Racing.Centerline.Load(Centerline, Track != null ? Track.WorldPosition : Vector3.Zero);
-            if (RecordsText?.GetComponent<UIText>() is UIText records)
-                records.Text = Records();
+            ShowRecords();
             if (line == null)
                 Log.Warn($"Main menu: the center line '{Centerline}' was not found: the camera stays where it is");
             distance = StartDistance;
@@ -67,17 +66,28 @@ namespace Racing
             target = line.PositionAt(s + LookAhead, out _);
         }
 
-        string Records()
+        // The records of the engine power chosen (Settings: Engine power), shown again when the choice changes
+        bool recordsRealistic;
+
+        void ShowRecords()
+        {
+            recordsRealistic = GameOptions.RealisticPower;
+            if (RecordsText?.GetComponent<UIText>() is UIText records)
+                records.Text = Records(recordsRealistic);
+        }
+
+        string Records(bool realistic)
         {
             if (line == null)
                 return "";
-            float bestRace = SaveData.GetFloat(line.RecordKey("BestRace"));
-            float bestStart = SaveData.GetFloat(line.RecordKey("BestStartLap"));
-            float bestLap = SaveData.GetFloat(line.RecordKey("BestLap"));
-            string medal = RaceManager.MedalTitle(SaveData.GetInt(line.RecordKey("Medal")));
+            float bestRace = SaveData.GetFloat(line.RecordKey("BestRace", realistic));
+            float bestStart = SaveData.GetFloat(line.RecordKey("BestStartLap", realistic));
+            float bestLap = SaveData.GetFloat(line.RecordKey("BestLap", realistic));
+            string medal = RaceManager.MedalTitle(SaveData.GetInt(line.RecordKey("Medal", realistic)));
+            string power = $"{RaceManager.PowerTitle(realistic)} power:     ";
             if (bestRace <= 0.0f && bestStart <= 0.0f && bestLap <= 0.0f)
-                return "No records yet: 3 laps, beat the medal times";
-            return $"Best race {RaceManager.Format(bestRace)}     Lap 1 {RaceManager.Format(bestStart)}     Flying lap {RaceManager.Format(bestLap)}" +
+                return power + "no records yet: 3 laps, beat the medal times";
+            return power + $"Best race {RaceManager.Format(bestRace)}     Lap 1 {RaceManager.Format(bestStart)}     Flying lap {RaceManager.Format(bestLap)}" +
                 (medal.Length > 0 ? $"     {medal} medal" : "");
         }
 
@@ -85,6 +95,8 @@ namespace Racing
         {
             if (SettingsScreen is SettingsMenu settings && settings.IsOpen && Input.WasPressed("Pause"))
                 settings.Back();
+            if (GameOptions.RealisticPower != recordsRealistic)
+                ShowRecords();
             if (MenuCamera != null && line != null)
             {
                 float unscaled = Time.UnscaledDeltaTime;

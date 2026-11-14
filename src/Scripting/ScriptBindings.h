@@ -55,6 +55,7 @@ struct ScriptContext
 	bool ResolutionRequested = false, VSyncRequested = false, QualityRequested = false;
 	PlayerResolution ResolutionRequest;
 	bool VSyncRequest = false;
+	bool FrameRateLimitRequested = false; // Application.FrameRateLimit or BatteryFrameRateLimit set: the owner applies the settings' values
 	QualityTier QualityRequest = QualityTier::Auto;
 
 	bool InFixedStep = false;       // in OnFixedUpdate: Input's edges and Time.DeltaTime are the fixed step's

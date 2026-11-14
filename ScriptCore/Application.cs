@@ -62,6 +62,32 @@ namespace Morava
             get => Interop.Game->Application_GetVSync() != 0;
             set => Interop.Game->Application_SetVSync(value ? 1 : 0);
         }
+
+        /// <summary>
+        /// Frames a second at most (0: no limit): the game waits for the next frame instead of drawing frames nobody needs,
+        /// so the computer draws less power and stays cooler. With VSync on, a limit at or above the display's refresh rate
+        /// is left to VSync. Set, it holds from the next frame; the player's choice is kept for the next runs too. Until the
+        /// player chooses: the project's (Project Settings: Frame Rate Limit). In the editor's Play nothing changes.
+        /// </summary>
+        public static int FrameRateLimit
+        {
+            get => Interop.Game->Application_GetFrameRateLimit();
+            set => Interop.Game->Application_SetFrameRateLimit(System.Math.Max(value, 0));
+        }
+
+        /// <summary>
+        /// Frames a second at most while a laptop runs on its battery (the lower of this and FrameRateLimit; 0: as plugged
+        /// in). Less power drawn: the battery lasts longer, and one that can't give the GPU's full power doesn't turn the
+        /// computer off. Kept as FrameRateLimit is; until the player chooses: the project's (default 60).
+        /// </summary>
+        public static int BatteryFrameRateLimit
+        {
+            get => Interop.Game->Application_GetBatteryFrameRateLimit();
+            set => Interop.Game->Application_SetBatteryFrameRateLimit(System.Math.Max(value, 0));
+        }
+
+        /// <summary>The computer runs on its battery now (false when it can't tell, and on a desktop).</summary>
+        public static bool OnBattery => Interop.Game->Application_IsOnBattery() != 0;
     }
 
     /// <summary>A size in pixels: a fullscreen resolution.</summary>

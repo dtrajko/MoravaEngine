@@ -40,4 +40,11 @@ namespace PlayerProduct
 
 	// At the normal end of the game: what is still in the log's buffer
 	void FlushLog();
+
+	// The first seconds of a scene (PlayerLayer's first-frames log): while on, each line of the log file is written at once and
+	// the system is asked to put it on the disk (on a thread of its own: the game doesn't wait), so a computer that turns off
+	// in those seconds (a laptop's power that gives out) still has the log up to its last frame. Off: the info lines every
+	// two seconds, as the rest of the run
+	void SetDurableLog(bool durable);
+	bool HasLogFile();
 }

@@ -24,6 +24,7 @@
 
 #include "UI/SceneUI.h"
 
+#include "Core/FrameLimiter.h"
 #include "Core/Log.h"
 
 #include <glm/gtc/quaternion.hpp>
@@ -1465,6 +1466,53 @@ static void ApplicationSetVSync(int32_t vsync)
 	}
 }
 
+// The frame rate limits as the player chose them, else as the project has them
+static int32_t ApplicationGetFrameRateLimit()
+{
+	const GameSettings* settings = GetSettings();
+	const Project* project = Project::GetOpen();
+	return settings && settings->GetPlayer().FrameRateLimit ? *settings->GetPlayer().FrameRateLimit : project ? project->Window.FrameRateLimit : 0;
+}
+
+static void ApplicationSetFrameRateLimit(int32_t framesPerSecond)
+{
+	if (!s_Context)
+	{
+		return;
+	}
+	s_Context->FrameRateLimitRequested = true;
+	if (GameSettings* settings = GetSettings())
+	{
+		settings->EditPlayer().FrameRateLimit = std::max(framesPerSecond, 0);
+	}
+}
+
+static int32_t ApplicationGetBatteryFrameRateLimit()
+{
+	const GameSettings* settings = GetSettings();
+	const Project* project = Project::GetOpen();
+	return settings && settings->GetPlayer().BatteryFrameRateLimit ? *settings->GetPlayer().BatteryFrameRateLimit :
+		project ? project->Window.BatteryFrameRateLimit : 0;
+}
+
+static void ApplicationSetBatteryFrameRateLimit(int32_t framesPerSecond)
+{
+	if (!s_Context)
+	{
+		return;
+	}
+	s_Context->FrameRateLimitRequested = true;
+	if (GameSettings* settings = GetSettings())
+	{
+		settings->EditPlayer().BatteryFrameRateLimit = std::max(framesPerSecond, 0);
+	}
+}
+
+static int32_t ApplicationIsOnBattery()
+{
+	return FrameLimiter::IsOnBattery() ? 1 : 0;
+}
+
 static int32_t QualityGetLevel()
 {
 	return (int32_t)(s_Context ? s_Context->Quality : QualityTier::High);
@@ -1753,6 +1801,11 @@ namespace ScriptBindings
 		api.Application_SetResolution = ApplicationSetResolution;
 		api.Application_GetVSync = ApplicationGetVSync;
 		api.Application_SetVSync = ApplicationSetVSync;
+		api.Application_GetFrameRateLimit = ApplicationGetFrameRateLimit;
+		api.Application_SetFrameRateLimit = ApplicationSetFrameRateLimit;
+		api.Application_GetBatteryFrameRateLimit = ApplicationGetBatteryFrameRateLimit;
+		api.Application_SetBatteryFrameRateLimit = ApplicationSetBatteryFrameRateLimit;
+		api.Application_IsOnBattery = ApplicationIsOnBattery;
 		api.Quality_GetLevel = QualityGetLevel;
 		api.Quality_SetLevel = QualitySetLevel;
 		api.Quality_IsAutomatic = QualityIsAutomatic;

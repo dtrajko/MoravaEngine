@@ -346,6 +346,14 @@ struct ScriptNativeApi
 	void (*Application_SetResolution)(uint32_t width, uint32_t height);
 	int32_t (*Application_GetVSync)();
 	void (*Application_SetVSync)(int32_t vsync);
+	// The frame rate limits (FrameLimiter): frames a second at most (0: none), and on a laptop's battery (0: as plugged in).
+	// Get: the player's choice, else the project's; Set: kept as the player's, in force after this frame (the player; the
+	// editor's Play logs it). IsOnBattery: 1 when the computer runs on its battery now
+	int32_t (*Application_GetFrameRateLimit)();
+	void (*Application_SetFrameRateLimit)(int32_t framesPerSecond);
+	int32_t (*Application_GetBatteryFrameRateLimit)();
+	void (*Application_SetBatteryFrameRateLimit)(int32_t framesPerSecond);
+	int32_t (*Application_IsOnBattery)();
 	// Quality (11.4): the tier the game is drawn with (QualityTier: 0 Low to 3 Ultra). Set: from the next frame on; -1 is Auto
 	// (the GPU's tier, no choice kept). IsAutomatic: 1 when the player chose none. IsRayTracingSupported: 1 when the GPU traces rays
 	int32_t (*Quality_GetLevel)();

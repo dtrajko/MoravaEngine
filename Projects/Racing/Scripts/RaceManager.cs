@@ -69,11 +69,16 @@ namespace Racing
         /// <summary>Seconds of the wrong way before the warning (a spin doesn't set it off).</summary>
         public float WrongWayTime = 1.0f;
 
-        // ---- Medals: the race's time, in seconds (0: none)
+        // ---- Medals: the race's time, in seconds (0: none), with the engine's Buffed power
         public float AuthorTime;
         public float GoldTime;
         public float SilverTime;
         public float BronzeTime;
+        // ---- The medals with the Realistic power (GameOptions.RealisticPower): a slower car, times of their own
+        public float RealisticAuthorTime;
+        public float RealisticGoldTime;
+        public float RealisticSilverTime;
+        public float RealisticBronzeTime;
 
         /// <summary>The race of the running game.</summary>
         public static RaceManager? Current { get; private set; }
@@ -130,8 +135,10 @@ namespace Racing
         /// <summary>The medal's name for the screen: "", "Bronze", "Silver", "Gold", "Author".</summary>
         public static string MedalTitle(int medal) => medal switch { 1 => "Bronze", 2 => "Silver", 3 => "Gold", 4 => "Author", _ => "" };
 
-        /// <summary>The medal's time (0: none).</summary>
-        public float MedalTime(int medal) => medal switch { 1 => BronzeTime, 2 => SilverTime, 3 => GoldTime, 4 => AuthorTime, _ => 0.0f };
+        /// <summary>The medal's time with the power of the records in use (RealisticRecords; 0: none).</summary>
+        public float MedalTime(int medal) => RealisticRecords ?
+            medal switch { 1 => RealisticBronzeTime, 2 => RealisticSilverTime, 3 => RealisticGoldTime, 4 => RealisticAuthorTime, _ => 0.0f } :
+            medal switch { 1 => BronzeTime, 2 => SilverTime, 3 => GoldTime, 4 => AuthorTime, _ => 0.0f };
 
         Centerline? line;
         CarController? car;
@@ -155,10 +162,30 @@ namespace Racing
         int respawns;
         readonly System.Collections.Generic.List<float> lapTimes = new();
 
-        // The records are the track version's (Centerline.RecordKey): a rebuilt track starts with none
-        string Key(string name) => line != null ? line.RecordKey(name) : $"Track.{name}";
+        /// <summary>The records in use are the Realistic power's (else Buffed's): the car's power. A race whose power changes
+        /// starts again with the other power's records (RecordsFor).</summary>
+        public bool RealisticRecords { get; private set; }
+
+        // The records are the track version's and the engine power's (Centerline.RecordKey): a rebuilt track starts with none
+        string Key(string name) => line != null ? line.RecordKey(name, RealisticRecords) : $"Track{(RealisticRecords ? "-Realistic" : "")}.{name}";
         /// <summary>The save data key of one of this track's records (the ghost keeps its laps beside them).</summary>
         public string RecordKey(string name) => Key(name);
+
+        /// <summary>The power's name for the screen and the log.</summary>
+        public static string PowerTitle(bool realistic) => realistic ? "Realistic" : "Buffed";
+
+        // The best times of this power (the saved ones)
+        void LoadRecords(bool realistic)
+        {
+            RealisticRecords = realistic;
+            BestLap = SaveData.GetFloat(Key("BestLap"));
+            BestRace = SaveData.GetFloat(Key("BestRace"));
+            bestSplits = ParseSplits(SaveData.GetString(Key("BestLapSplits")));
+            BestStartLap = SaveData.GetFloat(Key("BestStartLap"));
+            bestStartSplits = ParseSplits(SaveData.GetString(Key("BestStartLapSplits")));
+        }
+
+        string RecordsText() => $"best lap 1 {Format(BestStartLap)}, best flying lap {Format(BestLap)}, best race {Format(BestRace)} ({PowerTitle(RealisticRecords)} power)";
 
         protected override void OnCreate()
         {
@@ -172,18 +199,14 @@ namespace Racing
             }
             Sectors = Math.Max(Sectors, 1);
             lapSplits = new float[Sectors];
-            BestLap = SaveData.GetFloat(Key("BestLap"));
-            BestRace = SaveData.GetFloat(Key("BestRace"));
-            bestSplits = ParseSplits(SaveData.GetString(Key("BestLapSplits")));
-            BestStartLap = SaveData.GetFloat(Key("BestStartLap"));
-            bestStartSplits = ParseSplits(SaveData.GetString(Key("BestStartLapSplits")));
+            LoadRecords(GameOptions.RealisticPower); // the car's when it is there (Restart)
             for (int i = 0; i < lights.Length; i++)
                 lights[i] = Scene.FindEntityByName($"Light {i + 1}")?.GetComponent<UIImage>();
             lightsPanel = StartLights?.GetComponent<UIRect>();
             wrongWayRect = WrongWayText?.GetComponent<UIRect>();
             if (wrongWayRect != null)
                 wrongWayRect.Visible = false;
-            Log.Info($"Race: '{line.Name}', {line.Length:0} m, {Laps} laps, {Sectors - 1} checkpoints; best lap 1 {Format(BestStartLap)}, best flying lap {Format(BestLap)}, best race {Format(BestRace)} (records of version {line.Version})");
+            Log.Info($"Race: '{line.Name}', {line.Length:0} m, {Laps} laps, {Sectors - 1} checkpoints; {RecordsText()}, records of version {line.Version}");
         }
 
         protected override void OnUpdate(float dt)
@@ -212,6 +235,12 @@ namespace Racing
             {
                 started = true;
                 restartAsked = false;
+                Restart();
+            }
+            else if (car.RealisticPower != RealisticRecords)
+            {
+                // The power changed (Settings, in the pause menu): its laps would count for neither, so the race starts again
+                Log.Info($"Race: the engine's power is now {PowerTitle(car.RealisticPower)}: the race starts again");
                 Restart();
             }
 
@@ -253,6 +282,11 @@ namespace Racing
         {
             if (line == null || car == null)
                 return;
+            if (car.RealisticPower != RealisticRecords)
+            {
+                LoadRecords(car.RealisticPower);
+                Log.Info($"Race: {RecordsText()}");
+            }
             State = RaceState.Lights;
             phaseTime = 0.0f;
             lightsHideAt = -1.0f;
@@ -410,7 +444,10 @@ namespace Racing
             car!.Held = true;
             SetWrongWay(false);
             float time = RaceTime;
-            Medal = time <= AuthorTime ? 4 : time <= GoldTime ? 3 : time <= SilverTime ? 2 : time <= BronzeTime ? 1 : 0;
+            Medal = 0;
+            for (int medal = 4; medal >= 1 && Medal == 0; medal--)
+                if (time <= MedalTime(medal))
+                    Medal = medal;
             bool record = BestRace <= 0.0f || time < BestRace;
             NewRecord = record;
             if (record)
