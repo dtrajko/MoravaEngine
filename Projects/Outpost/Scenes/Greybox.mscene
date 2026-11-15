@@ -1,0 +1,468 @@
+Scene:
+  Version: 1
+  Name: Greybox
+EditorCamera:
+  Translation: [18, 14, 26]
+  Rotation: [25, 35, 0]
+  FieldOfView: 60
+RenderSettings:
+  Antialiasing: SMAA
+Entities:
+  - ID: 1001
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 1.7, 16]
+      Rotation: [5, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 70
+      NearClip: 0.05
+      FarClip: 1000
+    Script:
+      Class: Outpost.FlyCamera
+      Fields:
+        Speed: {Float: 6}
+  - ID: 1002
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/rocky_ridge_puresky_2k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 1003
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-40, 35, 0]
+      Scale: [1, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 1
+      FollowEnvironmentRotation: false
+      CastShadows: true
+      IconPlaced: false
+  - ID: 2000
+    Name: Greybox
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - ID: 2001
+    Name: Ground
+    Parent: 2000
+    Transform:
+      Translation: [0, -0.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [30, 0.5, 30]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2002
+    Name: Cube
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7824392437226106866
+        File: Assets/Materials/Greybox_Floor.mmat
+        Name: Greybox_Floor
+  - ID: 2003
+    Name: Upper Floor
+    Parent: 2000
+    Transform:
+      Translation: [0, 3, -10]
+      Rotation: [0, 0, 0]
+      Scale: [8, 0.15, 6]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2004
+    Name: Cube
+    Parent: 2003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7824392437226106866
+        File: Assets/Materials/Greybox_Floor.mmat
+        Name: Greybox_Floor
+  - ID: 2005
+    Name: Pillar 1
+    Parent: 2000
+    Transform:
+      Translation: [-7.6, 1.425, -4.4]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 1.425, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2006
+    Name: Cube
+    Parent: 2005
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3651053676750386955
+        File: Assets/Materials/Greybox_Wall.mmat
+        Name: Greybox_Wall
+  - ID: 2007
+    Name: Pillar 2
+    Parent: 2000
+    Transform:
+      Translation: [7.6, 1.425, -4.4]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 1.425, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2008
+    Name: Cube
+    Parent: 2007
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3651053676750386955
+        File: Assets/Materials/Greybox_Wall.mmat
+        Name: Greybox_Wall
+  - ID: 2009
+    Name: Pillar 3
+    Parent: 2000
+    Transform:
+      Translation: [-7.6, 1.425, -15.6]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 1.425, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2010
+    Name: Cube
+    Parent: 2009
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3651053676750386955
+        File: Assets/Materials/Greybox_Wall.mmat
+        Name: Greybox_Wall
+  - ID: 2011
+    Name: Pillar 4
+    Parent: 2000
+    Transform:
+      Translation: [7.6, 1.425, -15.6]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 1.425, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2012
+    Name: Cube
+    Parent: 2011
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3651053676750386955
+        File: Assets/Materials/Greybox_Wall.mmat
+        Name: Greybox_Wall
+  - ID: 2013
+    Name: Ramp
+    Parent: 2000
+    Transform:
+      Translation: [5, 1.442, -1.07]
+      Rotation: [27.7, 0, 0]
+      Scale: [1.5, 0.15, 3.39]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2014
+    Name: Cube
+    Parent: 2013
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1327355590143161225
+        File: Assets/Materials/Greybox_Accent.mmat
+        Name: Greybox_Accent
+  - ID: 2015
+    Name: Wall Left
+    Parent: 2000
+    Transform:
+      Translation: [-5.5, 1.5, 8]
+      Rotation: [0, 0, 0]
+      Scale: [4.5, 1.5, 0.1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2016
+    Name: Cube
+    Parent: 2015
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3651053676750386955
+        File: Assets/Materials/Greybox_Wall.mmat
+        Name: Greybox_Wall
+  - ID: 2017
+    Name: Wall Right
+    Parent: 2000
+    Transform:
+      Translation: [5.5, 1.5, 8]
+      Rotation: [0, 0, 0]
+      Scale: [4.5, 1.5, 0.1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2018
+    Name: Cube
+    Parent: 2017
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3651053676750386955
+        File: Assets/Materials/Greybox_Wall.mmat
+        Name: Greybox_Wall
+  - ID: 2019
+    Name: Wall Lintel
+    Parent: 2000
+    Transform:
+      Translation: [0, 2.75, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 0.25, 0.1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2020
+    Name: Cube
+    Parent: 2019
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3651053676750386955
+        File: Assets/Materials/Greybox_Wall.mmat
+        Name: Greybox_Wall
+  - ID: 2021
+    Name: Crate 1
+    Parent: 2000
+    Transform:
+      Translation: [-3, 0.5, 2]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2022
+    Name: Cube
+    Parent: 2021
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1327355590143161225
+        File: Assets/Materials/Greybox_Accent.mmat
+        Name: Greybox_Accent
+  - ID: 2023
+    Name: Crate 2
+    Parent: 2000
+    Transform:
+      Translation: [-1.8, 0.5, 2.4]
+      Rotation: [0, 20, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2024
+    Name: Cube
+    Parent: 2023
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1327355590143161225
+        File: Assets/Materials/Greybox_Accent.mmat
+        Name: Greybox_Accent
+  - ID: 2025
+    Name: Crate 3
+    Parent: 2000
+    Transform:
+      Translation: [-3, 1.5, 2]
+      Rotation: [0, 10, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2026
+    Name: Cube
+    Parent: 2025
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1327355590143161225
+        File: Assets/Materials/Greybox_Accent.mmat
+        Name: Greybox_Accent
+  - ID: 2027
+    Name: Container
+    Parent: 2000
+    Transform:
+      Translation: [-14, 1.3, -6]
+      Rotation: [0, 0, 0]
+      Scale: [1.2, 1.3, 3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 2028
+    Name: Cube
+    Parent: 2027
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3651053676750386955
+        File: Assets/Materials/Greybox_Wall.mmat
+        Name: Greybox_Wall

@@ -894,10 +894,10 @@ if(MORAVA_SCRIPTING)
         endif()
     endforeach()
 
-    # The projects' scripts (Projects/<Name>/Scripts/<Name>.csproj: Sample, Racing), which their scenes use: built after
+    # The projects' scripts (Projects/<Name>/Scripts/<Name>.csproj: Sample, Racing, Outpost), which their scenes use: built after
     # ScriptCore into the project's Scripts/bin (where <Name>.mproject's ScriptAssembly points) when a .cs or the .csproj
     # changed. Target Morava<Name>Scripts. The smoke tests play the sample with them
-    foreach(MORAVA_SCRIPT_PROJECT Sample Racing)
+    foreach(MORAVA_SCRIPT_PROJECT Sample Racing Outpost)
         set(MORAVA_PROJECT_SCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Projects/${MORAVA_SCRIPT_PROJECT}/Scripts")
         if(NOT EXISTS "${MORAVA_PROJECT_SCRIPTS_DIR}/${MORAVA_SCRIPT_PROJECT}.csproj")
             continue()
