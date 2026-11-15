@@ -137,8 +137,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   and fight. The inspiration is how Counter-Strike 1.6 and CS2, GoldenEye 007 (1997), Doom and Quake <i>play</i>: their
   maps, cover and verticality. Their content is not copied: the levels, models, names and sounds are our own or CC0.
   Multiplayer is kept in view: it's not built now, but nothing here rules it out.</p>
-  <p class="meta">Drafted November 15, 2026, while the racing game's Phase 11 is finishing. It is a plan, not agreed work:
-  it waits for the user's review. Names that exist in the code are written as they are. Names of new classes, files and
+  <p class="meta">Drafted November 15, 2026, while the racing game's Phase 11 is finishing. Agreed and started the same day
+  (Phase 0; the sniper scope added at the user's request). Names that exist in the code are written as they are. Names of new classes, files and
   settings are proposals. Once building starts, this page is kept up to date with "As built", "Checked" and "Not done"
   boxes, as the <a href="Racing_Plan.html">Racing plan</a> is.</p>
   <nav class="toc" aria-label="Contents">
@@ -154,7 +154,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><a href="#level">The level and how it is made</a></li>
       <li><a href="#content">Content: models, animations, sounds</a></li>
       <li><a href="#multiplayer">Keeping multiplayer possible</a></li>
-      <li><a href="#engine">The engine work (E1–E9)</a></li>
+      <li><a href="#engine">The engine work (E1–E10)</a></li>
       <li><a href="#phases">The phases</a></li>
       <li><a href="#later">Later</a></li>
       <li><a href="#verify">How each phase is checked</a></li>
@@ -164,7 +164,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 
 <section id="verdict">
   <h2>The verdict</h2>
-  <div class="box ok"><b>Feasible on this engine, with about nine pieces of engine work first or alongside</b>
+  <div class="box ok"><b>Feasible on this engine, with about ten pieces of engine work first or alongside</b>
     <ul>
       <li>About two thirds of what a shooter needs is already there. The racing game, the Sample project (Erika's
         third-person character and camera, the collector milestone) and the engine phases built a lot of it:
@@ -185,8 +185,9 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
           <li>Aiming the upper body while the legs walk (an animation layer).</li>
           <li>Lights driven from C# (muzzle flashes, alarm lights).</li>
           <li>Crouching (the character's capsule changing height).</li>
+          <li>Far detail that follows a sniper scope's zoom.</li>
         </ul>
-        They are described in <a href="#engine">E1–E9</a>; each is one engine phase, like the racing game's particles and
+        They are described in <a href="#engine">E1–E10</a>; each is one engine phase, like the racing game's particles and
         trails were.</li>
       <li><b>The biggest risk is content, not code:</b> rigged, animated characters holding guns, under CC0. Phase 0 checks
         the candidate packs before anything else is built.</li>
@@ -213,6 +214,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li><b>The first level: a military and industrial base.</b></li>
     <li><b>Missions with objectives</b> (GoldenEye-style): reach places, find things, deal with guards, get out.</li>
     <li><b>CC0 assets only</b>, or our own (scripts, Blender), as in Racing.</li>
+    <li><b>A sniper rifle with a scope view</b>, "a very distinctive and unavoidable feature in shooter games"
+      (<a href="#scope">the scope</a>).</li>
   </ul>
   <h3>Proposed</h3>
   <ul>
@@ -232,10 +235,10 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   <div class="table-wrap"><table>
     <tr><th>Action</th><th>Keyboard and mouse</th><th>Gamepad</th></tr>
     <tr><td>Move, look</td><td>W A S D, mouse</td><td>left stick, right stick</td></tr>
-    <tr><td>Fire, aim down the sights</td><td>left button, right button</td><td>right trigger, left trigger</td></tr>
+    <tr><td>Fire, aim down the sights (the sniper's scope: its zoom levels)</td><td>left button, right button</td><td>right trigger, left trigger</td></tr>
     <tr><td>Jump, crouch, walk quietly</td><td>Space, Ctrl (C toggles), Shift</td><td>A, B, left stick press</td></tr>
     <tr><td>Reload, use (doors, switches, pick up)</td><td>R, E</td><td>X, Y</td></tr>
-    <tr><td>Weapons: next, previous, by number</td><td>wheel, Q (last), 1–3</td><td>right bumper, left bumper</td></tr>
+    <tr><td>Weapons: next, previous, by number</td><td>wheel, Q (last), 1–4</td><td>right bumper, left bumper</td></tr>
     <tr><td>Fire mode (semi, automatic)</td><td>B</td><td>D-pad down</td></tr>
     <tr><td>First person, third person</td><td>V</td><td>right stick press</td></tr>
     <tr><td>Objectives, pause</td><td>Tab, Escape</td><td>Back, Start</td></tr>
@@ -271,7 +274,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       tiers</td><td>Limit: shadow maps for 4 spot and 4 point lights at once (see <a href="#risks">risks</a>).</td></tr>
     <tr><td>Shipping</td><td>Build Game, packs, the player</td><td></td></tr>
   </table></div>
-  <h3>Missing (the engine work, <a href="#engine">E1–E9</a>)</h3>
+  <h3>Missing (the engine work, <a href="#engine">E1–E10</a>)</h3>
   <div class="table-wrap"><table>
     <tr><th></th><th>Piece</th><th>Why the shooter needs it</th><th>Size</th></tr>
     <tr><td>E1</td><td>Navigation (Recast/Detour)</td><td>Guards that find their way across floors and around cover</td><td>Large</td></tr>
@@ -283,6 +286,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <tr><td>E7</td><td>Crouch: the character's capsule changes height</td><td>Hiding behind low cover, under windows</td><td>Small</td></tr>
     <tr><td>E8</td><td>Lights in C#</td><td>Muzzle flashes, alarm beacons, lights shot out</td><td>Small</td></tr>
     <tr><td>E9</td><td>Sound occlusion and room reverb</td><td>Gunfire through a wall sounds muffled; halls echo</td><td>Medium (can wait)</td></tr>
+    <tr><td>E10</td><td>Detail by the field of view (the scope's zoom)</td><td>Through a sniper scope, far trees and terrain keep the detail of their apparent size, not their distance</td><td>Small</td></tr>
   </table></div>
 </section>
 
@@ -338,6 +342,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   <div class="table-wrap"><table>
     <tr><th>Weapon</th><th>Fire</th><th>Damage (body, head)</th><th>Magazine, spare</th><th>Notes</th></tr>
     <tr><td>Assault rifle (AK-style)</td><td>Semi or automatic, 600 shots/min</td><td>30, ×4 to the head</td><td>30, 90</td><td>Recoil climbs in a set pattern then drifts; accurate when still, less when moving or jumping</td></tr>
+    <tr><td>Sniper rifle (bolt action)</td><td>One shot, 1.5 s between shots</td><td>90, ×4 to the head (one shot)</td><td>5, 15</td><td>The scope (<a href="#scope">below</a>); inaccurate unscoped and while moving; slow to run with</td></tr>
     <tr><td>Pistol</td><td>Semi</td><td>20, ×4</td><td>12, 48</td><td>Fast to draw; the fallback</td></tr>
     <tr><td>Knife</td><td>Slash</td><td>50 (from behind: a takedown)</td><td>–</td><td>Silent; fastest to run with</td></tr>
   </table></div>
@@ -350,6 +355,30 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       through with reduced damage (later, if the levels ask for it).</li>
     <li>Feedback: muzzle flash (particles, a short light: E8), tracer, impact sparks or dust by material, a bullet hole
       (E6), a hit marker on the crosshair and a sound when a guard is hit, camera kick.</li>
+  </ul>
+  <h3 id="scope">The sniper scope</h3>
+  <p>The scope is the sniper rifle's way of aiming down the sights. It is drawn the way CS and GoldenEye draw it: the
+  whole screen becomes the view through the lens, not a small lens on a gun model.</p>
+  <ul>
+    <li><b>Zoom levels:</b> the right button (left trigger) steps through off, 4× and 10×. While scoped, the wheel changes
+      the zoom smoothly between 2× and 12× (the weapon switch waits until the scope is down). The zoom narrows the
+      camera's field of view, which is already settable from C#.</li>
+    <li><b>The picture:</b> a game UI overlay with the scope's black ring, reticle (crosshairs with range marks) and a soft
+      vignette, made by our own script as the tire textures were. It scales with the screen and keeps the circle round in
+      any aspect ratio. The view model and the HUD's crosshair are hidden while scoped.</li>
+    <li><b>Both views:</b> in third person, scoping goes to the first-person eye for as long as it lasts, then back. The
+      shot is the same hit test as every other weapon (camera ray, then muzzle ray).</li>
+    <li><b>Feel:</b> the mouse turns slower in proportion to the zoom (the settings have a scope sensitivity too), the
+      reticle sways slowly with breathing, and holding Shift (walk) steadies it for a few seconds. Moving or jumping while
+      scoped spreads the shot. The scope comes up in about 0.25 s with a short blur and darkening, and drops after each shot
+      until the bolt is worked.</li>
+    <li><b>The guards:</b> a sniper on a rooftop or a watchtower is a guard type (Phase 5) with a visible laser line or a
+      glint from the lens, so the player can spot the sniper first. The levels give long sight lines for it: the yard, the
+      catwalks, the tower (Phase 6).</li>
+    <li><b>The engine:</b> what it needs is there except detail by the field of view (E10). A 10× zoom shows a tree 300 m
+      away as large as one 30 m away. The foliage impostors (by meters, <code>ImpostorDistance</code>) and the terrain's
+      detail (<code>LodTolerance</code>) must then choose the detail of the nearer one. Shadows' distance and the probes
+      are checked as well.</li>
   </ul>
   <h3>A mission</h3>
   <ul>
@@ -488,7 +517,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 </section>
 
 <section id="engine">
-  <h2>The engine work (E1–E9)</h2>
+  <h2>The engine work (E1–E10)</h2>
   <p>Each is an engine feature for any game, written up in the engine guide (likely a new section, as 12.1 Particles
   was) with its Inspector, C# API, overlay or debug view, and a test scene. They are done inside the shooter's phases, as
   the racing game's particles were.</p>
@@ -550,6 +579,14 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li><b>E9:</b> sounds behind walls muffled (a ray from listener to source; a low-pass filter and less volume), and
       reverb zones (a hall, a corridor, outdoors) as trigger volumes. Optional: the game works without it.</li>
   </ul>
+  <h3>E10 Detail by the field of view</h3>
+  <ul>
+    <li>Every distance that picks a level of detail (foliage impostors, the terrain's chunks, model LODs when they come) is
+      measured as the camera's zoom sees it: the distance times the ratio of the zoomed field of view to the camera's
+      normal one. Without a zoom nothing changes.</li>
+    <li>The shadow cascades' distance and the culling stay as they are; the scope's narrow view draws less, not more.</li>
+    <li>Checked in Racing's circuit with a test camera at 10× (the trees and the terrain far away), then in the base.</li>
+  </ul>
 </section>
 
 <section id="phases">
@@ -561,6 +598,25 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       list in <a href="#risks">risks</a>) and look; one shared skeleton chosen. <b>A go/no-go for the content.</b></li>
     <li><code>Tools/LevelBuilder</code> version 1: rooms, floors, stairs and walls from a data file, greybox.</li>
   </ul>
+  <p>The order (2026-11-15, the user's choice): Phase 0, then navigation (E1) as its own engine phase, then Phases 1 and
+  2. Phase 0 is three steps: 0.1 the project, 0.2 the content check, 0.3 the level builder.</p>
+  <div class="box ok"><b>As built: 0.1 the project (2026-11-15)</b>
+    <ul>
+      <li><code>Projects/Outpost/Outpost.mproject</code>: start scene <code>Scenes/Greybox.mscene</code>, a window (not
+        fullscreen while it is built), Medium by default.</li>
+      <li><code>Settings/Input.minput</code>: the decisions' table as 24 actions. Move, Look, Fire, Aim, Jump, Crouch
+        (held) and CrouchToggle (C), Walk, Reload, Use, WeaponScroll (the wheel), Next and PreviousWeapon (the bumpers),
+        LastWeapon (Q), Weapon1–4, FireMode, SwitchView (V), Objectives (Tab), Pause, UI_Navigate, UI_Submit.</li>
+      <li><code>Scripts/Outpost.csproj</code> (CMake target <code>MoravaOutpostScripts</code>, built with the editor and
+        the player like Sample's and Racing's) and <code>FlyCamera</code>, a free debug camera: the mouse looks; W A S D
+        fly; Space and Ctrl rise and sink; Shift is faster. It stays as a debug camera once the player comes.</li>
+      <li><code>Scenes/Greybox.mscene</code>: a placeholder made of boxes (ground, an upper floor on pillars, a ramp, a
+        wall with a doorway, crates, a container) with three plain materials (<code>Greybox_*.mmat</code>), until the
+        level builder's (0.3) replaces it.</li>
+      <li><code>Projects/Outpost/Licenses.md</code>: the register of every outside asset and its license, filled in by
+        0.2.</li>
+    </ul>
+    Checked: the editor's Play and the player (Debug), no validation messages, no script errors; 180 fps (VSync).</div>
   <h3>Phase 1: the player in both views</h3>
   <ul>
     <li>First-person movement: walk, run, walk quietly, jump, fall damage, footsteps; crouch (E7).</li>
@@ -571,7 +627,10 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   </ul>
   <h3>Phase 2: weapons</h3>
   <ul>
-    <li>Weapon data files; the rifle (semi and automatic), the pistol, the knife; switching, reloading, ammo.</li>
+    <li>Weapon data files; the rifle (semi and automatic), the sniper rifle, the pistol, the knife; switching, reloading,
+      ammo.</li>
+    <li>The sniper scope (<a href="#scope">the design</a>): zoom levels, the overlay, sway and steadying, the scope's
+      sensitivity; detail by the field of view (E10).</li>
     <li>The hit test in both views (camera ray, then muzzle ray); recoil, spread, aiming down the sights.</li>
     <li>Effects: muzzle flash (particles and a light: E8), tracers, impacts by material, bullet holes (E6); the guns'
       sounds; the gun in the body's hands (E3) and the upper body aiming (E5).</li>

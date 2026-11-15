@@ -1,0 +1,18 @@
+Project:
+  Version: 1
+  Name: Outpost
+  StartScene: Scenes/Greybox.mscene
+  AssetDirectory: Assets
+  InputMap: Settings/Input.minput
+  ScriptAssembly: Scripts/bin/Outpost.dll
+  ScriptProject: Scripts/Outpost.csproj
+  Window: {Width: 1600, Height: 900, Fullscreen: false, VSync: true, FrameRateLimit: 0, BatteryFrameRateLimit: 60, Title: Outpost}
+  Physics: {Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, Dynamic-Character, Dynamic-Trigger, Character-Character, Character-Trigger]}
+  Audio: {Master: 1, Music: 0.5, Effects: 1, UI: 0.7}
+  Build:
+    ProductName: Outpost
+    Company: Morava Games
+    Version: 0.1.0
+    DefaultQuality: Medium
+    Scenes:
+      - {File: Scenes/Greybox.mscene, FileID: 7435559385999161479}

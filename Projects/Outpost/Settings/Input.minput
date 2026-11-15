@@ -1,0 +1,83 @@
+# The shooter's actions and their bindings (docs/games/Shooter_Plan.html, the decisions' table; src/Input/InputMap.h lists
+# the names of keys and gamepad controls)
+Actions:
+  - Name: Move          # Axis2D: x right, y forward (the player; the debug fly camera)
+    Type: Axis2D
+    Bindings:
+      - { Composite: WASD, Up: W, Down: S, Left: A, Right: D }
+      - { Gamepad: LeftStick, DeadZone: 0.15 }
+  - Name: Look          # Axis2D, a rate: degrees per second (the mouse 0.1 degree per pixel, the right stick 180 a second)
+    Type: Axis2D
+    Bindings:
+      - { Mouse: Delta, Scale: 0.1 }
+      - { Gamepad: RightStick, Scale: 180, DeadZone: 0.15 }
+  - Name: Fire          # held: the automatic rifle fires on; a press: one shot (Phase 2)
+    Type: Button
+    Bindings: [ { Mouse: Left }, { Gamepad: RightTrigger } ]
+  - Name: Aim           # aiming down the sights; the sniper's scope steps through its zoom levels (Phase 2)
+    Type: Button
+    Bindings: [ { Mouse: Right }, { Gamepad: LeftTrigger } ]
+  - Name: Jump          # the player jumps; the debug fly camera rises
+    Type: Button
+    Bindings: [ { Key: Space }, { Gamepad: A } ]
+  - Name: Crouch        # held: the player crouches (E7); the debug fly camera sinks
+    Type: Button
+    Bindings: [ { Key: LeftControl }, { Gamepad: B } ]
+  - Name: CrouchToggle  # a press: crouched until pressed again
+    Type: Button
+    Bindings: [ { Key: C } ]
+  - Name: Walk          # held: walking quietly (the guards hear less), steadying the scope; the debug fly camera goes faster
+    Type: Button
+    Bindings: [ { Key: LeftShift }, { Gamepad: LeftThumb } ]
+  - Name: Reload
+    Type: Button
+    Bindings: [ { Key: R }, { Gamepad: X } ]
+  - Name: Use           # doors, switches, picking up
+    Type: Button
+    Bindings: [ { Key: E }, { Gamepad: Y } ]
+  - Name: WeaponScroll  # Axis1D, the wheel's notches this frame: the next or previous weapon (scoped: the zoom)
+    Type: Axis1D
+    Bindings:
+      - { Mouse: Wheel }
+  - Name: NextWeapon
+    Type: Button
+    Bindings: [ { Gamepad: RightBumper } ]
+  - Name: PreviousWeapon
+    Type: Button
+    Bindings: [ { Gamepad: LeftBumper } ]
+  - Name: LastWeapon    # back to the weapon held before
+    Type: Button
+    Bindings: [ { Key: Q } ]
+  - Name: Weapon1       # the rifle
+    Type: Button
+    Bindings: [ { Key: 1 } ]
+  - Name: Weapon2       # the sniper rifle
+    Type: Button
+    Bindings: [ { Key: 2 } ]
+  - Name: Weapon3       # the pistol
+    Type: Button
+    Bindings: [ { Key: 3 } ]
+  - Name: Weapon4       # the knife
+    Type: Button
+    Bindings: [ { Key: 4 } ]
+  - Name: FireMode      # the rifle: semi-automatic or automatic
+    Type: Button
+    Bindings: [ { Key: B }, { Gamepad: DPadDown } ]
+  - Name: SwitchView    # first person or third person
+    Type: Button
+    Bindings: [ { Key: V }, { Gamepad: RightThumb } ]
+  - Name: Objectives    # held: the mission's objectives
+    Type: Button
+    Bindings: [ { Key: Tab }, { Gamepad: Back } ]
+  - Name: Pause
+    Type: Button
+    Bindings: [ { Key: Escape }, { Gamepad: Start } ]
+  - Name: UI_Navigate   # Axis2D: the game UI's selection from button to button (the engine reads it)
+    Type: Axis2D
+    Bindings:
+      - { Composite: Arrows, Up: Up, Down: Down, Left: Left, Right: Right }
+      - { Gamepad: DPad }
+      - { Gamepad: LeftStick, DeadZone: 0.15 }
+  - Name: UI_Submit     # presses the game UI's selected button (the engine reads it)
+    Type: Button
+    Bindings: [ { Key: Enter }, { Gamepad: A } ]
