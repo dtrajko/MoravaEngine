@@ -74,7 +74,15 @@ namespace H2M
 		switch (type.basetype)
 		{
 			case spirv_cross::SPIRType::Boolean:  return ShaderUniformTypeH2M::Bool;
-			case spirv_cross::SPIRType::Int:      return ShaderUniformTypeH2M::Int;
+			// Signed and unsigned (uint, uvec4: the particles' and trails' push constants), the vectors as IVec (the size
+			// comes from SPIR-V; the type is only its label)
+			case spirv_cross::SPIRType::Int:
+			case spirv_cross::SPIRType::UInt:
+				if (type.vecsize == 1)            return type.basetype == spirv_cross::SPIRType::UInt ? ShaderUniformTypeH2M::UInt : ShaderUniformTypeH2M::Int;
+				if (type.vecsize == 2)            return ShaderUniformTypeH2M::IVec2;
+				if (type.vecsize == 3)            return ShaderUniformTypeH2M::IVec3;
+				if (type.vecsize == 4)            return ShaderUniformTypeH2M::IVec4;
+				break;
 			case spirv_cross::SPIRType::Float:
 				if (type.vecsize == 1)            return ShaderUniformTypeH2M::Float;
 				if (type.vecsize == 2)            return ShaderUniformTypeH2M::Vec2;

@@ -1280,6 +1280,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 	ScriptPropertiesControls(selectedModel);
 	AudioControls(selectedModel);
 	ParticleControls(selectedModel);
+	TrailControls(selectedModel);
 	AnimatorControls(selectedModel);
 
 	ImGui::Separator();
@@ -1900,6 +1901,7 @@ void OnImGuiRenderInspector()
 		ScriptPropertiesControls(entity);
 		AudioControls(entity);
 		ParticleControls(entity);
+		TrailControls(entity);
 	}
 
 	ImGui::End();

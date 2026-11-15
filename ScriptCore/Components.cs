@@ -11,7 +11,7 @@ namespace Morava
 
         // The engine's numbers for the kinds (ScriptComponent in src/Scripting/ScriptApi.h)
         internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5, Animator = 6,
-            UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14 }
+            UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14, Trail = 15 }
 
         internal static Kind KindOf(Type type)
         {
@@ -30,6 +30,7 @@ namespace Morava
             if (type == typeof(UIDropdown)) return Kind.UIDropdown;
             if (type == typeof(Vehicle)) return Kind.Vehicle;
             if (type == typeof(ParticleEmitter)) return Kind.ParticleEmitter;
+            if (type == typeof(Trail)) return Kind.Trail;
             throw new ArgumentException($"{type.Name} is not a component of the engine");
         }
 
@@ -604,6 +605,49 @@ namespace Morava
         public void Clear()
         {
             if (Interop.Game->ParticleEmitter_Clear(Entity.Id) == 0) throw Missing("particle emitter");
+        }
+    }
+
+    /// <summary>
+    /// Marks the entity leaves behind as it moves: skid marks (the Inspector's Trail). A ribbon on the surface under the
+    /// entity, across its up: put the entity where the wheel touches the road and turn its up to the road's. A change here
+    /// shows from the next frame on; the marks already left keep their color and width.
+    /// </summary>
+    public sealed unsafe class Trail : Component
+    {
+        NativeTrailSettings Settings
+        {
+            get
+            {
+                NativeTrailSettings settings;
+                if (Interop.Game->Trail_GetSettings(Entity.Id, &settings) == 0) throw Missing("trail");
+                return settings;
+            }
+            set
+            {
+                if (Interop.Game->Trail_SetSettings(Entity.Id, &value) == 0) throw Missing("trail");
+            }
+        }
+
+        /// <summary>Leaves marks as it moves (false: the ribbon ends; true again starts a new one).</summary>
+        public bool Emitting { get => Settings.Emitting != 0; set { var s = Settings; s.Emitting = value ? 1 : 0; Settings = s; } }
+
+        /// <summary>Meters across the ribbon.</summary>
+        public float Width { get => Settings.Width; set { var s = Settings; s.Width = value; Settings = s; } }
+
+        /// <summary>Meters between two points of the ribbon (smaller: smoother curves, more points).</summary>
+        public float MinDistance { get => Settings.MinDistance; set { var s = Settings; s.MinDistance = value; Settings = s; } }
+
+        /// <summary>Seconds a mark stays, fading over the second half (0: until the oldest marks make room for new ones).</summary>
+        public float Lifetime { get => Settings.Lifetime; set { var s = Settings; s.Lifetime = value; Settings = s; } }
+
+        /// <summary>The mark's color (x, y, z) and how much it covers (w): it darkens the surface under it. A darker one for a harder slide.</summary>
+        public Vector4 Color { get => Settings.Color; set { var s = Settings; s.Color = value; Settings = s; } }
+
+        /// <summary>Its marks go (a restart).</summary>
+        public void Clear()
+        {
+            if (Interop.Game->Trail_Clear(Entity.Id) == 0) throw Missing("trail");
         }
     }
 }

@@ -322,6 +322,21 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "SoftDistance" << YAML::Value << p.SoftDistance;
 			out << YAML::EndMap;
 		}
+		if (const TrailComponent* trail = scene.TryGet<TrailComponent>(entity))
+		{
+			// The settings only: the points belong to the running scene
+			const TrailSettings& p = trail->Settings;
+			out << YAML::Key << "Trail" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Emitting" << YAML::Value << p.Emitting;
+			out << YAML::Key << "Width" << YAML::Value << p.Width;
+			out << YAML::Key << "MinDistance" << YAML::Value << p.MinDistance;
+			out << YAML::Key << "MaxPoints" << YAML::Value << p.MaxPoints;
+			out << YAML::Key << "Lifetime" << YAML::Value << p.Lifetime;
+			WriteVec4(out, "Color", p.Color);
+			AssetReference::Write(out, "Texture", p.Texture);
+			out << YAML::Key << "TileLength" << YAML::Value << p.TileLength;
+			out << YAML::EndMap;
+		}
 		if (const CameraComponent* camera = scene.TryGet<CameraComponent>(entity))
 		{
 			// Its placement is the entity's transform
@@ -962,6 +977,19 @@ namespace EnvMapVulkanSceneSerializer
 			Read(emitterNode, "Lit", p.Lit);
 			Read(emitterNode, "SoftDistance", p.SoftDistance);
 			p.MaxParticles = std::min(p.MaxParticles, ParticleEmitterSettings::MaxParticlesLimit);
+		}
+		if (YAML::Node trailNode = node["Trail"]; trailNode && trailNode.IsMap())
+		{
+			TrailSettings& p = scene.Add<TrailComponent>(entity).Settings;
+			Read(trailNode, "Emitting", p.Emitting);
+			Read(trailNode, "Width", p.Width);
+			Read(trailNode, "MinDistance", p.MinDistance);
+			Read(trailNode, "MaxPoints", p.MaxPoints);
+			Read(trailNode, "Lifetime", p.Lifetime);
+			ReadVec4(trailNode["Color"], p.Color);
+			p.Texture = AssetReference::Read(trailNode, "Texture");
+			Read(trailNode, "TileLength", p.TileLength);
+			p.Clamp();
 		}
 		if (YAML::Node cameraNode = node["Camera"])
 		{

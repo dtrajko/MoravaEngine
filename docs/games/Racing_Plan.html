@@ -474,7 +474,10 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       Inspector, C#, the overlay and profiler rows. Checked on a test scene: an emitter's settings one by one, thousands of
       particles, the editor and the built player. <b>Built 2026-11-15</b> (the engine guide's 12.1 "As built"): the particles
       lit once each on the GPU (a third compute pass), not per pixel, which cost five times as much.</li>
-    <li><b>11.2 Trails in the engine</b> (12.2): the Trail component, its pass, the Inspector, C#.</li>
+    <li><b>11.2 Trails in the engine</b> (12.2): the Trail component, its pass, the Inspector, C#. <b>Built 2026-11-15</b>
+      (the engine guide's 12.2 "As built"): multiplied over the road, so the marks keep the road's light and shadows. Rode
+      along: the Project panel's <i>Build Game...</i> button, and a fix for Debug builds that stopped at startup since
+      11.1.</li>
     <li><b>11.3 The wheels for C#:</b> each wheel's slip (sideways and along) and its contact point and normal on the
       road, from Jolt's wheels (Vehicle has only the car's largest slip now).</li>
     <li><b>11.4 Tire smoke:</b> an emitter at each rear wheel's contact patch (the front ones too when they lock or slide).

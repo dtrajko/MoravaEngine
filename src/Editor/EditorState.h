@@ -612,6 +612,11 @@ void ScriptPropertiesControls(EnvMapVulkanEntityID entity);
 void AudioControls(EnvMapVulkanEntityID entity);
 // The Inspector's Particles section (EditorInspectorParticles.cpp, 12.1): the entity's Particle Emitter
 void ParticleControls(EnvMapVulkanEntityID entity);
+// The Inspector's Trail section (EditorInspectorTrails.cpp, 12.2): the entity's Trail
+void TrailControls(EnvMapVulkanEntityID entity);
+// A texture's file (shown relative to the project): dropped from the Content Browser, chosen with ..., or cleared (noneText
+// shown then). The Particle Emitter's and the Trail's
+void TextureFileControls(std::string& texture, const char* noneText, const char* tooltip);
 // The Inspector's Animator section (EditorInspectorAnimator.cpp, 6.4): the model's controller, and while the game runs
 // its state, crossfade and parameters
 void AnimatorControls(EnvMapVulkanEntityID entity);

@@ -35,16 +35,15 @@ static void Tooltip(const char* text)
 	}
 }
 
-// The texture: its file (relative to the project), chosen with a file dialog or dropped from the Content Browser; Clear
-// goes back to the round puff
-static void TextureControls(ParticleEmitterSettings& settings)
+void TextureFileControls(std::string& texture, const char* noneText, const char* tooltip)
 {
-	const std::string shown = settings.Texture.empty() ? std::string("(none: a soft round puff)") : ProjectPaths::ToStored(settings.Texture);
+	ImGui::PushID("TextureFile");
+	const std::string shown = texture.empty() ? std::string(noneText) : ProjectPaths::ToStored(texture);
 	ImGui::SetNextItemWidth(-140.0f);
 	ImGui::BeginDisabled(true);
 	char buffer[512] = {};
 	snprintf(buffer, sizeof(buffer), "%s", shown.c_str());
-	ImGui::InputText("##ParticleTexture", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
+	ImGui::InputText("##Texture", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 	ImGui::EndDisabled();
 	if (ImGui::BeginDragDropTarget())
 	{
@@ -54,35 +53,35 @@ static void TextureControls(ParticleEmitterSettings& settings)
 			const std::filesystem::path path = std::filesystem::absolute(std::filesystem::u8path(Util::to_str((const wchar_t*)payload->Data)), error);
 			if (IsImageFile(path))
 			{
-				settings.Texture = path.lexically_normal().generic_u8string();
+				texture = path.lexically_normal().generic_u8string();
 			}
 			else
 			{
-				ShowNotification("A particle's texture is a PNG, TGA or JPEG image", true);
+				ShowNotification("A texture is a PNG, TGA or JPEG image", true);
 			}
 		}
 		ImGui::EndDragDropTarget();
 	}
-	Tooltip("The particle's look: its alpha is the shape, its color tints the particle's.\n"
-		"Drop an image from the Content Browser here, or choose one with ...");
+	Tooltip(tooltip);
 	ImGui::SameLine();
-	if (ImGui::Button("...##ChooseParticleTexture"))
+	if (ImGui::Button("..."))
 	{
 		const std::string file = FileDialogs::OpenFile({ { "Image", "png,tga,jpg,jpeg" } }, GetAssetFolderForDialog());
 		if (!file.empty())
 		{
-			settings.Texture = std::filesystem::u8path(file).lexically_normal().generic_u8string();
+			texture = std::filesystem::u8path(file).lexically_normal().generic_u8string();
 		}
 	}
 	ImGui::SameLine();
-	ImGui::BeginDisabled(settings.Texture.empty());
-	if (ImGui::Button("Clear##ParticleTexture"))
+	ImGui::BeginDisabled(texture.empty());
+	if (ImGui::Button("Clear"))
 	{
-		settings.Texture.clear();
+		texture.clear();
 	}
 	ImGui::EndDisabled();
 	ImGui::SameLine();
 	ImGui::TextDisabled("Texture");
+	ImGui::PopID();
 }
 
 // A range of two values (min, max): the second never below the first
@@ -180,7 +179,8 @@ void ParticleControls(EnvMapVulkanEntityID entity)
 	ImGui::DragFloat("Spin Speed", &p.SpinSpeed, 1.0f, 0.0f, 1440.0f, "%.0f deg/s");
 	Tooltip("It turns at a random speed up to this, either way");
 
-	TextureControls(p);
+	TextureFileControls(p.Texture, "(none: a soft round puff)", "The particle's look: its alpha is the shape, its color tints the particle's.\n"
+		"Drop an image from the Content Browser here, or choose one with ...");
 	int blend = (int)p.Blend;
 	const char* blendNames[] = { "Alpha", "Additive" };
 	if (ImGui::Combo("Blend", &blend, blendNames, 2))

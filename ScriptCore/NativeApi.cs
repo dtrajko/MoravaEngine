@@ -158,6 +158,9 @@ namespace Morava
         public delegate* unmanaged<ulong, NativeParticleSettings*, int> ParticleEmitter_SetSettings;
         public delegate* unmanaged<ulong, int, int> ParticleEmitter_Emit;
         public delegate* unmanaged<ulong, int> ParticleEmitter_Clear;
+        public delegate* unmanaged<ulong, NativeTrailSettings*, int> Trail_GetSettings;
+        public delegate* unmanaged<ulong, NativeTrailSettings*, int> Trail_SetSettings;
+        public delegate* unmanaged<ulong, int> Trail_Clear;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -223,6 +226,14 @@ namespace Morava
         public float SpeedMin, SpeedMax;
         public float SizeStart, SizeEnd;
         public Vector4 ColorStart, ColorEnd;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeTrailSettings
+    {
+        public int Emitting;
+        public float Width, MinDistance, Lifetime;
+        public Vector4 Color;
     }
 
     [StructLayout(LayoutKind.Sequential)]

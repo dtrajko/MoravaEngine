@@ -400,6 +400,19 @@ void OnImGuiRenderProjectPanel()
 	ImGui::Spacing();
 	ImGui::TextDisabled("The player runs it: MoravaPlayer --project <file>");
 
+	// The next step from here: the game built for another computer (its settings are in that window)
+	ImGui::SeparatorText("Build");
+	if (ImGui::Button("Build Game..."))
+	{
+		s_ShowBuildGamePanel = true;
+		ImGui::SetWindowFocus("Build Game");
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Opens the Build Game window (as File > Build Game...): the game's pack, the player and its\n"
+			"scripts in a folder to copy to another computer");
+	}
+
 	if (save)
 	{
 		SaveProject();

@@ -13,6 +13,7 @@
 
 #include "World/Foliage.h"
 #include "World/Particles.h"
+#include "World/Trails.h"
 #include "World/Terrain.h"
 
 #include <glm/glm.hpp>
@@ -218,6 +219,19 @@ struct ParticleEmitterComponent
 	// Runtime: not saved. Particles a script asked for at once (C#: Emit), and its Clear (the alive ones go)
 	uint32_t Burst = 0;
 	bool ClearRequested = false;
+};
+
+// Marks the entity leaves behind as it moves: skid marks (World/Trails.h; docs/engine/Game_Engine_Runtime_Guide.html, 12.2).
+// The settings are saved; the points live here while the scene runs (the renderer adds them: EnvMapVulkanTrails) and go
+// with a copy of the scene. While a game runs every trail leaves points; in the editor's Edit only the selected ones do
+// (and those under a selected entity), as a preview.
+struct TrailComponent
+{
+	TrailSettings Settings;
+
+	// Runtime: not saved. A script's Clear (for the renderer's next frame), and the points
+	bool ClearRequested = false;
+	TrailPoints Points;
 };
 
 // A game camera (docs/engine/Game_Engine_Runtime_Guide.html, 6.3): the game is seen through the primary one (the first
@@ -666,6 +680,6 @@ struct ComponentList
 // The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
-	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, ParticleEmitterComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
+	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, ParticleEmitterComponent, TrailComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, VehicleComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent,
 	PrefabComponent, UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;
