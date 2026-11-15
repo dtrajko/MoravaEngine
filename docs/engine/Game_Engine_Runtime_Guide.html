@@ -1570,6 +1570,38 @@ Build:
     <li><b>Drawn</b> right after the opaque meshes, before the glass: alpha-blended over the road, with a small depth bias
       so they don't flicker on it, lit like the surface under them. Stopping and starting again begins a new ribbon.</li>
   </ul>
+  <div class="box note"><b>As built (2026-11-15, branch <code>trails</code>, the racing game's 11.2)</b>
+  <ul>
+    <li><b>Where:</b> the settings and the points in <code>src/World/Trails.h</code> (<code>TrailSettings</code>,
+      <code>TrailPoints</code>), the component in <code>EnvMapVulkanComponents.h</code> (<code>TrailComponent</code>), the
+      renderer's side in <code>src/EnvMapVulkan/EnvMapVulkanTrails.h/.cpp</code>, the shader <code>Trails.glsl</code>.</li>
+    <li><b>The points belong to the component</b> (a ring, Max Points long, not saved): a copy of the scene (Play), copy and
+      paste and a newly loaded scene start without marks, and an entity removed takes its marks with it. Each frame the
+      renderer leaves a point where a trail moved Min Distance from its last, and draws the ribbon on to where the entity is
+      now (the mark reaches the wheel). A jump of more than 10 m starts a new ribbon (a car put back on the track).</li>
+    <li><b>Drawn</b> in the scene's render pass right after the opaque meshes (the water and the glass see the marks): all
+      trails' points in one buffer of the frame in flight, one draw per trail, two triangles per piece of ribbon made in
+      the vertex shader. Each point's sideways direction comes from the points before and after it, so the ribbon turns
+      smoothly.</li>
+    <li><b>Lit like the surface under it, by multiplying</b> (a decision of this step): the mark's color darkens the road's
+      lit color as a darker surface would, so the sun, its shadows, the lamps, the sky and the reflections stay on it,
+      for no lighting cost. Alpha is how much it covers; the distance haze fades it with the road. Lifted 1.5 cm along
+      the entity's up, plus a depth bias: no flicker. Without a texture, a band with soft edges; with one, its color
+      times the mark's, every Tile Length meters along.</li>
+    <li><b>Fading:</b> a Lifetime keeps a mark full for its first half and fades it over the second; a full ring fades its
+      oldest tenth, so old marks go without popping. Each point keeps the color and width it was left with.</li>
+    <li><b>Also:</b> the Inspector's Trail (Clear, the count of points), saving and loading (<code>Trail:</code>), copy and
+      paste, the debug overlay's Trails row, the GPU profiler's Trails pass, C#: <code>GetComponent&lt;Trail&gt;()</code>
+      with Emitting, Width, MinDistance, Lifetime, Color, <code>Clear()</code>. In the editor's Edit a selected trail
+      leaves marks as it is moved (a preview).</li>
+    <li><b>Checked</b> on the circuit (a scratch copy, a trail at each rear wheel, the test driver driving): the player and
+      the editor's Play, the C# calls (color, width, lifetime, stop and start, Clear), the GCC check, no validation
+      messages.</li>
+    <li><b>Fixed on the way:</b> a Debug build stopped at startup since 12.1 (the shader reflection had no case for
+      <code>uint</code>: the particles' push constants); the tests of 12.1 ran RelWithDebInfo, where asserts are off.</li>
+    <li><b>Not in yet:</b> the water's reflection, render textures, the probes' capture; marks lighter than the surface
+      (snow, chalk); culling. The wheels' contact points for the racing game's marks come in its 11.3.</li>
+  </ul></div>
 </section>
 
 <section id="phase-13">

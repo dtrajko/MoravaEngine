@@ -296,6 +296,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::Animator:          return scene->Has<AnimatorComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Vehicle:           return scene->Has<VehicleComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::ParticleEmitter:   return scene->Has<ParticleEmitterComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::Trail:             return scene->Has<TrailComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -846,6 +847,61 @@ static int32_t ParticleEmitterClear(uint64_t entity)
 	}
 	emitter->Burst = 0;
 	emitter->ClearRequested = true;
+	return 1;
+}
+
+// ---- Trails (12.2)
+
+static TrailComponent* GetTrail(uint64_t entity)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	return scene ? scene->TryGet<TrailComponent>(entity) : nullptr;
+}
+
+static int32_t TrailGetSettings(uint64_t entity, ScriptTrailSettings* out)
+{
+	const TrailComponent* trail = GetTrail(entity);
+	if (!trail || !out)
+	{
+		return 0;
+	}
+	const TrailSettings& p = trail->Settings;
+	out->Emitting = p.Emitting ? 1 : 0;
+	out->Width = p.Width;
+	out->MinDistance = p.MinDistance;
+	out->Lifetime = p.Lifetime;
+	for (int i = 0; i < 4; i++)
+	{
+		out->Color[i] = p.Color[i];
+	}
+	return 1;
+}
+
+static int32_t TrailSetSettings(uint64_t entity, const ScriptTrailSettings* value)
+{
+	TrailComponent* trail = GetTrail(entity);
+	if (!trail || !value)
+	{
+		return 0;
+	}
+	TrailSettings& p = trail->Settings;
+	p.Emitting = value->Emitting != 0;
+	p.Width = value->Width;
+	p.MinDistance = value->MinDistance;
+	p.Lifetime = value->Lifetime;
+	p.Color = glm::vec4(value->Color[0], value->Color[1], value->Color[2], value->Color[3]);
+	p.Clamp();
+	return 1;
+}
+
+static int32_t TrailClear(uint64_t entity)
+{
+	TrailComponent* trail = GetTrail(entity);
+	if (!trail)
+	{
+		return 0;
+	}
+	trail->ClearRequested = true;
 	return 1;
 }
 
@@ -1915,6 +1971,9 @@ namespace ScriptBindings
 		api.ParticleEmitter_SetSettings = ParticleEmitterSetSettings;
 		api.ParticleEmitter_Emit = ParticleEmitterEmit;
 		api.ParticleEmitter_Clear = ParticleEmitterClear;
+		api.Trail_GetSettings = TrailGetSettings;
+		api.Trail_SetSettings = TrailSetSettings;
+		api.Trail_Clear = TrailClear;
 	}
 
 	void SetContext(ScriptContext* context)

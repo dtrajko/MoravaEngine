@@ -29,6 +29,7 @@
 #include "EnvMapVulkanSSAO.h"
 #include "EnvMapVulkanFoliage.h"
 #include "EnvMapVulkanParticles.h"
+#include "EnvMapVulkanTrails.h"
 #include "EnvMapVulkanTerrain.h"
 #include "EnvMapVulkanTextureViews.h"
 #include "EnvMapVulkanUI.h"
@@ -2176,6 +2177,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	EnvMapVulkanTerrain::Shutdown();
 	EnvMapVulkanFoliage::Shutdown();
 	EnvMapVulkanParticles::Shutdown();
+	EnvMapVulkanTrails::Shutdown();
 	EnvMapVulkanMaterialLibrary::Clear();
 	s_SubmittedModels.clear();
 	s_GlassDraws.clear();
@@ -3987,6 +3989,12 @@ void EnvMapVulkanRenderer::GeometryPass()
 			}
 			DrawFoliageMainView(drawCommandBuffer, MeshPass::Scene);
 		}
+		// The trails' marks on the opaque surfaces (the water and the glass, next, see them)
+		if (EnvMapVulkanTrails::HasPoints())
+		{
+			EnvMapVulkanTrails::Record(drawCommandBuffer, renderPassBeginInfo.renderPass, s_Data.FrameDescriptorSet.DescriptorSets[0],
+				swapChain.GetCurrentFrameSlot());
+		}
 		if (s_Probes.ShowsSpheres())
 		{
 			EnvMapVulkanProfiler::Scope probesScope(drawCommandBuffer, "Probe Balls", "The probe volume's probes shown as balls (Show Probes): "
@@ -4518,6 +4526,11 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 		frame.Particles = "about " + std::to_string(particles.Alive) + " alive, " + std::to_string(particles.Emitters) +
 			(particles.Emitters == 1 ? " emitter" : " emitters") + " (" + std::to_string(particles.Emitting) + " emitting)";
 	}
+	if (const EnvMapVulkanTrails::Stats& trails = EnvMapVulkanTrails::GetStats(); trails.Trails > 0)
+	{
+		frame.Trails = std::to_string(trails.Points) + " points, " + std::to_string(trails.Trails) + (trails.Trails == 1 ? " trail" : " trails") +
+			" (" + std::to_string(trails.Emitting) + " emitting)";
+	}
 	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
 	frame.Fps = EnvMapVulkanProfiler::GetFps();
 	frame.CpuMs = EnvMapVulkanProfiler::GetSmoothedCpuFrameMs();
@@ -5034,6 +5047,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	// The particles: how many each emitter starts this frame, into this frame's emitter buffer (recorded after the scene pass)
 	EnvMapVulkanParticles::Update(*s_Scene, deltaTime, s_GameRunning, s_GameRunning ? s_GameTimeScale : 1.0f, s_ViewOptions.Selection,
 		s_RenderSettings.ParticleScale, Application::Get()->GetWindow()->GetSwapChain().GetCurrentFrameSlot());
+	// The trails: their new points, all into this frame's buffer (drawn after the opaque meshes)
+	EnvMapVulkanTrails::Update(*s_Scene, deltaTime, s_GameRunning, s_GameRunning ? s_GameTimeScale : 1.0f, s_ViewOptions.Selection,
+		Application::Get()->GetWindow()->GetSwapChain().GetCurrentFrameSlot());
 
 	// The scene into the frame: the parts' transforms into their meshes, then every model with its materials. For the motion
 	// vectors each model is submitted with where its meshes and bones were in the previous frame (a model that's new, or

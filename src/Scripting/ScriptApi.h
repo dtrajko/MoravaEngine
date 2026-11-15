@@ -95,6 +95,14 @@ struct ScriptParticleSettings
 	float ColorEnd[4] = { 0.8f, 0.8f, 0.8f, 0.0f };
 };
 
+// A TrailComponent's settings as a script reads and writes them (Trail's properties; World/Trails.h)
+struct ScriptTrailSettings
+{
+	int32_t Emitting = 1;
+	float Width = 0.25f, MinDistance = 0.2f, Lifetime = 0.0f;
+	float Color[4] = { 0.05f, 0.05f, 0.05f, 0.7f };
+};
+
 // A CameraComponent's settings as a script reads and writes them (Camera's properties)
 struct ScriptCameraSettings
 {
@@ -191,7 +199,7 @@ struct ScriptFieldReport
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
-	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14 };
+	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14, Trail = 15 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -424,6 +432,11 @@ struct ScriptNativeApi
 	int32_t (*ParticleEmitter_SetSettings)(uint64_t entity, const ScriptParticleSettings* value);
 	int32_t (*ParticleEmitter_Emit)(uint64_t entity, int32_t count);
 	int32_t (*ParticleEmitter_Clear)(uint64_t entity);
+
+	// Trail (12.2): 0 when the entity has no TrailComponent. Clear: its marks go (in the renderer's next frame)
+	int32_t (*Trail_GetSettings)(uint64_t entity, ScriptTrailSettings* out);
+	int32_t (*Trail_SetSettings)(uint64_t entity, const ScriptTrailSettings* value);
+	int32_t (*Trail_Clear)(uint64_t entity);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke
