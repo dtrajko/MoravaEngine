@@ -60,7 +60,7 @@ namespace EnvMapVulkanParticles
 	struct Stats
 	{
 		uint32_t Emitters = 0;  // in the scene
-		uint32_t Emitting = 0;  // starting particles this frame
+		uint32_t Emitting = 0;  // on with a rate, or bursting this frame
 		uint32_t Alive = 0;     // about (from the CPU's count of those started within their lifetime)
 		uint32_t Capacity = 0;  // the pool's particles
 		uint32_t Started = 0;   // this frame

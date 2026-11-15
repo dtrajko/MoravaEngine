@@ -359,6 +359,10 @@ Entities:
       Fields:
         Centerline: {String: Assets/Tracks/Circuit.centerline.json}
         Track: {Entity: 3000}
+        SmokeFL: {Entity: 2030}
+        SmokeFR: {Entity: 2031}
+        SmokeRL: {Entity: 2032}
+        SmokeRR: {Entity: 2033}
     Vehicle:
       Controls: Script
       EngineTorque: 900
@@ -440,6 +444,114 @@ Entities:
       Scale: [2.7, 2, 2]
     Model:
       File: Assets/Models/KenneyCarKit/wheel-racing-flat.glb
+  - ID: 2030
+    Name: Smoke FL
+    Parent: 2001
+    Transform:
+      Translation: [-1.05, -0.57, -1.28]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 1000
+      Lifetime: [2, 4]
+      Speed: [0.3, 1]
+      ConeAngle: 60
+      StartRadius: 0.4
+      InheritVelocity: 0.3
+      Acceleration: [0, 0.35, 0]
+      Drag: 0.8
+      Size: [0.8, 4.5]
+      ColorStart: [0.92, 0.92, 0.92, 0.75]
+      ColorEnd: [0.95, 0.95, 0.95, 0]
+      SpinSpeed: 30
+      Texture: Assets/Textures/TireSmoke.png
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0.6
+  - ID: 2031
+    Name: Smoke FR
+    Parent: 2001
+    Transform:
+      Translation: [1.05, -0.57, -1.28]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 1000
+      Lifetime: [2, 4]
+      Speed: [0.3, 1]
+      ConeAngle: 60
+      StartRadius: 0.4
+      InheritVelocity: 0.3
+      Acceleration: [0, 0.35, 0]
+      Drag: 0.8
+      Size: [0.8, 4.5]
+      ColorStart: [0.92, 0.92, 0.92, 0.75]
+      ColorEnd: [0.95, 0.95, 0.95, 0]
+      SpinSpeed: 30
+      Texture: Assets/Textures/TireSmoke.png
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0.6
+  - ID: 2032
+    Name: Smoke RL
+    Parent: 2001
+    Transform:
+      Translation: [-1.14, -0.57, 1.76]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 1000
+      Lifetime: [2, 4]
+      Speed: [0.3, 1]
+      ConeAngle: 60
+      StartRadius: 0.4
+      InheritVelocity: 0.3
+      Acceleration: [0, 0.35, 0]
+      Drag: 0.8
+      Size: [0.8, 4.5]
+      ColorStart: [0.92, 0.92, 0.92, 0.75]
+      ColorEnd: [0.95, 0.95, 0.95, 0]
+      SpinSpeed: 30
+      Texture: Assets/Textures/TireSmoke.png
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0.6
+  - ID: 2033
+    Name: Smoke RR
+    Parent: 2001
+    Transform:
+      Translation: [1.14, -0.57, 1.76]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 1000
+      Lifetime: [2, 4]
+      Speed: [0.3, 1]
+      ConeAngle: 60
+      StartRadius: 0.4
+      InheritVelocity: 0.3
+      Acceleration: [0, 0.35, 0]
+      Drag: 0.8
+      Size: [0.8, 4.5]
+      ColorStart: [0.92, 0.92, 0.92, 0.75]
+      ColorEnd: [0.95, 0.95, 0.95, 0]
+      SpinSpeed: 30
+      Texture: Assets/Textures/TireSmoke.png
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0.6
   - ID: 2020
     Name: Engine On A
     Parent: 2001

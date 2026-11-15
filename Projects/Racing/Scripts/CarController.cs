@@ -29,6 +29,8 @@ namespace Racing
     ///   the start and after each respawn it is in first gear.
     /// - The engine's power: the car's own (Buffed), or a GT40 Mk II's (Realistic; Settings: Engine power;
     ///   GameOptions.EngineTorque). The test driver always has the car's own.
+    /// - Tire smoke (Phase 11.4): a Particle Emitter under each wheel (SmokeFL to SmokeRR), smoking as hard as the tire rubs
+    ///   over the road (Vehicle.GetWheel's SlideSpeed): wheelspin, a locked wheel, a drift, a slide.
     /// Each assist has its fields to tune in the Inspector. With TestDriver on, the test driver drives (TestDriver.cs: it
     /// follows the track's center line) through the same assists, for checks without a player.
     /// The race (RaceManager.cs, Phase 4) holds it at the start (Held), puts it back on the track (Respawn) and asks
@@ -103,6 +105,21 @@ namespace Racing
         /// <summary>How strongly it rights itself in the air (0: not at all).</summary>
         public float AirLevel = 2.0f;
 
+        // ---- Tire smoke
+        /// <summary>The Particle Emitters under the wheels, in the Vehicle's wheel order (front left, front right, rear left, rear right).</summary>
+        public Entity? SmokeFL;
+        public Entity? SmokeFR;
+        public Entity? SmokeRL;
+        public Entity? SmokeRR;
+        /// <summary>m/s the tire rubs over the road before it smokes (clean cornering rubs under 1).</summary>
+        public float SmokeStartSlide = 2.5f;
+        /// <summary>m/s of rubbing for the most smoke (a slide into a turn rubs 4 to 6, a locked wheel 13 and more).</summary>
+        public float SmokeFullSlide = 8.0f;
+        /// <summary>Puffs a second at SmokeFullSlide and above, for each wheel.</summary>
+        public float SmokeMaxRate = 200.0f;
+        /// <summary>Meters above the road the smoke starts (along the road's up).</summary>
+        public float SmokeHeight = 0.15f;
+
         // ---- The test driver
         /// <summary>The test driver drives instead of the player (TestDriver.cs), along the track's center line.</summary>
         public bool TestDriver = false;
@@ -144,6 +161,7 @@ namespace Racing
         Vehicle? vehicle;
         Rigidbody? body;
         TestDriver? driver;
+        readonly ParticleEmitter?[] smoke = new ParticleEmitter?[4]; // SmokeFL to SmokeRR
         float steer;          // the wheel, -1 left to 1 right, before the speed's share
         float rearGrip = 1.0f;
         float absShare = 1.0f;   // the share of the brake ABS lets through
@@ -165,6 +183,13 @@ namespace Racing
             }
             vehicle.Controls = VehicleControls.Script;
             Current = this;
+            Entity?[] smokeEntities = { SmokeFL, SmokeFR, SmokeRL, SmokeRR };
+            for (int i = 0; i < smoke.Length; i++)
+            {
+                smoke[i] = smokeEntities[i]?.GetComponent<ParticleEmitter>();
+                if (smokeEntities[i] != null && smoke[i] == null)
+                    Log.Error($"CarController: '{smokeEntities[i]!.Name}' has no Particle Emitter (tire smoke)");
+            }
             if (TestDriver)
             {
                 driver = Racing.TestDriver.Load(Centerline, Track != null ? Track.WorldPosition : Vector3.Zero, TestDriverCornering);
@@ -193,6 +218,46 @@ namespace Racing
             toFirstGear = true;
             TouchedTerrain = false;
             driver?.OnRespawn();
+            foreach (ParticleEmitter? emitter in smoke)
+            {
+                if (emitter != null)
+                {
+                    emitter.Emitting = false;
+                    emitter.Clear();
+                }
+            }
+        }
+
+        protected override void OnUpdate(float dt)
+        {
+            UpdateSmoke();
+        }
+
+        // Each wheel's smoke: the emitter under the drawn wheel (LocalPoint: the car is drawn between physics steps), as
+        // much smoke as the tire rubs over the road; none in the air or on the terrain
+        void UpdateSmoke()
+        {
+            if (vehicle == null)
+                return;
+            int wheels = Math.Min(smoke.Length, vehicle.WheelCount);
+            for (int i = 0; i < wheels; i++)
+            {
+                ParticleEmitter? emitter = smoke[i];
+                if (emitter == null)
+                    continue;
+                WheelState wheel = vehicle.GetWheel(i);
+                float amount = 0.0f;
+                if (wheel.IsOnGround && !(wheel.Ground is Entity ground && !string.IsNullOrEmpty(TerrainTag) && ground.HasTag(TerrainTag)))
+                {
+                    emitter.Entity.Translation = wheel.LocalPoint + wheel.LocalNormal * SmokeHeight;
+                    amount = Math.Clamp((wheel.SlideSpeed - SmokeStartSlide) / MathF.Max(SmokeFullSlide - SmokeStartSlide, 0.01f), 0.0f, 1.0f);
+                }
+                bool emitting = amount > 0.0f;
+                if (emitting != emitter.Emitting)
+                    emitter.Emitting = emitting;
+                if (emitting)
+                    emitter.Rate = amount * SmokeMaxRate;
+            }
         }
 
         protected override void OnCollisionEnter(Collision collision)

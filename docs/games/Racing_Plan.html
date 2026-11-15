@@ -490,10 +490,33 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       circuit with the test driver: about 4.6 m/s of wheelspin at the start, 13 to 34 m/s for a wheel locking under hard
       braking, under 1 m/s cornering cleanly; standing still Jolt's slip angle reads up to 88° while the rubbing speed is 0,
       so the effects go by <code>SlideSpeed</code>.</li>
-    <li><b>11.4 Tire smoke:</b> an emitter at each rear wheel's contact patch (the front ones too when they lock or slide).
-      <code>CarController</code> sets its rate from the wheel's slip: a drift, a slide past SlipLimit, wheelspin at the
-      start, a locked wheel. Light gray, rising slowly, growing and fading over a few seconds, lit, soft on the road. The
-      smoke texture made by our own script (Tools, CC0 by being ours).</li>
+    <li><b>11.4 Tire smoke</b> (updated after 11.3):
+      <ul>
+        <li><b>Four emitters</b>, Particle Emitter children of the car (Smoke FL, FR, RL, RR) in the race scenes, so they
+          can be tuned in the Inspector.</li>
+        <li><b><code>CarController</code></b> reads <code>Vehicle.GetWheel(i)</code> each frame: it puts each emitter at its
+          wheel's <code>LocalPoint</code> (a little above the road) and sets its rate from <code>SlideSpeed</code>: none under
+          SmokeStartSlide (2 m/s: clean cornering stays clean), rising to SmokeMaxRate at SmokeFullSlide (15 m/s: a locked
+          wheel, a hard drift). Off while the wheel is in the air or off the road (grass makes no tire smoke; dust is for
+          later). Not the slip angle: it reads up to 88° standing still.</li>
+        <li><b>The smoke:</b> light gray, rising slowly, carried a little by the car's speed, growing from 0.4 to about 3 m
+          and fading over 2 to 4 s, lit, soft where it meets the road.</li>
+        <li><b>The texture:</b> a puff with a cloudy edge, made by our own script (<code>Tools/Textures</code>, CC0 by being
+          ours), saved in <code>Projects/Racing/Textures</code>.</li>
+        <li><b>Checked</b> with the test driver: wheelspin at the start, braking hard, a drift; the editor and the built
+          player; Debug once (asserts).</li>
+        <li><b>Built 2026-11-15:</b> <code>Tools/Textures/GenerateSmokeTexture.py</code> writes
+          <code>Assets/Textures/TireSmoke.png</code> (a 256² puff: a noisy round edge, billows inside). Smoke FL to RR in
+          Circuit and TestTrack; <code>CarController</code>'s SmokeFL to SmokeRR, SmokeStartSlide 2.5, SmokeFullSlide 8 (the
+          test driver's slides into turns rub 4 to 6 m/s, a locked wheel 13 to 34: with 15 only a lock smoked fully),
+          SmokeMaxRate 200, SmokeHeight 0.15; the emitters are cleared on a respawn. Smoke settings after a first look (too
+          thin): 0.8 to 4.5 m, alpha 0.75, carried along at 0.3 of the car's speed, 2 to 4 s. On the circuit: smoke from
+          the driven wheels for about a second at the start, a puff from the locking rear wheel braking from 200 km/h
+          (behind the chase camera within half a second at that speed), none in clean driving. Forced on everywhere for a
+          look, 2,100 particles cost the Particles pass 0.16 ms; four wheels smoking standing still fill the view (the
+          overdraw: GPU 4.8 ms then) — for 11.6. Rode along: the debug overlay's "emitting" counts the emitters on with a
+          rate (it counted those starting a particle that frame, mostly 0 at a slow rate and a high frame rate).</li>
+      </ul></li>
     <li><b>11.5 Skid marks:</b> a Trail at each wheel, on the road under it, while the wheel slides on the ground; darker for
       a harder slide. The marks of the last few hundred meters of sliding stay; a restart clears them.</li>
     <li><b>11.6 The budget:</b> Medium still 120 fps on the 1% lows with smoke in view (a debug key or the test driver's
