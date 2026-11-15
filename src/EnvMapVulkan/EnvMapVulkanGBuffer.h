@@ -91,6 +91,10 @@ public:
 	VkDescriptorImageInfo GetMotionInfo() const { return { m_Sampler, m_Motion.View, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL }; }
 	// The scene's depth: readable only after MakeDepthReadable
 	VkDescriptorImageInfo GetDepthInfo() const { return { m_Sampler, m_DepthSampleView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL }; }
+	// The scene's depth as an attachment (all aspects of its format), for a render pass that tests against it read-only
+	// after MakeDepthReadable (the particles); a new one when the size changed
+	VkImageView GetDepthAttachmentView() const { return m_DepthView; }
+	VkFormat GetDepthFormat() const { return m_DepthFormat; }
 
 private:
 	struct Attachment

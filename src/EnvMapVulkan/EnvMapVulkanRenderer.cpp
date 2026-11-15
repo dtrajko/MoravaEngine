@@ -28,6 +28,7 @@
 #include "EnvMapVulkanReflections.h"
 #include "EnvMapVulkanSSAO.h"
 #include "EnvMapVulkanFoliage.h"
+#include "EnvMapVulkanParticles.h"
 #include "EnvMapVulkanTerrain.h"
 #include "EnvMapVulkanTextureViews.h"
 #include "EnvMapVulkanUI.h"
@@ -129,6 +130,8 @@ static EnvMapVulkanAntialiasing::TemporalFrame s_TemporalFrame; // TAA, this fra
 // This frame's copy of the scene owner's settings, as the quality tier draws them (EnvMapVulkanQuality).
 static EnvMapVulkanRenderSettings s_RenderSettings;
 static QualityTier s_QualityTier = QualityTier::High;
+static bool s_GameRunning = false;   // SetGameTime
+static float s_GameTimeScale = 1.0f;
 
 // Bloom (Resources/Shaders/BloomPass.glsl), with the settings of SceneHazelEnvMap's "Bloom Settings" panel
 static const uint32_t s_BloomLevelCount = 6; // level i is 1/2^(i+1) of the viewport size
@@ -2172,6 +2175,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_Scene = nullptr;
 	EnvMapVulkanTerrain::Shutdown();
 	EnvMapVulkanFoliage::Shutdown();
+	EnvMapVulkanParticles::Shutdown();
 	EnvMapVulkanMaterialLibrary::Clear();
 	s_SubmittedModels.clear();
 	s_GlassDraws.clear();
@@ -4053,7 +4057,18 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		vkCmdEndRenderPass(drawCommandBuffer);
 		EnvMapVulkanProfiler::EndScope(drawCommandBuffer); // Scene
-		s_GBuffer.MakeDepthReadable(drawCommandBuffer); // the viewport composite samples it (the Linear Depth debug view)
+		// The viewport composite samples it (the Linear Depth debug view), the particles test against it read-only and sample it
+		s_GBuffer.MakeDepthReadable(drawCommandBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
+			VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
+
+		// The particles, over everything drawn so far (the water and the glass too)
+		if (EnvMapVulkanParticles::HasEmitters())
+		{
+			H2M::RefH2M<H2M::VulkanFramebufferH2M> sceneTarget = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
+			EnvMapVulkanParticles::Record(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], sceneTarget->GetColorVulkanImage(),
+				sceneTarget->GetColorVulkanFormat(), s_GBuffer, width, height, s_Data.SceneData.SceneCamera.Camera.GetViewMatrix(),
+				s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix(), swapChain.GetCurrentFrameSlot());
+		}
 
 		if (s_RenderSettings.Bloom.Enabled || !s_BloomChainRendered)
 		{
@@ -4497,6 +4512,11 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 		const int limit = FrameLimiter::GetActiveLimit();
 		const std::string reason = FrameLimiter::GetActiveReason();
 		frame.FrameRateLimit = (limit > 0 ? std::to_string(limit) : std::string("off")) + (reason.empty() ? "" : " (" + reason + ")");
+	}
+	if (const EnvMapVulkanParticles::Stats& particles = EnvMapVulkanParticles::GetStats(); particles.Emitters > 0)
+	{
+		frame.Particles = "about " + std::to_string(particles.Alive) + " alive, " + std::to_string(particles.Emitters) +
+			(particles.Emitters == 1 ? " emitter" : " emitters") + " (" + std::to_string(particles.Emitting) + " emitting)";
 	}
 	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
 	frame.Fps = EnvMapVulkanProfiler::GetFps();
@@ -5011,6 +5031,10 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	float deltaTime = std::min(std::chrono::duration<float>(now - s_LastAnimationUpdate).count(), 0.1f);
 	s_LastAnimationUpdate = now;
 
+	// The particles: how many each emitter starts this frame, into this frame's emitter buffer (recorded after the scene pass)
+	EnvMapVulkanParticles::Update(*s_Scene, deltaTime, s_GameRunning, s_GameRunning ? s_GameTimeScale : 1.0f, s_ViewOptions.Selection,
+		s_RenderSettings.ParticleScale, Application::Get()->GetWindow()->GetSwapChain().GetCurrentFrameSlot());
+
 	// The scene into the frame: the parts' transforms into their meshes, then every model with its materials. For the motion
 	// vectors each model is submitted with where its meshes and bones were in the previous frame (a model that's new, or
 	// was replaced, didn't move).
@@ -5128,6 +5152,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_Water.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_Glass.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_GBuffer.Resize(s_Framebuffer); // after s_Framebuffer: it shares its depth image
+		EnvMapVulkanParticles::OnViewportResized(); // its framebuffer of the scene's color and depth goes
 		s_SSAO.Resize(s_GBuffer, s_RenderSettings.AmbientOcclusion.HalfResolution); // after the G-buffer: it reads its images
 		WriteAmbientOcclusionDescriptor();
 		s_Reflections.Resize(s_GBuffer, s_RenderSettings.Reflections.HalfResolution);
@@ -5619,6 +5644,12 @@ void EnvMapVulkanRenderer::SetQualityTier(QualityTier tier)
 QualityTier EnvMapVulkanRenderer::GetQualityTier()
 {
 	return s_QualityTier;
+}
+
+void EnvMapVulkanRenderer::SetGameTime(bool running, float timeScale)
+{
+	s_GameRunning = running;
+	s_GameTimeScale = timeScale;
 }
 
 QualityGPU EnvMapVulkanRenderer::GetQualityGPU()

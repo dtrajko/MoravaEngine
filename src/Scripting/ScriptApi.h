@@ -84,6 +84,17 @@ struct ScriptAudioSettings
 	int32_t Reserved = 0;
 };
 
+// A ParticleEmitterComponent's settings as a script reads and writes them (ParticleEmitter's properties; World/Particles.h)
+struct ScriptParticleSettings
+{
+	int32_t Emitting = 1;
+	float Rate = 20.0f, RatePerMeter = 0.0f;
+	float SpeedMin = 0.5f, SpeedMax = 1.5f;
+	float SizeStart = 0.3f, SizeEnd = 1.2f;
+	float ColorStart[4] = { 0.8f, 0.8f, 0.8f, 0.6f };
+	float ColorEnd[4] = { 0.8f, 0.8f, 0.8f, 0.0f };
+};
+
 // A CameraComponent's settings as a script reads and writes them (Camera's properties)
 struct ScriptCameraSettings
 {
@@ -180,7 +191,7 @@ struct ScriptFieldReport
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
-	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13 };
+	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -406,6 +417,13 @@ struct ScriptNativeApi
 
 	// The racing game's engine power setting: a vehicle's engine torque times the component's (0: not a running vehicle)
 	int32_t (*Vehicle_SetEngineTorque)(uint64_t entity, float times);
+
+	// ParticleEmitter (12.1): 0 when the entity has no ParticleEmitterComponent. Emit: particles at once (the renderer starts
+	// them in its next frame); Clear: the particles alive go
+	int32_t (*ParticleEmitter_GetSettings)(uint64_t entity, ScriptParticleSettings* out);
+	int32_t (*ParticleEmitter_SetSettings)(uint64_t entity, const ScriptParticleSettings* value);
+	int32_t (*ParticleEmitter_Emit)(uint64_t entity, int32_t count);
+	int32_t (*ParticleEmitter_Clear)(uint64_t entity);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

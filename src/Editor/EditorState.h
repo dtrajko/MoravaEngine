@@ -610,6 +610,8 @@ void OnImGuiRenderInspector();
 void ScriptPropertiesControls(EnvMapVulkanEntityID entity);
 // The Inspector's Audio section (EditorInspectorAudio.cpp, 5.3): the entity's Audio Source and Audio Listener
 void AudioControls(EnvMapVulkanEntityID entity);
+// The Inspector's Particles section (EditorInspectorParticles.cpp, 12.1): the entity's Particle Emitter
+void ParticleControls(EnvMapVulkanEntityID entity);
 // The Inspector's Animator section (EditorInspectorAnimator.cpp, 6.4): the model's controller, and while the game runs
 // its state, crossfade and parameters
 void AnimatorControls(EnvMapVulkanEntityID entity);

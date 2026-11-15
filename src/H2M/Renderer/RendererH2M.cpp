@@ -180,6 +180,10 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ShadowMapView.glsl");    // SceneEnvMapVulkan: spot / point shadow map viewer
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeEnvFill.glsl");     // SceneEnvMapVulkan: the probe volume, filled from the environment
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeSpheres.glsl");     // SceneEnvMapVulkan: the probes shown as balls
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ParticleUpdate.glsl");   // SceneEnvMapVulkan: the particles moved and aged
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ParticleSpawn.glsl");    // SceneEnvMapVulkan: an emitter's new particles
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ParticleLight.glsl");    // SceneEnvMapVulkan: the light each particle gets
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Particles.glsl");        // SceneEnvMapVulkan: the particles drawn
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeCapture_Static.glsl");   // SceneEnvMapVulkan: the probe update: the meshes into a cube around a probe
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeCapture_Anim.glsl");     // SceneEnvMapVulkan: the same for skinned meshes
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeResample.glsl");         // SceneEnvMapVulkan: the probe update: the cubes into the ray buffer

@@ -154,6 +154,10 @@ namespace Morava
         public delegate* unmanaged<ulong, int, int> Vehicle_Shift;
         public delegate* unmanaged<ulong, int, int> Vehicle_SetGear;
         public delegate* unmanaged<ulong, float, int> Vehicle_SetEngineTorque;
+        public delegate* unmanaged<ulong, NativeParticleSettings*, int> ParticleEmitter_GetSettings;
+        public delegate* unmanaged<ulong, NativeParticleSettings*, int> ParticleEmitter_SetSettings;
+        public delegate* unmanaged<ulong, int, int> ParticleEmitter_Emit;
+        public delegate* unmanaged<ulong, int> ParticleEmitter_Clear;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -209,6 +213,16 @@ namespace Morava
         public int Bus;
         public int Loop, Spatial;
         public int Reserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeParticleSettings
+    {
+        public int Emitting;
+        public float Rate, RatePerMeter;
+        public float SpeedMin, SpeedMax;
+        public float SizeStart, SizeEnd;
+        public Vector4 ColorStart, ColorEnd;
     }
 
     [StructLayout(LayoutKind.Sequential)]

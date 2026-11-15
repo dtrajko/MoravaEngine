@@ -482,6 +482,7 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	m_Systems.SetFullscreenState(glfwGetWindowMonitor(window) != nullptr);
 	UpdateDisplayState(window);
 	m_GameLoop.Frame(ts.GetSeconds(), &m_Systems);
+	EnvMapVulkanRenderer::SetGameTime(true, m_GameLoop.GetTimeScale()); // the particles move on the game's time
 	std::string load;
 	if (m_Systems.TakeSceneLoad(load))
 	{

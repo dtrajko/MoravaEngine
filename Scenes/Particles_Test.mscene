@@ -1,0 +1,124 @@
+Scene:
+  Version: 1
+  Name: Particles_Test
+EditorCamera:
+  Translation: [1.4721711, 1.3537672, 1.4620761]
+  Rotation: [15.400009, 47.099823, 0]
+  FieldOfView: 45
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Antialiasing: SMAA
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 9276967101733043978
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/quarry_04_puresky_2k.hdr
+      FileID: 13033065160759393063
+      Rotation: 0
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+      Haze: {Enabled: false, Density: 0.0015, StartDistance: 150, HeightFalloff: 0.015, BaseHeight: 0}
+  - ID: 9786300739762889478
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [40.509705, 25.357224, -62.736473]
+      Scale: [1, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.5620821, 0.10628268]
+      Intensity: 1
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 7440187562563654616
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 5, 24]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 45
+      NearClip: 0.01
+      FarClip: 1000
+  - ID: 2238509139451867420
+    Name: Empty
+    Parent: 0
+    Transform:
+      Translation: [-0.20579024, 0, -0.2551422]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: true
+      Rate: 20
+      RatePerMeter: 0
+      MaxParticles: 500
+      Lifetime: [1.5, 2.5]
+      Speed: [0.5, 1.5]
+      ConeAngle: 25
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, 0.3, 0]
+      Drag: 0.5
+      Size: [0.3, 1.2]
+      ColorStart: [0.8, 0.8, 0.8, 0.6]
+      ColorEnd: [0.8, 0.8, 0.8, 0]
+      SpinSpeed: 45
+      Texture: Textures/Particles/fire.png
+      TextureID: 13470192731824581510
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0.5

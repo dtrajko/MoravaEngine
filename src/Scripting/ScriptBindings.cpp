@@ -295,6 +295,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::UIDropdown:        return scene->Has<UIDropdownComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Animator:          return scene->Has<AnimatorComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Vehicle:           return scene->Has<VehicleComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::ParticleEmitter:   return scene->Has<ParticleEmitterComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -772,6 +773,80 @@ static void TimeSetTimeScale(float scale)
 	{
 		s_Context->TimeScale = scale > 0.0f ? scale : 0.0f; // below 0 (and NaN): standing still
 	}
+}
+
+// ---- Particles (12.1)
+
+static ParticleEmitterComponent* GetParticleEmitter(uint64_t entity)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	return scene ? scene->TryGet<ParticleEmitterComponent>(entity) : nullptr;
+}
+
+static int32_t ParticleEmitterGetSettings(uint64_t entity, ScriptParticleSettings* out)
+{
+	const ParticleEmitterComponent* emitter = GetParticleEmitter(entity);
+	if (!emitter || !out)
+	{
+		return 0;
+	}
+	const ParticleEmitterSettings& p = emitter->Settings;
+	out->Emitting = p.Emitting ? 1 : 0;
+	out->Rate = p.Rate;
+	out->RatePerMeter = p.RatePerMeter;
+	out->SpeedMin = p.SpeedMin;
+	out->SpeedMax = p.SpeedMax;
+	out->SizeStart = p.SizeStart;
+	out->SizeEnd = p.SizeEnd;
+	for (int i = 0; i < 4; i++)
+	{
+		out->ColorStart[i] = p.ColorStart[i];
+		out->ColorEnd[i] = p.ColorEnd[i];
+	}
+	return 1;
+}
+
+static int32_t ParticleEmitterSetSettings(uint64_t entity, const ScriptParticleSettings* value)
+{
+	ParticleEmitterComponent* emitter = GetParticleEmitter(entity);
+	if (!emitter || !value)
+	{
+		return 0;
+	}
+	ParticleEmitterSettings& p = emitter->Settings;
+	p.Emitting = value->Emitting != 0;
+	p.Rate = std::max(value->Rate, 0.0f);
+	p.RatePerMeter = std::max(value->RatePerMeter, 0.0f);
+	p.SpeedMin = std::max(value->SpeedMin, 0.0f);
+	p.SpeedMax = std::max(value->SpeedMax, p.SpeedMin);
+	p.SizeStart = std::max(value->SizeStart, 0.0f);
+	p.SizeEnd = std::max(value->SizeEnd, 0.0f);
+	p.ColorStart = glm::vec4(value->ColorStart[0], value->ColorStart[1], value->ColorStart[2], value->ColorStart[3]);
+	p.ColorEnd = glm::vec4(value->ColorEnd[0], value->ColorEnd[1], value->ColorEnd[2], value->ColorEnd[3]);
+	return 1;
+}
+
+static int32_t ParticleEmitterEmit(uint64_t entity, int32_t count)
+{
+	ParticleEmitterComponent* emitter = GetParticleEmitter(entity);
+	if (!emitter)
+	{
+		return 0;
+	}
+	emitter->Burst += (uint32_t)std::max(count, 0);
+	return 1;
+}
+
+static int32_t ParticleEmitterClear(uint64_t entity)
+{
+	ParticleEmitterComponent* emitter = GetParticleEmitter(entity);
+	if (!emitter)
+	{
+		return 0;
+	}
+	emitter->Burst = 0;
+	emitter->ClearRequested = true;
+	return 1;
 }
 
 // ---- Audio (5.2)
@@ -1836,6 +1911,10 @@ namespace ScriptBindings
 		api.Vehicle_Shift = VehicleShift;
 		api.Vehicle_SetGear = VehicleSetGear;
 		api.Vehicle_SetEngineTorque = VehicleSetEngineTorque;
+		api.ParticleEmitter_GetSettings = ParticleEmitterGetSettings;
+		api.ParticleEmitter_SetSettings = ParticleEmitterSetSettings;
+		api.ParticleEmitter_Emit = ParticleEmitterEmit;
+		api.ParticleEmitter_Clear = ParticleEmitterClear;
 	}
 
 	void SetContext(ScriptContext* context)
