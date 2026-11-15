@@ -622,9 +622,13 @@ namespace EnvMapVulkanParticles
 				component.ClearRequested = false;
 			}
 			spawn = std::min(spawn, slot.Count);
-			if (spawn > 0)
+			// Emitting: on with a rate (a slow rate starts nothing in most frames), or a burst now
+			if ((emits && p.Emitting && (p.Rate > 0.0f || p.RatePerMeter > 0.0f)) || spawn > 0)
 			{
 				s.FrameStats.Emitting++;
+			}
+			if (spawn > 0)
+			{
 				s.FrameStats.Started += spawn;
 				slot.Started.emplace_back(s.Clock, spawn);
 			}
