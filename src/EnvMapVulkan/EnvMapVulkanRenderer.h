@@ -93,6 +93,10 @@ public:
 	// the scene as it was made, as the editor shows it
 	static void SetQualityTier(QualityTier tier);
 	static QualityTier GetQualityTier();
+	// The game's clock for what moves on its own (the particles: EnvMapVulkanParticles), each frame while a game runs: its
+	// time scale (0 while it is paused). Not running (the editor's Edit, the start): only the selected emitters emit, on
+	// real time
+	static void SetGameTime(bool running, float timeScale);
 	// What Auto picks for this GPU (QualityTier.h)
 	static QualityGPU GetQualityGPU();
 

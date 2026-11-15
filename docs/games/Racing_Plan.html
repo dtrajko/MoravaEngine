@@ -148,6 +148,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><a href="#phase-8">Phase 8: trees and foliage</a></li>
       <li><a href="#phase-9">Phase 9: the ghost of the best lap</a></li>
       <li><a href="#phase-10">Phase 10: the game build</a></li>
+      <li><a href="#phase-11">Phase 11: tire smoke and skid marks</a></li>
       <li><a href="#later">Later</a></li>
       <li><a href="#verify">How each phase is checked</a></li>
     </ol>
@@ -459,8 +460,34 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li><b>The laptop that turned off</b> (GTX 1060, at the game's start, also at Low): Windows logged only <i>Kernel-Power 41</i>, no blue screen and no driver error, so its power gave out under the full load of a menu drawn without VSync; it had happened with other programs too. Now the game ships with <b>VSync on</b> (the player's choice still wins), and the engine has a <b>frame rate limit</b> and a lower one <b>on battery</b> (60 by default), and logs its first frames to the disk at once (<a href="../engine/Game_Engine_Runtime_Guide.html#frame-rate-limit">the runtime guide</a>). Settings has two new lists, <b>Frame rate limit</b> (Off, 60, 120, 144, 240) and <b>On battery</b> (60 fps, As plugged in); the rows are closer together to make room.</li>
     <li><b>Checked</b> (a Build Game of the test copy, <code>Tools/Testing/Sync-RacingTest.ps1</code>, the test driver in lap 1): 120.0 fps with <code>--fps-limit 120</code>, 60.0 with <code>--on-battery</code>, 180 with VSync on the 180 Hz monitor; the first-frames lines in Player.log; the Settings screen's new lists by keys, a 60 chosen, applied and saved; GCC check of the changed C++ files.</li>
     <li><b>Records per engine power</b> (the user's request): Realistic power can't reach Buffed's times, so each has its own best times, medal and ghost laps (<code>Centerline.RecordKey</code>: Buffed keeps the old keys, so the times saved before are Buffed's; Realistic's keys end the version with <code>-Realistic</code>). The main menu shows the chosen power's records and its name; a race whose power changes in the pause menu's Settings starts again with the other power's records (its laps would count for neither). The test driver always drives Buffed. <b>Medals per power</b> too: Realistic has its own medal times (RaceManager's <code>Realistic…Time</code> fields; Circuit: author 167, gold 178, silver 204, bronze 251 s), Buffed's times 4.5% slower, as the test driver's lap 1 was with Realistic power (57.4 s against 55.0 s, measured on a test copy where the test driver drove with the chosen power).
-    <li><b>Not done yet:</b> the laptop's run of the new build (on the charger first, then on battery); the Linux and macOS games, which need this branch's player templates from CI (<code>Tools/Get-PlayerTemplates.ps1 -Branch racing-build</code> once CI ran, then Build Game for linux-x64, run in WSL).</li>
+    <li><b>The laptop, closed</b> (2026-11-14): it turns off with the new build too, so it is its power supply, not the game (the user's finding). <b>Not done yet:</b> the Linux and macOS games, which need this branch's player templates from CI (<code>Tools/Get-PlayerTemplates.ps1 -Branch racing-build</code> once CI ran, then Build Game for linux-x64, run in WSL).</li>
   </ul></div>
+</section>
+
+<section id="phase-11">
+  <h2>Phase 11: tire smoke and skid marks <span class="tag">engine</span> <span class="tag">game</span></h2>
+  <p>Smoke from the tires when the car slides, spins its wheels or drifts, and black marks on the road where it did. The
+  engine has neither yet: particles and trails come first, as the engine's (the runtime guide, <a href="../engine/Game_Engine_Runtime_Guide.html#particles">12.1 Particles</a>
+  and <a href="../engine/Game_Engine_Runtime_Guide.html#trails">12.2 Trails</a>), so any game can use them.</p>
+  <ul>
+    <li><b>11.1 Particles in the engine</b> (12.1): the ParticleEmitter component, GPU simulation, the Particles pass, the
+      Inspector, C#, the overlay and profiler rows. Checked on a test scene: an emitter's settings one by one, thousands of
+      particles, the editor and the built player. <b>Built 2026-11-15</b> (the engine guide's 12.1 "As built"): the particles
+      lit once each on the GPU (a third compute pass), not per pixel, which cost five times as much.</li>
+    <li><b>11.2 Trails in the engine</b> (12.2): the Trail component, its pass, the Inspector, C#.</li>
+    <li><b>11.3 The wheels for C#:</b> each wheel's slip (sideways and along) and its contact point and normal on the
+      road, from Jolt's wheels (Vehicle has only the car's largest slip now).</li>
+    <li><b>11.4 Tire smoke:</b> an emitter at each rear wheel's contact patch (the front ones too when they lock or slide).
+      <code>CarController</code> sets its rate from the wheel's slip: a drift, a slide past SlipLimit, wheelspin at the
+      start, a locked wheel. Light gray, rising slowly, growing and fading over a few seconds, lit, soft on the road. The
+      smoke texture made by our own script (Tools, CC0 by being ours).</li>
+    <li><b>11.5 Skid marks:</b> a Trail at each wheel, on the road under it, while the wheel slides on the ground; darker for
+      a harder slide. The marks of the last few hundred meters of sliding stay; a restart clears them.</li>
+    <li><b>11.6 The budget:</b> Medium still 120 fps on the 1% lows with smoke in view (a debug key or the test driver's
+      forced slides); the cost of the passes in the profiler.</li>
+    <li><b>Small ones riding along:</b> the Project panel's <i>Build Game...</i> button, which opens the Build Game window
+      (the user's choice: only a way to it, its settings stay in that window).</li>
+  </ul>
 </section>
 
 <section id="later">
@@ -469,7 +496,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>jumps (air control is already in), boost pads, a loop (upside-down frames in the builder and stronger downforce)</li>
     <li>more tracks and a track menu (the builder already makes them from data)</li>
     <li>AI opponents, from the test driver</li>
-    <li>visual: motion blur from the TAA motion vectors, tire smoke (needs Vulkan particles), skid marks</li>
+    <li>visual: motion blur from the TAA motion vectors (tire smoke and skid marks: Phase 11)</li>
     <li>a spline track editor in the engine, if editing data files gets slow</li>
   </ul>
 </section>

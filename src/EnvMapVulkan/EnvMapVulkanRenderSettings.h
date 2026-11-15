@@ -39,6 +39,8 @@ struct EnvMapVulkanRenderSettings
 	AntialiasingMode Antialiasing = AntialiasingMode::SMAA; // a new scene's; a scene saved without it: Off
 	// Not saved: the quality tier's (EnvMapVulkanQuality). The probe volume's probes updated per frame, times this
 	float ProbeUpdateScale = 1.0f;
+	// Not saved: the quality tier's. The particles the emitters start, and their slices of the pool, times this
+	float ParticleScale = 1.0f;
 
 	// The content of the RenderSettings map
 	void Serialize(YAML::Emitter& out) const;

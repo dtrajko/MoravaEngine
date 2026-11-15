@@ -297,6 +297,31 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "CastShadows" << YAML::Value << light->CastShadows;
 			out << YAML::EndMap;
 		}
+		if (const ParticleEmitterComponent* emitter = scene.TryGet<ParticleEmitterComponent>(entity))
+		{
+			const ParticleEmitterSettings& p = emitter->Settings;
+			out << YAML::Key << "ParticleEmitter" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Emitting" << YAML::Value << p.Emitting;
+			out << YAML::Key << "Rate" << YAML::Value << p.Rate;
+			out << YAML::Key << "RatePerMeter" << YAML::Value << p.RatePerMeter;
+			out << YAML::Key << "MaxParticles" << YAML::Value << p.MaxParticles;
+			out << YAML::Key << "Lifetime" << YAML::Value << YAML::Flow << YAML::BeginSeq << p.LifetimeMin << p.LifetimeMax << YAML::EndSeq;
+			out << YAML::Key << "Speed" << YAML::Value << YAML::Flow << YAML::BeginSeq << p.SpeedMin << p.SpeedMax << YAML::EndSeq;
+			out << YAML::Key << "ConeAngle" << YAML::Value << p.ConeAngle;
+			out << YAML::Key << "StartRadius" << YAML::Value << p.StartRadius;
+			out << YAML::Key << "InheritVelocity" << YAML::Value << p.InheritVelocity;
+			WriteVec3(out, "Acceleration", p.Acceleration);
+			out << YAML::Key << "Drag" << YAML::Value << p.Drag;
+			out << YAML::Key << "Size" << YAML::Value << YAML::Flow << YAML::BeginSeq << p.SizeStart << p.SizeEnd << YAML::EndSeq;
+			WriteVec4(out, "ColorStart", p.ColorStart);
+			WriteVec4(out, "ColorEnd", p.ColorEnd);
+			out << YAML::Key << "SpinSpeed" << YAML::Value << p.SpinSpeed;
+			AssetReference::Write(out, "Texture", p.Texture);
+			out << YAML::Key << "Blend" << YAML::Value << ParticleEmitterSettings::GetBlendName(p.Blend);
+			out << YAML::Key << "Lit" << YAML::Value << p.Lit;
+			out << YAML::Key << "SoftDistance" << YAML::Value << p.SoftDistance;
+			out << YAML::EndMap;
+		}
 		if (const CameraComponent* camera = scene.TryGet<CameraComponent>(entity))
 		{
 			// Its placement is the entity's transform
@@ -902,6 +927,41 @@ namespace EnvMapVulkanSceneSerializer
 				}
 			}
 			f.Clamp();
+		}
+		if (YAML::Node emitterNode = node["ParticleEmitter"]; emitterNode && emitterNode.IsMap())
+		{
+			ParticleEmitterSettings& p = scene.Add<ParticleEmitterComponent>(entity).Settings;
+			auto readRange = [&emitterNode](const char* key, float& min, float& max)
+			{
+				if (YAML::Node range = emitterNode[key]; range && range.IsSequence() && range.size() == 2)
+				{
+					min = range[0].as<float>();
+					max = range[1].as<float>();
+				}
+			};
+			Read(emitterNode, "Emitting", p.Emitting);
+			Read(emitterNode, "Rate", p.Rate);
+			Read(emitterNode, "RatePerMeter", p.RatePerMeter);
+			Read(emitterNode, "MaxParticles", p.MaxParticles);
+			readRange("Lifetime", p.LifetimeMin, p.LifetimeMax);
+			readRange("Speed", p.SpeedMin, p.SpeedMax);
+			Read(emitterNode, "ConeAngle", p.ConeAngle);
+			Read(emitterNode, "StartRadius", p.StartRadius);
+			Read(emitterNode, "InheritVelocity", p.InheritVelocity);
+			ReadVec3(emitterNode["Acceleration"], p.Acceleration);
+			Read(emitterNode, "Drag", p.Drag);
+			readRange("Size", p.SizeStart, p.SizeEnd);
+			ReadVec4(emitterNode["ColorStart"], p.ColorStart);
+			ReadVec4(emitterNode["ColorEnd"], p.ColorEnd);
+			Read(emitterNode, "SpinSpeed", p.SpinSpeed);
+			p.Texture = AssetReference::Read(emitterNode, "Texture");
+			if (!ParticleEmitterSettings::FindBlend(emitterNode["Blend"].as<std::string>("Alpha"), p.Blend))
+			{
+				p.Blend = ParticleEmitterSettings::BlendMode::Alpha;
+			}
+			Read(emitterNode, "Lit", p.Lit);
+			Read(emitterNode, "SoftDistance", p.SoftDistance);
+			p.MaxParticles = std::min(p.MaxParticles, ParticleEmitterSettings::MaxParticlesLimit);
 		}
 		if (YAML::Node cameraNode = node["Camera"])
 		{

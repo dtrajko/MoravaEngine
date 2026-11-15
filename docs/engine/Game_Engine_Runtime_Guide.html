@@ -1487,7 +1487,7 @@ Build:
   <div class="table-wrap"><table>
     <tr><th>Feature</th><th>Why later</th><th>Notes</th></tr>
     <tr><td>Undo/redo in the editor</td><td>Very useful, but independent of the runtime</td><td>A command list over component changes; the component type list of 1.5 helps</td></tr>
-    <tr><td>Particles and VFX in the Vulkan renderer</td><td>Games look better with them; not needed to play</td><td>GPU particles with compute, emitters as components</td></tr>
+    <tr><td>Particles and VFX in the Vulkan renderer</td><td>Games look better with them; not needed to play</td><td>GPU particles with compute, emitters as components: planned in <a href="#particles">12.1</a> for the racing game's tire smoke (2026-11-14), with trails for skid marks (<a href="#trails">12.2</a>)</td></tr>
     <tr><td>Navigation for AI</td><td>Needed for enemies that find their way</td><td>Recast/Detour: navmesh baked in the editor, agents as components</td></tr>
     <tr><td>Prefab overrides, nested prefabs</td><td>Basic Apply/Revert covers small games</td><td></td></tr>
     <tr><td>Root motion, blend trees</td><td>Crossfades cover basic characters</td><td>Animation events were built early, for Erika's steps (6.4's boxes)</td></tr>
@@ -1496,6 +1496,80 @@ Build:
     <tr><td>Steamworks, achievements</td><td>Only when publishing on Steam</td><td></td></tr>
     <tr><td>Lua as a second language</td><td>Kept out to stay basic</td><td>Would reuse ScriptComponent and the same API names</td></tr>
   </table></div>
+
+  <h3 id="particles">12.1 Particles</h3>
+  <p>Asked for by the racing game (its Phase 11: tire smoke). The old OpenGL particles in <code>src/Particle</code> stay with
+  the old scenes; these are new, for the Vulkan renderer only.</p>
+  <ul>
+    <li><b>A ParticleEmitter component</b> on an entity: saved in the scene, edited in the Inspector, in prefabs, and in C#.
+      Its settings: Emitting; Rate (particles a second) and Rate per meter (by the distance the emitter moved: smoke behind
+      a car stays even at any speed); Burst (C#: <code>Emit(count)</code>); Lifetime (a range); start speed and a cone around
+      the entity's direction; how much of the entity's own velocity a particle keeps; gravity (negative: rising) and drag;
+      size and color with alpha at the start and the end of a life; a random spin; Max particles; a texture; Blend (Alpha or
+      Additive); Lit; Soft (the fade distance near surfaces).</li>
+    <li><b>Simulated on the GPU</b> (compute): one pool of particles for all emitters. Each frame the CPU only works out how
+      many particles each emitter starts and where (its transform now and last frame), a compute pass starts them in the
+      pool's free slots, a second moves and ages them all. The CPU never touches a particle.</li>
+    <li><b>Drawn</b> as quads facing the camera, instanced from the pool, in a <i>Particles</i> pass after the glass and the
+      water. Soft: each fades where it meets the scene's depth, so no hard lines where smoke crosses the road. Lit: the sun
+      (its shadow cascades) and the ambient light from the probes, so smoke in a shadow is darker. Alpha-blended particles
+      aren't sorted one by one at first: low-alpha smoke hides the order; emitters are drawn far to near. A sort comes when a
+      game shows it's needed.</li>
+    <li><b>TAA:</b> particles have no motion vectors, so they're drawn where the TAA doesn't smear them (to be measured
+      on the first smoke: after the resolve, or before it with the history rejected under them).</li>
+    <li><b>Quality tiers</b> scale the rates and the pool (Low half). The debug overlay shows the particles alive and the
+      emitters; the GPU profiler has the passes. Selected in the editor, an emitter runs in the viewport too.</li>
+  </ul>
+
+  <div class="box note"><b>As built (2026-11-15, branch <code>tire-effects</code>, the racing game's 11.1)</b>
+  <ul>
+    <li><b>Where:</b> the settings in <code>src/World/Particles.h</code> (<code>ParticleEmitterSettings</code>), the component
+      in <code>EnvMapVulkanComponents.h</code> (<code>ParticleEmitterComponent</code>: the settings, and a script's Burst and
+      Clear waiting for the next frame), the GPU side in <code>src/EnvMapVulkan/EnvMapVulkanParticles.h/.cpp</code>, the
+      shaders <code>ParticleUpdate.glsl</code>, <code>ParticleSpawn.glsl</code>, <code>ParticleLight.glsl</code> (compute) and
+      <code>Particles.glsl</code> (drawn), with <code>Include/Particles.glslh</code>. The old OpenGL particles in
+      <code>src/Particle</code> are untouched.</li>
+    <li><b>The pool:</b> one storage buffer, each emitter a slice of it (Max Particles long) used as a ring: a new particle
+      takes the oldest one's place, so there is no free list and no sorting. A new emitter, one gone or a changed Max
+      Particles lays the slices out again (the particles alive go). 64 bytes a particle.</li>
+    <li><b>Each frame:</b> the CPU works out how many particles each emitter starts (its rate, the meters it moved, a script's
+      burst) and writes the emitters into a buffer of the frame in flight. On the GPU, after the scene's render pass: every
+      particle a frame older (gravity, drag, spin), then each emitter's new ones (along the way the emitter moved, already
+      aged by the part of the frame they lived), then the light of each particle of a lit emitter, once, at its center:
+      the sun through its shadow (a 3 x 3 filter of its cascade) and the environment's light from above. Lighting each
+      pixel instead cost five times as much (big puffs on top of each other).</li>
+    <li><b>Drawn</b> in a render pass of their own after the scene's (the glass and the water are in it): the scene's color,
+      and its depth read-only, tested and sampled at once (<code>DEPTH_STENCIL_READ_ONLY_OPTIMAL</code>, after
+      <code>EnvMapVulkanGBuffer::MakeDepthReadable</code>). One instanced draw per emitter, far to near; alpha or additive
+      blending; the soft fade from the depth; the distance haze.</li>
+    <li><b>Time:</b> the game's (<code>EnvMapVulkanRenderer::SetGameTime</code>, from the player and the editor's Play: still
+      while paused, slower in slow motion). In the editor's Edit only the selected emitters emit (and those under a selected
+      entity), on real time: the Inspector's changes show at once.</li>
+    <li><b>Also:</b> the Inspector's Particle Emitter (Burst and Clear buttons), saving and loading
+      (<code>ParticleEmitter:</code> in the scene file, the texture an asset reference), copy and paste, the debug
+      overlay's Particles row, the GPU profiler's Particles pass, the Low tier's half of the particles
+      (<code>EnvMapVulkanRenderSettings::ParticleScale</code>), C#: <code>GetComponent&lt;ParticleEmitter&gt;()</code> with
+      Emitting, Rate, RatePerMeter, SpeedMin/Max, SizeStart/End, ColorStart/End, <code>Emit(count)</code>,
+      <code>Clear()</code>.</li>
+    <li><b>Checked</b> on test scenes in <code>D:\Workspace\Temp\ParticlesTest</code> (smoke and sparks): the editor's
+      Play and Edit preview, the player, a scene saved and read again, the C# calls from a script, the GCC check, no
+      validation messages. 550 particles cost 0.2 ms of GPU at 2560 x 1440 on the RTX 3070 Ti; the frames in flight still
+      overlap (a copy of the frame's descriptors each frame, made without waiting: each frame slot has its own).</li>
+    <li><b>Not in yet:</b> the water's reflection, render textures, the probes' capture; point and spot lights, tinted
+      glass's shadows and the probes' light on lit particles; motion vectors; a sort of the particles within an emitter.</li>
+  </ul></div>
+
+  <h3 id="trails">12.2 Trails</h3>
+  <p>Marks left behind by a moving entity: skid marks first, later tire tracks in dirt and footprints.</p>
+  <ul>
+    <li><b>A Trail component:</b> while Emitting, the entity leaves a point every Min distance; each two points make a
+      segment of a ribbon, Width wide, lying on the surface under the entity (the ribbon's up is the entity's up, which a
+      script sets from the ground). Color with alpha (a script changes it while driving: a harder slide, a darker mark), a
+      texture, Max points (a ring: the oldest marks go first), a Lifetime (0: they stay until the ring reuses them), and
+      Clear (C#: a restart).</li>
+    <li><b>Drawn</b> right after the opaque meshes, before the glass: alpha-blended over the road, with a small depth bias
+      so they don't flicker on it, lit like the surface under them. Stopping and starting again begins a new ribbon.</li>
+  </ul>
 </section>
 
 <section id="phase-13">
@@ -1700,7 +1774,7 @@ Build:
     <tr><td>9</td><td>Tinted glass shadows: transmittance maps beside the shadow maps</td><td>8</td><td>Orange, lighter shadow of the glass cube in Erika's scene</td></tr>
     <tr><td>10</td><td>Asset registry, cooking, pack file</td><td>1</td><td>Player runs from the pack only</td></tr>
     <tr><td>11</td><td>Build Game, player templates, private .NET, quality tiers, crash dumps</td><td>4, 10</td><td><b>Milestone 3: shipped on a clean machine</b></td></tr>
-    <tr><td>12</td><td>Later, when games ask for it: particles, navmesh, undo/redo, save games, Steam</td><td>11</td><td>Each by the game that needs it</td></tr>
+    <tr><td>12</td><td>Later, when games ask for it: particles and trails (planned for Racing's Phase 11), navmesh, undo/redo, save games, Steam</td><td>11</td><td>Each by the game that needs it</td></tr>
     <tr><td>13</td><td>Replace a model's file, add and remove meshes</td><td>10 (shared models)</td><td>The Player's cube becomes a sphere, keeping its components</td></tr>
   </table></div>
   <p>Phase 10 depends only on Phase 1 and could run in parallel with 5 to 7, but doing it after the collector exists means the cooker is tested on a real game's assets.</p>

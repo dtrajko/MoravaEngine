@@ -442,8 +442,11 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 	else if (request == PlayRequest::Stop && IsPlaying())
 	{
 		StopPlay();
+		EnvMapVulkanRenderer::SetGameTime(false, 1.0f);
 		return;
 	}
+	// The particles' clock: the game's while it runs (Play or Simulate; still while paused), else the editor's preview
+	EnvMapVulkanRenderer::SetGameTime(IsPlaying(), s_Paused ? 0.0f : s_GameLoop.GetTimeScale());
 	if (!IsPlaying())
 	{
 		if (!s_EditAnimation.IsRunning())

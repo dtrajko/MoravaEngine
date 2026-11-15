@@ -137,6 +137,12 @@ useful while you run the engine yourself:
 `-Name` takes the newest process of that name that has a window; `-Id` a process by its ID. Coordinates for `-Crop`
 are pixels of the whole window, title bar included: take one full screenshot first to find them.
 
+A known flaw of the capture (PrintWindow), not of the renderer: around very bright bloom (additive particles in a dark
+scene) the PNG can have holes, pixels with all four channels 0, which an image viewer shows as white or as its background.
+The window itself has none (found 2026-11-15 with the particles' sparks: the same frame grabbed another way was whole). A
+hole is never a value the engine wrote: its images are opaque. Don't use Alt+PrintScreen instead: on this machine it opens
+Dropbox's screenshot window.
+
 ## Sync-RacingTest.ps1
 
 The racing game is tested on a copy with its own project name (RacingTest: its own settings and save data in

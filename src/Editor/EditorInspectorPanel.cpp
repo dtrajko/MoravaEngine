@@ -1279,6 +1279,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 	InputTestControls(selectedModel);
 	ScriptPropertiesControls(selectedModel);
 	AudioControls(selectedModel);
+	ParticleControls(selectedModel);
 	AnimatorControls(selectedModel);
 
 	ImGui::Separator();
@@ -1898,6 +1899,7 @@ void OnImGuiRenderInspector()
 	{
 		ScriptPropertiesControls(entity);
 		AudioControls(entity);
+		ParticleControls(entity);
 	}
 
 	ImGui::End();

@@ -11,7 +11,7 @@ namespace Morava
 
         // The engine's numbers for the kinds (ScriptComponent in src/Scripting/ScriptApi.h)
         internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5, Animator = 6,
-            UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13 }
+            UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14 }
 
         internal static Kind KindOf(Type type)
         {
@@ -29,6 +29,7 @@ namespace Morava
             if (type == typeof(UISlider)) return Kind.UISlider;
             if (type == typeof(UIDropdown)) return Kind.UIDropdown;
             if (type == typeof(Vehicle)) return Kind.Vehicle;
+            if (type == typeof(ParticleEmitter)) return Kind.ParticleEmitter;
             throw new ArgumentException($"{type.Name} is not a component of the engine");
         }
 
@@ -546,5 +547,63 @@ namespace Morava
 
         /// <summary>How far that crossfade is, 0 to 1.</summary>
         public float TransitionProgress => Info.FadeProgress;
+    }
+
+    /// <summary>
+    /// Particles that start at the entity: smoke, dust, sparks (the Inspector's Particle Emitter; the renderer moves and draws
+    /// them on the GPU). A change here shows from the next frame on; the particles alive keep the color and size curve of
+    /// the frame they are drawn in.
+    /// </summary>
+    public sealed unsafe class ParticleEmitter : Component
+    {
+        NativeParticleSettings Settings
+        {
+            get
+            {
+                NativeParticleSettings settings;
+                if (Interop.Game->ParticleEmitter_GetSettings(Entity.Id, &settings) == 0) throw Missing("particle emitter");
+                return settings;
+            }
+            set
+            {
+                if (Interop.Game->ParticleEmitter_SetSettings(Entity.Id, &value) == 0) throw Missing("particle emitter");
+            }
+        }
+
+        /// <summary>Starts particles at its rates (false: only Emit starts some; those alive live on).</summary>
+        public bool Emitting { get => Settings.Emitting != 0; set { var s = Settings; s.Emitting = value ? 1 : 0; Settings = s; } }
+
+        /// <summary>Particles started a second.</summary>
+        public float Rate { get => Settings.Rate; set { var s = Settings; s.Rate = value; Settings = s; } }
+
+        /// <summary>Particles started for each meter the emitter moves (added to Rate).</summary>
+        public float RatePerMeter { get => Settings.RatePerMeter; set { var s = Settings; s.RatePerMeter = value; Settings = s; } }
+
+        /// <summary>The lower end of the speed a particle starts with: random between SpeedMin and SpeedMax (meters a second).</summary>
+        public float SpeedMin { get => Settings.SpeedMin; set { var s = Settings; s.SpeedMin = value; Settings = s; } }
+        /// <summary>The upper end of the start speed (meters a second).</summary>
+        public float SpeedMax { get => Settings.SpeedMax; set { var s = Settings; s.SpeedMax = value; Settings = s; } }
+
+        /// <summary>Meters across at the start of a particle's life.</summary>
+        public float SizeStart { get => Settings.SizeStart; set { var s = Settings; s.SizeStart = value; Settings = s; } }
+        /// <summary>Meters across at the end of a particle's life.</summary>
+        public float SizeEnd { get => Settings.SizeEnd; set { var s = Settings; s.SizeEnd = value; Settings = s; } }
+
+        /// <summary>Color and alpha at the start of a particle's life (x, y, z: red, green, blue; w: alpha).</summary>
+        public Vector4 ColorStart { get => Settings.ColorStart; set { var s = Settings; s.ColorStart = value; Settings = s; } }
+        /// <summary>Color and alpha at the end of a particle's life (alpha 0 fades it out).</summary>
+        public Vector4 ColorEnd { get => Settings.ColorEnd; set { var s = Settings; s.ColorEnd = value; Settings = s; } }
+
+        /// <summary>Starts this many particles at once (in the next frame), whether Emitting or not.</summary>
+        public void Emit(int count)
+        {
+            if (Interop.Game->ParticleEmitter_Emit(Entity.Id, count) == 0) throw Missing("particle emitter");
+        }
+
+        /// <summary>The particles alive go (a restart).</summary>
+        public void Clear()
+        {
+            if (Interop.Game->ParticleEmitter_Clear(Entity.Id) == 0) throw Missing("particle emitter");
+        }
     }
 }

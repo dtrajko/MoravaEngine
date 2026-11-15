@@ -141,6 +141,10 @@ namespace
 		rows.push_back({ Row::Kind::Graph });
 		AddRow(rows, "Draw calls", FormatCount(frame.Draws) + ", " + FormatCount(frame.Triangles) + " triangles");
 		AddRow(rows, "Meshes", Format("%u, %u culled", frame.Meshes, frame.Culled));
+		if (!frame.Particles.empty())
+		{
+			AddRow(rows, "Particles", frame.Particles);
+		}
 
 		// The passes that cost most
 		if (frame.GpuValid && !frame.Passes.empty())

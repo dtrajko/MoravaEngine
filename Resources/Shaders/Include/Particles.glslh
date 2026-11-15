@@ -1,0 +1,54 @@
+// The particles' pool and their emitters (SceneEnvMapVulkan, see EnvMapVulkanParticles): the std430 layouts must match
+// GPUParticle and GPUEmitter in EnvMapVulkanParticles.cpp byte for byte.
+#ifndef PARTICLES_GLSLH
+#define PARTICLES_GLSLH
+
+// A particle: dead while Life is 0 (a cleared pool is all dead)
+struct Particle
+{
+	vec4 PositionAge;  // xyz: where it is (world); w: seconds since it started
+	vec4 VelocityLife; // xyz: meters a second; w: the seconds it lives (0: dead)
+	vec4 Extra;        // x: its turn (radians); y: its spin (radians a second); z: a random number 0..1 of its own; w: its emitter's slot
+	vec4 Light;        // rgb: the light it gets this frame (a lit emitter's, ParticleLight.glsl; 1 otherwise)
+};
+
+// An emitter, as this frame has it (written by the CPU each frame)
+struct Emitter
+{
+	vec4 ColorStart;
+	vec4 ColorEnd;
+	vec4 AccelerationDrag;  // xyz: m/s² (world); w: the share of its speed a particle loses each second
+	vec4 SizeSoftFlags;     // x: size at the start; y: at the end (meters); z: the soft distance (meters); w: flags (EmitterLit...)
+	vec4 Position;          // xyz: where it is now (world)
+	vec4 PreviousPosition;  // xyz: where it was the last frame
+	vec4 AxisCone;          // xyz: the direction particles start in (the entity's up, world); w: the cosine of the cone's half angle
+	vec4 VelocityInherit;   // xyz: its own velocity; w: the share of it a particle gets
+	vec4 SpeedLife;         // x, y: the speed range (m/s); z, w: the lifetime range (seconds)
+	vec4 SpinRadius;        // x: the spin's limit (radians a second, either way); y: the start radius (meters)
+	uvec4 Slice;            // x: its first particle in the pool; y: how many it has; z: where the ring's next one goes; w: started this frame
+};
+
+const uint EmitterLit = 1u;
+const uint EmitterAdditive = 2u;
+const uint EmitterTextured = 4u;
+
+uint EmitterFlags(Emitter emitter)
+{
+	return uint(emitter.SizeSoftFlags.w + 0.5);
+}
+
+// Random numbers from a seed (PCG hash): the same seed, the same numbers on every GPU
+uint ParticleHash(uint value)
+{
+	uint state = value * 747796405u + 2891336453u;
+	uint word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
+	return (word >> 22u) ^ word;
+}
+
+float ParticleRandom(inout uint seed)
+{
+	seed = ParticleHash(seed);
+	return float(seed) / 4294967295.0;
+}
+
+#endif

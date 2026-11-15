@@ -38,6 +38,7 @@ EnvMapVulkanRenderSettings EnvMapVulkanQuality::Apply(QualityTier tier, const En
 				settings.Antialiasing = AntialiasingMode::FXAA;
 			}
 			settings.ProbeUpdateScale = 0.25f;
+			settings.ParticleScale = 0.5f;
 			break;
 	}
 	return settings;
@@ -50,7 +51,7 @@ const char* EnvMapVulkanQuality::Describe(QualityTier tier)
 		case QualityTier::Ultra:  return "larger shadow maps, full-resolution ray-traced effects";
 		case QualityTier::High:   return "the scenes as they were made";
 		case QualityTier::Medium: return "no ray tracing, smaller shadow maps";
-		case QualityTier::Low:    return "no ray tracing, small shadow maps, no ambient occlusion, FXAA";
+		case QualityTier::Low:    return "no ray tracing, small shadow maps, no ambient occlusion, FXAA, half the particles";
 		case QualityTier::Auto:   return "the scenes as they were made";
 	}
 	return "";
