@@ -546,7 +546,23 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
           problems.</li>
       </ul></li>
     <li><b>11.6 The budget:</b> Medium still 120 fps on the 1% lows with smoke in view (a debug key or the test driver's
-      forced slides); the cost of the passes in the profiler.</li>
+      forced slides); the cost of the passes in the profiler. <b>Measured 2026-11-15, met; nothing needed changing.</b>
+      The RelWithDebInfo player on the test copy (VSync off, 2560×1440, the test driver, <code>--frame-stats 8</code>, 40 s
+      in lap 1):
+      <div class="table-wrap"><table>
+        <tr><th>Run</th><th>Medium: average, 1% low</th><th>Ultra: average, 1% low</th><th>Particles pass</th></tr>
+        <tr><td>The circuit as the game has it</td><td>266 fps, 168</td><td>212 fps, 171</td><td>0.02 ms</td></tr>
+        <tr><td>Smoke and marks forced on all four wheels all lap</td><td>267 fps, 182</td><td>209 fps, 173</td><td>0.06 ms</td></tr>
+        <tr><td>Forced, the car standing still (the smoke all around the camera)</td><td>161 fps, 143</td><td>134 fps, 116</td><td>2.8 ms (4,000 particles)</td></tr>
+        <tr><td>The circuit without the smoke and mark entities (Ultra, two runs each)</td><td></td><td>214 against 212–216 with them</td><td>–</td></tr>
+      </table></div>
+      No frame slower than 120 fps at Medium in any run (Ultra: 0.8% in the standstill case, whose target is 60). Driving,
+      the smoke falls behind the camera within a second, so it costs almost nothing; the marks are drawn in the scene pass
+      (no measurable change). The standstill case can't happen in a race (the car is held, throttle ignored, until the
+      lights go out) and still stays above 120 at Medium. The circuit's Ultra figure (212) is below the 230 measured after
+      frames in flight (2026-11-14), but the same build without the effects measures the same: not Phase 11's doing.
+      If smoke ever needs to be cheaper: the cost is the overdraw of big soft quads near the camera (a fade for particles
+      very near the camera, or drawing them at half resolution).</li>
     <li><b>Small ones riding along:</b> the Project panel's <i>Build Game...</i> button, which opens the Build Game window
       (the user's choice: only a way to it, its settings stay in that window).</li>
   </ul>
