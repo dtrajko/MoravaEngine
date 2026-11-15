@@ -149,6 +149,10 @@ Entities:
         SmokeFR: {Entity: 2031}
         SmokeRL: {Entity: 2032}
         SmokeRR: {Entity: 2033}
+        MarkFL: {Entity: 2034}
+        MarkFR: {Entity: 2035}
+        MarkRL: {Entity: 2036}
+        MarkRR: {Entity: 2037}
     Vehicle:
       Controls: Script
       EngineTorque: 900
@@ -338,6 +342,70 @@ Entities:
       Blend: Alpha
       Lit: true
       SoftDistance: 0.6
+  - ID: 2034
+    Name: Mark FL
+    Parent: 2001
+    Transform:
+      Translation: [-1.05, -0.57, -1.28]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Trail:
+      Emitting: false
+      Width: 0.8
+      MinDistance: 0.25
+      MaxPoints: 1000
+      Lifetime: 0
+      Color: [0.03, 0.03, 0.03, 0.8]
+      Texture: Assets/Textures/SkidMark.png
+      TileLength: 2
+  - ID: 2035
+    Name: Mark FR
+    Parent: 2001
+    Transform:
+      Translation: [1.05, -0.57, -1.28]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Trail:
+      Emitting: false
+      Width: 0.8
+      MinDistance: 0.25
+      MaxPoints: 1000
+      Lifetime: 0
+      Color: [0.03, 0.03, 0.03, 0.8]
+      Texture: Assets/Textures/SkidMark.png
+      TileLength: 2
+  - ID: 2036
+    Name: Mark RL
+    Parent: 2001
+    Transform:
+      Translation: [-1.14, -0.57, 1.76]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Trail:
+      Emitting: false
+      Width: 0.95
+      MinDistance: 0.25
+      MaxPoints: 1000
+      Lifetime: 0
+      Color: [0.03, 0.03, 0.03, 0.8]
+      Texture: Assets/Textures/SkidMark.png
+      TileLength: 2
+  - ID: 2037
+    Name: Mark RR
+    Parent: 2001
+    Transform:
+      Translation: [1.14, -0.57, 1.76]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Trail:
+      Emitting: false
+      Width: 0.95
+      MinDistance: 0.25
+      MaxPoints: 1000
+      Lifetime: 0
+      Color: [0.03, 0.03, 0.03, 0.8]
+      Texture: Assets/Textures/SkidMark.png
+      TileLength: 2
   - ID: 2020
     Name: Engine On A
     Parent: 2001

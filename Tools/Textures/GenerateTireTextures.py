@@ -1,11 +1,12 @@
-"""Generates the racing game's tire smoke texture (docs/games/Racing_Plan.html, Phase 11.4), made here, no images:
+"""Generates the racing game's tire effect textures (docs/games/Racing_Plan.html, Phases 11.4 and 11.5), made here, no images:
 
     TireSmoke.png   a puff of smoke: a cloudy round shape in its alpha, a little light and shade in its color
+    SkidMark.png    a tire's mark along the road: streaks of rubber along it (the tread), soft at its two edges
 
-Usage: python GenerateSmokeTexture.py [output folder]     (needs numpy; the default is the racing project's Assets/Textures)
+Usage: python GenerateTireTextures.py [output folder]     (needs numpy; the default is the racing project's Assets/Textures)
 
-256 x 256 RGBA. The particle multiplies it with its own color (ParticleEmitter's ColorStart/ColorEnd), so the color here
-is near white: the emitter makes it gray. The result is the same on every run (fixed random seed).
+RGBA, near white: the particle (ParticleEmitter's ColorStart/ColorEnd) and the trail (Trail's Color) multiply it with their
+own color. The results are the same on every run (fixed random seeds).
 """
 
 import os
@@ -80,14 +81,40 @@ def smoke(rng):
     return (rgba * 255.0 + 0.5).astype(np.uint8)
 
 
+def skid(rng):
+    """256 along the mark (x: a trail's TileLength) by 128 across it (y). Streaks run along: each row across has its own
+    amount of rubber, the tread's grooves lighter; the amount wanders a little along, so the mark isn't ruled; it tiles."""
+    along, across = 256, 128
+    y = (np.arange(across) + 0.5) / across
+    # The tread: four grooves with less rubber, and fine streaks of random strength
+    grooves = 1.0 - 0.55 * np.exp(-((np.mod(y * 5.0, 1.0) - 0.5) ** 2) / (2 * 0.035 ** 2))
+    grooves[(y < 0.1) | (y > 0.9)] = 1.0
+    fine = np.repeat(rng.random(across // 2), 2)
+    fine = 0.7 + 0.3 * np.convolve(np.r_[fine[-2:], fine, fine[:2]], np.ones(5) / 5, mode="same")[2:-2]
+    rows = grooves * fine
+    # Along: slow changes, as the slide pressed harder or lighter (tiling noise, one dimension stretched)
+    wander = value_noise(along, 4, rng)[:across // 4 if across // 4 else 1].mean(axis=0)
+    wander = 0.8 + 0.4 * (wander - wander.min()) / max(np.ptp(wander), 1e-6)
+    grain = 0.9 + 0.1 * fbm(along, rng, octaves=4, base=8)[:across, :]
+    alpha = rows[:, None] * wander[None, :] * grain
+    # Soft edges: nothing at the two sides, full a fifth in
+    edge = np.clip(np.minimum(y, 1.0 - y) / 0.2, 0.0, 1.0)
+    edge = edge * edge * (3.0 - 2.0 * edge)
+    alpha *= edge[:, None]
+    rgba = np.ones((across, along, 4))
+    rgba[..., 3] = np.clip(alpha, 0.0, 1.0)
+    return (rgba * 255.0 + 0.5).astype(np.uint8)
+
+
 def main():
     here = os.path.dirname(os.path.abspath(__file__))
     default = os.path.join(here, "..", "..", "Projects", "Racing", "Assets", "Textures")
     folder = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else default)
     os.makedirs(folder, exist_ok=True)
-    path = os.path.join(folder, "TireSmoke.png")
-    write_png(path, smoke(np.random.default_rng(11)))
-    print(path)
+    for name, make, seed in (("TireSmoke.png", smoke, 11), ("SkidMark.png", skid, 12)):
+        path = os.path.join(folder, name)
+        write_png(path, make(np.random.default_rng(seed)))
+        print(path)
 
 
 if __name__ == "__main__":

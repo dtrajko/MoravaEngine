@@ -505,7 +505,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
           ours), saved in <code>Projects/Racing/Textures</code>.</li>
         <li><b>Checked</b> with the test driver: wheelspin at the start, braking hard, a drift; the editor and the built
           player; Debug once (asserts).</li>
-        <li><b>Built 2026-11-15:</b> <code>Tools/Textures/GenerateSmokeTexture.py</code> writes
+        <li><b>Built 2026-11-15:</b> <code>Tools/Textures/GenerateSmokeTexture.py</code> (now <code>GenerateTireTextures.py</code>, 11.5) writes
           <code>Assets/Textures/TireSmoke.png</code> (a 256² puff: a noisy round edge, billows inside). Smoke FL to RR in
           Circuit and TestTrack; <code>CarController</code>'s SmokeFL to SmokeRR, SmokeStartSlide 2.5, SmokeFullSlide 8 (the
           test driver's slides into turns rub 4 to 6 m/s, a locked wheel 13 to 34: with 15 only a lock smoked fully),
@@ -517,8 +517,34 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
           overdraw: GPU 4.8 ms then) — for 11.6. Rode along: the debug overlay's "emitting" counts the emitters on with a
           rate (it counted those starting a particle that frame, mostly 0 at a slow rate and a high frame rate).</li>
       </ul></li>
-    <li><b>11.5 Skid marks:</b> a Trail at each wheel, on the road under it, while the wheel slides on the ground; darker for
-      a harder slide. The marks of the last few hundred meters of sliding stay; a restart clears them.</li>
+    <li><b>11.5 Skid marks</b> (updated after 11.4):
+      <ul>
+        <li><b>Four Trails</b>, children of the car (Mark FL, FR, RL, RR) in Circuit and TestTrack, as wide as each tire's
+          print (front 0.8 m, rear 0.95 m), a point every 0.25 m, 1,000 points each: the last 250 m of sliding per wheel
+          stay; no lifetime.</li>
+        <li><b><code>CarController</code></b>, beside the smoke: each mark at its wheel's <code>LocalPoint</code>, turned to
+          the road's up there (<code>LocalNormal</code>: on a banked turn the mark lies on the bank). It marks while the
+          tire rubs past MarkStartSlide (3 m/s) and stops below 60% of it (so a slide hovering near the limit doesn't
+          leave dashes); the mark is darker the harder it rubs, up to MarkFullSlide (10 m/s): each point keeps the color
+          it was left with. Not in the air, not on the terrain.</li>
+        <li><b>The texture:</b> rubber streaks along the mark (the tread's grooves lighter), soft at its edges, made by the
+          same script as the smoke (<code>Tools/Textures/GenerateTireTextures.py</code>).</li>
+        <li><b>Restart clears them</b> (RaceManager's Restart asks <code>CarController.ClearMarks</code>); a respawn
+          after leaving the track keeps them (the jump starts a new ribbon).</li>
+        <li><b>Checked:</b> the start's wheelspin and hard braking with the test driver (dark short marks), a restart,
+          a banked turn; the editor, the built player, Debug once.</li>
+        <li><b>Built 2026-11-15:</b> Mark FL to RR (Trails, IDs 2034–2037) with <code>Assets/Textures/SkidMark.png</code>
+          (TileLength 2 m); <code>CarController</code>'s MarkFL to MarkRR, MarkStartSlide 2.5 (as the smoke), MarkStopShare
+          0.6, MarkFullSlide 10, MarkColor 0.03 gray at 0.9, MarkLightest 0.55, and <code>ClearMarks()</code>, which
+          RaceManager's Restart calls. <b>Found:</b> a spinning or locking tire slips in one physics step and grips in the next
+          (at the start 4.6, 0, 4.6, 0 m/s, step by step): the smoke hid it (its rate adds up), but the marks broke into pieces
+          shorter than a point's 0.25 m and left nothing. So each wheel's slide is held: its peaks fade over SlideHold
+          (0.25 s), and the smoke and the marks both go by the held slide. Checked with a fixed camera over the start line:
+          the launch leaves two dark tread marks (the front and rear tires of each side nearly overlap), the restart clears
+          them, the next launch lays new ones; marks forced on all lap lie on the road through the turns; the brake into the
+          first turn marks the locking rear wheel. The editor, the built player and Debug: no validation messages, no
+          problems.</li>
+      </ul></li>
     <li><b>11.6 The budget:</b> Medium still 120 fps on the 1% lows with smoke in view (a debug key or the test driver's
       forced slides); the cost of the passes in the profiler.</li>
     <li><b>Small ones riding along:</b> the Project panel's <i>Build Game...</i> button, which opens the Build Game window
