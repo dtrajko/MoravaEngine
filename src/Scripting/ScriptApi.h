@@ -54,6 +54,19 @@ struct ScriptVehicleState
 	float RevLimit = 0.0f;                   // the most the engine turns: Max RPM + Over-Rev RPM
 };
 
+// One wheel of a vehicle after the last step (Vehicle.GetWheel; ScenePhysics::VehicleWheelState)
+struct ScriptWheelState
+{
+	uint64_t Ground = 0;                     // the entity it touches (0: none)
+	int32_t OnGround = 0;
+	float LateralSlip = 0.0f, LongitudinalSlip = 0.0f;
+	float SideSlide = 0.0f, SpinSlide = 0.0f, SlideSpeed = 0.0f; // m/s
+	float Radius = 0.0f;
+	glm::vec3 Point = glm::vec3(0.0f), Normal = glm::vec3(0.0f, 1.0f, 0.0f);           // world
+	glm::vec3 LocalPoint = glm::vec3(0.0f), LocalNormal = glm::vec3(0.0f, 1.0f, 0.0f); // the vehicle's space
+};
+static_assert(sizeof(ScriptWheelState) == 88, "layout mismatch with NativeWheelState in ScriptCore/NativeApi.cs");
+
 struct ScriptRaycastHit
 {
 	uint64_t Entity = 0;
@@ -437,6 +450,9 @@ struct ScriptNativeApi
 	int32_t (*Trail_GetSettings)(uint64_t entity, ScriptTrailSettings* out);
 	int32_t (*Trail_SetSettings)(uint64_t entity, const ScriptTrailSettings* value);
 	int32_t (*Trail_Clear)(uint64_t entity);
+
+	// The racing game's tire effects (Racing Phase 11.3): one wheel of a running vehicle (0: not one, or no such wheel)
+	int32_t (*Vehicle_GetWheel)(uint64_t entity, int32_t wheel, ScriptWheelState* out);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

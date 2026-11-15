@@ -225,6 +225,21 @@ namespace Morava
         public float LongitudinalSlip => State.LongitudinalSlip;
 
         /// <summary>
+        /// One wheel (in the Inspector's order, 0 to WheelCount - 1) after the last fixed step: where it touches the ground
+        /// and how its tire slides there. For tire smoke, skid marks, tire sounds.
+        /// </summary>
+        public WheelState GetWheel(int wheel)
+        {
+            NativeWheelState state;
+            if (Interop.Game->Vehicle_GetWheel(Entity.Id, wheel, &state) == 0)
+            {
+                if (wheel < 0 || wheel >= WheelCount) throw new ArgumentOutOfRangeException(nameof(wheel), $"{Entity} has {WheelCount} wheels");
+                throw Missing("vehicle");
+            }
+            return new WheelState(state);
+        }
+
+        /// <summary>
         /// The tires' sideways grip, front and rear, times the Inspector's (Front Grip, Rear Grip): 1, 1 as set there. A drift
         /// lowers the rear's for a moment. Kept until set again.
         /// </summary>
@@ -288,6 +303,72 @@ namespace Morava
             if (result == 0) throw Missing("vehicle");
             return result > 0;
         }
+    }
+
+    /// <summary>
+    /// One wheel of a vehicle after the last fixed step (Vehicle.GetWheel). The rubbing speeds compare the tire's surface with
+    /// the ground under it, in meters a second: what makes smoke and skid marks (a big slip angle at walking pace makes
+    /// neither).
+    /// </summary>
+    public readonly struct WheelState
+    {
+        internal WheelState(NativeWheelState state)
+        {
+            IsOnGround = state.OnGround != 0;
+            Ground = state.Ground != 0 ? Interop.EntityFor(state.Ground) : null;
+            Point = state.Point;
+            Normal = state.Normal;
+            LocalPoint = state.LocalPoint;
+            LocalNormal = state.LocalNormal;
+            LateralSlip = state.LateralSlip;
+            LongitudinalSlip = state.LongitudinalSlip;
+            SideSlide = state.SideSlide;
+            SpinSlide = state.SpinSlide;
+            SlideSpeed = state.SlideSpeed;
+            Radius = state.Radius;
+        }
+
+        /// <summary>It touches something. The rest but Radius is zero when it doesn't.</summary>
+        public bool IsOnGround { get; }
+
+        /// <summary>The entity it touches (the road, the grass), or null.</summary>
+        public Entity? Ground { get; }
+
+        /// <summary>Where it touches, in the world, at the last fixed step.</summary>
+        public Vector3 Point { get; }
+
+        /// <summary>The ground's up there, in the world, of length 1.</summary>
+        public Vector3 Normal { get; }
+
+        /// <summary>
+        /// Where it touches, in the vehicle's own space. A child of the vehicle put here stays under the drawn wheel: the
+        /// vehicle is drawn between two fixed steps, so the world Point would be up to a step's way behind it.
+        /// </summary>
+        public Vector3 LocalPoint { get; }
+
+        /// <summary>The ground's up, in the vehicle's own space.</summary>
+        public Vector3 LocalNormal { get; }
+
+        /// <summary>Degrees between where the wheel points and where it goes (Vehicle.LateralSlip, this wheel's).</summary>
+        public float LateralSlip { get; }
+
+        /// <summary>How much it spins or locks: 0 rolling, 1 locked or spinning twice as fast (Vehicle.LongitudinalSlip, this wheel's).</summary>
+        public float LongitudinalSlip { get; }
+
+        /// <summary>Meters a second it slides across itself (positive: to its right): a drift, a slide.</summary>
+        public float SideSlide { get; }
+
+        /// <summary>
+        /// Meters a second its surface turns faster than the ground goes by: positive spins (a start at full throttle),
+        /// negative slows toward locked (hard braking).
+        /// </summary>
+        public float SpinSlide { get; }
+
+        /// <summary>Meters a second the tire rubs over the ground, both ways together: how much smoke, how dark a mark.</summary>
+        public float SlideSpeed { get; }
+
+        /// <summary>The wheel's radius in meters.</summary>
+        public float Radius { get; }
     }
 
     /// <summary>A physics shape (Inspector: Collider): alone it is a static body, like a floor or a wall.</summary>

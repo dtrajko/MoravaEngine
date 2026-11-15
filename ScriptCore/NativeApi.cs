@@ -161,6 +161,7 @@ namespace Morava
         public delegate* unmanaged<ulong, NativeTrailSettings*, int> Trail_GetSettings;
         public delegate* unmanaged<ulong, NativeTrailSettings*, int> Trail_SetSettings;
         public delegate* unmanaged<ulong, int> Trail_Clear;
+        public delegate* unmanaged<ulong, int, NativeWheelState*, int> Vehicle_GetWheel;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -226,6 +227,17 @@ namespace Morava
         public float SpeedMin, SpeedMax;
         public float SizeStart, SizeEnd;
         public Vector4 ColorStart, ColorEnd;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeWheelState
+    {
+        public ulong Ground;
+        public int OnGround;
+        public float LateralSlip, LongitudinalSlip;
+        public float SideSlide, SpinSlide, SlideSpeed;
+        public float Radius;
+        public Vector3 Point, Normal, LocalPoint, LocalNormal;
     }
 
     [StructLayout(LayoutKind.Sequential)]

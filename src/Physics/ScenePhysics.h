@@ -150,6 +150,27 @@ public:
 		int Gears = 0;              // forward gears
 	};
 	bool GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& state) const;
+	// One wheel (in the component's order) after the last step: where it touches the ground, and how its tire slides there
+	// (the racing game's tire smoke and skid marks, Racing Phase 11.3). The point is in the middle of the tire's width
+	// (Jolt's may be anywhere across it). LocalPoint and LocalNormal in the vehicle's own space; Point and Normal in the
+	// world, with the vehicle where the step left it. The vehicle is drawn between two steps (interpolated), so a child
+	// entity put at LocalPoint stays under the drawn wheel, where one put at Point is up to a step's way off it (more than
+	// a meter at racing speed). The rubbing speeds are the tire's surface against the
+	// ground's, in meters a second: SideSlide across the wheel (positive: it slides to its right), SpinSlide
+	// along it (positive: the tire turns faster than the ground goes by: wheelspin; negative: slower, toward locked), and
+	// SlideSpeed both together: what makes smoke and marks (a big slip angle at walking pace makes neither).
+	struct VehicleWheelState
+	{
+		bool OnGround = false;
+		EnvMapVulkanEntityID Ground = NoEntity; // the entity it touches (NoEntity: in the air, or a body without one)
+		glm::vec3 Point = glm::vec3(0.0f), Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 LocalPoint = glm::vec3(0.0f), LocalNormal = glm::vec3(0.0f, 1.0f, 0.0f);
+		float LateralSlip = 0.0f;      // degrees: Jolt's slip angle (as VehicleState's, this wheel's)
+		float LongitudinalSlip = 0.0f; // Jolt's slip ratio: 0 rolling, 1 locked or spinning twice as fast
+		float SideSlide = 0.0f, SpinSlide = 0.0f, SlideSpeed = 0.0f; // m/s
+		float Radius = 0.0f;           // meters
+	};
+	bool GetVehicleWheel(EnvMapVulkanEntityID entity, uint32_t wheel, VehicleWheelState& state) const;
 
 	// ---- Events (3.6)
 
