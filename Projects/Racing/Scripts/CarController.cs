@@ -31,6 +31,8 @@ namespace Racing
     ///   GameOptions.EngineTorque). The test driver always has the car's own.
     /// - Tire smoke (Phase 11.4): a Particle Emitter under each wheel (SmokeFL to SmokeRR), smoking as hard as the tire rubs
     ///   over the road (Vehicle.GetWheel's SlideSpeed): wheelspin, a locked wheel, a drift, a slide.
+    /// - Skid marks (Phase 11.5): a Trail under each wheel (MarkFL to MarkRR) while the tire rubs past MarkStartSlide,
+    ///   darker the harder; the race's Restart clears them (ClearMarks).
     /// Each assist has its fields to tune in the Inspector. With TestDriver on, the test driver drives (TestDriver.cs: it
     /// follows the track's center line) through the same assists, for checks without a player.
     /// The race (RaceManager.cs, Phase 4) holds it at the start (Held), puts it back on the track (Respawn) and asks
@@ -120,6 +122,29 @@ namespace Racing
         /// <summary>Meters above the road the smoke starts (along the road's up).</summary>
         public float SmokeHeight = 0.15f;
 
+        // ---- Skid marks
+        /// <summary>The Trails under the wheels, in the Vehicle's wheel order (front left, front right, rear left, rear right).</summary>
+        public Entity? MarkFL;
+        public Entity? MarkFR;
+        public Entity? MarkRL;
+        public Entity? MarkRR;
+        /// <summary>m/s the tire rubs over the road before it leaves a mark.</summary>
+        public float MarkStartSlide = 2.5f;
+        /// <summary>A mark goes on until the rubbing drops under this share of MarkStartSlide (no dashes near the limit).</summary>
+        public float MarkStopShare = 0.6f;
+        /// <summary>m/s of rubbing for the darkest mark.</summary>
+        public float MarkFullSlide = 10.0f;
+        /// <summary>The darkest mark's color and cover (alpha).</summary>
+        public Vector4 MarkColor = new Vector4(0.03f, 0.03f, 0.03f, 0.9f);
+        /// <summary>The cover of the lightest mark (at MarkStartSlide), a share of MarkColor's.</summary>
+        public float MarkLightest = 0.55f;
+        /// <summary>
+        /// Seconds a wheel's slide fades over (the smoke and the marks go by it). A tire spinning or locking slips in one
+        /// physics step and grips in the next (Jolt's tires measured at the start: 4.6 m/s, 0, 4.6, 0...): held, it's one
+        /// slide, one mark.
+        /// </summary>
+        public float SlideHold = 0.25f;
+
         // ---- The test driver
         /// <summary>The test driver drives instead of the player (TestDriver.cs), along the track's center line.</summary>
         public bool TestDriver = false;
@@ -162,6 +187,9 @@ namespace Racing
         Rigidbody? body;
         TestDriver? driver;
         readonly ParticleEmitter?[] smoke = new ParticleEmitter?[4]; // SmokeFL to SmokeRR
+        readonly Trail?[] marks = new Trail?[4];                     // MarkFL to MarkRR
+        readonly bool[] marking = new bool[4];                       // each wheel leaves a mark now
+        readonly float[] slide = new float[4];                       // each wheel's slide, held (SlideHold)
         float steer;          // the wheel, -1 left to 1 right, before the speed's share
         float rearGrip = 1.0f;
         float absShare = 1.0f;   // the share of the brake ABS lets through
@@ -189,6 +217,13 @@ namespace Racing
                 smoke[i] = smokeEntities[i]?.GetComponent<ParticleEmitter>();
                 if (smokeEntities[i] != null && smoke[i] == null)
                     Log.Error($"CarController: '{smokeEntities[i]!.Name}' has no Particle Emitter (tire smoke)");
+            }
+            Entity?[] markEntities = { MarkFL, MarkFR, MarkRL, MarkRR };
+            for (int i = 0; i < marks.Length; i++)
+            {
+                marks[i] = markEntities[i]?.GetComponent<Trail>();
+                if (markEntities[i] != null && marks[i] == null)
+                    Log.Error($"CarController: '{markEntities[i]!.Name}' has no Trail (skid marks)");
             }
             if (TestDriver)
             {
@@ -226,16 +261,38 @@ namespace Racing
                     emitter.Clear();
                 }
             }
+            for (int i = 0; i < marks.Length; i++)
+            {
+                if (marks[i] != null)
+                    marks[i]!.Emitting = false;
+                marking[i] = false;
+                slide[i] = 0.0f;
+            }
+        }
+
+        /// <summary>The skid marks go (the race's Restart; a respawn keeps them).</summary>
+        public void ClearMarks()
+        {
+            for (int i = 0; i < marks.Length; i++)
+            {
+                if (marks[i] != null)
+                {
+                    marks[i]!.Emitting = false;
+                    marks[i]!.Clear();
+                }
+                marking[i] = false;
+                slide[i] = 0.0f;
+            }
         }
 
         protected override void OnUpdate(float dt)
         {
-            UpdateSmoke();
+            UpdateTires(dt);
         }
 
-        // Each wheel's smoke: the emitter under the drawn wheel (LocalPoint: the car is drawn between physics steps), as
-        // much smoke as the tire rubs over the road; none in the air or on the terrain
-        void UpdateSmoke()
+        // Each wheel's smoke and skid mark, under the drawn wheel (LocalPoint: the car is drawn between physics steps), as
+        // much as the tire rubs over the road; none in the air or on the terrain
+        void UpdateTires(float dt)
         {
             if (vehicle == null)
                 return;
@@ -243,21 +300,66 @@ namespace Racing
             for (int i = 0; i < wheels; i++)
             {
                 ParticleEmitter? emitter = smoke[i];
-                if (emitter == null)
+                Trail? mark = marks[i];
+                if (emitter == null && mark == null)
                     continue;
                 WheelState wheel = vehicle.GetWheel(i);
-                float amount = 0.0f;
-                if (wheel.IsOnGround && !(wheel.Ground is Entity ground && !string.IsNullOrEmpty(TerrainTag) && ground.HasTag(TerrainTag)))
+                bool onRoad = wheel.IsOnGround && !(wheel.Ground is Entity ground && !string.IsNullOrEmpty(TerrainTag) && ground.HasTag(TerrainTag));
+                // The slide held: its peaks last, fading over SlideHold
+                float held = SlideHold > 0.0f ? slide[i] * MathF.Exp(-dt / SlideHold) : 0.0f;
+                slide[i] = onRoad ? MathF.Max(wheel.SlideSpeed, held) : 0.0f;
+                float sliding = slide[i];
+
+                if (emitter != null)
                 {
-                    emitter.Entity.Translation = wheel.LocalPoint + wheel.LocalNormal * SmokeHeight;
-                    amount = Math.Clamp((wheel.SlideSpeed - SmokeStartSlide) / MathF.Max(SmokeFullSlide - SmokeStartSlide, 0.01f), 0.0f, 1.0f);
+                    float amount = 0.0f;
+                    if (onRoad)
+                    {
+                        emitter.Entity.Translation = wheel.LocalPoint + wheel.LocalNormal * SmokeHeight;
+                        amount = Math.Clamp((sliding - SmokeStartSlide) / MathF.Max(SmokeFullSlide - SmokeStartSlide, 0.01f), 0.0f, 1.0f);
+                    }
+                    bool emitting = amount > 0.0f;
+                    if (emitting != emitter.Emitting)
+                        emitter.Emitting = emitting;
+                    if (emitting)
+                        emitter.Rate = amount * SmokeMaxRate;
                 }
-                bool emitting = amount > 0.0f;
-                if (emitting != emitter.Emitting)
-                    emitter.Emitting = emitting;
-                if (emitting)
-                    emitter.Rate = amount * SmokeMaxRate;
+
+                if (mark != null)
+                {
+                    // It starts past MarkStartSlide and goes on down to MarkStopShare of it: a slide near the limit
+                    // leaves one mark, not dashes
+                    float start = MathF.Max(MarkStartSlide, 0.0f);
+                    marking[i] = onRoad && sliding >= (marking[i] ? start * Math.Clamp(MarkStopShare, 0.0f, 1.0f) : start);
+                    if (onRoad)
+                    {
+                        // On the road under the wheel, lying on it (its up the road's)
+                        mark.Entity.Translation = wheel.LocalPoint;
+                        mark.Entity.Rotation = FromUp(wheel.LocalNormal);
+                    }
+                    if (marking[i])
+                    {
+                        float amount = Math.Clamp((sliding - start) / MathF.Max(MarkFullSlide - start, 0.01f), 0.0f, 1.0f);
+                        Vector4 color = MarkColor;
+                        color.W *= MarkLightest + (1.0f - MarkLightest) * amount;
+                        mark.Color = color;
+                    }
+                    if (marking[i] != mark.Emitting)
+                        mark.Emitting = marking[i];
+                }
             }
+        }
+
+        // The rotation that turns +Y to this direction (the shortest way)
+        static Quaternion FromUp(Vector3 up)
+        {
+            float d = Vector3.Dot(Vector3.UnitY, up);
+            if (d > 0.9999f || up.LengthSquared() < 1e-6f)
+                return Quaternion.Identity;
+            if (d < -0.9999f)
+                return Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathF.PI);
+            Vector3 axis = Vector3.Normalize(Vector3.Cross(Vector3.UnitY, up));
+            return Quaternion.CreateFromAxisAngle(axis, MathF.Acos(Math.Clamp(d, -1.0f, 1.0f)));
         }
 
         protected override void OnCollisionEnter(Collision collision)

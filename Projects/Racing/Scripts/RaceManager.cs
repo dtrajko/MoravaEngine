@@ -309,6 +309,7 @@ namespace Racing
 
             int at = line.Nearest(line.StartPosition, -1);
             Vector3 up = line.Points[at].Up;
+            car.ClearMarks(); // a new race on a clean road
             car.Respawn(line.StartPosition + up * 1.0f, Racing.Centerline.Facing(line.StartForward, up));
             car.Held = true;
             nearest = at;
