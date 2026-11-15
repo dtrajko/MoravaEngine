@@ -620,6 +620,29 @@ static int32_t VehicleGetState(uint64_t entity, ScriptVehicleState* out)
 	return 1;
 }
 
+static int32_t VehicleGetWheel(uint64_t entity, int32_t wheel, ScriptWheelState* out)
+{
+	ScenePhysics* physics = GetPhysics();
+	ScenePhysics::VehicleWheelState state;
+	if (!physics || !out || wheel < 0 || !physics->GetVehicleWheel(entity, (uint32_t)wheel, state))
+	{
+		return 0;
+	}
+	out->Ground = state.Ground == NoEntity ? 0 : (uint64_t)state.Ground;
+	out->OnGround = state.OnGround ? 1 : 0;
+	out->LateralSlip = state.LateralSlip;
+	out->LongitudinalSlip = state.LongitudinalSlip;
+	out->SideSlide = state.SideSlide;
+	out->SpinSlide = state.SpinSlide;
+	out->SlideSpeed = state.SlideSpeed;
+	out->Radius = state.Radius;
+	out->Point = state.Point;
+	out->Normal = state.Normal;
+	out->LocalPoint = state.LocalPoint;
+	out->LocalNormal = state.LocalNormal;
+	return 1;
+}
+
 static int32_t VehicleSetManual(uint64_t entity, int32_t manual)
 {
 	ScenePhysics* physics = GetPhysics();
@@ -1974,6 +1997,7 @@ namespace ScriptBindings
 		api.Trail_GetSettings = TrailGetSettings;
 		api.Trail_SetSettings = TrailSetSettings;
 		api.Trail_Clear = TrailClear;
+		api.Vehicle_GetWheel = VehicleGetWheel;
 	}
 
 	void SetContext(ScriptContext* context)

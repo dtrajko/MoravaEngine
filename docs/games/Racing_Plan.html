@@ -479,7 +479,17 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       along: the Project panel's <i>Build Game...</i> button, and a fix for Debug builds that stopped at startup since
       11.1.</li>
     <li><b>11.3 The wheels for C#:</b> each wheel's slip (sideways and along) and its contact point and normal on the
-      road, from Jolt's wheels (Vehicle has only the car's largest slip now).</li>
+      road, from Jolt's wheels (Vehicle has only the car's largest slip now). <b>Built 2026-11-15</b>:
+      <code>Vehicle.GetWheel(i)</code> gives a <code>WheelState</code>: on the ground, the ground's entity, the contact point
+      and normal in the world and in the car's own space (<code>LocalPoint</code>: a child put there stays under the drawn
+      wheel, as the car is drawn between physics steps), Jolt's slip angle and ratio, and the speeds the tire rubs over the
+      road in m/s (<code>SideSlide</code>, <code>SpinSlide</code>: positive wheelspin, negative locking, and
+      <code>SlideSpeed</code> both together). Two things Jolt's raw contact needed: it is found before the step moves the
+      body (1.3 m behind at 77 m/s if taken with the body after it), and it lies anywhere across the tire's width (it
+      jumped ±0.5 m): the point is now taken with the body before the step and put on the wheel's middle plane. On the
+      circuit with the test driver: about 4.6 m/s of wheelspin at the start, 13 to 34 m/s for a wheel locking under hard
+      braking, under 1 m/s cornering cleanly; standing still Jolt's slip angle reads up to 88° while the rubbing speed is 0,
+      so the effects go by <code>SlideSpeed</code>.</li>
     <li><b>11.4 Tire smoke:</b> an emitter at each rear wheel's contact patch (the front ones too when they lock or slide).
       <code>CarController</code> sets its rate from the wheel's slip: a drift, a slide past SlipLimit, wheelspin at the
       start, a locked wheel. Light gray, rising slowly, growing and fading over a few seconds, lit, soft on the road. The

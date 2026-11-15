@@ -1014,6 +1014,64 @@ bool ScenePhysics::GetVehicleState(EnvMapVulkanEntityID entity, VehicleState& st
 	return true;
 }
 
+bool ScenePhysics::GetVehicleWheel(EnvMapVulkanEntityID entity, uint32_t wheelIndex, VehicleWheelState& state) const
+{
+	const Vehicle* vehicle = m_World ? FindVehicle(entity) : nullptr;
+	if (!vehicle || wheelIndex >= (uint32_t)vehicle->Constraint->GetWheels().size())
+	{
+		return false;
+	}
+	state = VehicleWheelState();
+	const JPH::WheelWV* wheel = static_cast<const JPH::WheelWV*>(vehicle->Constraint->GetWheel(wheelIndex));
+	state.Radius = wheel->GetSettings()->mRadius;
+	if (!wheel->HasContact())
+	{
+		return true;
+	}
+	const JPH::BodyInterface& bodies = m_World->GetSystem().GetBodyInterface();
+	const JPH::RVec3 contact = wheel->GetContactPosition();
+	const JPH::Vec3 normal = wheel->GetContactNormal();
+	state.OnGround = true;
+	state.Ground = GetBodyEntity(wheel->GetContactBodyID());
+	// Jolt finds the contact at the start of the step, before the body moves: into the vehicle's space with the body's
+	// place then (its previous one: at racing speed the step moves it more than a meter). A flat tire touches the road
+	// along a line across its width, and Jolt's point may be anywhere on it: moved onto the wheel's middle plane, so a
+	// mark doesn't jump from one edge of the tire to the other
+	glm::vec3 previousPosition = glm::vec3(0.0f), position = glm::vec3(0.0f);
+	glm::quat previousRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f), rotation = previousRotation;
+	for (const Body& body : m_Bodies)
+	{
+		if (body.ID == vehicle->Body)
+		{
+			previousPosition = body.PreviousPosition;
+			previousRotation = body.PreviousRotation;
+			position = body.Position;
+			rotation = body.Rotation;
+			break;
+		}
+	}
+	const glm::quat toVehicle = glm::inverse(previousRotation);
+	glm::vec3 local = toVehicle * (ToGlm(JPH::Vec3(contact)) - previousPosition);
+	const glm::mat4 wheelLocal = ToGlm(vehicle->Constraint->GetWheelLocalTransform(wheelIndex, JPH::Vec3::sAxisX(), JPH::Vec3::sAxisY()));
+	const glm::vec3 axle = glm::normalize(glm::vec3(wheelLocal[0]));
+	local -= axle * glm::dot(local - glm::vec3(wheelLocal[3]), axle);
+	state.LocalPoint = local;
+	state.LocalNormal = glm::normalize(toVehicle * ToGlm(normal));
+	// In the world: where that point is with the body where the step left it (as the entity is after the step)
+	state.Point = position + rotation * state.LocalPoint;
+	state.Normal = glm::normalize(rotation * state.LocalNormal);
+	state.LateralSlip = glm::degrees(std::abs(wheel->mLateralSlip));
+	state.LongitudinalSlip = std::abs(wheel->mLongitudinalSlip);
+	// The tire's surface against the ground's, as Jolt's tire works it out (WheelWV::Update): the vehicle's velocity at the
+	// contact less the ground's there, in the ground's plane
+	JPH::Vec3 relative = bodies.GetPointVelocity(vehicle->Body, contact) - wheel->GetContactPointVelocity();
+	relative -= normal.Dot(relative) * normal;
+	state.SideSlide = relative.Dot(wheel->GetContactLateral());
+	state.SpinSlide = wheel->GetAngularVelocity() * state.Radius - relative.Dot(wheel->GetContactLongitudinal());
+	state.SlideSpeed = std::sqrt(state.SideSlide * state.SideSlide + state.SpinSlide * state.SpinSlide);
+	return true;
+}
+
 void ScenePhysics::WriteWheels(const Vehicle& vehicle, const glm::vec3& position, const glm::quat& rotation)
 {
 	const glm::mat4 body = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
