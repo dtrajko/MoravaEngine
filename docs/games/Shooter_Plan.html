@@ -729,6 +729,36 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         E3 are unchanged.</li>
     </ul>
   </div>
+  <div class="box ok"><b>As built: 0.3 the level builder, version 1 (2026-11-16)</b>
+    <ul>
+      <li><b><code>Tools/LevelBuilder/build_level.py</code></b> (Blender without its window; its README describes the
+        data) reads <code>Projects/Outpost/Levels/Greybox.level.json</code>: buildings as boxes with floors, a slab per
+        floor and a roof, outer walls with doors and windows, the rooms' walls (along X or Z, with their own openings),
+        straight stairs (the steps dividing the story evenly, at most 18 cm; the floor above gets a hole over them),
+        holes in floors, and the ground around the buildings.</li>
+      <li>It writes a model per building and floor (<code>Level_Greybox_Barracks_F0.gltf</code>, <code>_F1</code>,
+        <code>_Roof</code>...) and the ground's, in <code>Assets/Models/Levels/Greybox</code>: <code>.gltf</code> with
+        <code>.bin</code>, since the engine reads textures from files, not from inside a <code>.glb</code>. The greybox
+        materials are a color with a line every meter (UVs in meters, projected per face: the grid lines up across
+        walls and floors), six textures in <code>Assets/Models/Levels/Textures</code> shared by all levels.</li>
+      <li>It puts the level in the scene the data names: <code>Level_Greybox</code> with a child per model, each with a
+        TriangleMesh collider (the greybox's boxes are their colliders). Those entities (IDs 60000 to 69999) are
+        replaced on each run; the scene's camera, sun and environment stay. <code>Scenes/Greybox.mscene</code>'s
+        placeholder boxes from 0.1 are gone, and the two materials only they used (Greybox_Wall, Greybox_Accent); the
+        content check's floor keeps Greybox_Floor.</li>
+      <li><b>The greybox:</b> a two-story barracks (16 x 10 m: rooms, doors, windows, stairs up) and a warehouse one
+        story of 6 m high (a 4 m wide door, high windows, an office in a corner), on an 80 x 80 m ground: 1,400
+        triangles in 6 models.</li>
+      <li><b>Checked</b> in the editor (no validation messages, no problems), and walked: in a test copy of the project
+        (<code>D:\Workspace\Temp\OutpostLevelTest</code>), a character (CharacterController, step height 0.35 m) led by
+        a test script went in through the barracks' door, up the 20 steps from 0 to 3.50 m, and onto the upper floor,
+        where it stopped at a wall. A first try found the stairs' foot too close to the wall (0.6 m, a character's
+        width): the data moved them; the README warns about it.</li>
+      <li><b>Left for Phase 6</b> (the level builder in full): ramps, catwalks, ladders, landings, railings (the stairs'
+        hole has none yet), props, lights and probes, the spots file, materials, and collider meshes simpler than the
+        drawn ones (the engine has no model that only collides).</li>
+    </ul>
+  </div>
   <h3>Phase 1: the player in both views</h3>
   <ul>
     <li>First-person movement: walk, run, walk quietly, jump, fall damage, footsteps; crouch (E7).</li>
