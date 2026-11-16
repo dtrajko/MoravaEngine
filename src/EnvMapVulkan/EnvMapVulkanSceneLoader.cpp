@@ -5,6 +5,9 @@
 
 #include "Core/Log.h"
 
+#include "Navigation/NavMesh.h"
+#include "Navigation/NavMeshFile.h"
+
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
@@ -215,6 +218,44 @@ namespace EnvMapVulkanSceneLoader
 		}
 		// After the loading, so that a file the last scene used too wasn't read again
 		H2M::ModelH2M::ReleaseUnusedShared();
+		LoadNavMesh(filepath, scene);
+		return true;
+	}
+
+	bool LoadNavMesh(const std::string& sceneFile, EnvMapVulkanScene& scene)
+	{
+		const EnvMapVulkanEntityID entity = scene.FindFirst<NavMeshComponent>();
+		if (entity == NoEntity)
+		{
+			return false;
+		}
+		NavMeshComponent& component = scene.Get<NavMeshComponent>(entity);
+		component.Data.reset();
+		component.Mesh.reset();
+		const std::string path = NavMeshFile::GetPathForScene(sceneFile);
+		if (!AssetFiles::Exists(path))
+		{
+			Log::GetLogger()->info("Navigation: '{0}' isn't baked yet (no {1})", scene.Get<NameComponent>(entity).Name,
+				std::filesystem::u8path(path).filename().u8string());
+			return false;
+		}
+		auto data = std::make_shared<NavMeshData>();
+		std::string error;
+		if (!NavMeshFile::Read(path, *data, error))
+		{
+			Log::GetLogger()->warn("Navigation: '{0}' can't be read: {1}", path, error);
+			return false;
+		}
+		auto mesh = std::make_shared<NavMesh>();
+		if (!mesh->Load(*data))
+		{
+			Log::GetLogger()->warn("Navigation: the navmesh of '{0}' couldn't be loaded", path);
+			return false;
+		}
+		Log::GetLogger()->info("Navigation: {0} tiles, {1} polygons from '{2}'", data->Tiles.size(), data->Polygons,
+			std::filesystem::u8path(path).filename().u8string());
+		component.Data = data;
+		component.Mesh = mesh;
 		return true;
 	}
 }

@@ -257,6 +257,18 @@ public:
 	// front half, the handbrake on the back ones, all driven. False: none found (the wheels stay as they were)
 	static bool FitWheels(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, VehicleComponent& vehicle);
 
+	// ---- The navmesh's source (docs/games/Shooter_Plan.html, E1.2)
+
+	// What Start makes static bodies of, as triangles in the world (counterclockwise seen from outside), for the navmesh's
+	// bake: the terrains, and the colliders without a Rigid Body or with a Static one; not triggers, characters or vehicles'
+	// wheels. Box, Sphere and Capsule as their shapes (the round ones in facets); TriangleMesh and ConvexMesh as the model's
+	// triangles (a convex mesh's hollows stay walkable here). A terrain's heights are made when the renderer hasn't yet
+	static void GetStaticGeometry(EnvMapVulkanScene& scene, std::vector<glm::vec3>& vertices, std::vector<uint32_t>& indices,
+		uint32_t* entityCount = nullptr);
+	// A hash of what GetStaticGeometry gives: the entities, where they are, their shapes, models and terrains' settings
+	// (not the triangles: cheap enough for every frame). A model file changed on disk isn't seen
+	static uint64_t GetStaticGeometryHash(const EnvMapVulkanScene& scene);
+
 private:
 	struct Body
 	{

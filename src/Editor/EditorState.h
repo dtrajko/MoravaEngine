@@ -40,7 +40,7 @@ bool Contains(const std::vector<T>& values, const T& value)
 }
 
 // What an entity is, by its components (see GetEntityKind)
-enum class EntityKind { Empty, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Terrain, Model, Part, Sound, UICanvas, UIElement };
+enum class EntityKind { Empty, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Terrain, NavMesh, Model, Part, Sound, UICanvas, UIElement };
 
 // A map assigned or removed in the Material Editor (button or drag & drop), applied at the start of the next frame (see EditorPreFrame)
 struct PendingMaterialTexture
@@ -495,6 +495,28 @@ void AddTerrain();
 void TerrainControls(EnvMapVulkanEntityID entity);
 // The Inspector's Foliage section of a terrain (EditorInspectorFoliage.cpp): Add Foliage, the species, the scatter's settings
 void FoliageControls(EnvMapVulkanEntityID entity);
+
+// ---- Navigation (EditorNavigation.cpp; docs/games/Shooter_Plan.html, E1)
+
+// The scene's Nav Mesh (Scene Hierarchy: Add > Nav Mesh, one per scene), selected
+void AddNavMesh();
+// The Inspector's Nav Mesh section: the agent it is baked for, Bake (on a worker thread, with its progress) and what was
+// baked, out of date when the colliders or the settings changed since
+void NavMeshControls(EnvMapVulkanEntityID entity);
+// Bakes the scene's navmesh as the Inspector's Bake does (--bake-navmesh); false when it can't start (logged)
+bool StartNavMeshBake();
+// Each frame: a finished bake's navmesh goes to the scene and its .mnav (once the game has stopped)
+void UpdateNavMeshBake();
+void ShutdownNavMeshBake(); // stops a bake in progress and waits for it
+// The scene's file was saved to path (Save, Save As): its navmesh goes next to it, unless it is there already
+void SaveNavMeshWithScene(const std::string& scenePath);
+// The scene's navmesh was read from (or isn't next to) this scene file: opened, new
+void SetNavMeshSceneFile(const std::string& scenePath);
+// The Navigation debug view: the navmesh's polygons (colored by island) and edges over the scene within a distance of the
+// camera, not depth tested
+extern bool s_ShowNavMesh;
+void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const ImVec2& viewportMin,
+	const ImVec2& viewportSize);
 
 // ---- The scene's file (EditorDocument.cpp)
 

@@ -56,6 +56,7 @@ struct ApplicationCommandLine
 	bool Play = false;             // --play: the editor starts the game (Play) once the startup scene is open
 	bool Simulate = false;         // --simulate: the editor starts Simulate (physics only) once the startup scene is open
 	bool SaveScene = false;        // --save-scene: the editor saves the open scene when it closes (after a Play's Stop)
+	bool BakeNavMesh = false;      // --bake-navmesh: the editor bakes the startup scene's navmesh once it is open
 	bool DebugOverlay = false;     // --debug-overlay: the debug overlay (7.4) shown at startup
 	float FrameStatsWarmup = -1.0f; // --frame-stats [seconds]: log frame-time statistics at exit, the first seconds left out (default 5; -1: off)
 	int FramesInFlight = 2;        // --frames-in-flight 1|2: Vulkan records the next frame while the GPU draws the last (2), or waits for it (1)

@@ -9,6 +9,8 @@
 
 #include "Audio/AudioBus.h"
 
+#include "Navigation/NavMeshSettings.h"
+
 #include "Scripting/ScriptField.h"
 
 #include "World/Foliage.h"
@@ -30,6 +32,8 @@ namespace H2M
 	class ModelH2M;
 }
 class EnvMapVulkanMaterial;
+class NavMesh;
+struct NavMeshData;
 
 /**
  * The components of the SceneEnvMapVulkan scene (EnvMapVulkanScene): plain data, no logic beyond small helpers. Every
@@ -206,6 +210,20 @@ struct FoliageComponent
 
 	// Runtime: made from the settings, shared by the copies of the scene (Play)
 	std::shared_ptr<const FoliageInstances> Instances;
+};
+
+// The scene's navmesh (docs/games/Shooter_Plan.html, E1): what it is baked for (one agent size) is saved in the scene; the
+// baked mesh is <Scene>.mnav next to the scene file (Navigation/NavMeshFile.h), read when the scene opens
+// (EnvMapVulkanSceneLoader) or made by the editor's Bake from the scene's static colliders and terrains. A scene has one
+// (the first: FindFirst). Its entity's transform isn't used.
+struct NavMeshComponent
+{
+	NavMeshSettings Settings;
+
+	// Runtime: not in the scene file. The baked mesh as its file has it (SourceHash: what it was baked from) and ready for
+	// queries; none: not baked yet. Shared by the copies of the scene (Play), which only read it
+	std::shared_ptr<const NavMeshData> Data;
+	std::shared_ptr<const NavMesh> Mesh;
 };
 
 // Particles that start at the entity (World/Particles.h; docs/engine/Game_Engine_Runtime_Guide.html, 12.1): the settings are
@@ -680,6 +698,6 @@ struct ComponentList
 // The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
-	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, ParticleEmitterComponent, TrailComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
+	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, NavMeshComponent, ParticleEmitterComponent, TrailComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, VehicleComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent,
 	PrefabComponent, UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;

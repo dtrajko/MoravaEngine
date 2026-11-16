@@ -547,8 +547,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         models, Box, Sphere and Capsule shapes. Not triggers, dynamic bodies or characters. The level builder's models
         (TriangleMesh) bake as they are.</li>
       <li><b>A tiled navmesh</b> (the user's choice): tiles of about 32 m, so big outdoor levels work and a tile can be
-        baked again alone later. Cells 0.15 m wide, 0.1 m high. Floors above each other (the barracks) are Recast's
-        own case.</li>
+        baked again alone later. Cells 0.1 m wide, 0.05 m high (0.15 x 0.1 until E1.2 found the stairs broken by it).
+        Floors above each other (the barracks) are Recast's own case.</li>
       <li><b>One agent size per navmesh</b> (the user's choice; more when needed): the character controller's defaults,
         radius 0.3 m, height 1.8 m, step 0.35 m, slope 45 degrees.</li>
       <li><b>The Nav Mesh component</b> on a scene entity: the agent's settings and <i>Bake</i> (on a worker thread, with
@@ -603,6 +603,43 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         before it, the platform's top is on the mesh but a path to it is partial. CI's editor runs (Linux, macOS) now
         fail on any "self-test failed" line, as the player's did.</li>
       <li><code>Tools/Testing/gcc-check.sh</code> knows Recast's and Detour's headers.</li>
+    </ul>
+  </div>
+  <div class="box ok"><b>As built: E1.2 the Nav Mesh, Bake, .mnav and the debug view (2026-11-16)</b>
+    <ul>
+      <li><b>What is baked:</b> <code>ScenePhysics::GetStaticGeometry</code>, by the rules <code>Start</code> makes static
+        bodies by: the terrains' height fields, and the colliders without a Rigid Body or with a Static one (not triggers,
+        characters or vehicles' wheels) as triangles in the world. Box as its box, Sphere and Capsule in facets, TriangleMesh
+        and ConvexMesh as the model's triangles. <code>GetStaticGeometryHash</code> hashes what they are made from (the
+        entities, their world transforms, shapes, models and meshes, the terrains' shape hashes), cheap enough to look at
+        four times a second; with the settings' hash it is the navmesh's <code>SourceHash</code>.</li>
+      <li><b>The Nav Mesh</b> is an entity of its own kind (Scene Hierarchy: Add &gt; Nav Mesh, one per scene), its
+        <code>NavMeshComponent</code> the settings (saved in the scene as <code>NavMesh:</code>) and, at run time, the
+        baked data and the Detour mesh, shared by Play's copy of the scene. Its Inspector: the agent (radius, height, step
+        height, slope), Bake Settings folded away, Bake with a progress bar by tiles and Cancel, the tiles, polygons,
+        walkable area and islands, and <i>Up to date</i> or <i>Out of date: bake again</i>.</li>
+      <li><b>The bake</b>: the triangles gathered on the main thread (the models and terrains are the scene's), Recast's
+        steps on a worker thread, each triangle put in the tiles its box touches first (a tile no longer looks at every
+        triangle: a 1 km terrain is ~1000 tiles). The result goes to the Nav Mesh when the game isn't running (Play puts
+        the edited scene away) and if the entity still exists. <code>--bake-navmesh</code> bakes the startup scene's
+        unattended, the exit waiting for it.</li>
+      <li><b><code>&lt;Scene&gt;.mnav</code></b> (<code>Navigation/NavMeshFile</code>): binary, the settings, the
+        <code>SourceHash</code>, the tiles' grid and Detour's tiles as they are; written at once by Bake (through a
+        temporary file), and by Save As next to the new scene file. Read in <code>EnvMapVulkanSceneLoader::Open</code>
+        through <code>AssetFiles</code>, so the editor and the player have it (packs: E1.5). <code>*.mnav</code> is binary in
+        <code>.gitattributes</code>. <code>NavMesh::Load</code> moved from the builder to the core (the player has it).</li>
+      <li><b>Debug view</b> (the Nav Mesh's Show in Viewport, in Edit and Play): the detail mesh's triangles filled by
+        island (the largest blue-green, the others each their own color), the outlines bright and the inner edges faint,
+        over the scene within a draw distance (120 m), cut at the near plane, not depth tested (as the colliders' view).
+        The islands come from a flood over the polygons' links (<code>NavMesh::GetIslands</code>); the bake's log lists
+        them with the heights each spans.</li>
+      <li><b>The check, Outpost's greybox:</b> 6 colliders, 1392 triangles, baked in 0.8 s (Debug): 9 tiles, 136 polygons,
+        6679 m² in 3 islands: 6278 m² from 0.05 to 3.55 m (the ground, the barracks' ground floor, its stairs and its
+        upper floor: joined), and the two roofs (6 and 7 m, no way up). With the first cells (0.15 x 0.1 m) the stairs
+        broke at 0.9 m: a 28 cm tread is sometimes one cell, a step up on both sides, which Recast's ledge filter takes
+        for too steep (and the 0.35 m step rounds down to 0.3 m); 0.1 x 0.05 m (Recast's advice: a third of the radius)
+        joins them. The player loads the same file. The scene has the Nav Mesh (ID 1004, outside the level builder's
+        60000s) and <code>Greybox.mnav</code>.</li>
     </ul>
   </div>
   <h3>E2 The first-person view model</h3>

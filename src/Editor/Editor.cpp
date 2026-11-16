@@ -349,6 +349,7 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 	// Stop in this frame, at once)
 	UpdateScriptBuild();
 	UpdateBuildGame();
+	UpdateNavMeshBake();
 	UpdateScriptReload();
 	UpdateAssetRegistry();
 	UpdateVisualStudio();
@@ -559,6 +560,7 @@ void Editor::Shutdown()
 {
 	ShutdownScriptBuild();
 	ShutdownBuildGame();
+	ShutdownNavMeshBake();
 	EnvMapVulkanRenderer::WaitIdle();
 	ShutdownPlayMode();
 	if (Application::Get()->GetCommandLine().SaveScene)

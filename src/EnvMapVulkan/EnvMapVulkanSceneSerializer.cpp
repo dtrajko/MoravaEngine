@@ -700,6 +700,24 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::EndSeq;
 			out << YAML::EndMap;
 		}
+		if (const NavMeshComponent* navMesh = scene.TryGet<NavMeshComponent>(entity))
+		{
+			// The settings only: the baked mesh is the .mnav next to the scene file
+			const NavMeshSettings& n = navMesh->Settings;
+			out << YAML::Key << "NavMesh" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "AgentRadius" << YAML::Value << n.AgentRadius;
+			out << YAML::Key << "AgentHeight" << YAML::Value << n.AgentHeight;
+			out << YAML::Key << "AgentClimb" << YAML::Value << n.AgentClimb;
+			out << YAML::Key << "MaxSlope" << YAML::Value << n.MaxSlopeDegrees;
+			out << YAML::Key << "CellSize" << YAML::Value << n.CellSize;
+			out << YAML::Key << "CellHeight" << YAML::Value << n.CellHeight;
+			out << YAML::Key << "TileSize" << YAML::Value << n.TileSize;
+			out << YAML::Key << "RegionMinArea" << YAML::Value << n.RegionMinArea;
+			out << YAML::Key << "EdgeMaxError" << YAML::Value << n.EdgeMaxError;
+			out << YAML::Key << "DetailSampleDistance" << YAML::Value << n.DetailSampleDistance;
+			out << YAML::Key << "DetailSampleMaxError" << YAML::Value << n.DetailSampleMaxError;
+			out << YAML::EndMap;
+		}
 		if (const ProbeVolumeComponent* probes = scene.TryGet<ProbeVolumeComponent>(entity))
 		{
 			// Its placement (center and size) is the entity's transform
@@ -942,6 +960,23 @@ namespace EnvMapVulkanSceneSerializer
 				}
 			}
 			f.Clamp();
+		}
+		if (YAML::Node navNode = node["NavMesh"]; navNode && navNode.IsMap())
+		{
+			// The settings only: the baked mesh is the .mnav next to the scene file (EnvMapVulkanSceneLoader reads it)
+			NavMeshSettings& n = scene.Add<NavMeshComponent>(entity).Settings;
+			Read(navNode, "AgentRadius", n.AgentRadius);
+			Read(navNode, "AgentHeight", n.AgentHeight);
+			Read(navNode, "AgentClimb", n.AgentClimb);
+			Read(navNode, "MaxSlope", n.MaxSlopeDegrees);
+			Read(navNode, "CellSize", n.CellSize);
+			Read(navNode, "CellHeight", n.CellHeight);
+			Read(navNode, "TileSize", n.TileSize);
+			Read(navNode, "RegionMinArea", n.RegionMinArea);
+			Read(navNode, "EdgeMaxError", n.EdgeMaxError);
+			Read(navNode, "DetailSampleDistance", n.DetailSampleDistance);
+			Read(navNode, "DetailSampleMaxError", n.DetailSampleMaxError);
+			n.Clamp();
 		}
 		if (YAML::Node emitterNode = node["ParticleEmitter"]; emitterNode && emitterNode.IsMap())
 		{

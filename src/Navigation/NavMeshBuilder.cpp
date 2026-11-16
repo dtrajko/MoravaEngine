@@ -37,21 +37,11 @@ namespace NavMeshBuilder
 		}
 	};
 
-	static unsigned int NextPowerOfTwo(unsigned int value)
-	{
-		unsigned int result = 1;
-		while (result < value)
-		{
-			result <<= 1;
-		}
-		return result;
-	}
-
 	// One tile: the triangles over it rasterized into cells, the walkable cells found, outlined, and cut into polygons.
 	// Returns false on an error; an empty tile (nothing walkable) returns true with no data
 	static bool BuildTile(rcContext& context, const rcConfig& base, const Input& input, const std::vector<int>& triangles,
 		const std::vector<float>& vertices, int tileX, int tileZ, const float* tileMin, const float* tileMax,
-		NavMesh::Tile& tile, std::string& error)
+		NavMeshTile& tile, std::string& error)
 	{
 		rcConfig config = base;
 		rcVcopy(config.bmin, tileMin);
@@ -215,9 +205,11 @@ namespace NavMeshBuilder
 		return true;
 	}
 
-	Result Build(const Input& input, const NavMeshSettings& settings)
+	Result Build(const Input& input, const NavMeshSettings& settings, Progress* progress)
 	{
 		Result result;
+		NavMeshData& data = result.Data;
+		data.Settings = settings;
 		const auto start = std::chrono::steady_clock::now();
 		if (input.Vertices.empty() || input.Indices.size() < 3)
 		{
@@ -256,61 +248,84 @@ namespace NavMeshBuilder
 
 		int gridWidth = 0, gridHeight = 0;
 		rcCalcGridSize(boundsMin, boundsMax, config.cs, &gridWidth, &gridHeight);
-		result.TileWorldSize = config.tileSize * config.cs;
-		result.TilesX = (gridWidth + config.tileSize - 1) / config.tileSize;
-		result.TilesZ = (gridHeight + config.tileSize - 1) / config.tileSize;
-		result.Origin = glm::vec3(boundsMin[0], boundsMin[1], boundsMin[2]);
-		result.MaxPolysPerTile = 1 << 14;
-
-		std::vector<int> allTriangles(input.Indices.size() / 3);
-		for (size_t i = 0; i < allTriangles.size(); i++)
+		data.TileWorldSize = config.tileSize * config.cs;
+		data.TilesX = (gridWidth + config.tileSize - 1) / config.tileSize;
+		data.TilesZ = (gridHeight + config.tileSize - 1) / config.tileSize;
+		data.Origin = glm::vec3(boundsMin[0], boundsMin[1], boundsMin[2]);
+		data.MaxPolysPerTile = 1 << 14;
+		if ((int64_t)data.TilesX * data.TilesZ > (1 << 20))
 		{
-			allTriangles[i] = (int)i;
+			result.Error = "the area is too large for its tiles (" + std::to_string(data.TilesX) + " x " + std::to_string(data.TilesZ) +
+				"): a larger Tile Size helps";
+			return result;
+		}
+		if (progress)
+		{
+			progress->TilesTotal = data.TilesX * data.TilesZ;
+			progress->TilesDone = 0;
+		}
+
+		// Each triangle in the tiles its bounding box (with a tile's border) touches: a tile looks only at its own
+		const float border = config.borderSize * config.cs;
+		std::vector<std::vector<int>> tileTriangles((size_t)data.TilesX * data.TilesZ);
+		for (int triangle = 0; triangle < (int)(input.Indices.size() / 3); triangle++)
+		{
+			float lo[2] = { 1e30f, 1e30f }, hi[2] = { -1e30f, -1e30f };
+			for (int k = 0; k < 3; k++)
+			{
+				const glm::vec3& v = input.Vertices[input.Indices[triangle * 3 + k]];
+				lo[0] = std::min(lo[0], v.x); hi[0] = std::max(hi[0], v.x);
+				lo[1] = std::min(lo[1], v.z); hi[1] = std::max(hi[1], v.z);
+			}
+			const int x0 = std::max(0, (int)std::floor((lo[0] - border - boundsMin[0]) / data.TileWorldSize));
+			const int x1 = std::min(data.TilesX - 1, (int)std::floor((hi[0] + border - boundsMin[0]) / data.TileWorldSize));
+			const int z0 = std::max(0, (int)std::floor((lo[1] - border - boundsMin[2]) / data.TileWorldSize));
+			const int z1 = std::min(data.TilesZ - 1, (int)std::floor((hi[1] + border - boundsMin[2]) / data.TileWorldSize));
+			for (int z = z0; z <= z1; z++)
+			{
+				for (int x = x0; x <= x1; x++)
+				{
+					tileTriangles[(size_t)z * data.TilesX + x].push_back(triangle);
+				}
+			}
 		}
 
 		rcContext context(false);
-		for (int z = 0; z < result.TilesZ; z++)
+		for (int z = 0; z < data.TilesZ; z++)
 		{
-			for (int x = 0; x < result.TilesX; x++)
+			for (int x = 0; x < data.TilesX; x++)
 			{
-				float tileMin[3] = { boundsMin[0] + x * result.TileWorldSize, boundsMin[1], boundsMin[2] + z * result.TileWorldSize };
-				float tileMax[3] = { boundsMin[0] + (x + 1) * result.TileWorldSize, boundsMax[1], boundsMin[2] + (z + 1) * result.TileWorldSize };
-				NavMesh::Tile tile;
+				if (progress && progress->Cancel)
+				{
+					result.Canceled = true;
+					data.Tiles.clear();
+					data.Polygons = 0;
+					return result;
+				}
+				float tileMin[3] = { boundsMin[0] + x * data.TileWorldSize, boundsMin[1], boundsMin[2] + z * data.TileWorldSize };
+				float tileMax[3] = { boundsMin[0] + (x + 1) * data.TileWorldSize, boundsMax[1], boundsMin[2] + (z + 1) * data.TileWorldSize };
+				NavMeshTile tile;
 				std::string error;
-				if (!BuildTile(context, config, input, allTriangles, vertices, x, z, tileMin, tileMax, tile, error))
+				if (!BuildTile(context, config, input, tileTriangles[(size_t)z * data.TilesX + x], vertices, x, z, tileMin, tileMax, tile, error))
 				{
 					result.Error = "tile (" + std::to_string(x) + ", " + std::to_string(z) + "): " + error;
-					result.Tiles.clear();
+					data.Tiles.clear();
 					return result;
 				}
 				if (!tile.Data.empty())
 				{
 					const dtMeshHeader* header = (const dtMeshHeader*)tile.Data.data();
-					result.Polygons += header->polyCount;
-					result.Tiles.push_back(std::move(tile));
+					data.Polygons += header->polyCount;
+					data.Tiles.push_back(std::move(tile));
+				}
+				if (progress)
+				{
+					progress->TilesDone++;
 				}
 			}
 		}
 		result.Milliseconds = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
 		return result;
-	}
-
-	bool Load(const Result& result, const NavMeshSettings& settings, NavMesh& navMesh)
-	{
-		const int maxTiles = (int)NextPowerOfTwo((unsigned int)std::max(1, result.TilesX * result.TilesZ));
-		if (!navMesh.Create(result.Origin, result.TileWorldSize, maxTiles, result.MaxPolysPerTile, settings))
-		{
-			return false;
-		}
-		for (const NavMesh::Tile& tile : result.Tiles)
-		{
-			if (!navMesh.AddTile(tile))
-			{
-				navMesh.Clear();
-				return false;
-			}
-		}
-		return true;
 	}
 
 	// ----------------------------------------------------------------------------------------------------------- the test
@@ -372,13 +387,14 @@ namespace NavMeshBuilder
 		{
 			return fail("the bake: " + result.Error);
 		}
-		if (result.TilesX != 2 || result.TilesZ != 1 || result.Tiles.size() != 2)
+		const NavMeshData& data = result.Data;
+		if (data.TilesX != 2 || data.TilesZ != 1 || data.Tiles.size() != 2)
 		{
-			return fail("expected 2 tiles, got " + std::to_string(result.Tiles.size()) + " of a " + std::to_string(result.TilesX) +
-				" x " + std::to_string(result.TilesZ) + " grid");
+			return fail("expected 2 tiles, got " + std::to_string(data.Tiles.size()) + " of a " + std::to_string(data.TilesX) +
+				" x " + std::to_string(data.TilesZ) + " grid");
 		}
 		NavMesh navMesh;
-		if (!Load(result, settings, navMesh))
+		if (!navMesh.Load(data))
 		{
 			return fail("the tiles couldn't be loaded");
 		}
@@ -427,7 +443,7 @@ namespace NavMeshBuilder
 		}
 
 		Log::GetLogger()->info("Navigation self-test passed ({0} tiles, {1} polygons baked in {2:.1f} ms; {3:.1f} m around the wall)",
-			result.Tiles.size(), result.Polygons, result.Milliseconds, around);
+			data.Tiles.size(), data.Polygons, result.Milliseconds, around);
 		return true;
 	}
 }

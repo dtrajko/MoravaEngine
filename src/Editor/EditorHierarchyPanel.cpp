@@ -402,6 +402,15 @@ void OnImGuiRenderSceneHierarchy()
 			ImGui::SetTooltip("Hills, valleys and a flat area to start in, made from a seed: 1 km square around the origin,\n"
 				"its flat area at height 0. Randomize in the Inspector makes another one");
 		}
+		if (ImGui::MenuItem("Nav Mesh", nullptr, false, s_Scene.FindFirst<NavMeshComponent>() == NoEntity))
+		{
+			AddNavMesh();
+		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip("Where characters can walk (navigation): baked in the Inspector from the scene's static colliders\n"
+				"and terrains, for one size of character. Saved next to the scene file (.mnav). One per scene");
+		}
 		if (ImGui::MenuItem("Prefab..."))
 		{
 			const std::string folder = GetPrefabsFolder();
