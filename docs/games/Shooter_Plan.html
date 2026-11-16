@@ -703,8 +703,30 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         (<code>Soldier.manim</code> states 8 to 15), with a rifle and a sniper rifle placed where the two aim poses hold
         them (no bone attachment yet: E3). Editor Play: no validation messages, no problems.</li>
       <li><b>Limits:</b> the clips are simple (a few keyed hand positions, eased); the gun's own parts don't move (the
-        magazine stays in, the bolt with the gun); the left arm is nearly straight under the long handguards. They're
-        full-body clips now; with E5's upper-body layer the legs come from the locomotion.</li>
+        magazine stays in, the bolt with the gun). They're full-body clips now; with E5's upper-body layer the legs come
+        from the locomotion.</li>
+    </ul>
+    <p><b>Fixed after a look in the engine (2026-11-16)</b>:</p>
+    <ul>
+      <li><b>The elbows.</b> The left elbow was above the hand in every clip: the IK pole angle (which turns the elbow
+        toward its target) was a guess, +90 degrees, and wrong. Now the script measures it on each clip's first frame
+        (it depends on the pose: -150 for the right arm and -60 for the left in the pistol stance, other values from
+        Idle_Loop's shoulders), and the elbow targets are out to the side and down from the middle of each arm. The chest
+        turns 30 degrees further sideways when aiming (a bladed stance): the left shoulder comes toward the handguard,
+        so the left arm, nearly straight before, bends. <b>Checked in every frame</b>: each elbow below its hand and
+        outside its shoulder, and never above the line from the shoulder to the hand; the script stops otherwise. Two
+        exceptions: the left arm while it fetches a magazine or rounds from the belt, and up to 4 cm for the hands of the
+        gun aimed down. The low ready holds the gun a little higher (30 degrees down).</li>
+      <li><b>The skin</b> was drawn as dark, shiny metal. The character's glTF material has a metallic factor of 0 and
+        a metallicRoughness map whose blue channel (metallic) is 1 everywhere: metallic is the product, 0, but the
+        renderer uses a map in place of the factor. <code>ModelImport</code> now drops the glTF metalness map when the
+        factor is 0 (the cooker's version is 4: every cooked model is imported once more). The pack's two skin textures,
+        Dark and Light, have the same skin; only the shorts differ: now the light one (gray shorts).</li>
+      <li><b>The eyebrows</b> were white: the pack's hair texture is near white, to be tinted by the material's color,
+        which our renderer ignores when there is a map. <code>Tools/CharacterPoses/tint_hair.py</code> (Blender)
+        writes a dark brown copy, <code>T_Hair_1_DarkBrown.png</code>, which the character's glTF names.</li>
+      <li>The rifle and the sniper rifle placed in the content check moved with the new aim poses; the hand offsets for
+        E3 are unchanged.</li>
     </ul>
   </div>
   <h3>Phase 1: the player in both views</h3>

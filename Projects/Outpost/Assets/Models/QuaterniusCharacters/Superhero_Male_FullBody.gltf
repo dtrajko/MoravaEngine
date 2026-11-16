@@ -1478,8 +1478,8 @@
 		},
 		{
 			"mimeType":"image/png",
-			"name":"T_Hair_1_BaseColor",
-			"uri":"T_Hair_1_BaseColor.png"
+			"name":"T_Hair_1_DarkBrown",
+			"uri":"T_Hair_1_DarkBrown.png"
 		},
 		{
 			"mimeType":"image/png",
@@ -1498,8 +1498,8 @@
 		},
 		{
 			"mimeType":"image/png",
-			"name":"T_Superhero_Male_Dark",
-			"uri":"T_Superhero_Male_Dark.png"
+			"name":"T_Superhero_Male_Light",
+			"uri":"T_Superhero_Male_Light.png"
 		},
 		{
 			"mimeType":"image/png",

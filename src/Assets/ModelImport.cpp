@@ -223,6 +223,14 @@ namespace ModelImport
 		material.ShininessMap = GetMap(source, aiTextureType_SHININESS);
 		material.DiffuseRoughnessMap = GetMap(source, aiTextureType_DIFFUSE_ROUGHNESS);
 		material.MetalnessMap = GetMap(source, aiTextureType_METALNESS);
+		// glTF's metallicRoughness map: metallic is the factor times the map's blue channel, but the renderer uses a map
+		// in place of the factor. With a factor of 0 the map adds nothing: without it, the material is not metal (the
+		// Quaternius characters' skin has a factor of 0 and a blue channel of 1, and was drawn as dark, shiny metal)
+		if (material.HasMetallicFactor && material.MetallicFactor <= 0.0f && !material.MetalnessMap.empty() &&
+			material.MetalnessMap == material.DiffuseRoughnessMap)
+		{
+			material.MetalnessMap.clear();
+		}
 		material.EmissiveMap = GetMap(source, aiTextureType_EMISSIVE);
 		material.AmbientOcclusionMap = GetMap(source, aiTextureType_AMBIENT_OCCLUSION);
 		if (material.AmbientOcclusionMap.empty())

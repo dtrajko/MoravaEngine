@@ -23,7 +23,8 @@ namespace ModelCook
 
 	static const char Magic[4] = { 'M', 'M', 'S', 'H' };
 	// Raise it when the file's layout, the import's flags or what the import does changes: older files are cooked again
-	static constexpr uint32_t CookerVersion = 3; // 2: a material's glTF alpha mask and cutoff; 3: rigged models without clips skinned
+	static constexpr uint32_t CookerVersion = 4; // 2: a material's glTF alpha mask and cutoff; 3: rigged models without clips skinned;
+	// 4: no glTF metalness map when the metallic factor is 0
 
 	static Stats s_Stats;
 
