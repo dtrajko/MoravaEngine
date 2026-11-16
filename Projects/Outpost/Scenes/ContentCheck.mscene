@@ -1,0 +1,353 @@
+Scene:
+  Version: 1
+  Name: ContentCheck
+EditorCamera:
+  Translation: [0, 2.2, 9]
+  Rotation: [8, 0, 0]
+  FieldOfView: 60
+RenderSettings:
+  Antialiasing: SMAA
+Entities:
+  - ID: 1001
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 1.5, 6]
+      Rotation: [6, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 60
+      NearClip: 0.05
+      FarClip: 1000
+    Script:
+      Class: Outpost.FlyCamera
+      Fields:
+        Speed: {Float: 4}
+  - ID: 1002
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/rocky_ridge_puresky_2k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 1003
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-40, 25, 0]
+      Scale: [1, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 1
+      FollowEnvironmentRotation: false
+      CastShadows: true
+      IconPlaced: false
+  - ID: 1004
+    Name: Ground
+    Parent: 0
+    Transform:
+      Translation: [0, -0.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [20, 0.5, 20]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 1005
+    Name: Cube
+    Parent: 1004
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7824392437226106866
+        File: Assets/Materials/Greybox_Floor.mmat
+        Name: Greybox_Floor
+  - ID: 2001
+    Name: Soldier Idle
+    Parent: 0
+    Transform:
+      Translation: [-7, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 0}
+  - ID: 2002
+    Name: Soldier Walk
+    Parent: 0
+    Transform:
+      Translation: [-5, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 1}
+  - ID: 2003
+    Name: Soldier Jog
+    Parent: 0
+    Transform:
+      Translation: [-3, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 2}
+  - ID: 2004
+    Name: Soldier Pistol Idle
+    Parent: 0
+    Transform:
+      Translation: [-1, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 3}
+  - ID: 2005
+    Name: Soldier Pistol Reload
+    Parent: 0
+    Transform:
+      Translation: [1, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 4}
+  - ID: 2006
+    Name: Soldier Crouch Idle
+    Parent: 0
+    Transform:
+      Translation: [3, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 5}
+  - ID: 2007
+    Name: Soldier Crouch Walk
+    Parent: 0
+    Transform:
+      Translation: [5, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 6}
+  - ID: 2008
+    Name: Soldier Death
+    Parent: 0
+    Transform:
+      Translation: [7, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 7}
+  - ID: 3001
+    Name: Rifle
+    Parent: 0
+    Transform:
+      Translation: [-2, 1.0, 3]
+      Rotation: [0, 0, 0]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
+  - ID: 3002
+    Name: Sniper Rifle
+    Parent: 0
+    Transform:
+      Translation: [0, 1.0, 3]
+      Rotation: [0, 0, 0]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
+  - ID: 3003
+    Name: Pistol
+    Parent: 0
+    Transform:
+      Translation: [2, 1.0, 3]
+      Rotation: [0, 0, 0]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/Pistol_1.fbx
+  - ID: 2009
+    Name: Soldier Rifle Idle
+    Parent: 0
+    Transform:
+      Translation: [-7, 0, -3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 8}
+  - ID: 2010
+    Name: Soldier Rifle Aim
+    Parent: 0
+    Transform:
+      Translation: [-5, 0, -3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 9}
+  - ID: 2011
+    Name: Soldier Rifle Aim Up
+    Parent: 0
+    Transform:
+      Translation: [-3, 0, -3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 10}
+  - ID: 2012
+    Name: Soldier Rifle Reload
+    Parent: 0
+    Transform:
+      Translation: [-1, 0, -3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 11}
+  - ID: 2013
+    Name: Soldier Sniper Idle
+    Parent: 0
+    Transform:
+      Translation: [1, 0, -3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 12}
+  - ID: 2014
+    Name: Soldier Sniper Aim
+    Parent: 0
+    Transform:
+      Translation: [3, 0, -3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 13}
+  - ID: 2015
+    Name: Soldier Sniper Bolt
+    Parent: 0
+    Transform:
+      Translation: [5, 0, -3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 14}
+  - ID: 2016
+    Name: Soldier Sniper Reload
+    Parent: 0
+    Transform:
+      Translation: [7, 0, -3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Soldier.manim}
+    Script:
+      Class: Outpost.ContentCheckPose
+      Fields:
+        Pose: {Float: 15}
+  - ID: 3004
+    Name: Rifle In Hands
+    Parent: 0
+    Transform:
+      Translation: [-5.0732, 1.3871, -2.8109]
+      Rotation: [0, -90, 0]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
+  - ID: 3005
+    Name: Sniper Rifle In Hands
+    Parent: 0
+    Transform:
+      Translation: [2.9268, 1.4109, -2.7514]
+      Rotation: [0, -90, 0]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx

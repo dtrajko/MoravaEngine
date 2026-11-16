@@ -186,8 +186,8 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime);
 // and not while a question is open
 void HandlePlayModeShortcutKeys();
 
-// The Viewport panel, each frame: it has the focus (the game gets input in the next frame); Escape (Shift+F1 when the game
-// binds Escape) takes the focus away, giving the mouse back to the editor
+// The Viewport panel, each frame: it has the focus (the game gets input in the next frame); Escape while the game has the
+// mouse captured (also when the game binds it), or Shift+F1, takes the focus away, giving the mouse back to the editor
 void UpdateGameViewportFocus(bool viewportFocused);
 
 // The game had the viewport's focus in the last frame (its input); the viewport gets the focus in the next frame

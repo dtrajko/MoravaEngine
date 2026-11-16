@@ -617,6 +617,96 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         0.2.</li>
     </ul>
     Checked: the editor's Play and the player (Debug), no validation messages, no script errors; 180 fps (VSync).</div>
+  <div class="box note"><b>0.2 the content check: go (2026-11-15); the third-person rifle answered 2026-11-16</b>
+    Downloaded into the project's <code>Library/ContentCheck</code> (ignored by Git), read with a script (clips, bones,
+    triangles) and rendered in Blender. All are CC0 by their license files and pages.
+    <div class="table-wrap"><table>
+      <tr><th>Pack</th><th>What it has</th><th>Verdict</th></tr>
+      <tr><td>Quaternius, Ultimate Gun Pack (2019; OpenGameArt)</td><td>An AK-style rifle (wooden stock), an M4-style
+        rifle, six sniper rifles with scopes, six pistols, SMGs, shotguns; scopes, silencers, grips as separate parts.
+        1,000–1,700 triangles each, flat colors, one mesh, no rig</td><td><b>Go</b> for the weapons (the rifle, the
+        sniper rifle, the pistol). Scaled on import (about 5 units to the meter)</td></tr>
+      <tr><td>Quaternius, Low Poly Animated Guns ("FPS Pack"; OpenGameArt)</td><td>Rifle, sniper rifle, pistol, P90,
+        revolver, shotgun, each with a small rig and clips: fire (the bolt or slide moving, a shell), reload (the
+        magazine out and in)</td><td>Maybe, for the first-person view model's moving parts (E2), if the Ultimate pack's look
+        is preferred, its parts can be cut the same way</td></tr>
+      <tr><td>Quaternius, Universal Animation Library 1, Standard (free tier; OpenGameArt)</td><td>46 clips on a
+        mannequin (13,744 triangles), 53 bones. Locomotion (idle, walk, jog, sprint), crouch (idle, forward), jump (start,
+        loop, land), roll, hit (chest, head), death, interact, pick up; <b>pistol</b>: idle, aim up, neutral and down
+        (single poses: an aim offset, E5), shoot, reload</td><td><b>Go</b> for locomotion, crouch, hits, death and
+        the pistol. <b>No rifle clips</b> in the free tier. The OpenGameArt copy has the old bone names
+        (<code>DEF-hips</code>…); the current version on itch.io has the new ones, shared with library 2 and the base
+        characters</td></tr>
+      <tr><td>Quaternius, Universal Animation Library 2, Standard</td><td>43 clips: melee, farming, zombie, slide,
+        climb, knockback; a male and a female mannequin; 65 bones (<code>pelvis</code>, <code>spine_01</code>…)</td>
+        <td>A few useful clips (Hit_Knockback, ClimbUp_1m, Slide); the zombie walk is not for this game</td></tr>
+      <tr><td>Kenney, Blaster Kit 2.1</td><td>40 toy sci-fi blasters in bright colors, cases, targets, ammo</td>
+        <td><b>No-go</b> for the weapons (not military). The targets could stand in the firing range</td></tr>
+    </table></div>
+    <p>Then the three that needed a browser (the user downloaded them):</p>
+    <div class="table-wrap"><table>
+      <tr><th>Pack</th><th>What it has</th><th>Verdict</th></tr>
+      <tr><td>Quaternius, Universal Base Characters, Standard (itch.io)</td><td>A male and a female body (14,318
+        triangles, 2048² color, normal and roughness maps), hair, eyebrows; the library's 65-bone rig, the same names. A
+        plain body: no clothes</td><td><b>Go</b> for the soldiers' body (the male). The uniform is ours to add: painted
+        into the color map, a helmet and a vest on bones (E3). The pack's glTF names two normal maps that it doesn't
+        contain (<code>…_png.png</code>); our copy names the files it has</td></tr>
+      <tr><td>Quaternius, Universal Animation Library 1, Standard (itch.io, 2026)</td><td>The same clips as above
+        (43, without the root-motion copies) on the new 65-bone rig; a copy with root motion (<code>_RM</code>)</td>
+        <td><b>Go</b>: plays on the base character in the engine</td></tr>
+      <tr><td>Quaternius, Toon Shooter Game Kit (Google Drive)</td><td>Soldier, enemy and hazmat characters (about
+        20,000 triangles, a 43-bone rig of their own, 17 clips: Idle_Shoot, Run_Gun, Walk_Shoot, Duck, Death…); 16
+        guns; 50 props: containers, sandbag trenches, barriers, fences, crates, pallets, exploding barrels, a health kit,
+        a key, water tanks, street lights, a tank, a wrecked car</td><td>Characters: <b>no-go</b> (chibi proportions: a
+        big head, all guns in one hand; it doesn't match the base's look or first person). Props: <b>go for later</b>
+        (Phase 6; the health kit in Phase 3), recolored from their toy colors, as Racing's Kenney trees were</td></tr>
+    </table></div>
+    <p><b>Checked in the engine</b> (<code>Scenes/ContentCheck.mscene</code>, kept): eight base characters, each in
+    one of the library's clips (idle, walk, jog, pistol idle, pistol reload, crouch, crouch walk, death) through
+    <code>Assets/Animators/Soldier.manim</code> and the <code>ContentCheckPose</code> script, with the rifle, the sniper
+    rifle and the pistol beside them. Editor and player (Debug): no validation messages, no script errors.</p>
+    <ul>
+      <li><b>An engine fix it needed:</b> a model was imported as skinned only if its file had clips of its own
+        (<code>ModelImport.cpp</code>), so the base character, whose clips are in another file, was drawn static and its
+        animator refused it. Now a rigged mesh is enough; the cooker's version is 3, so every cooked model is imported
+        once again.</li>
+      <li><b>The guns' scale is 0.0017</b> (the FBX files are in centimeters and about 6 times too large): the rifle is
+        then 0.9 m, the sniper rifle 1.2 m. Phase 2 can bake it into the files.</li>
+      <li>The animation of eight characters took 3.7 ms of the CPU in the Debug build; measured in Release with the
+        guards (Phase 5, 25 of them).</li>
+    </ul>
+    <p><b>The question that was open: the rifle in third person</b> (the guards, and the player in third person; first
+    person shows only the view model). The library's free tier has no rifle clips. Three ways were weighed: our own poses
+    by a Blender script, the library's Pro tier ($9.99, not checked for rifle clips), the Toon Shooter characters (no-go
+    above). <b>Chosen: our own poses.</b></p>
+    <p><b>As built (2026-11-16): <code>Tools/CharacterPoses/make_rifle_poses.py</code></b>, Blender without its window,
+    writes <code>Assets/Models/SoldierAnimations/Soldier_Rifles.glb</code> (1.2 MB: the library's mannequin and 13
+    clips on its rig, the same bone names and rest pose, checked node by node). For each frame: the library's body (the
+    pistol stance's legs and twisted chest, or Idle_Loop's breathing), the gun against the body, the hands on it by IK
+    (the arm's two bones, an elbow target), every bone baked to plain keyframes. The engine plays them like the library's
+    clips.</p>
+    <ul>
+      <li><b>Clips</b>, <code>Rifle_</code> (the assault rifle) and <code>Sniper_</code>: <code>_Idle_Loop</code> (low
+        ready, the muzzle down and to the left), <code>_Aim_Up</code>, <code>_Aim_Neutral</code>,
+        <code>_Aim_Down</code> (single poses, 45 degrees up and down, for the aim offset of E5), <code>_Shoot</code>
+        (the kick), <code>_Reload</code> (the rifle: the magazine out, a new one from the belt, in; the sniper rifle: the
+        bolt open, two rounds from the belt) and <code>Sniper_Bolt</code> (the bolt worked after a shot).</li>
+      <li><b>The gun against the body:</b> the sight line (the scope's, for the sniper rifle) at the right eye, the head
+        bent down onto the stock, the butt at the shoulder. The right hand holds the pistol grip as the library's
+        pistol hand does (its fingers too); the left hand is palm up under the handguard. Aim up and down bend the spine,
+        the gun following the chest. The grip and handguard points were read off side renders of the models.</li>
+      <li><b>For E3</b> (the gun on the hand's bone): in <code>hand_r</code>'s space the rifle is at (-0.03, 0.066,
+        0.002), quaternion (w 0.69, x 0.156, y -0.156, z 0.69); the sniper rifle at (-0.03, 0.077, 0.031), the same
+        rotation within 1 degree. The script prints them, and the gun's place in the model's space.</li>
+      <li><b>Checked</b> with <code>--preview &lt;folder&gt;</code> (side, front and top renders of each clip, the gun
+        in the hands) and in the engine: the content check scene has a second row of eight characters in the new clips
+        (<code>Soldier.manim</code> states 8 to 15), with a rifle and a sniper rifle placed where the two aim poses hold
+        them (no bone attachment yet: E3). Editor Play: no validation messages, no problems.</li>
+      <li><b>Limits:</b> the clips are simple (a few keyed hand positions, eased); the gun's own parts don't move (the
+        magazine stays in, the bolt with the gun); the left arm is nearly straight under the long handguards. They're
+        full-body clips now; with E5's upper-body layer the legs come from the locomotion.</li>
+    </ul>
+  </div>
   <h3>Phase 1: the player in both views</h3>
   <ul>
     <li>First-person movement: walk, run, walk quietly, jump, fall damage, footsteps; crouch (E7).</li>

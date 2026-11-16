@@ -297,8 +297,13 @@ namespace ModelImport
 		}
 
 		data = ModelData();
-		// Animated models get the skinned vertex layout (bone IDs and weights)
+		// Animated models get the skinned vertex layout (bone IDs and weights): a file with clips, or with a rigged mesh
+		// and no clips of its own (a character whose clips come from another file, played by an animator: Shooter 0.2)
 		data.IsAnimated = scene->mAnimations != nullptr;
+		for (uint32_t m = 0; m < scene->mNumMeshes && !data.IsAnimated; m++)
+		{
+			data.IsAnimated = scene->mMeshes[m]->mNumBones > 0;
+		}
 
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;

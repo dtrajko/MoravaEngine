@@ -7,8 +7,9 @@
 // the viewport is the editor's again: fly around, select, inspect, Step one frame at a time.
 //
 // Input (2.3): the game gets the keyboard, the mouse and the gamepads only while the Viewport panel has the focus (a click
-// on it gives it). The mouse is captured only when the game asks for it; Escape (Shift+F1 when the game binds Escape) always
-// gives the focus, and so the mouse, back to the editor.
+// on it gives it). The mouse is captured only when the game asks for it; Escape while it is captured, and Shift+F1 always,
+// give the focus, and so the mouse, back to the editor (a game that binds Escape gets the press too; with the cursor free,
+// its Escape is the game's alone).
 //
 // Simulate (3.7): the same copy of the scene and the same game loop, with physics but without the game's logic (the input
 // test and the scripts) and without input. The view stays the editor's camera and the viewport keeps its tools
@@ -562,7 +563,7 @@ void SetGamePointer(bool inside, const glm::vec2& position, const glm::vec2& vie
 	s_GameViewSize = viewSize;
 }
 
-// The game binds Escape: Shift+F1 gives the mouse back instead
+// The game binds Escape: with the cursor free (its menus), Escape is the game's and Shift+F1 gives the mouse back
 static bool GameBindsEscape()
 {
 	return s_GameInput.GetMap().BindsKey(GLFW_KEY_ESCAPE);
@@ -570,7 +571,7 @@ static bool GameBindsEscape()
 
 static const char* GetReleaseKeyName()
 {
-	return GameBindsEscape() ? "Shift+F1" : "Escape";
+	return !GameBindsEscape() || s_GameInput.IsMouseCaptured() ? "Escape" : "Shift+F1";
 }
 
 void UpdateGameViewportFocus(bool viewportFocused)
@@ -594,9 +595,13 @@ void UpdateGameViewportFocus(bool viewportFocused)
 	{
 		return;
 	}
+	// Escape while the game has the mouse captured gives it back, also when the game binds Escape: the game read its input
+	// earlier in this frame (UpdatePlayMode), so it gets the press too (a pause menu opens as the mouse comes back). With
+	// the cursor free (the game's menus), a game that binds Escape gets it alone: its pause menu's Escape resumes, the
+	// viewport keeping the focus. Shift+F1 always gives the mouse back.
 	const ImGuiIO& io = ImGui::GetIO();
-	const bool release = GameBindsEscape() ? io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_F1, false) :
-		ImGui::IsKeyPressed(ImGuiKey_Escape, false) || (io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_F1, false));
+	const bool escape = ImGui::IsKeyPressed(ImGuiKey_Escape, false) && (!GameBindsEscape() || s_GameInput.IsMouseCaptured());
+	const bool release = escape || (io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_F1, false));
 	if (release)
 	{
 		ImGui::SetWindowFocus(nullptr); // no panel has the focus: the game has no input, and the mouse is the editor's

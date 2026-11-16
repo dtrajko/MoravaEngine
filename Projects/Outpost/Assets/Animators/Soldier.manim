@@ -1,0 +1,179 @@
+# The content check's animator (Shooter plan, Phase 0.2): one state per clip of the animation library, chosen by Pose
+# (0 Idle ... 7 Death, 8 ... 15 the rifles' clips from Tools/CharacterPoses: the ContentCheckPose script sets it). Replaced by the player's and guards' animators in Phases 1 and 5.
+Animator:
+  Version: 1
+  Entry: Idle
+  Parameters:
+    - {Name: Pose, Type: Float, Default: 0}
+  States:
+    - Name: Idle
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Idle_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: Walk
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Walk_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: Jog
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Jog_Fwd_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: PistolIdle
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Pistol_Idle_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: PistolReload
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Pistol_Reload}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: CrouchIdle
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Crouch_Idle_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: CrouchWalk
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Crouch_Fwd_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: Death
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Death01}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: RifleIdle
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Rifle_Idle_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: RifleAim
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Rifle_Aim_Neutral}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: RifleAimUp
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Rifle_Aim_Up}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: RifleReload
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Rifle_Reload}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: SniperIdle
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Sniper_Idle_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: SniperAim
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Sniper_Aim_Neutral}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: SniperBolt
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Sniper_Bolt}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: SniperReload
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Sniper_Reload}
+      Speed: 1
+      Loop: true
+      InPlace: true
+  Transitions:
+    - FromAny: true
+      To: Walk
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 0.5}
+        - {Parameter: Pose, Test: Less, Value: 1.5}
+    - FromAny: true
+      To: Jog
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 1.5}
+        - {Parameter: Pose, Test: Less, Value: 2.5}
+    - FromAny: true
+      To: PistolIdle
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 2.5}
+        - {Parameter: Pose, Test: Less, Value: 3.5}
+    - FromAny: true
+      To: PistolReload
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 3.5}
+        - {Parameter: Pose, Test: Less, Value: 4.5}
+    - FromAny: true
+      To: CrouchIdle
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 4.5}
+        - {Parameter: Pose, Test: Less, Value: 5.5}
+    - FromAny: true
+      To: CrouchWalk
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 5.5}
+        - {Parameter: Pose, Test: Less, Value: 6.5}
+    - FromAny: true
+      To: Death
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 6.5}
+        - {Parameter: Pose, Test: Less, Value: 7.5}
+    - FromAny: true
+      To: RifleIdle
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 7.5}
+        - {Parameter: Pose, Test: Less, Value: 8.5}
+    - FromAny: true
+      To: RifleAim
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 8.5}
+        - {Parameter: Pose, Test: Less, Value: 9.5}
+    - FromAny: true
+      To: RifleAimUp
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 9.5}
+        - {Parameter: Pose, Test: Less, Value: 10.5}
+    - FromAny: true
+      To: RifleReload
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 10.5}
+        - {Parameter: Pose, Test: Less, Value: 11.5}
+    - FromAny: true
+      To: SniperIdle
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 11.5}
+        - {Parameter: Pose, Test: Less, Value: 12.5}
+    - FromAny: true
+      To: SniperAim
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 12.5}
+        - {Parameter: Pose, Test: Less, Value: 13.5}
+    - FromAny: true
+      To: SniperBolt
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 13.5}
+        - {Parameter: Pose, Test: Less, Value: 14.5}
+    - FromAny: true
+      To: SniperReload
+      Fade: 0.2
+      Conditions:
+        - {Parameter: Pose, Test: Greater, Value: 14.5}
+        - {Parameter: Pose, Test: Less, Value: 15.5}
