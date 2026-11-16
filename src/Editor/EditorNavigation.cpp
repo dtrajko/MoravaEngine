@@ -6,6 +6,7 @@
 
 #include "Core/Application.h"
 #include "Core/Log.h"
+#include "EnvMapVulkan/EnvMapVulkanDebugDraw.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneLoader.h"
 #include "Navigation/NavMesh.h"
 #include "Navigation/NavMeshBuilder.h"
@@ -36,7 +37,8 @@
 
 
 bool s_ShowNavMesh = true;
-static float s_NavMeshDrawDistance = 120.0f; // meters from the camera: farther polygons aren't drawn (a large terrain's)
+static float s_NavMeshDrawDistance = 120.0f; // meters from the camera: farther, the debug view draws nothing (a large terrain's navmesh)
+static bool s_NavMeshShowHidden = true;      // what the scene hides, drawn faintly
 
 // A bake in progress: the worker writes Result, then Done
 struct NavMeshBake
@@ -81,19 +83,6 @@ static std::shared_ptr<const NavMesh> GetSceneNavMesh()
 {
 	const EnvMapVulkanEntityID entity = s_Scene.FindFirst<NavMeshComponent>();
 	return entity != NoEntity ? s_Scene.Get<NavMeshComponent>(entity).Mesh : nullptr;
-}
-
-// The debug view's triangles and edges, made again when the navmesh is another
-static const NavMesh::DebugGeometry& GetDebugGeometryOf(const std::shared_ptr<const NavMesh>& mesh)
-{
-	static std::weak_ptr<const NavMesh> s_GeometryOf;
-	static NavMesh::DebugGeometry s_Geometry;
-	if (s_GeometryOf.lock() != mesh)
-	{
-		s_GeometryOf = mesh;
-		s_Geometry = mesh ? mesh->GetDebugGeometry() : NavMesh::DebugGeometry();
-	}
-	return s_Geometry;
 }
 
 // The test path's result for its points on this navmesh (found once per change)
@@ -190,7 +179,7 @@ bool HandleNavMeshClick(const glm::vec3& rayOrigin, const glm::vec3& rayDirectio
 	}
 	const std::shared_ptr<const NavMesh> mesh = GetSceneNavMesh();
 	glm::vec3 hit;
-	if (mesh && RaycastNavMeshTriangles(GetDebugGeometryOf(mesh), rayOrigin, glm::normalize(rayDirection), hit))
+	if (mesh && RaycastNavMeshTriangles(mesh->GetDebugGeometry(), rayOrigin, glm::normalize(rayDirection), hit))
 	{
 		SetTestPathPoint(hit);
 	}
@@ -497,7 +486,7 @@ static void FinishNavMeshBake()
 		}
 	}
 
-	const NavMesh::Islands islands = mesh->GetIslands();
+	const NavMesh::Islands& islands = mesh->GetIslands();
 	// The islands, largest first, with the heights each spans: two floors joined by stairs are one island from floor to floor
 	std::string list;
 	for (size_t i = 0; i < islands.List.size() && i < 8; i++)
@@ -600,19 +589,6 @@ static void Tooltip(const char* text)
 	}
 }
 
-// The islands of the shown mesh, found again only when it changes
-static NavMesh::Islands GetIslandsOf(const std::shared_ptr<const NavMesh>& mesh)
-{
-	static std::weak_ptr<const NavMesh> s_Of;
-	static NavMesh::Islands s_Islands;
-	if (s_Of.lock() != mesh)
-	{
-		s_Of = mesh;
-		s_Islands = mesh ? mesh->GetIslands() : NavMesh::Islands();
-	}
-	return s_Islands;
-}
-
 static void SettingsControls(NavMeshSettings& s)
 {
 	ImGui::SeparatorText("Agent");
@@ -697,7 +673,7 @@ void NavMeshControls(EnvMapVulkanEntityID entity)
 	if (component->Data && component->Mesh)
 	{
 		const NavMeshData& data = *component->Data;
-		const NavMesh::Islands islands = GetIslandsOf(component->Mesh);
+		const NavMesh::Islands& islands = component->Mesh->GetIslands();
 		ImGui::Text("%d tiles, %d polygons", (int)data.Tiles.size(), data.Polygons);
 		ImGui::Text("%.0f m2 walkable, %u island%s", islands.TotalArea, islands.Count, islands.Count == 1 ? "" : "s");
 		Tooltip("Islands are parts of the navmesh that aren't joined: a character can't walk from one to another.\n"
@@ -736,11 +712,13 @@ void NavMeshControls(EnvMapVulkanEntityID entity)
 
 	ImGui::SeparatorText("Debug View");
 	ImGui::Checkbox("Show in Viewport", &s_ShowNavMesh);
-	Tooltip("The navmesh over the scene (through what is in front of it): its polygons, colored by island, their outline\n"
-		"bright (a wall or a ledge beyond) and the edges between them faint. In Edit and while the game runs");
+	Tooltip("The navmesh in the scene: its polygons, colored by island, their outline bright (a wall or a ledge beyond)\n"
+		"and the edges between them faint; hidden by the walls and floors in front of it. In Edit and while the game runs");
 	ImGui::BeginDisabled(!s_ShowNavMesh);
 	ImGui::SliderFloat("Draw Distance", &s_NavMeshDrawDistance, 10.0f, 1000.0f, "%.0f m", ImGuiSliderFlags_Logarithmic);
-	Tooltip("Polygons farther from the camera aren't drawn (a large terrain's navmesh is many polygons)");
+	Tooltip("Farther from the camera the debug view draws nothing (it fades out over the last tenth)");
+	ImGui::Checkbox("Show Hidden", &s_NavMeshShowHidden);
+	Tooltip("What walls and floors hide is drawn faintly (the floors above and below, a path behind a wall); off: not at all");
 
 	// The two-click path: what Navigation.FindPath and Navigation.Raycast give a script, between two points
 	ImGui::BeginDisabled(!component->Mesh || IsPlaying());
@@ -928,62 +906,49 @@ static ImU32 GetIslandColor(uint32_t island, int alpha)
 	return colors[island % (sizeof(colors) / sizeof(colors[0]))] | ((ImU32)alpha << IM_COL32_A_SHIFT);
 }
 
-// A polygon in clip space cut at the near plane (w = MinW): what is behind the camera goes
-static int ClipPolygon(const glm::vec4* in, int count, glm::vec4* out)
+// A palette entry of the debug drawings (alpha 0: the renderer takes the color from the frame's palette): a Nav Area's
+// polygons, whose color follows its state while the game runs without the mesh's drawing made again
+static ImU32 PaletteColor(uint8_t area)
 {
-	const float MinW = 0.01f;
-	int n = 0;
-	for (int i = 0; i < count; i++)
-	{
-		const glm::vec4& a = in[i];
-		const glm::vec4& b = in[(i + 1) % count];
-		const bool aIn = a.w >= MinW, bIn = b.w >= MinW;
-		if (aIn)
-		{
-			out[n++] = a;
-		}
-		if (aIn != bIn)
-		{
-			out[n++] = glm::mix(a, b, (MinW - a.w) / (b.w - a.w));
-		}
-	}
-	return n;
+	return (ImU32)(area & 63);
 }
 
-void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const ImVec2& viewportMin,
-	const ImVec2& viewportSize)
+// The mesh's drawing, kept on the GPU while the mesh is the same (its geometry key): the polygons, lifted a little so
+// the floor under them doesn't hide them, colored by island (a Nav Area's by the palette), and their edges, the outline
+// bright and the inner ones faint
+static void FillNavMeshDrawing(const NavMesh& mesh, EnvMapVulkanDebugDrawList& list)
 {
-	// Without a baked navmesh: the Nav Areas and Nav Links still (they are placed before the first bake)
+	const NavMesh::DebugGeometry& geometry = mesh.GetDebugGeometry();
+	const glm::vec3 lift(0.0f, 0.02f, 0.0f), edgeLift(0.0f, 0.03f, 0.0f);
+	list.Triangles.reserve(geometry.Triangles.size());
+	for (const NavMesh::DebugGeometry::Triangle& t : geometry.Triangles)
+	{
+		list.AddTriangle(t.A + lift, t.B + lift, t.C + lift, t.Area == NavAreaIds::Ground ? GetIslandColor(t.Island, 70) : PaletteColor(t.Area));
+	}
+	list.Lines.reserve(geometry.Edges.size());
+	for (const NavMesh::DebugGeometry::Edge& e : geometry.Edges)
+	{
+		list.AddLine(e.A + edgeLift, e.B + edgeLift, e.Outline ? IM_COL32(230, 250, 255, 220) : IM_COL32(230, 250, 255, 45), e.Outline ? 1.5f : 1.0f);
+	}
+}
+
+void SubmitNavMeshDrawings()
+{
+	EnvMapVulkanDebugDraw::FrameSettings& settings = EnvMapVulkanDebugDraw::Settings();
+	settings.DrawDistance = s_NavMeshDrawDistance;
+	settings.HiddenAlpha = s_NavMeshShowHidden ? 0.15f : 0.0f;
+	EnvMapVulkanDebugDrawList& list = EnvMapVulkanDebugDraw::Frame();
+
+	// The mesh: the scene's own (nothing when it has none, and its drawing goes with it)
 	const std::shared_ptr<const NavMesh> mesh = GetSceneNavMesh();
-	const NavMesh::DebugGeometry& geometry = GetDebugGeometryOf(mesh);
-
-	const float maxDistance2 = s_NavMeshDrawDistance * s_NavMeshDrawDistance;
-	auto toPixel = [&](const glm::vec4& clip)
+	if (mesh)
 	{
-		return ImVec2(viewportMin.x + (clip.x / clip.w + 1.0f) * 0.5f * viewportSize.x, viewportMin.y + (1.0f - clip.y / clip.w) * 0.5f * viewportSize.y);
-	};
-	// Entirely beyond one side of the view: not drawn
-	auto outside = [](const glm::vec4* v, int count)
-	{
-		for (int axis = 0; axis < 2; axis++)
-		{
-			bool allBelow = true, allAbove = true;
-			for (int i = 0; i < count; i++)
-			{
-				allBelow &= v[i][axis] < -v[i].w;
-				allAbove &= v[i][axis] > v[i].w;
-			}
-			if (allBelow || allAbove)
-			{
-				return true;
-			}
-		}
-		return false;
-	};
+		EnvMapVulkanDebugDraw::SetPersistent(mesh->GetGeometryKey(), [&mesh](EnvMapVulkanDebugDrawList& out) { FillNavMeshDrawing(*mesh, out); });
+	}
 
-	// The Nav Areas' polygons (E1.5): a Door's green while open, red closed; a Costly area's amber, deeper the more it costs
-	ImU32 areaColors[64];
-	std::fill(std::begin(areaColors), std::end(areaColors), IM_COL32(200, 200, 200, 70));
+	// The Nav Areas' polygons (E1.5), by the palette: a Door's green while open, red closed; a Costly area's amber, deeper
+	// the more it costs
+	std::fill(std::begin(settings.Palette), std::end(settings.Palette), IM_COL32(200, 200, 200, 70));
 	{
 		const EnvMapVulkanEntityID navMesh = s_Scene.FindFirst<NavMeshComponent>();
 		const NavMeshComponent* component = navMesh != NoEntity ? &s_Scene.Get<NavMeshComponent>(navMesh) : nullptr;
@@ -997,109 +962,34 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 				if (area && area->Type == NavAreaComponent::AreaType::Costly)
 				{
 					const int alpha = (int)glm::clamp(60.0f + mesh->GetAreaCost(id) * 12.0f, 60.0f, 170.0f);
-					areaColors[id] = IM_COL32(240, 170, 40, alpha);
+					settings.Palette[id & 63] = IM_COL32(240, 170, 40, alpha);
 				}
 				else
 				{
-					areaColors[id] = mesh->IsAreaWalkable(id) ? IM_COL32(90, 230, 90, 90) : IM_COL32(240, 60, 50, 130);
+					settings.Palette[id & 63] = mesh->IsAreaWalkable(id) ? IM_COL32(90, 230, 90, 90) : IM_COL32(240, 60, 50, 130);
 				}
 			}
 		}
 	}
 
-	drawList->PushClipRect(viewportMin, ImVec2(viewportMin.x + viewportSize.x, viewportMin.y + viewportSize.y), true);
-	// The polygons without anti-aliased edges: neighbors would overlap at their fringes, as seams
-	const ImDrawListFlags flags = drawList->Flags;
-	drawList->Flags &= ~ImDrawListFlags_AntiAliasedFill;
-	for (const NavMesh::DebugGeometry::Triangle& t : geometry.Triangles)
-	{
-		const glm::vec3 center = (t.A + t.B + t.C) / 3.0f;
-		const glm::vec3 offset = center - cameraPosition;
-		if (glm::dot(offset, offset) > maxDistance2)
-		{
-			continue;
-		}
-		const glm::vec4 clip[3] = { viewProjection * glm::vec4(t.A, 1.0f), viewProjection * glm::vec4(t.B, 1.0f), viewProjection * glm::vec4(t.C, 1.0f) };
-		glm::vec4 cut[4];
-		const int count = ClipPolygon(clip, 3, cut);
-		if (count < 3 || outside(cut, count))
-		{
-			continue;
-		}
-		ImVec2 points[4];
-		for (int i = 0; i < count; i++)
-		{
-			points[i] = toPixel(cut[i]);
-		}
-		drawList->AddConvexPolyFilled(points, count, t.Area == NavAreaIds::Ground ? GetIslandColor(t.Island, 70) : areaColors[t.Area & 63]);
-	}
-	drawList->Flags = flags;
-	for (const NavMesh::DebugGeometry::Edge& e : geometry.Edges)
-	{
-		const glm::vec3 offset = (e.A + e.B) * 0.5f - cameraPosition;
-		if (glm::dot(offset, offset) > maxDistance2)
-		{
-			continue;
-		}
-		glm::vec4 a = viewProjection * glm::vec4(e.A, 1.0f), b = viewProjection * glm::vec4(e.B, 1.0f);
-		const float MinW = 0.01f;
-		if (a.w < MinW && b.w < MinW)
-		{
-			continue;
-		}
-		if (a.w < MinW)
-		{
-			a = glm::mix(a, b, (MinW - a.w) / (b.w - a.w));
-		}
-		else if (b.w < MinW)
-		{
-			b = glm::mix(b, a, (MinW - b.w) / (a.w - b.w));
-		}
-		const glm::vec4 ends[2] = { a, b };
-		if (outside(ends, 2))
-		{
-			continue;
-		}
-		drawList->AddLine(toPixel(a), toPixel(b), e.Outline ? IM_COL32(230, 250, 255, 220) : IM_COL32(230, 250, 255, 45), e.Outline ? 1.5f : 1.0f);
-	}
-
 	// Lines and dots on the mesh, just above the polygons they lie on
 	const glm::vec3 lift(0.0f, 0.05f, 0.0f);
-	auto line = [&](const glm::vec3& from, const glm::vec3& to, ImU32 color, float thickness)
+	auto line = [&](const glm::vec3& from, const glm::vec3& to, ImU32 color, float width)
 	{
-		glm::vec4 a = viewProjection * glm::vec4(from + lift, 1.0f), b = viewProjection * glm::vec4(to + lift, 1.0f);
-		const float MinW = 0.01f;
-		if (a.w < MinW && b.w < MinW)
-		{
-			return;
-		}
-		if (a.w < MinW)
-		{
-			a = glm::mix(a, b, (MinW - a.w) / (b.w - a.w));
-		}
-		else if (b.w < MinW)
-		{
-			b = glm::mix(b, a, (MinW - b.w) / (a.w - b.w));
-		}
-		drawList->AddLine(toPixel(a), toPixel(b), color, thickness);
+		list.AddLine(from + lift, to + lift, color, width);
 	};
 	auto dot = [&](const glm::vec3& at, ImU32 color, float radius)
 	{
-		const glm::vec4 clip = viewProjection * glm::vec4(at + lift, 1.0f);
-		if (clip.w >= 0.01f)
-		{
-			drawList->AddCircleFilled(toPixel(clip), radius, color);
-			drawList->AddCircle(toPixel(clip), radius, IM_COL32(0, 0, 0, 200), 0, 1.5f);
-		}
+		list.AddDot(at + lift, color, radius);
 	};
-	auto ring = [&](const glm::vec3& center, float radius, ImU32 color, float thickness)
+	auto ring = [&](const glm::vec3& center, float radius, ImU32 color, float width)
 	{
 		const int Segments = 20;
 		for (int i = 0; i < Segments; i++)
 		{
 			const float a0 = glm::two_pi<float>() * (float)i / Segments, a1 = glm::two_pi<float>() * (float)(i + 1) / Segments;
 			line(center + glm::vec3(std::cos(a0), 0.0f, std::sin(a0)) * radius, center + glm::vec3(std::cos(a1), 0.0f, std::sin(a1)) * radius,
-				color, thickness);
+				color, width);
 		}
 	};
 
@@ -1116,10 +1006,6 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 		s_Scene.Each<NavAreaComponent>([&](EnvMapVulkanEntityID entity, const NavAreaComponent& area)
 		{
 			const glm::mat4 world = s_Scene.GetWorldTransform(entity);
-			if (glm::distance(glm::vec3(world[3]), cameraPosition) > s_NavMeshDrawDistance)
-			{
-				return;
-			}
 			glm::vec3 corners[8];
 			GetNavAreaCorners(world, area, corners);
 			const bool selected = s_EditorSelection.IsSelected(entity);
@@ -1137,10 +1023,6 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 			const glm::mat4 world = s_Scene.GetWorldTransform(entity);
 			const glm::vec3 start = glm::vec3(world[3]);
 			const glm::vec3 end = glm::vec3(world * glm::vec4(link.End, 1.0f));
-			if (glm::distance(start, cameraPosition) > s_NavMeshDrawDistance && glm::distance(end, cameraPosition) > s_NavMeshDrawDistance)
-			{
-				return;
-			}
 			const bool selected = s_EditorSelection.IsSelected(entity);
 			const int alpha = selected ? 255 : 190;
 			const ImU32 color = link.Enabled ? IM_COL32(110, 240, 110, alpha) : IM_COL32(240, 70, 60, alpha);
@@ -1173,11 +1055,6 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 		for (const SceneNavigation::DebugAgent& agent : agents)
 		{
 			const SceneNavigation::AgentState& s = agent.State;
-			const glm::vec3 offset = s.Position - cameraPosition;
-			if (glm::dot(offset, offset) > maxDistance2)
-			{
-				continue;
-			}
 			if (agent.Passive)
 			{
 				ring(s.Position, s.Radius, IM_COL32(200, 200, 200, 160), 1.5f);
@@ -1215,13 +1092,10 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 			line(t.Start, t.StraightClear ? t.End : t.StraightHit, t.StraightClear ? IM_COL32(90, 230, 90, 200) : red, 1.5f);
 			if (!t.StraightClear)
 			{
-				const glm::vec4 clip = viewProjection * glm::vec4(t.StraightHit + lift, 1.0f);
-				if (clip.w >= 0.01f)
-				{
-					const ImVec2 c = toPixel(clip);
-					drawList->AddLine(ImVec2(c.x - 5.0f, c.y - 5.0f), ImVec2(c.x + 5.0f, c.y + 5.0f), red, 2.0f);
-					drawList->AddLine(ImVec2(c.x - 5.0f, c.y + 5.0f), ImVec2(c.x + 5.0f, c.y - 5.0f), red, 2.0f);
-				}
+				// A cross where the straight walk leaves the mesh
+				const float size = 0.12f;
+				line(t.StraightHit + glm::vec3(-size, 0.0f, -size), t.StraightHit + glm::vec3(size, 0.0f, size), red, 2.0f);
+				line(t.StraightHit + glm::vec3(-size, 0.0f, size), t.StraightHit + glm::vec3(size, 0.0f, -size), red, 2.0f);
 			}
 			const ImU32 pathColor = t.Complete ? IM_COL32(255, 225, 60, 255) : IM_COL32(255, 150, 40, 255);
 			for (size_t i = 1; i < t.Corners.size(); i++)
@@ -1243,5 +1117,4 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 		}
 		dot(t.Start, IM_COL32(90, 230, 90, 255), 6.0f);
 	}
-	drawList->PopClipRect();
 }

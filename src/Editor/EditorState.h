@@ -520,11 +520,11 @@ void ShutdownNavMeshBake(); // stops a bake in progress and waits for it
 void SaveNavMeshWithScene(const std::string& scenePath);
 // The scene's navmesh was read from (or isn't next to) this scene file: opened, new
 void SetNavMeshSceneFile(const std::string& scenePath);
-// The Navigation debug view: the navmesh's polygons (colored by island) and edges over the scene within a distance of the
-// camera, not depth tested
+// The Navigation debug view: the scene's navmesh (its polygons colored by island, its edges), its Nav Areas and Nav Links,
+// the running game's agents and the test path, handed to the renderer for the next frame (EnvMapVulkanDebugDraw: hidden
+// by the scene's depth)
 extern bool s_ShowNavMesh;
-void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const ImVec2& viewportMin,
-	const ImVec2& viewportSize);
+void SubmitNavMeshDrawings();
 // A click in the viewport (Edit) along this ray: a point of the debug view's two-click path (E1.3) while its Test Path is
 // on and the Nav Mesh is selected. True: the click was the path's (it selects nothing)
 bool HandleNavMeshClick(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);

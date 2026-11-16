@@ -7,7 +7,8 @@ namespace Outpost
     /// <summary>
     /// A free camera for looking around a level while it is built (docs/games/Shooter_Plan.html, Phase 0): Look (the mouse,
     /// the right stick) turns it, Move (W A S D, the left stick) flies along the view, FlyUp and FlyDown (E or Space, Q or
-    /// Ctrl) rise and sink, Walk (Shift) is faster. It goes through walls. Kept as a debug camera once the player comes (Phase 1).
+    /// Ctrl) rise and sink, Walk (Shift) is faster. It goes through walls. A debug camera beside the player (Phase 1): off
+    /// at the start when StartActive is off, the Player's F2 (DebugFly) turns it on and off.
     /// </summary>
     public class FlyCamera : Entity
     {
@@ -18,18 +19,38 @@ namespace Outpost
         /// <summary>Times the input map's Look (0.1 degrees per pixel, 180 degrees per second on the stick).</summary>
         public float Sensitivity = 1.0f;
 
+        /// <summary>It flies from the start (a scene without a player); off: until turned on (IsActive).</summary>
+        public bool StartActive = true;
+
         float yaw, pitch; // degrees, as the camera's rotation (yaw 0 looks along -Z, positive to the left)
+        bool active;
+
+        /// <summary>It moves the camera now. Turned on, it flies on from where the camera is.</summary>
+        public bool IsActive
+        {
+            get => active;
+            set
+            {
+                if (value && !active)
+                {
+                    Vector3 angles = EulerAngles;
+                    pitch = angles.X > 180.0f ? angles.X - 360.0f : angles.X;
+                    yaw = angles.Y;
+                }
+                active = value;
+            }
+        }
 
         protected override void OnCreate()
         {
             Input.CursorLocked = true;
-            Vector3 angles = EulerAngles;
-            pitch = angles.X;
-            yaw = angles.Y;
+            IsActive = StartActive;
         }
 
         protected override void OnUpdate(float dt)
         {
+            if (!active)
+                return;
             // The mouse only while it is the game's (a free cursor moves to the editor's panels); the stick always
             InputAction look = Input.GetAction("Look");
             if (Input.MouseCaptured || look.FromGamepad)

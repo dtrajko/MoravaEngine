@@ -154,7 +154,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><a href="#level">The level and how it is made</a></li>
       <li><a href="#content">Content: models, animations, sounds</a></li>
       <li><a href="#multiplayer">Keeping multiplayer possible</a></li>
-      <li><a href="#engine">The engine work (E1–E10)</a></li>
+      <li><a href="#engine">The engine work (E1–E11)</a></li>
       <li><a href="#phases">The phases</a></li>
       <li><a href="#later">Later</a></li>
       <li><a href="#verify">How each phase is checked</a></li>
@@ -164,7 +164,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 
 <section id="verdict">
   <h2>The verdict</h2>
-  <div class="box ok"><b>Feasible on this engine, with about ten pieces of engine work first or alongside</b>
+  <div class="box ok"><b>Feasible on this engine, with about eleven pieces of engine work first or alongside</b>
     <ul>
       <li>About two thirds of what a shooter needs is already there. The racing game, the Sample project (Erika's
         third-person character and camera, the collector milestone) and the engine phases built a lot of it:
@@ -187,7 +187,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
           <li>Crouching (the character's capsule changing height).</li>
           <li>Far detail that follows a sniper scope's zoom.</li>
         </ul>
-        They are described in <a href="#engine">E1–E10</a>; each is one engine phase, like the racing game's particles and
+        They are described in <a href="#engine">E1–E11</a>; each is one engine phase, like the racing game's particles and
         trails were.</li>
       <li><b>The biggest risk is content, not code:</b> rigged, animated characters holding guns, under CC0. Phase 0 checks
         the candidate packs before anything else is built.</li>
@@ -274,7 +274,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       tiers</td><td>Limit: shadow maps for 4 spot and 4 point lights at once (see <a href="#risks">risks</a>).</td></tr>
     <tr><td>Shipping</td><td>Build Game, packs, the player</td><td></td></tr>
   </table></div>
-  <h3>Missing (the engine work, <a href="#engine">E1–E10</a>)</h3>
+  <h3>Missing (the engine work, <a href="#engine">E1–E11</a>)</h3>
   <div class="table-wrap"><table>
     <tr><th></th><th>Piece</th><th>Why the shooter needs it</th><th>Size</th></tr>
     <tr><td>E1</td><td>Navigation (Recast/Detour)</td><td>Guards that find their way across floors and around cover</td><td>Large</td></tr>
@@ -287,6 +287,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <tr><td>E8</td><td>Lights in C#</td><td>Muzzle flashes, alarm beacons, lights shot out</td><td>Small</td></tr>
     <tr><td>E9</td><td>Sound occlusion and room reverb</td><td>Gunfire through a wall sounds muffled; halls echo</td><td>Medium (can wait)</td></tr>
     <tr><td>E10</td><td>Detail by the field of view (the scope's zoom)</td><td>Through a sniper scope, far trees and terrain keep the detail of their apparent size, not their distance</td><td>Small</td></tr>
+    <tr><td>E11</td><td>Shadow optimization (all kinds: the sun, spot and point lights)</td><td>An indoor base has many lamps; shadows took most of the GPU time when measured (2026-11-17)</td><td>Medium</td></tr>
   </table></div>
 </section>
 
@@ -517,7 +518,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 </section>
 
 <section id="engine">
-  <h2>The engine work (E1–E10)</h2>
+  <h2>The engine work (E1–E11)</h2>
   <p>Each is an engine feature for any game, written up in the engine guide (likely a new section, as 12.1 Particles
   was) with its Inspector, C# API, overlay or debug view, and a test scene. They are done inside the shooter's phases, as
   the racing game's particles were.</p>
@@ -820,6 +821,26 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>The shadow cascades' distance and the culling stay as they are; the scope's narrow view draws less, not more.</li>
     <li>Checked in Racing's circuit with a test camera at 10× (the trees and the terrain far away), then in the base.</li>
   </ul>
+  <h3>E11 Shadow optimization</h3>
+  <div class="box">Added 2026-11-17 (the user): "we should seriously think how to optimize all types of shadows". Measured
+    in Sample's Followers scene in the editor's Play (Debug, 1.65 M triangles): 46 ms of GPU time, of it 20 ms the point
+    lights' shadows and 13.5 ms the sun's. Postponed to Phase 6 (the user's choice), where the base's many lamps need it
+    first.</div>
+  <ul>
+    <li>What the renderer does now: every shadow view is drawn again every frame (4 cascades, one view per spot light, 6
+      cube faces per point light); culling is by model, not by mesh; skinned models are never culled by the view (only
+      by the light's range) and are skinned again in every view; a point light's faces don't use the face test the probes
+      have.</li>
+    <li>In order of value: measure in Release with counters per shadow view (Renderer Stats); cull by mesh and by cube
+      face, with bounds that cover a skinned model's animation; keep each light's shadow of the static meshes and draw
+      only what moves over a copy of it each frame (drawn again when the light or a static mesh moves); skin once per
+      frame (a compute pass) instead of in each view; update the far cascades every second to fourth frame; a light's
+      shadow resolution and update rate by its importance (near the camera, bright, on screen), which also eases the
+      limit of 4 spot and 4 point shadows (<a href="#risks">risks</a>).</li>
+    <li>Later if needed: the 6 faces of a point light in one pass (multiview).</li>
+    <li>Checked in Sample's Followers and Physics scenes, Racing's circuit and the base: frame times before and after, the
+      same shadows (screenshots compared).</li>
+  </ul>
 </section>
 
 <section id="phases">
@@ -1000,6 +1021,39 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>The view model (E2) with an empty-handed or placeholder gun.</li>
     <li>Input as commands from the start (<a href="#multiplayer">the rules</a>).</li>
   </ul>
+  <p>In three steps, one PR each (as E1): <b>1.1</b> first-person movement, crouching (E7) and input as commands; <b>1.2</b>
+    the body, its animator, the third-person camera and the V switch; <b>1.3</b> the view model (E2).</p>
+  <div class="box ok"><b>As built: 1.1 movement, crouching (E7) and commands (2026-11-17)</b>
+    <ul>
+      <li><b>E7 in the engine:</b> <code>ScenePhysics::SetCharacterHeight</code> gives a running character's capsule another
+        height with its bottom kept (the shape's offset moves by half the change, so what it stands on stays the same):
+        lower always, higher only when Jolt's <code>CharacterVirtual::SetShape</code> finds room (refused under a table: it
+        keeps its height). C#: <code>CharacterController.SetHeight</code> (false when refused), <code>Height</code>,
+        <code>StandingHeight</code>. The Physics panel's character lines show the crouched capsule.</li>
+      <li><b>Commands:</b> <code>PlayerCommand</code> (move, yaw and pitch, jump, crouch, walk) is all that drives the
+        player; <code>LocalPlayerInput</code> makes it from the input actions (the look each frame, the buttons in the
+        fixed step; C toggles crouching, holding Ctrl takes over). <code>Player.CommandSource</code> takes commands from
+        elsewhere: a bot, a test driver, later a remote player.</li>
+      <li><b><code>PlayerMotor</code></b> (the fixed step): run 5 m/s, walk quietly 2.4 (Shift), crouched 1.8; a jump of
+        1 m (gravity 20 m/s&sup2;), a little control in the air, a ceiling stops the rise; crouching down at once and up when
+        there is room (asked each step); landing faster than 9 m/s (a fall of about 2 m) hurts, 11 points per m/s over
+        it.</li>
+      <li><b><code>Damage.Apply(target, info)</code></b>, the one way to deal damage, with its <code>Dealt</code> event,
+        and <code>IDamageable</code>; the player's <code>Health</code> (100) takes the falls (death and the rest:
+        Phase 3).</li>
+      <li><b><code>Player</code></b> (Greybox's <i>Player</i>, a 1.8 m character at the feet): the camera at the eyes (1.62 m,
+        eased down when crouched), steps by distance (a stride of 1.8 m running, quieter walking and crouched), jump and
+        landing sounds (our own, Sample's soft steps, in <code>Assets/Audio</code>). F2 (<i>DebugFly</i>, a new action)
+        hands the view to the camera's <code>FlyCamera</code> and back; it has <i>StartActive</i> for scenes without a
+        player.</li>
+      <li><b>With it:</b> the Navigation debug views drawn depth-tested (the user's request; see E1 and the engine guide's
+        12.3), and the stale navmesh of another scene fixed.</li>
+      <li><b>Checked:</b> a test copy (<code>D:\Workspace\Temp\OutpostPlayerTest</code>, a driver script and a low test
+        slab) in editor Play, 12 of 12: run, walk and crouch speeds, crouched height, standing refused under the slab and
+        done beside it, a jump 1.05 m high, no damage from it, 70 damage from a 6 m fall. 0 validation messages; GCC
+        clean.</li>
+    </ul>
+  </div>
   <h3>Phase 2: weapons</h3>
   <ul>
     <li>Weapon data files; the rifle (semi and automatic), the sniper rifle, the pistol, the knife; switching, reloading,
@@ -1016,6 +1070,11 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>Health and armor, health packs, vests, ammo boxes; death and restart.</li>
     <li>The HUD: crosshair (it spreads with the weapon's spread), health, armor, ammo, the weapon, a hit marker, the
       direction damage came from, objectives; menus and settings (from Racing's), the view and mouse sensitivity.</li>
+    <li>A map in the HUD (the user's idea, 2026-11-16): a camera above the level draws into a render texture
+      (<code>.mrtex</code>, as Sample's Level1 security cameras and giant screen do) shown by a UI image, with marks for
+      the player, the guards and the objectives over it. No engine work: render textures, a camera's
+      <code>DrawEvery</code> and UI images showing them exist. Which floors it shows (the player's, or the others
+      faded) is decided then.</li>
   </ul>
   <h3>Phase 4: navigation (E1)</h3>
   <ul>
@@ -1028,12 +1087,16 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>The guard prefab: model, animator with layers (E5), gun in hand (E3), hitboxes (E4).</li>
     <li><code>GuardBrain</code>: the states, sight, hearing, aim, cover, groups, the alarm; debug views.</li>
     <li>Difficulty settings; the budget with 25 guards.</li>
+    <li>Nav Link ends and patrol routes placed in the viewport (handles to drag, points to click), instead of the
+      numeric End field and the scripts' entity fields: when the guards need routes, not earlier (the user,
+      2026-11-16).</li>
   </ul>
   <h3>Phase 6: the base</h3>
   <ul>
     <li>The level builder in full; the base's buildings, floors, basement and yard; first in greybox, played and
       changed, then dressed with materials, props, lights and probes.</li>
     <li>Doors (opened with Use, some locked), the freight lift, the navmesh with door links.</li>
+    <li>Shadow optimization (E11), before the base is dressed with its lights.</li>
     <li>The lights and drawing budget (<a href="#risks">risks</a>): chunking, shadowed lights, occlusion if needed.</li>
   </ul>
   <h3>Phase 7: the mission</h3>

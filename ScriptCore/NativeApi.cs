@@ -178,6 +178,8 @@ namespace Morava
         public delegate* unmanaged<ulong, int, float, int> NavArea_Set;
         public delegate* unmanaged<ulong, int*, int*, int> NavLink_Get;
         public delegate* unmanaged<ulong, int, int> NavLink_SetEnabled;
+
+        public delegate* unmanaged<ulong, float, int> Character_SetHeight;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -195,6 +197,7 @@ namespace Morava
         public Vector3 GroundNormal;
         public Vector3 GroundVelocity;
         public Vector3 GroundAngularVelocity;
+        public float Height, StandingHeight;
     }
 
     [StructLayout(LayoutKind.Sequential)]

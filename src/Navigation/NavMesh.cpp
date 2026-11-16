@@ -7,6 +7,7 @@
 #include <DetourNavMeshQuery.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cfloat>
 #include <cstring>
 #include <iterator>
@@ -20,10 +21,41 @@ static_assert(std::is_same_v<dtPolyRef, uint64_t>, "Detour must be built with DT
 static constexpr int MaxPathPolygons = 2048;
 static constexpr int MaxQueryNodes = 4096;
 
+static std::atomic<uint64_t> s_NextGeometryKey{ 1 };
+
 
 NavMesh::NavMesh()
 {
 	std::fill(std::begin(m_AreaWalkable), std::end(m_AreaWalkable), true);
+	OnGeometryChanged();
+}
+
+void NavMesh::OnGeometryChanged()
+{
+	m_GeometryKey = s_NextGeometryKey++;
+	m_DebugGeometry = DebugGeometry();
+	m_Islands = Islands();
+	m_HasDebugGeometry = m_HasIslands = false;
+}
+
+const NavMesh::DebugGeometry& NavMesh::GetDebugGeometry() const
+{
+	if (!m_HasDebugGeometry)
+	{
+		m_DebugGeometry = MakeDebugGeometry();
+		m_HasDebugGeometry = true;
+	}
+	return m_DebugGeometry;
+}
+
+const NavMesh::Islands& NavMesh::GetIslands() const
+{
+	if (!m_HasIslands)
+	{
+		m_Islands = MakeIslands();
+		m_HasIslands = true;
+	}
+	return m_Islands;
 }
 
 NavMesh::~NavMesh()
@@ -53,6 +85,7 @@ void NavMesh::Clear()
 	m_LinkEnabled.clear();
 	std::fill(std::begin(m_AreaWalkable), std::end(m_AreaWalkable), true);
 	m_StateVersion++;
+	OnGeometryChanged();
 }
 
 bool NavMesh::Create(const glm::vec3& origin, float tileWorldSize, int maxTiles, int maxPolysPerTile, const NavMeshSettings& settings)
@@ -112,6 +145,7 @@ bool NavMesh::AddTile(const Tile& tile)
 		return false;
 	}
 	IndexTilePolygons(m_Mesh->getTileByRef(added));
+	OnGeometryChanged();
 	return true;
 }
 
@@ -491,7 +525,7 @@ void NavMesh::FindIslands(std::vector<std::vector<uint32_t>>& islandOfPolygon, s
 	}
 }
 
-NavMesh::Islands NavMesh::GetIslands() const
+NavMesh::Islands NavMesh::MakeIslands() const
 {
 	Islands result;
 	if (!m_Mesh)
@@ -573,7 +607,7 @@ bool NavMesh::GetLink(uint64_t polygon, LinkInfo& link) const
 	return false;
 }
 
-NavMesh::DebugGeometry NavMesh::GetDebugGeometry() const
+NavMesh::DebugGeometry NavMesh::MakeDebugGeometry() const
 {
 	DebugGeometry geometry;
 	if (!m_Mesh)

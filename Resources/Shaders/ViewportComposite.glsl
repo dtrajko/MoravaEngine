@@ -36,7 +36,7 @@ layout (location = 0) in OutputBlock Input;
 layout (binding = 0) uniform sampler2D u_Texture;           // linear HDR scene
 layout (binding = 1) uniform sampler2D u_BloomTexture;      // bloom (already exposed, see BloomPass.glsl)
 layout (binding = 2) uniform sampler2D u_BloomDirtTexture;  // lens dirt, lit by the bloom
-layout (binding = 3) uniform sampler2D u_OverlayTexture;    // wireframe and bounding boxes (display colors, alpha = coverage)
+layout (binding = 3) uniform sampler2D u_OverlayTexture;    // wireframe, bounding boxes, debug drawings (display colors premultiplied by the coverage, alpha = coverage)
 layout (binding = 4) uniform sampler2D u_SelectionMask;     // silhouette of the selected mesh/submesh: r = 1 all of it, g = 1 its part that isn't hidden
 // The G-buffer (see EnvMapVulkanGBuffer), for the debug views
 layout (binding = 5) uniform sampler2D u_GBufferNormalRoughness; // xyz = world-space normal (0: no surface, the sky), w = roughness
@@ -175,7 +175,9 @@ void main()
 	}
 
 	vec4 overlay = texture(u_OverlayTexture, Input.TexCoord);
-	displayColor = mix(displayColor, overlay.rgb, overlay.a);
+	// Premultiplied: the overlay's pipelines blend into a cleared image (EnvMapVulkanRenderer's RecordEditorOverlayPasses,
+	// EnvMapVulkanDebugDraw), so its color is already times its coverage
+	displayColor = displayColor * (1.0 - overlay.a) + overlay.rgb;
 	displayColor = mix(displayColor, u_Uniforms.OutlineColor.rgb, SelectionOutline() * u_Uniforms.OutlineColor.a);
 
 	o_Color = vec4(displayColor, 1.0);

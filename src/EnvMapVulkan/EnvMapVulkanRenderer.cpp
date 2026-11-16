@@ -30,6 +30,7 @@
 #include "EnvMapVulkanFoliage.h"
 #include "EnvMapVulkanParticles.h"
 #include "EnvMapVulkanTrails.h"
+#include "EnvMapVulkanDebugDrawPass.h"
 #include "EnvMapVulkanTerrain.h"
 #include "EnvMapVulkanTextureViews.h"
 #include "EnvMapVulkanUI.h"
@@ -178,6 +179,8 @@ static H2M::RefH2M<H2M::VertexBufferH2M> s_BoundingBoxVertexBuffer;
 static const uint32_t s_BoundingBoxVertexCount = 24; // 12 edges
 
 static void CreateEditorOverlayResources();
+// The view-projection the scene is drawn with this frame (with TAA's jitter): the debug drawings test against its depth
+static glm::mat4 s_DrawnViewProjection(1.0f);
 static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer);
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnim; // skinned models (HazelPBR_Anim.glsl): vertex layout with bone IDs and weights
@@ -846,6 +849,7 @@ static void UpdateFrameUniforms()
 	jitterOffset[3][1] = jitter.y;
 	// A translation in clip space times w: after the division by w, every point on the screen moved by the same offset
 	const glm::mat4 drawnViewProjection = jitterOffset * viewProjection;
+	s_DrawnViewProjection = drawnViewProjection;
 	glm::mat4 cameraMatrices[2] = { drawnViewProjection, s_HasPreviousViewProjection ? s_PreviousDrawnViewProjection : drawnViewProjection };
 	s_TemporalFrame.CurrentToPrevious = (s_HasPreviousViewProjection ? s_PreviousViewProjection : viewProjection) * glm::inverse(viewProjection);
 	s_TemporalFrame.JitterMotion = s_HasPreviousViewProjection ? (jitter - s_PreviousJitter) * 0.5f : glm::vec2(0.0f); // in UV
@@ -1452,6 +1456,25 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 				vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
 				EnvMapVulkanProfiler::CountDraw(0);
 			}
+		}
+		// The debug views' drawings (the Navigation view), hidden by the scene: they test against its depth themselves
+		if (EnvMapVulkanDebugDraw::HasDrawings() && s_GBuffer.IsValid())
+		{
+			H2M::RefH2M<H2M::VulkanFramebufferH2M> overlay = s_OverlayFramebuffer.As<H2M::VulkanFramebufferH2M>();
+			EnvMapVulkanDebugDraw::RecordInfo info;
+			info.RenderPass = overlay->GetRenderPass();
+			info.SceneDepth = s_GBuffer.GetDepthInfo();
+			info.ViewProjection = s_DrawnViewProjection;
+			info.Projection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix();
+			info.CameraPosition = s_Data.SceneData.SceneCamera.Camera.GetPosition();
+			info.Width = overlay->GetWidth();
+			info.Height = overlay->GetHeight();
+			info.FrameSlot = Application::Get()->GetWindow()->GetSwapChain().GetCurrentFrameSlot();
+			EnvMapVulkanDebugDraw::Record(commandBuffer, info);
+		}
+		else
+		{
+			EnvMapVulkanDebugDraw::Record(commandBuffer, EnvMapVulkanDebugDraw::RecordInfo()); // lets go of what wasn't set for this frame
 		}
 	}
 	vkCmdEndRenderPass(commandBuffer);
@@ -2178,6 +2201,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	EnvMapVulkanFoliage::Shutdown();
 	EnvMapVulkanParticles::Shutdown();
 	EnvMapVulkanTrails::Shutdown();
+	EnvMapVulkanDebugDraw::Shutdown();
 	EnvMapVulkanMaterialLibrary::Clear();
 	s_SubmittedModels.clear();
 	s_GlassDraws.clear();

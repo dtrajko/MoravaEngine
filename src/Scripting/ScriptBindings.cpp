@@ -593,7 +593,20 @@ static int32_t CharacterGetState(uint64_t entity, ScriptCharacterState* out)
 	out->GroundNormal = state.GroundNormal;
 	out->GroundVelocity = state.GroundVelocity;
 	out->GroundAngularVelocity = state.GroundAngularVelocity;
+	out->Height = state.Height;
+	out->StandingHeight = state.StandingHeight;
 	return 1;
+}
+
+static int32_t CharacterSetHeight(uint64_t entity, float height)
+{
+	ScenePhysics* physics = GetPhysics();
+	ScenePhysics::CharacterState state;
+	if (!physics || !physics->GetCharacterState(entity, state))
+	{
+		return 0;
+	}
+	return physics->SetCharacterHeight(entity, height) ? 1 : -1;
 }
 
 // ---- Vehicle
@@ -2208,6 +2221,7 @@ namespace ScriptBindings
 		api.NavArea_Set = NavAreaSet;
 		api.NavLink_Get = NavLinkGet;
 		api.NavLink_SetEnabled = NavLinkSetEnabled;
+		api.Character_SetHeight = CharacterSetHeight;
 	}
 
 	void SetContext(ScriptContext* context)
