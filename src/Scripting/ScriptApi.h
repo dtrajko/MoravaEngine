@@ -453,6 +453,17 @@ struct ScriptNativeApi
 
 	// The racing game's tire effects (Racing Phase 11.3): one wheel of a running vehicle (0: not one, or no such wheel)
 	int32_t (*Vehicle_GetWheel)(uint64_t entity, int32_t wheel, ScriptWheelState* out);
+
+	// Navigation (docs/games/Shooter_Plan.html, E1.3): the scene's baked navmesh (its Nav Mesh's). IsReady: 1 the scene has
+	// one. FindPath: the path's corners into out (room for capacity), the first at the start and the last at the end: how
+	// many there are (0: no navmesh, a point not near it, or nothing joins them; more than capacity: call again with more
+	// room); complete: 1 it reaches the end, 0 it stops at the reachable point nearest it. Raycast: 1 a straight walk stays
+	// on the mesh, 0 not (hit: where it leaves it). NearestPoint, RandomPointAround: 1 found (out), 0 not
+	int32_t (*Navigation_IsReady)();
+	int32_t (*Navigation_FindPath)(const glm::vec3* from, const glm::vec3* to, glm::vec3* out, int capacity, int32_t* complete);
+	int32_t (*Navigation_Raycast)(const glm::vec3* from, const glm::vec3* to, glm::vec3* hit);
+	int32_t (*Navigation_NearestPoint)(const glm::vec3* position, float maxDistance, glm::vec3* out);
+	int32_t (*Navigation_RandomPointAround)(const glm::vec3* center, float radius, glm::vec3* out);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

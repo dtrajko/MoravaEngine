@@ -162,6 +162,12 @@ namespace Morava
         public delegate* unmanaged<ulong, NativeTrailSettings*, int> Trail_SetSettings;
         public delegate* unmanaged<ulong, int> Trail_Clear;
         public delegate* unmanaged<ulong, int, NativeWheelState*, int> Vehicle_GetWheel;
+
+        public delegate* unmanaged<int> Navigation_IsReady;
+        public delegate* unmanaged<Vector3*, Vector3*, Vector3*, int, int*, int> Navigation_FindPath;
+        public delegate* unmanaged<Vector3*, Vector3*, Vector3*, int> Navigation_Raycast;
+        public delegate* unmanaged<Vector3*, float, Vector3*, int> Navigation_NearestPoint;
+        public delegate* unmanaged<Vector3*, float, Vector3*, int> Navigation_RandomPointAround;
     }
 
     [StructLayout(LayoutKind.Sequential)]

@@ -18,6 +18,8 @@
 
 #include "Input/InputSystem.h"
 
+#include "Navigation/NavMesh.h"
+
 #include "Physics/ScenePhysics.h"
 
 #include "Project/Project.h"
@@ -752,6 +754,64 @@ static int32_t PhysicsSphereCast(const glm::vec3* origin, float radius, const gl
 	}
 	ToScript(hit, out);
 	return 1;
+}
+
+// ---- Navigation (E1.3)
+
+// The running scene's navmesh: its Nav Mesh's, when baked (nullptr: none)
+static const NavMesh* GetNavMesh()
+{
+	EnvMapVulkanScene* scene = GetScene();
+	if (!scene)
+	{
+		return nullptr;
+	}
+	const EnvMapVulkanEntityID entity = scene->FindFirst<NavMeshComponent>();
+	if (entity == NoEntity)
+	{
+		return nullptr;
+	}
+	const NavMesh* navMesh = scene->Get<NavMeshComponent>(entity).Mesh.get();
+	return navMesh && navMesh->IsReady() ? navMesh : nullptr;
+}
+
+static int32_t NavigationIsReady()
+{
+	return GetNavMesh() ? 1 : 0;
+}
+
+static int32_t NavigationFindPath(const glm::vec3* from, const glm::vec3* to, glm::vec3* out, int capacity, int32_t* complete)
+{
+	*complete = 0;
+	const NavMesh* navMesh = GetNavMesh();
+	std::vector<glm::vec3> corners;
+	bool reached = false;
+	if (!navMesh || !navMesh->FindPath(*from, *to, corners, &reached))
+	{
+		return 0;
+	}
+	std::copy_n(corners.begin(), std::min((int)corners.size(), std::max(capacity, 0)), out);
+	*complete = reached ? 1 : 0;
+	return (int32_t)corners.size();
+}
+
+static int32_t NavigationRaycast(const glm::vec3* from, const glm::vec3* to, glm::vec3* hit)
+{
+	const NavMesh* navMesh = GetNavMesh();
+	*hit = *from;
+	return navMesh && navMesh->Raycast(*from, *to, hit) ? 1 : 0;
+}
+
+static int32_t NavigationNearestPoint(const glm::vec3* position, float maxDistance, glm::vec3* out)
+{
+	const NavMesh* navMesh = GetNavMesh();
+	return navMesh && navMesh->NearestPoint(*position, std::max(maxDistance, 0.0f), *out) ? 1 : 0;
+}
+
+static int32_t NavigationRandomPointAround(const glm::vec3* center, float radius, glm::vec3* out)
+{
+	const NavMesh* navMesh = GetNavMesh();
+	return navMesh && navMesh->RandomPointAround(*center, radius, *out) ? 1 : 0;
 }
 
 static int32_t CopyEntities(const std::vector<EnvMapVulkanEntityID>& entities, uint64_t* out, int capacity)
@@ -1998,6 +2058,11 @@ namespace ScriptBindings
 		api.Trail_SetSettings = TrailSetSettings;
 		api.Trail_Clear = TrailClear;
 		api.Vehicle_GetWheel = VehicleGetWheel;
+		api.Navigation_IsReady = NavigationIsReady;
+		api.Navigation_FindPath = NavigationFindPath;
+		api.Navigation_Raycast = NavigationRaycast;
+		api.Navigation_NearestPoint = NavigationNearestPoint;
+		api.Navigation_RandomPointAround = NavigationRandomPointAround;
 	}
 
 	void SetContext(ScriptContext* context)

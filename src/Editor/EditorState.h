@@ -517,6 +517,11 @@ void SetNavMeshSceneFile(const std::string& scenePath);
 extern bool s_ShowNavMesh;
 void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const ImVec2& viewportMin,
 	const ImVec2& viewportSize);
+// A click in the viewport (Edit) along this ray: a point of the debug view's two-click path (E1.3) while its Test Path is
+// on and the Nav Mesh is selected. True: the click was the path's (it selects nothing)
+bool HandleNavMeshClick(const glm::vec3& rayOrigin, const glm::vec3& rayDirection);
+// The two-click path between two points as if clicked (--nav-path), its result logged; false without a baked navmesh
+bool SetNavMeshTestPath(const glm::vec3& start, const glm::vec3& end);
 
 // ---- The scene's file (EditorDocument.cpp)
 

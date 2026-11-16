@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <cstring>
+#include <random>
 #include <type_traits>
 
 // The engine builds Detour with 64-bit polygon references (RECASTNAVIGATION_DT_POLYREF64): room for many tiles of many
@@ -246,11 +247,20 @@ bool NavMesh::Raycast(const glm::vec3& from, const glm::vec3& to, glm::vec3* hit
 	{
 		return false;
 	}
-	// t: the share of the way walked before leaving the mesh; FLT_MAX when it never left it
+	// t: the share of the way walked before leaving the mesh; FLT_MAX when it never left it. Detour walks across (x and z):
+	// the point where it stopped is put on the last polygon's ground
 	const bool clear = t > 1.0f;
 	if (hit)
 	{
 		*hit = clear ? to : start + (to - start) * t;
+		if (!clear && visitedCount > 0)
+		{
+			float height = 0.0f;
+			if (dtStatusSucceed(m_Query->getPolyHeight(visited[visitedCount - 1], &hit->x, &height)))
+			{
+				hit->y = height;
+			}
+		}
 	}
 	return clear;
 }
@@ -262,6 +272,58 @@ bool NavMesh::NearestPoint(const glm::vec3& position, float maxDistance, glm::ve
 		return false;
 	}
 	return FindPolygon(position, glm::vec3(maxDistance, m_Settings.AgentHeight, maxDistance), point) != 0;
+}
+
+// The mesh's own random numbers (the main thread's queries): [0, 1)
+static float RandomUnit()
+{
+	static std::minstd_rand generator(12345u);
+	return std::uniform_real_distribution<float>(0.0f, 1.0f)(generator) * 0.99999994f;
+}
+
+bool NavMesh::RandomPointAround(const glm::vec3& center, float radius, glm::vec3& point, float (*random)()) const
+{
+	if (!IsReady() || !(radius > 0.0f))
+	{
+		return false;
+	}
+	if (!random)
+	{
+		random = RandomUnit;
+	}
+	const glm::vec3 extents(m_Settings.AgentRadius * 2.0f + m_Settings.CellSize, m_Settings.AgentHeight, m_Settings.AgentRadius * 2.0f + m_Settings.CellSize);
+	glm::vec3 start;
+	const dtPolyRef startPolygon = FindPolygon(center, extents, start);
+	if (!startPolygon)
+	{
+		return false;
+	}
+	// Detour picks a polygon that reaches into the circle (by area) and a point anywhere in it, which can be beyond the
+	// radius: a few tries for one inside, else the nearest to the center of those found
+	bool found = false;
+	float best = FLT_MAX;
+	for (int attempt = 0; attempt < 8; attempt++)
+	{
+		dtPolyRef polygon = 0;
+		glm::vec3 candidate;
+		if (dtStatusFailed(m_Query->findRandomPointAroundCircle(startPolygon, &start.x, radius, m_Filter, random, &polygon, &candidate.x)) || !polygon)
+		{
+			continue;
+		}
+		const float dx = candidate.x - start.x, dz = candidate.z - start.z;
+		const float distance = dx * dx + dz * dz;
+		if (distance < best)
+		{
+			best = distance;
+			point = candidate;
+			found = true;
+		}
+		if (distance <= radius * radius)
+		{
+			break;
+		}
+	}
+	return found;
 }
 
 

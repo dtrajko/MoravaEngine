@@ -95,6 +95,9 @@ public:
 	bool Raycast(const glm::vec3& from, const glm::vec3& to, glm::vec3* hit = nullptr) const;
 	// The mesh's nearest point to a position, within maxDistance across and the agent's height up and down
 	bool NearestPoint(const glm::vec3& position, float maxDistance, glm::vec3& point) const;
+	// A random point on the mesh within radius of center (across), reachable from center's nearest point (patrols,
+	// searching); false if center isn't near the mesh. random: a number in [0, 1) each call (nullptr: the mesh's own)
+	bool RandomPointAround(const glm::vec3& center, float radius, glm::vec3& point, float (*random)() = nullptr) const;
 
 	DebugGeometry GetDebugGeometry() const;
 	Islands GetIslands() const;

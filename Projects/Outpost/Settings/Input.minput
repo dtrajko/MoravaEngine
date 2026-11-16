@@ -17,12 +17,18 @@ Actions:
   - Name: Aim           # aiming down the sights; the sniper's scope steps through its zoom levels (Phase 2)
     Type: Button
     Bindings: [ { Mouse: Right }, { Gamepad: LeftTrigger } ]
-  - Name: Jump          # the player jumps; the debug fly camera rises
+  - Name: Jump          # the player jumps
     Type: Button
     Bindings: [ { Key: Space }, { Gamepad: A } ]
-  - Name: Crouch        # held: the player crouches (E7); the debug fly camera sinks
+  - Name: Crouch        # held: the player crouches (E7)
     Type: Button
     Bindings: [ { Key: LeftControl }, { Gamepad: B } ]
+  - Name: FlyUp         # held: the debug fly camera rises (E is Use too, Space Jump: the fly camera has no player)
+    Type: Button
+    Bindings: [ { Key: E }, { Key: Space }, { Gamepad: A } ]
+  - Name: FlyDown       # held: the debug fly camera sinks (Q is LastWeapon too, Ctrl Crouch)
+    Type: Button
+    Bindings: [ { Key: Q }, { Key: LeftControl }, { Gamepad: B } ]
   - Name: CrouchToggle  # a press: crouched until pressed again
     Type: Button
     Bindings: [ { Key: C } ]

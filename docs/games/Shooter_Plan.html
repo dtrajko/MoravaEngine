@@ -569,6 +569,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         animation), <code>IsStuck</code>.</li>
       <li><b>Nav Area</b> (a box marking the polygons in it: Door, Costly, Blocked, with a cost; its flag switched at run
         time, no new bake) and <b>Nav Link</b> (two ends: a ladder, a jump, a lift's stops; on and off).</li>
+      <li><b>Not Walkable</b> on a collider (the user's choice, 2026-11-16, for E1.5): it still blocks the navmesh, but its
+        top isn't walkable (a table, a car's roof, a crate characters shouldn't stand on).</li>
     </ul>
     <table>
       <tr><th>Step</th><th>What</th><th>Checked by</th></tr>
@@ -580,8 +582,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         paths in the greybox and in Sample's levels</td></tr>
       <tr><td>E1.4</td><td>Nav Agent, the crowd, the character controller</td><td>A Sample scene: characters following
         the player around each other</td></tr>
-      <tr><td>E1.5</td><td>Areas and links (a locked door, a ladder), packs and the player, a section in the engine
-        guide</td><td>A shipped test build</td></tr>
+      <tr><td>E1.5</td><td>Areas and links (a locked door, a ladder), a collider's Not Walkable, packs and the player, a
+        section in the engine guide</td><td>A shipped test build</td></tr>
     </table>
   </div>
   <div class="box ok"><b>As built: E1.1 the library and the bake (2026-11-16)</b>
@@ -640,6 +642,41 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         for too steep (and the 0.35 m step rounds down to 0.3 m); 0.1 x 0.05 m (Recast's advice: a third of the radius)
         joins them. The player loads the same file. The scene has the Nav Mesh (ID 1004, outside the level builder's
         60000s) and <code>Greybox.mnav</code>.</li>
+    </ul>
+  </div>
+  <div class="box ok"><b>As built: E1.3 the queries, C#'s Navigation and the two-click path (2026-11-16)</b>
+    <ul>
+      <li><b>The queries</b> (<code>NavMesh</code>): <code>FindPath</code>, <code>Raycast</code> and
+        <code>NearestPoint</code> from E1.1, and now <code>RandomPointAround</code> (Detour's random point in a polygon
+        reaching into the circle, reachable from the center; up to 8 tries for one inside the radius, as a polygon can
+        reach beyond it). A blocked <code>Raycast</code>'s point is put on the last polygon's ground (Detour walks across,
+        in x and z).</li>
+      <li><b>C#</b> (<code>ScriptCore/Navigation.cs</code>): <code>Navigation.IsReady</code>,
+        <code>FindPath(from, to, out NavPath)</code> (and <code>FindPath(from, to)</code>, null when there is none),
+        <code>Raycast(from, to, out hit)</code>, <code>NearestPoint(position, maxDistance, out point)</code>,
+        <code>RandomPointAround(center, radius, out point)</code>. A <code>NavPath</code> has its
+        <code>Corners</code>, <code>IsComplete</code> (false: it stops at the reachable point nearest the end),
+        <code>Length</code> and <code>End</code>. The native functions (<code>Navigation_*</code> in
+        <code>ScriptApi.h</code>) ask the running scene's Nav Mesh, so Play's copy and the player use the baked mesh; a
+        path of more than 64 corners is asked for again with room for all.</li>
+      <li><b>The two-click path</b>: the Nav Mesh's Debug View has <i>Test Path</i>. While it is on and the Nav Mesh is
+        selected, a click in the viewport (Edit) puts the start, the next the end, on the navmesh's triangles under the
+        cursor (the nearest the ray hits, as drawn: through walls too); clicks don't select then. Drawn: the path
+        (yellow; orange when partial, with a faint line to the end it couldn't reach), its corners, the start (green) and
+        end (red), and the straight walk (green when clear, red to a cross where it leaves the navmesh). The Inspector
+        gives the corners, length, the query's time, <i>Reaches the end</i> or how far it stops from it, and the
+        straight walk. <code>--nav-path x,y,z,x,y,z</code> sets the two points from the command line (logged).</li>
+      <li><b>The check:</b> a test script (<code>NavigationTest</code>, in test copies of the projects) from the player's
+        start: 40 random points within 25 m, each path complete, starting and ending at its points and no shorter than
+        the straight line; nothing 50 m above. In the greybox also: the barracks' upper floor by the stairs (11 corners,
+        33.8 m against 19.7 m straight, climbing from 0.05 to 3.55 m), its roof only partially (stopping on the upper
+        floor below), a straight walk into the south wall stopped at it (z -3.6: the agent's radius from the wall) and
+        one across the open ground clear, the warehouse by its door (25.1 m), 20 random points around the upper floor
+        all reachable: 16 of 16 in the editor's Play and in the player. Sample's Level1, Level2, Main and Physics, each
+        baked in the test copy (1-2 tiles, 22-42 polygons): 6 of 6 each. A path takes about 0.05 ms in Debug.</li>
+      <li><b>Outpost's fly camera</b> (the user's choice): <code>FlyUp</code> (E, Space, the gamepad's A) and
+        <code>FlyDown</code> (Q, Ctrl, B), actions of their own, so the player's Use and LastWeapon (E, Q) and Jump and
+        Crouch keep theirs.</li>
     </ul>
   </div>
   <h3>E2 The first-person view model</h3>
