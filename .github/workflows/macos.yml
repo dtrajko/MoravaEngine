@@ -109,6 +109,11 @@ jobs:
         run: |
           set -o pipefail
           gtimeout 600 build/MoravaEngine ${{ matrix.smoke-test }} 2>&1 | tee smoke-test.log
+          # The editor's self-tests at its start (the navmesh's bake, E1), with the renderer's
+          if grep -q "self-test failed" smoke-test.log; then
+            echo "::error::An engine self-test failed (see the log)"
+            exit 1
+          fi
           if grep -q VulkanDebugCallback smoke-test.log; then
             echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
             exit 1

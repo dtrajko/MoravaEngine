@@ -182,6 +182,14 @@ foreach(option USE_AVX USE_AVX2 USE_AVX512 USE_LZCNT USE_TZCNT USE_F16C USE_FMAD
     set(${option} OFF CACHE BOOL "" FORCE)
 endforeach()
 
+# ---- Recast and Detour (navigation, docs/games/Shooter_Plan.html E1) ----
+# The libraries alone: no demo, tests or examples. 64-bit polygon references: room for many tiles of many polygons, as a
+# large outdoor level needs (a PUBLIC define of Detour's: the engine's code sees the same dtPolyRef)
+foreach(option RECASTNAVIGATION_DEMO RECASTNAVIGATION_TESTS RECASTNAVIGATION_EXAMPLES)
+    set(${option} OFF CACHE BOOL "" FORCE)
+endforeach()
+set(RECASTNAVIGATION_DT_POLYREF64 ON CACHE BOOL "" FORCE)
+
 # ---- Shaderc ----
 set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
 # The engine compiles GLSL only (DirectX 11 compiles its HLSL with D3DCompile): without glslang's HLSL front-end,
@@ -231,6 +239,13 @@ add_optional(${VENDOR_DIR}/box2d box2d)
 add_optional(${VENDOR_CROSS_PLATFORM_DIR}/JoltPhysics/Build JoltPhysics)
 if(NOT TARGET Jolt)
     message(FATAL_ERROR "Jolt Physics not found: git submodule update --init vendor/cross-platform/JoltPhysics")
+endif()
+# Recast's release 1.6.0 asks for CMake 3.1, which CMake 4 refuses: taken as 3.10 for its folder alone (fixed after 1.6.0)
+set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
+add_optional(${VENDOR_CROSS_PLATFORM_DIR}/recastnavigation recastnavigation)
+unset(CMAKE_POLICY_VERSION_MINIMUM)
+if(NOT TARGET Detour)
+    message(FATAL_ERROR "Recast and Detour not found: git submodule update --init vendor/cross-platform/recastnavigation")
 endif()
 add_optional(${VENDOR_CROSS_PLATFORM_DIR}/yaml-cpp yaml-cpp)
 add_optional(${VENDOR_CROSS_PLATFORM_DIR}/SPIRV-Cross spirv-cross)
@@ -326,6 +341,7 @@ set(MORAVA_EDITOR_SOURCES
     "^Editor/"
     "^Editor_Legacy/"
     "^Assets/(ModelImport|ShaderCompile|PackBuilder|GameBuilder|GameArchive)\\."  # what makes cooked files and games: a player only reads them
+    "^Navigation/NavMeshBuilder\\."                # the navmesh's bake (Recast): a player loads what was baked
     "^EnvMap/EnvMap(SceneRenderer|SharedData)\\." # the OpenGL editor of SCENE_HAZEL_ENV_MAP (its materials are the core's)
     "^HazelVulkan/"
     "^ImGui/"
@@ -614,6 +630,9 @@ target_link_libraries(MoravaCore PUBLIC
     Jolt
 
     miniaudio
+    # The navmesh's queries and agents (E1): the editor's and the player's. Recast, which bakes, is the editor's (below)
+    Detour
+    DetourCrowd
     msdf
     bc7enc
     lz4
@@ -640,7 +659,7 @@ else()
 endif()
 target_include_directories(MoravaCore SYSTEM PUBLIC $<TARGET_PROPERTY:${MORAVA_ASSIMP_TARGET},INTERFACE_INCLUDE_DIRECTORIES>)
 add_dependencies(MoravaCore ${MORAVA_ASSIMP_TARGET})
-set(MORAVA_EDITOR_ONLY_LIBRARIES ${MORAVA_ASSIMP_TARGET})
+set(MORAVA_EDITOR_ONLY_LIBRARIES ${MORAVA_ASSIMP_TARGET} Recast)
 if(TARGET shaderc)
     target_include_directories(MoravaCore SYSTEM PRIVATE $<TARGET_PROPERTY:shaderc,INTERFACE_INCLUDE_DIRECTORIES>)
     list(APPEND MORAVA_EDITOR_ONLY_LIBRARIES shaderc shaderc_util)

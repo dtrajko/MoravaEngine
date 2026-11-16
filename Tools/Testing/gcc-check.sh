@@ -23,6 +23,8 @@ includes=(
 	-I$VENDOR_DIR/cross-platform/yaml-cpp/include -I$VENDOR_DIR/cross-platform/assimp/include -Ibuild/assimp/include
 	-I$VENDOR_DIR/cross-platform/ImGuizmo/src -I$VENDOR_DIR/bc7enc -I$VENDOR_DIR/lz4
 	-I$VENDOR_DIR/cross-platform/SPIRV-Cross -I$VENDOR_DIR/cross-platform/shaderc/libshaderc/include -I$VENDOR_DIR/msdf-atlas-gen -I$VENDOR_DIR/msdf-atlas-gen/msdfgen
+	-I$VENDOR_DIR/cross-platform/recastnavigation/Recast/Include -I$VENDOR_DIR/cross-platform/recastnavigation/Detour/Include
+	-I$VENDOR_DIR/cross-platform/recastnavigation/DetourCrowd/Include
 )
 # nethost.h (C# scripting): from the Windows .NET SDK's app host pack, whichever version is installed
 nethost=$(ls -d "/mnt/c/Program Files/dotnet/packs/Microsoft.NETCore.App.Host.win-x64/"*/runtimes/win-x64/native 2>/dev/null | tail -1)
@@ -40,7 +42,7 @@ for file in "$@"; do
 	# No -w: it also hides the errors GCC only "permits" (-fpermissive), like a member named as its type ([-Wchanges-meaning])
 	# The precompiled header first, as CMake gives it to every source (it also brings the Vulkan calls' frames in flight
 	# shim, src/H2M/Platform/Vulkan/VulkanSyncShimH2M.h)
-	errors=$(g++ -std=c++17 -fsyntax-only -DGRAPHICS_API_$api -DMORAVA_SCRIPTING -DMORAVA_BUILD_CONFIG=\"Release\" "${includes[@]}" 		-include "$repo/src/PrecompiledHeader.h" "$repo/$file" 2>&1 | grep -E "error:" | head -10)
+	errors=$(g++ -std=c++17 -fsyntax-only -DGRAPHICS_API_$api -DMORAVA_SCRIPTING -DDT_POLYREF64 -DMORAVA_BUILD_CONFIG=\"Release\" "${includes[@]}" 		-include "$repo/src/PrecompiledHeader.h" "$repo/$file" 2>&1 | grep -E "error:" | head -10)
 	# Built for another API, the Vulkan-only sources (every path with "Vulkan", as CMakeLists.txt sorts them) aren't
 	# compiled: a header of theirs included here compiles, but its functions are missing when the build links
 	if [ "$api" != "VULKAN" ] && [ -z "$errors" ]; then

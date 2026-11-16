@@ -538,6 +538,73 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       local avoidance between agents (Detour's crowd).</li>
     <li>Doors and lifts: links between separate parts of the mesh, which can be turned off (a locked door).</li>
   </ul>
+  <div class="box note"><b>E1 in detail (agreed 2026-11-16)</b>
+    <ul>
+      <li><b>The library:</b> <code>vendor/cross-platform/recastnavigation</code> (a submodule; its demo and tests
+        off). Recast (building the mesh) in the editor only, as assimp; Detour (the queries) and DetourCrowd (the agents)
+        in the editor and the player.</li>
+      <li><b>What is baked:</b> the scene's static colliders as triangles in the world: TriangleMesh and ConvexMesh
+        models, Box, Sphere and Capsule shapes. Not triggers, dynamic bodies or characters. The level builder's models
+        (TriangleMesh) bake as they are.</li>
+      <li><b>A tiled navmesh</b> (the user's choice): tiles of about 32 m, so big outdoor levels work and a tile can be
+        baked again alone later. Cells 0.15 m wide, 0.1 m high. Floors above each other (the barracks) are Recast's
+        own case.</li>
+      <li><b>One agent size per navmesh</b> (the user's choice; more when needed): the character controller's defaults,
+        radius 0.3 m, height 1.8 m, step 0.35 m, slope 45 degrees.</li>
+      <li><b>The Nav Mesh component</b> on a scene entity: the agent's settings and <i>Bake</i> (on a worker thread, with
+        its progress). <b>Baking is manual</b> (the user's choice): the result, <code>&lt;Scene&gt;.mnav</code> next to the
+        scene, keeps a hash of what it was baked from, and the Inspector says when the colliders changed since. Packs
+        carry the <code>.mnav</code>; the player only loads it.</li>
+      <li><b>No moving obstacles</b> for now (the user's choice: no TileCache). A door is a Nav Area whose flag turns
+        off when it is locked.</li>
+      <li><b>Debug view: Navigation</b> (kept): the polygons by area and their edges, the links as arcs, each agent's
+        path, corners and velocity, and a two-click mode that shows the path between two points.</li>
+      <li><b>C#</b> <code>Navigation</code>: <code>FindPath(from, to)</code> (the path's corners),
+        <code>Raycast(from, to)</code> (a straight walk clear?), <code>NearestPoint(position, maxDistance)</code>,
+        <code>RandomPointAround(center, radius)</code> (patrols, searching).</li>
+      <li><b>The Nav Agent component</b>, beside a CharacterController: Detour's crowd gives it the velocity to walk with
+        (avoiding the other agents), which goes to the controller's <code>Move</code>; after each physics step the
+        agent takes the character's real position back (physics decides where it is). C#: <code>SetDestination</code>,
+        <code>Stop</code>, <code>RemainingDistance</code>, <code>HasPath</code>, <code>Velocity</code> (for the
+        animation), <code>IsStuck</code>.</li>
+      <li><b>Nav Area</b> (a box marking the polygons in it: Door, Costly, Blocked, with a cost; its flag switched at run
+        time, no new bake) and <b>Nav Link</b> (two ends: a ladder, a jump, a lift's stops; on and off).</li>
+    </ul>
+    <table>
+      <tr><th>Step</th><th>What</th><th>Checked by</th></tr>
+      <tr><td>E1.1</td><td>The submodule and CMake on the three CI platforms; a self-test that bakes a room with a wall and
+        checks a path's length</td><td>CI; the self-test at startup</td></tr>
+      <tr><td>E1.2</td><td>The colliders gathered, the Nav Mesh component, Bake, <code>.mnav</code>, the debug view</td>
+        <td>Outpost's greybox: both floors joined by the stairs</td></tr>
+      <tr><td>E1.3</td><td>The queries and C#'s <code>Navigation</code>; the two-click path</td><td>A test script's
+        paths in the greybox and in Sample's levels</td></tr>
+      <tr><td>E1.4</td><td>Nav Agent, the crowd, the character controller</td><td>A Sample scene: characters following
+        the player around each other</td></tr>
+      <tr><td>E1.5</td><td>Areas and links (a locked door, a ladder), packs and the player, a section in the engine
+        guide</td><td>A shipped test build</td></tr>
+    </table>
+  </div>
+  <div class="box ok"><b>As built: E1.1 the library and the bake (2026-11-16)</b>
+    <ul>
+      <li><b>Recast and Detour 1.6.0</b> (zlib), a submodule at <code>vendor/cross-platform/recastnavigation</code>, without
+        its demo, tests and examples; 64-bit polygon references (<code>DT_POLYREF64</code>: many tiles of many polygons).
+        Detour and DetourCrowd are in the engine's core (the editor and the player); Recast only in the editor, with
+        assimp. Its CMakeLists asks for CMake 3.1, which CMake 4 refuses: taken as 3.10 for its folder, as FreeType's
+        (fixed upstream after 1.6.0).</li>
+      <li><code>src/Navigation</code>: <code>NavMeshSettings</code> (the agent: 0.3 m, 1.8 m, step 0.35 m, 45 degrees; cells
+        0.15 x 0.1 m; tiles of 32 m), <code>NavMesh</code> (the core's: a tiled Detour mesh, its tiles added, and the
+        queries <code>FindPath</code> with a partial path's flag, <code>Raycast</code>, <code>NearestPoint</code>), and
+        <code>NavMeshBuilder</code> (the editor's: triangles in the world to tiles, Recast's steps per tile with a border
+        so the tiles meet: rasterize, filter ledges and low ceilings, erode by the agent's radius, regions by the
+        distance field, contours, polygons, the detail mesh).</li>
+      <li><b>The self-test</b>, at the editor's start: a 40 x 12 m floor (two tiles), a wall across most of it and a 3 m
+        platform with no way up, baked (2 tiles, 15 polygons, 23 ms in Debug); the path around the wall is 15.5 m (the
+        straight line through it 8), a straight walk across both tiles is clear and one through the wall is stopped
+        before it, the platform's top is on the mesh but a path to it is partial. CI's editor runs (Linux, macOS) now
+        fail on any "self-test failed" line, as the player's did.</li>
+      <li><code>Tools/Testing/gcc-check.sh</code> knows Recast's and Detour's headers.</li>
+    </ul>
+  </div>
   <h3>E2 The first-person view model</h3>
   <ul>
     <li>Entities marked <b>View Model</b> are drawn after the scene with their own field of view and a near depth range, so

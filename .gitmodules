@@ -40,3 +40,6 @@
 [submodule "vendor/cross-platform/miniaudio"]
 	path = vendor/cross-platform/miniaudio
 	url = https://github.com/mackron/miniaudio
+[submodule "vendor/cross-platform/recastnavigation"]
+	path = vendor/cross-platform/recastnavigation
+	url = https://github.com/recastnavigation/recastnavigation.git
