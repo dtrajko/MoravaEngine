@@ -174,6 +174,10 @@ namespace Morava
         public delegate* unmanaged<ulong, NativeNavAgentState*, int> NavAgent_GetState;
         public delegate* unmanaged<ulong, float, float, float, int> NavAgent_SetSettings;
         public delegate* unmanaged<ulong, Vector3*, int, int*, int> NavAgent_GetPath;
+        public delegate* unmanaged<ulong, int*, int*, float*, int> NavArea_Get;
+        public delegate* unmanaged<ulong, int, float, int> NavArea_Set;
+        public delegate* unmanaged<ulong, int*, int*, int> NavLink_Get;
+        public delegate* unmanaged<ulong, int, int> NavLink_SetEnabled;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -202,6 +206,8 @@ namespace Morava
         public Vector3 DesiredVelocity;
         public float RemainingDistance;
         public float Speed, Acceleration, StoppingDistance;
+        public int OnLink, LinkType;
+        public ulong LinkEntity;
     }
 
     [StructLayout(LayoutKind.Sequential)]

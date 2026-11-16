@@ -191,6 +191,18 @@ namespace Morava
         /// <summary>The velocity along its path, before it steers around the others.</summary>
         public Vector3 DesiredVelocity => State.DesiredVelocity;
 
+        /// <summary>
+        /// The engine carries it along a Nav Link of its path (up or down a ladder, in a jump, across a gap): play the
+        /// animation of LinkType. Velocity is how it is carried then (up a ladder: up).
+        /// </summary>
+        public bool IsOnLink => State.OnLink != 0;
+
+        /// <summary>The kind of the Nav Link it is on (IsOnLink), or null.</summary>
+        public NavLinkType? LinkType { get { NativeNavAgentState s = State; return s.OnLink != 0 ? (NavLinkType)s.LinkType : null; } }
+
+        /// <summary>The Nav Link's entity it is on (IsOnLink), or null.</summary>
+        public Entity? Link { get { NativeNavAgentState s = State; return s.OnLink != 0 && s.LinkEntity != 0 ? new Entity(s.LinkEntity) : null; } }
+
         /// <summary>Meters per second at most (Inspector: Speed): a walk, a run.</summary>
         public float Speed
         {
@@ -246,6 +258,84 @@ namespace Morava
                 }
                 return new NavPath(result, complete != 0);
             }
+        }
+    }
+
+    /// <summary>A Nav Link's kind: how characters are carried along it.</summary>
+    public enum NavLinkType
+    {
+        /// <summary>Straight up and onto the top, or over the edge and straight down.</summary>
+        Ladder = 0,
+        /// <summary>In an arc from one end to the other.</summary>
+        Jump = 1,
+        /// <summary>In a line (a gap to step over).</summary>
+        Walk = 2
+    }
+
+    /// <summary>A Nav Area's kind.</summary>
+    public enum NavAreaType
+    {
+        /// <summary>Its polygons close and open while the game runs (NavArea.IsOpen).</summary>
+        Door = 0,
+        /// <summary>Paths go around it when that costs less (NavArea.Cost).</summary>
+        Costly = 1,
+        /// <summary>Not on the navmesh at all.</summary>
+        Blocked = 2
+    }
+
+    /// <summary>
+    /// A box of the navmesh with rules of its own (Inspector: Nav Area): a Door whose polygons close (a locked door), a
+    /// Costly area paths go around when they can, a Blocked one off the navmesh. A change goes into the navmesh at once,
+    /// no new bake: Navigation's queries after it see it, and agents walking through a closed door find another way.
+    /// </summary>
+    public sealed unsafe class NavArea : Component
+    {
+        void Get(out int type, out int open, out float cost)
+        {
+            int t, o;
+            float c;
+            if (Interop.Game->NavArea_Get(Entity.Id, &t, &o, &c) == 0) throw Missing("nav area");
+            type = t;
+            open = o;
+            cost = c;
+        }
+
+        /// <summary>Door, Costly or Blocked (the bake's: a Blocked area has no polygons to open).</summary>
+        public NavAreaType Type { get { Get(out int type, out _, out _); return (NavAreaType)type; } }
+
+        /// <summary>A Door: walkable (false: closed, paths go around it or stop before it).</summary>
+        public bool IsOpen
+        {
+            get { Get(out _, out int open, out _); return open != 0; }
+            set { Get(out _, out _, out float cost); if (Interop.Game->NavArea_Set(Entity.Id, value ? 1 : 0, cost) == 0) throw Missing("nav area"); }
+        }
+
+        /// <summary>Walking a meter in it costs this many meters of ground (1: as the ground).</summary>
+        public float Cost
+        {
+            get { Get(out _, out _, out float cost); return cost; }
+            set { Get(out _, out int open, out _); if (Interop.Game->NavArea_Set(Entity.Id, open, value) == 0) throw Missing("nav area"); }
+        }
+    }
+
+    /// <summary>
+    /// A way between two places on the navmesh the ground doesn't give (Inspector: Nav Link): a ladder, a jump, a gap.
+    /// Agents take it as part of their paths (NavAgent.IsOnLink while carried along it). Enabled off: paths don't take it
+    /// (a raised ladder), at once, no new bake.
+    /// </summary>
+    public sealed unsafe class NavLink : Component
+    {
+        /// <summary>Ladder, Jump or Walk.</summary>
+        public NavLinkType Type
+        {
+            get { int type, enabled; if (Interop.Game->NavLink_Get(Entity.Id, &type, &enabled) == 0) throw Missing("nav link"); return (NavLinkType)type; }
+        }
+
+        /// <summary>Paths may take it.</summary>
+        public bool Enabled
+        {
+            get { int type, enabled; if (Interop.Game->NavLink_Get(Entity.Id, &type, &enabled) == 0) throw Missing("nav link"); return enabled != 0; }
+            set { if (Interop.Game->NavLink_SetEnabled(Entity.Id, value ? 1 : 0) == 0) throw Missing("nav link"); }
         }
     }
 }

@@ -40,7 +40,7 @@ bool Contains(const std::vector<T>& values, const T& value)
 }
 
 // What an entity is, by its components (see GetEntityKind)
-enum class EntityKind { Empty, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Terrain, NavMesh, Model, Part, Sound, UICanvas, UIElement };
+enum class EntityKind { Empty, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Terrain, NavMesh, NavArea, NavLink, Model, Part, Sound, UICanvas, UIElement };
 
 // A map assigned or removed in the Material Editor (button or drag & drop), applied at the start of the next frame (see EditorPreFrame)
 struct PendingMaterialTexture
@@ -503,6 +503,11 @@ void FoliageControls(EnvMapVulkanEntityID entity);
 
 // The scene's Nav Mesh (Scene Hierarchy: Add > Nav Mesh, one per scene), selected
 void AddNavMesh();
+// A Nav Area (a Door) or a Nav Link (a ladder) where the camera looks, selected (E1.5)
+void AddNavArea();
+void AddNavLink();
+void NavAreaControls(EnvMapVulkanEntityID entity);
+void NavLinkControls(EnvMapVulkanEntityID entity);
 // The Inspector's Nav Mesh section: the agent it is baked for, Bake (on a worker thread, with its progress) and what was
 // baked, out of date when the colliders or the settings changed since
 void NavMeshControls(EnvMapVulkanEntityID entity);

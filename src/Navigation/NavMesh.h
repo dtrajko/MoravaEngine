@@ -32,7 +32,29 @@ struct NavMeshData
 	int MaxPolysPerTile = 0;
 	int Polygons = 0;
 	std::vector<NavMeshTile> Tiles;      // the tiles that have something walkable
+	// The Nav Areas (Door, Costly) and Nav Links baked in (E1.5), by entity: the polygons of AreaEntities[i] have the area
+	// NavAreaIds::FirstArea + i, a link's polygon has its index in LinkEntities as its user id
+	std::vector<uint64_t> AreaEntities;
+	std::vector<uint64_t> LinkEntities;
 };
+
+// The polygons' areas (Detour's 0 to 63; each has its cost in a query's filter) and flags (a query walks only the polygons
+// with Walkable): the ground, a Nav Area each (E1.5), and the links by their type
+namespace NavAreaIds
+{
+	constexpr unsigned char Ground = 0;
+	constexpr unsigned char FirstArea = 1;     // the first Nav Area's (a Door's or a Costly one's)
+	constexpr int MaxAreas = 60;               // Nav Areas with polygons of their own in a navmesh
+	constexpr unsigned char LadderLink = 61;   // the links' polygons, by NavLinkComponent::LinkType
+	constexpr unsigned char JumpLink = 62;
+	constexpr unsigned char WalkLink = 63;
+	constexpr unsigned short WalkableFlag = 0x01;
+
+	// The links' costs, times their length: climbing a ladder is slower than walking
+	constexpr float LadderCost = 3.0f;
+	constexpr float JumpCost = 1.5f;
+	constexpr float WalkCost = 1.0f;
+}
 
 /**
  * A tiled navmesh and its queries (Detour), for the editor and the player (docs/games/Shooter_Plan.html, E1). Its tiles
@@ -55,6 +77,16 @@ public:
 		std::vector<Edge> Edges;
 	};
 
+	// A Nav Link as baked (E1.5): its ends, and whether each found the navmesh (one that didn't can't be walked)
+	struct LinkInfo
+	{
+		glm::vec3 Start = glm::vec3(0.0f), End = glm::vec3(0.0f);
+		bool Bidirectional = true;
+		bool StartJoined = false, EndJoined = false;
+		uint8_t Area = 0;     // NavAreaIds' LadderLink, JumpLink or WalkLink
+		uint32_t Link = 0;    // its index in NavMeshData::LinkEntities
+	};
+
 	// The parts of the mesh one can't walk between (islands, joined only through the polygons' links): their number and,
 	// for the largest (by area), its area and the heights it spans. Two floors joined by stairs are one part
 	struct Islands
@@ -69,7 +101,7 @@ public:
 		std::vector<Island> List;           // the largest first
 	};
 
-	NavMesh() = default;
+	NavMesh();
 	~NavMesh();
 	NavMesh(const NavMesh&) = delete;
 	NavMesh& operator=(const NavMesh&) = delete;
@@ -101,6 +133,25 @@ public:
 
 	DebugGeometry GetDebugGeometry() const;
 	Islands GetIslands() const;
+	std::vector<LinkInfo> GetLinks() const;
+	// The link a polygon reference is (a crowd agent's link, E1.5): false when it isn't a link's
+	bool GetLink(uint64_t polygon, LinkInfo& link) const;
+
+	// ---- The Nav Areas' and Nav Links' states (E1.5), changed while the game runs without a new bake. Each change makes
+	// the state version another: a path found before it is to be found again
+
+	// A Nav Area's polygons (area: NavAreaIds::FirstArea on) walkable or closed (a Door locked)
+	void SetAreaWalkable(uint8_t area, bool walkable);
+	bool IsAreaWalkable(uint8_t area) const { return m_AreaWalkable[area & 63]; }
+	// Walking a length in the area costs this times the length (1: as the ground)
+	void SetAreaCost(uint8_t area, float cost);
+	float GetAreaCost(uint8_t area) const;
+	// A Nav Link (its index in NavMeshData::LinkEntities) walkable or not
+	void SetLinkEnabled(uint32_t link, bool enabled);
+	bool IsLinkEnabled(uint32_t link) const { return link >= m_LinkEnabled.size() || m_LinkEnabled[link]; }
+	uint32_t GetStateVersion() const { return m_StateVersion; }
+	// The filter the queries walk with: the areas' costs, only the walkable polygons (a crowd copies it)
+	const dtQueryFilter* GetFilter() const { return m_Filter; }
 
 	dtNavMesh* GetDetourMesh() const { return m_Mesh; }
 
@@ -111,8 +162,16 @@ private:
 	// The polygon nearest a point, searched in a box around it
 	uint64_t FindPolygon(const glm::vec3& position, const glm::vec3& halfExtents, glm::vec3& nearest) const;
 
+	// Each area's polygons and each link's (by its index), found when a tile is added
+	void IndexTilePolygons(const void* tile);
+
 	dtNavMesh* m_Mesh = nullptr;
 	dtNavMeshQuery* m_Query = nullptr;
 	dtQueryFilter* m_Filter = nullptr;
 	NavMeshSettings m_Settings;
+	std::vector<uint64_t> m_AreaPolygons[64];
+	std::vector<std::vector<uint64_t>> m_LinkPolygons;
+	bool m_AreaWalkable[64];
+	std::vector<bool> m_LinkEnabled;
+	uint32_t m_StateVersion = 0;
 };

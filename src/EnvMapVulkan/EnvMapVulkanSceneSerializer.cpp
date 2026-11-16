@@ -378,6 +378,10 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "Friction" << YAML::Value << collider->Friction;
 			out << YAML::Key << "Restitution" << YAML::Value << collider->Restitution;
 			out << YAML::Key << "IsTrigger" << YAML::Value << collider->IsTrigger;
+			if (collider->NotWalkable)
+			{
+				out << YAML::Key << "NotWalkable" << YAML::Value << true;
+			}
 			out << YAML::EndMap;
 		}
 		if (const RigidBodyComponent* body = scene.TryGet<RigidBodyComponent>(entity))
@@ -727,6 +731,25 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "DetailSampleMaxError" << YAML::Value << n.DetailSampleMaxError;
 			out << YAML::EndMap;
 		}
+		if (const NavAreaComponent* area = scene.TryGet<NavAreaComponent>(entity))
+		{
+			out << YAML::Key << "NavArea" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Type" << YAML::Value << NavAreaComponent::GetTypeName(area->Type);
+			WriteVec3(out, "HalfExtents", area->HalfExtents);
+			out << YAML::Key << "Cost" << YAML::Value << area->Cost;
+			out << YAML::Key << "Open" << YAML::Value << area->Open;
+			out << YAML::EndMap;
+		}
+		if (const NavLinkComponent* link = scene.TryGet<NavLinkComponent>(entity))
+		{
+			out << YAML::Key << "NavLink" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Type" << YAML::Value << NavLinkComponent::GetTypeName(link->Type);
+			WriteVec3(out, "End", link->End);
+			out << YAML::Key << "Bidirectional" << YAML::Value << link->Bidirectional;
+			out << YAML::Key << "Radius" << YAML::Value << link->Radius;
+			out << YAML::Key << "Enabled" << YAML::Value << link->Enabled;
+			out << YAML::EndMap;
+		}
 		if (const ProbeVolumeComponent* probes = scene.TryGet<ProbeVolumeComponent>(entity))
 		{
 			// Its placement (center and size) is the entity's transform
@@ -987,6 +1010,37 @@ namespace EnvMapVulkanSceneSerializer
 			Read(navNode, "DetailSampleMaxError", n.DetailSampleMaxError);
 			n.Clamp();
 		}
+		if (YAML::Node areaNode = node["NavArea"]; areaNode && areaNode.IsMap())
+		{
+			NavAreaComponent& area = scene.Add<NavAreaComponent>(entity);
+			const std::string type = areaNode["Type"].as<std::string>("Door");
+			for (int i = 0; i <= (int)NavAreaComponent::AreaType::Blocked; i++)
+			{
+				if (type == NavAreaComponent::GetTypeName((NavAreaComponent::AreaType)i))
+				{
+					area.Type = (NavAreaComponent::AreaType)i;
+				}
+			}
+			ReadVec3(areaNode["HalfExtents"], area.HalfExtents);
+			Read(areaNode, "Cost", area.Cost);
+			Read(areaNode, "Open", area.Open);
+		}
+		if (YAML::Node linkNode = node["NavLink"]; linkNode && linkNode.IsMap())
+		{
+			NavLinkComponent& link = scene.Add<NavLinkComponent>(entity);
+			const std::string type = linkNode["Type"].as<std::string>("Ladder");
+			for (int i = 0; i <= (int)NavLinkComponent::LinkType::Walk; i++)
+			{
+				if (type == NavLinkComponent::GetTypeName((NavLinkComponent::LinkType)i))
+				{
+					link.Type = (NavLinkComponent::LinkType)i;
+				}
+			}
+			ReadVec3(linkNode["End"], link.End);
+			Read(linkNode, "Bidirectional", link.Bidirectional);
+			Read(linkNode, "Radius", link.Radius);
+			Read(linkNode, "Enabled", link.Enabled);
+		}
 		if (YAML::Node emitterNode = node["ParticleEmitter"]; emitterNode && emitterNode.IsMap())
 		{
 			ParticleEmitterSettings& p = scene.Add<ParticleEmitterComponent>(entity).Settings;
@@ -1081,6 +1135,7 @@ namespace EnvMapVulkanSceneSerializer
 			Read(colliderNode, "Friction", collider.Friction);
 			Read(colliderNode, "Restitution", collider.Restitution);
 			Read(colliderNode, "IsTrigger", collider.IsTrigger);
+			Read(colliderNode, "NotWalkable", collider.NotWalkable);
 		}
 		if (YAML::Node bodyNode = node["RigidBody"])
 		{

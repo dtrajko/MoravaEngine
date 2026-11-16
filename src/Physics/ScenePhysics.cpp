@@ -1400,6 +1400,21 @@ void ScenePhysics::Step(float fixedStep)
 			character.Written = m_Scene->Get<TransformComponent>(character.Entity).Translation;
 		}
 
+		// Carried (a Nav Link: up a ladder, along a jump): there, through anything, without a move of its own. What it
+		// touches there is found again (it may stand on a roof now)
+		if (character.Carried)
+		{
+			character.Carried = false;
+			controller.SetPosition(ToJolt(character.CarryTo));
+			controller.SetLinearVelocity(ToJolt((character.CarryTo - character.Position) / fixedStep));
+			controller.RefreshContacts(system.GetDefaultBroadPhaseLayerFilter(ObjectLayers::Character), system.GetDefaultLayerFilter(ObjectLayers::Character),
+				JPH::BodyFilter(), JPH::ShapeFilter(), m_World->GetTempAllocator());
+			character.PreviousPosition = character.Position;
+			character.Position = character.CarryTo;
+			character.Moved = (character.Position - character.PreviousPosition) / fixedStep;
+			continue;
+		}
+
 		// Not up a slope it can't stand on; on the ground, it moves with the ground (a platform, a box it stands on)
 		controller.UpdateGroundVelocity();
 		JPH::Vec3 velocity = controller.CancelVelocityTowardsSteepSlopes(ToJolt(character.WantedVelocity));
@@ -1644,6 +1659,19 @@ void ScenePhysics::SetEntityPosition(EnvMapVulkanEntityID entity, const glm::vec
 	const EnvMapVulkanEntityID parent = m_Scene->GetParent(entity);
 	m_Scene->Get<TransformComponent>(entity).Translation = parent != NoEntity
 		? glm::vec3(glm::inverse(m_Scene->GetWorldTransform(parent)) * glm::vec4(position, 1.0f)) : position;
+}
+
+void ScenePhysics::CarryCharacter(EnvMapVulkanEntityID entity, const glm::vec3& position)
+{
+	for (Character& character : m_Characters)
+	{
+		if (character.Entity == entity)
+		{
+			character.Carried = true;
+			character.CarryTo = position;
+			return;
+		}
+	}
 }
 
 void ScenePhysics::SetCharacterVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity)
@@ -2425,10 +2453,19 @@ static void AddBoxTriangles(const glm::mat4& transform, const glm::vec3& half, s
 	}
 }
 
-void ScenePhysics::GetStaticGeometry(EnvMapVulkanScene& scene, std::vector<glm::vec3>& vertices, std::vector<uint32_t>& indices, uint32_t* entityCount)
+void ScenePhysics::GetStaticGeometry(EnvMapVulkanScene& scene, std::vector<glm::vec3>& vertices, std::vector<uint32_t>& indices, uint32_t* entityCount,
+	std::vector<uint8_t>* notWalkable, std::vector<std::array<glm::vec3, 8>>* solidBoxes)
 {
 	vertices.clear();
 	indices.clear();
+	if (notWalkable)
+	{
+		notWalkable->clear();
+	}
+	if (solidBoxes)
+	{
+		solidBoxes->clear();
+	}
 	uint32_t entities = 0;
 
 	// The terrains' height fields, as CreateTerrainBody makes them: sample (x, z) at offset + (x, height, z) * spacing
@@ -2482,8 +2519,21 @@ void ScenePhysics::GetStaticGeometry(EnvMapVulkanScene& scene, std::vector<glm::
 		switch (collider.Type)
 		{
 			case ColliderComponent::Shape::Box:
-				AddBoxTriangles(shapeTransform, glm::max(collider.HalfExtents * size, glm::vec3(0.001f)), vertices, indices);
+			{
+				const glm::vec3 half = glm::max(collider.HalfExtents * size, glm::vec3(0.001f));
+				AddBoxTriangles(shapeTransform, half, vertices, indices);
+				// Upright (its up within about a degree of the world's): solid inside, for the navmesh's bake
+				if (solidBoxes && std::abs(glm::vec3(shapeTransform[1]).y) > 0.9998f * glm::length(glm::vec3(shapeTransform[1])))
+				{
+					std::array<glm::vec3, 8> corners;
+					for (int i = 0; i < 8; i++)
+					{
+						corners[i] = glm::vec3(shapeTransform * glm::vec4(i & 1 ? half.x : -half.x, i & 2 ? half.y : -half.y, i & 4 ? half.z : -half.z, 1.0f));
+					}
+					solidBoxes->push_back(corners);
+				}
 				break;
+			}
 			case ColliderComponent::Shape::Sphere:
 				AddCapsuleTriangles(shapeTransform, 0.0f, std::max(collider.Radius * std::max({ size.x, size.y, size.z }), 0.001f), vertices, indices);
 				break;
@@ -2510,8 +2560,16 @@ void ScenePhysics::GetStaticGeometry(EnvMapVulkanScene& scene, std::vector<glm::
 				break;
 			}
 		}
+		if (notWalkable)
+		{
+			notWalkable->resize(indices.size() / 3, collider.NotWalkable ? 1 : 0); // this collider's triangles (the terrains' are 0)
+		}
 		entities++;
 	});
+	if (notWalkable)
+	{
+		notWalkable->resize(indices.size() / 3, 0);
+	}
 	if (entityCount)
 	{
 		*entityCount = entities;
@@ -2550,6 +2608,10 @@ uint64_t ScenePhysics::GetStaticGeometryHash(const EnvMapVulkanScene& scene)
 		add(&world, sizeof(world));
 		const int type = (int)collider.Type;
 		add(&type, sizeof(type));
+		if (collider.NotWalkable)
+		{
+			add(&collider.NotWalkable, sizeof(collider.NotWalkable)); // only when set: the navmeshes baked before E1.5 stay up to date
+		}
 		if (collider.Type == ColliderComponent::Shape::ConvexMesh || collider.Type == ColliderComponent::Shape::TriangleMesh)
 		{
 			// The model and where its meshes are in it (a removed or moved part changes the triangles)

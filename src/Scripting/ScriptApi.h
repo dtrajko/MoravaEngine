@@ -43,6 +43,8 @@ struct ScriptNavAgentState
 	glm::vec3 DesiredVelocity = glm::vec3(0.0f);
 	float RemainingDistance = 0.0f;
 	float Speed = 0.0f, Acceleration = 0.0f, StoppingDistance = 0.0f;
+	int32_t OnLink = 0, LinkType = -1;    // E1.5: carried along a Nav Link (NavLinkComponent::LinkType; -1 none)
+	uint64_t LinkEntity = 0;
 };
 
 // A vehicle's driver input (Vehicle.SetInput) and what it does now (ScenePhysics::VehicleInput, VehicleState)
@@ -224,7 +226,7 @@ struct ScriptFieldReport
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
 	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14, Trail = 15,
-	NavAgent = 16 };
+	NavAgent = 16, NavArea = 17, NavLink = 18 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -485,6 +487,13 @@ struct ScriptNativeApi
 	int32_t (*NavAgent_GetState)(uint64_t entity, ScriptNavAgentState* out);
 	int32_t (*NavAgent_SetSettings)(uint64_t entity, float speed, float acceleration, float stoppingDistance);
 	int32_t (*NavAgent_GetPath)(uint64_t entity, glm::vec3* out, int capacity, int32_t* complete);
+
+	// NavArea and NavLink (E1.5): 0 when the entity has no such component. A change goes into the navmesh at once (the
+	// queries after it see it), no new bake. NavArea: type (NavAreaComponent::AreaType), open (a Door), cost
+	int32_t (*NavArea_Get)(uint64_t entity, int32_t* type, int32_t* open, float* cost);
+	int32_t (*NavArea_Set)(uint64_t entity, int32_t open, float cost);
+	int32_t (*NavLink_Get)(uint64_t entity, int32_t* type, int32_t* enabled);
+	int32_t (*NavLink_SetEnabled)(uint64_t entity, int32_t enabled);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

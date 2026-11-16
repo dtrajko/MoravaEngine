@@ -10,6 +10,7 @@
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
 #include "H2M/Renderer/ModelH2M.h"
+#include "Navigation/NavMeshFile.h"
 #include "Project/AssetRegistry.h"
 #include "Project/Project.h"
 
@@ -121,6 +122,11 @@ namespace PackBuilder
 					}
 					const std::string file = it->path().generic_u8string();
 					if (filterScenes && GetExtension(file) == ".mscene" && shippedScenes.count(ProjectPaths::ToStored(file)) == 0)
+					{
+						continue;
+					}
+					// A scene's baked navmesh goes with its scene (Process adds it): not with one that isn't shipped
+					if (GetExtension(file) == NavMeshFile::Extension)
 					{
 						continue;
 					}
@@ -328,6 +334,12 @@ namespace PackBuilder
 				catch (const std::exception& e)
 				{
 					Fail("'" + key + "' can't be read: " + e.what());
+				}
+				// A scene's navmesh (<Scene>.mnav next to it, E1.5), read when the scene opens
+				const std::string navMesh = NavMeshFile::GetPathForScene(path);
+				if (GetExtension(path) == ".mscene" && AssetFiles::Exists(navMesh))
+				{
+					AddFile(navMesh, "'" + key + "' (its navmesh)");
 				}
 			}
 		}
