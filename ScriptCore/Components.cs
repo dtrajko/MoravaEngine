@@ -144,6 +144,24 @@ namespace Morava
         /// the Y part (AnimatedCharacter does).
         /// </summary>
         public Vector3 GroundAngularVelocity => State.GroundAngularVelocity;
+
+        /// <summary>The capsule's height now, top to bottom (SetHeight changes it: crouching).</summary>
+        public float Height => State.Height;
+
+        /// <summary>Its height standing: the Inspector's.</summary>
+        public float StandingHeight => State.StandingHeight;
+
+        /// <summary>
+        /// The capsule another height, its bottom where it is (crouching; at least as tall as it is wide). Lower always
+        /// works; higher only with room above: false when something is in the way (standing up under a table), and it
+        /// keeps the height it has. Try again later (each fixed step while the player wants to stand).
+        /// </summary>
+        public bool SetHeight(float height)
+        {
+            int result = Interop.Game->Character_SetHeight(Entity.Id, height);
+            if (result == 0) throw Missing("character controller");
+            return result > 0;
+        }
     }
 
     /// <summary>Who drives a vehicle (Vehicle.Controls). The engine's numbers (VehicleComponent::ControlMode).</summary>

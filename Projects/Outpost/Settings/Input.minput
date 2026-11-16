@@ -78,6 +78,9 @@ Actions:
   - Name: Pause
     Type: Button
     Bindings: [ { Key: Escape }, { Gamepad: Start } ]
+  - Name: DebugFly      # a press: the debug fly camera takes the view (the player stands still), again: back to the player
+    Type: Button
+    Bindings: [ { Key: F2 } ]
   - Name: UI_Navigate   # Axis2D: the game UI's selection from button to button (the engine reads it)
     Type: Axis2D
     Bindings:

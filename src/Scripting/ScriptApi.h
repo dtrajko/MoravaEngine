@@ -32,6 +32,7 @@ struct ScriptCharacterState
 	glm::vec3 GroundNormal = glm::vec3(0.0f, 1.0f, 0.0f);
 	glm::vec3 GroundVelocity = glm::vec3(0.0f); // Milestone 2: what it stands on moves (a platform)
 	glm::vec3 GroundAngularVelocity = glm::vec3(0.0f); // radians per second: what it stands on turns
+	float Height = 0.0f, StandingHeight = 0.0f;         // E7: the capsule's now, and the component's
 };
 
 // A walking agent (NavAgent; SceneNavigation::AgentState) after the last step, and its settings
@@ -494,6 +495,10 @@ struct ScriptNativeApi
 	int32_t (*NavArea_Set)(uint64_t entity, int32_t open, float cost);
 	int32_t (*NavLink_Get)(uint64_t entity, int32_t* type, int32_t* enabled);
 	int32_t (*NavLink_SetEnabled)(uint64_t entity, int32_t enabled);
+
+	// E7: the character's capsule another height, its bottom kept (crouching): 1 done, -1 refused (no room above to stand
+	// up), 0 not a running character
+	int32_t (*Character_SetHeight)(uint64_t entity, float height);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

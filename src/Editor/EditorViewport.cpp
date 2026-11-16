@@ -960,10 +960,9 @@ void OnImGuiRenderViewport()
 
 	SyncLightSelection();
 	DrawPhysicsOverlay();
-	if (s_ShowNavMesh && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+	if (s_ShowNavMesh)
 	{
-		DrawNavMeshOverlay(ImGui::GetWindowDrawList(), (*s_Camera).GetViewProjection(), glm::vec3(glm::inverse((*s_Camera).GetViewMatrix())[3]),
-			s_ViewportImageMin, s_ViewportImageSize);
+		SubmitNavMeshDrawings();
 	}
 	if (!gameRunning)
 	{

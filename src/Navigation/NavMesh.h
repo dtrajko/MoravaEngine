@@ -131,8 +131,12 @@ public:
 	// searching); false if center isn't near the mesh. random: a number in [0, 1) each call (nullptr: the mesh's own)
 	bool RandomPointAround(const glm::vec3& center, float radius, glm::vec3& point, float (*random)() = nullptr) const;
 
-	DebugGeometry GetDebugGeometry() const;
-	Islands GetIslands() const;
+	// Both made the first time they are asked for and kept with the mesh until its tiles change (the editor's debug view
+	// asks each frame); not to be asked for from two threads at once
+	const DebugGeometry& GetDebugGeometry() const;
+	const Islands& GetIslands() const;
+	// A number no other mesh has, and a new one whenever the tiles change: what the debug view's drawing on the GPU is kept by
+	uint64_t GetGeometryKey() const { return m_GeometryKey; }
 	std::vector<LinkInfo> GetLinks() const;
 	// The link a polygon reference is (a crowd agent's link, E1.5): false when it isn't a link's
 	bool GetLink(uint64_t polygon, LinkInfo& link) const;
@@ -159,6 +163,11 @@ private:
 	// Each polygon's island (by its tile and index), and the islands' areas
 	void FindIslands(std::vector<std::vector<uint32_t>>& islandOfPolygon, std::vector<float>& areas, std::vector<glm::vec2>& heights) const;
 
+	DebugGeometry MakeDebugGeometry() const;
+	Islands MakeIslands() const;
+	// The tiles changed: a new geometry key, and the kept debug geometry and islands made again when next asked for
+	void OnGeometryChanged();
+
 	// The polygon nearest a point, searched in a box around it
 	uint64_t FindPolygon(const glm::vec3& position, const glm::vec3& halfExtents, glm::vec3& nearest) const;
 
@@ -174,4 +183,8 @@ private:
 	bool m_AreaWalkable[64];
 	std::vector<bool> m_LinkEnabled;
 	uint32_t m_StateVersion = 0;
+	uint64_t m_GeometryKey = 0;
+	mutable DebugGeometry m_DebugGeometry;
+	mutable Islands m_Islands;
+	mutable bool m_HasDebugGeometry = false, m_HasIslands = false;
 };

@@ -489,13 +489,23 @@ bool ScenePhysics::CreateBody(Body& body, const ColliderComponent& collider, con
 	return true;
 }
 
+// A character's standing capsule (a ball when it is no taller than it is wide)
+static JPH::RefConst<JPH::Shape> MakeCharacterShape(float radius, float height)
+{
+	const float halfHeight = std::max(height * 0.5f - radius, 0.0f);
+	return halfHeight > 0.0f ? JPH::RefConst<JPH::Shape>(new JPH::CapsuleShape(halfHeight, radius)) : JPH::RefConst<JPH::Shape>(new JPH::SphereShape(radius));
+}
+
 void ScenePhysics::CreateCharacter(Character& character, const CharacterControllerComponent& settings)
 {
-	// A standing capsule (a ball when it is no taller than it is wide), around the entity's position plus the offset
+	// The capsule around the entity's position plus the offset
 	const float radius = std::max(settings.Radius, 0.01f);
 	const float halfHeight = std::max(settings.Height * 0.5f - radius, 0.0f);
-	JPH::RefConst<JPH::Shape> shape = halfHeight > 0.0f ? JPH::RefConst<JPH::Shape>(new JPH::CapsuleShape(halfHeight, radius))
-		: JPH::RefConst<JPH::Shape>(new JPH::SphereShape(radius));
+	JPH::RefConst<JPH::Shape> shape = MakeCharacterShape(radius, settings.Height);
+	character.Radius = radius;
+	character.Height = std::max(settings.Height, radius * 2.0f);
+	character.StandingHeight = character.Height;
+	character.Offset = settings.Offset;
 
 	JPH::Ref<JPH::CharacterVirtualSettings> controller = new JPH::CharacterVirtualSettings();
 	controller->mShape = shape;
@@ -1706,6 +1716,8 @@ bool ScenePhysics::GetCharacterState(EnvMapVulkanEntityID entity, CharacterState
 			state.Ground = ToCharacterGround(character.Controller->GetGroundState());
 			state.Velocity = character.Moved;
 			state.Position = character.Position;
+			state.Height = character.Height;
+			state.StandingHeight = character.StandingHeight;
 			state.GroundNormal = ToGlm(character.Controller->GetGroundNormal());
 			state.GroundVelocity = ToGlm(character.Controller->GetGroundVelocity());
 			// The ground body's turn (a character's heading isn't the physics': its game turns it, AnimatedCharacter)
@@ -1714,6 +1726,45 @@ bool ScenePhysics::GetCharacterState(EnvMapVulkanEntityID entity, CharacterState
 				ToGlm(m_World->GetSystem().GetBodyInterface().GetAngularVelocity(ground)) : glm::vec3(0.0f);
 			return true;
 		}
+	}
+	return false;
+}
+
+bool ScenePhysics::SetCharacterHeight(EnvMapVulkanEntityID entity, float height)
+{
+	for (Character& character : m_Characters)
+	{
+		if (character.Entity != entity)
+		{
+			continue;
+		}
+		height = std::max(height, character.Radius * 2.0f);
+		if (std::abs(height - character.Height) < 1e-4f)
+		{
+			return true;
+		}
+		// The bottom stays: the capsule's center moves by half the change. Its lower round end stays too, so what it stands
+		// on (the supporting volume, below that end's center) is the same
+		const float bottom = character.Offset.y - character.Height * 0.5f;
+		glm::vec3 offset = character.Offset;
+		offset.y = bottom + height * 0.5f;
+		JPH::RefConst<JPH::Shape> shape = MakeCharacterShape(character.Radius, height);
+		JPH::CharacterVirtual& controller = *character.Controller;
+		const JPH::Vec3 previousOffset = controller.GetShapeOffset();
+		controller.SetShapeOffset(ToJolt(offset));
+		// Lower: always (inside the old one). Higher: only without going into anything (more than the physics' slop)
+		const JPH::PhysicsSystem& system = m_World->GetSystem();
+		const float maxPenetration = height < character.Height ? FLT_MAX : 1.5f * system.GetPhysicsSettings().mPenetrationSlop;
+		if (!controller.SetShape(shape, maxPenetration, system.GetDefaultBroadPhaseLayerFilter(ObjectLayers::Character),
+			system.GetDefaultLayerFilter(ObjectLayers::Character), JPH::BodyFilter(), JPH::ShapeFilter(), m_World->GetTempAllocator()))
+		{
+			controller.SetShapeOffset(previousOffset);
+			return false;
+		}
+		controller.SetInnerBodyShape(shape);
+		character.Height = height;
+		character.Offset = offset;
+		return true;
 	}
 	return false;
 }

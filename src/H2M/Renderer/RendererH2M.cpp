@@ -185,6 +185,7 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ParticleLight.glsl");    // SceneEnvMapVulkan: the light each particle gets
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Particles.glsl");        // SceneEnvMapVulkan: the particles drawn
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/Trails.glsl");           // SceneEnvMapVulkan: the trails' marks (skid marks)
+			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/DebugDraw.glsl");        // SceneEnvMapVulkan: the debug views' drawings in the world (the navmesh)
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeCapture_Static.glsl");   // SceneEnvMapVulkan: the probe update: the meshes into a cube around a probe
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeCapture_Anim.glsl");     // SceneEnvMapVulkan: the same for skinned meshes
 			RendererH2M::GetShaderLibrary()->Load(RESOURCE_SHADERS_DIR "/ProbeResample.glsl");         // SceneEnvMapVulkan: the probe update: the cubes into the ray buffer

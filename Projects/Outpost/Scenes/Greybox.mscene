@@ -24,6 +24,26 @@ Entities:
       Class: Outpost.FlyCamera
       Fields:
         Speed: {Float: 6}
+        StartActive: {Bool: false}
+  - ID: 1100
+    Name: Player
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 16]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CharacterController:
+      Height: 1.8
+      Radius: 0.35
+      Offset: [0, 0.9, 0]
+      MaxSlopeDegrees: 45
+      StepHeight: 0.35
+      Mass: 80
+      PushStrength: 100
+    Script:
+      Class: Outpost.Player
+      Fields:
+        Camera: {Entity: 1001}
   - ID: 1002
     Name: Environment
     Parent: 0

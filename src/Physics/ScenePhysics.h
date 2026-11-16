@@ -86,6 +86,8 @@ public:
 		glm::vec3 GroundVelocity = glm::vec3(0.0f); // of what it stands on (a moving platform), in the world
 		glm::vec3 GroundAngularVelocity = glm::vec3(0.0f); // radians per second, of what it stands on (a turning platform)
 		glm::vec3 Position = glm::vec3(0.0f); // the entity's place in the world after the last step (not between steps: WriteTransforms)
+		float Height = 0.0f;                  // the capsule's now (SetCharacterHeight), top to bottom
+		float StandingHeight = 0.0f;          // the component's (the Inspector's): its height when it stands
 	};
 	void SetCharacterVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity);
 	// In the next step the character is put at position (the entity's), through anything, instead of moving by its
@@ -93,6 +95,10 @@ public:
 	void CarryCharacter(EnvMapVulkanEntityID entity, const glm::vec3& position);
 	// False: the entity isn't a running character
 	bool GetCharacterState(EnvMapVulkanEntityID entity, CharacterState& state) const;
+	// The capsule another height (E7: crouching), its bottom where it is: lower at once; higher only if the taller capsule
+	// has room (standing up under a table is refused, and it stays as it is). At least as tall as it is wide. False: refused,
+	// or the entity isn't a running character
+	bool SetCharacterHeight(EnvMapVulkanEntityID entity, float height);
 	static const char* GetGroundName(CharacterGround ground);
 
 	// ---- Rigid bodies (Phase 4: the scripts' Rigidbody): a dynamic body's forces and velocities, between the steps. False:
@@ -294,6 +300,9 @@ private:
 		EnvMapVulkanEntityID Entity = NoEntity;
 		JPH::Ref<JPH::CharacterVirtual> Controller;
 		float StepHeight = 0.0f;
+		float Radius = 0.3f, Height = 1.8f;          // the capsule's now (E7: SetCharacterHeight)
+		float StandingHeight = 1.8f;                 // the component's
+		glm::vec3 Offset = glm::vec3(0.0f);          // its center from the entity's position
 		glm::vec3 WantedVelocity = glm::vec3(0.0f);
 		glm::vec3 PreviousPosition = glm::vec3(0.0f), Position = glm::vec3(0.0f);
 		glm::vec3 Moved = glm::vec3(0.0f);  // how it really moved in the last step, per second (CharacterState::Velocity)
