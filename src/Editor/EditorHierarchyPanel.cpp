@@ -411,6 +411,24 @@ void OnImGuiRenderSceneHierarchy()
 			ImGui::SetTooltip("Where characters can walk (navigation): baked in the Inspector from the scene's static colliders\n"
 				"and terrains, for one size of character. Saved next to the scene file (.mnav). One per scene");
 		}
+		if (ImGui::MenuItem("Nav Area"))
+		{
+			AddNavArea();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("A box of the navmesh with rules of its own: a Door (closed and opened while the game runs),\n"
+				"a Costly area (walked through only when going around costs more), a Blocked one (off the navmesh)");
+		}
+		if (ImGui::MenuItem("Nav Link"))
+		{
+			AddNavLink();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("A way the ground doesn't give, between two places on the navmesh: a ladder, a jump, a step over\n"
+				"a gap. Characters take it as part of their paths");
+		}
 		if (ImGui::MenuItem("Prefab..."))
 		{
 			const std::string folder = GetPrefabsFolder();

@@ -1488,7 +1488,7 @@ Build:
     <tr><th>Feature</th><th>Why later</th><th>Notes</th></tr>
     <tr><td>Undo/redo in the editor</td><td>Very useful, but independent of the runtime</td><td>A command list over component changes; the component type list of 1.5 helps</td></tr>
     <tr><td>Particles and VFX in the Vulkan renderer</td><td>Games look better with them; not needed to play</td><td>GPU particles with compute, emitters as components: planned in <a href="#particles">12.1</a> for the racing game's tire smoke (2026-11-14), with trails for skid marks (<a href="#trails">12.2</a>)</td></tr>
-    <tr><td>Navigation for AI</td><td>Needed for enemies that find their way</td><td>Recast/Detour: navmesh baked in the editor, agents as components</td></tr>
+    <tr><td>Navigation for AI</td><td>Needed for enemies that find their way</td><td>Recast/Detour: navmesh baked in the editor, agents as components: built for the shooter (<a href="#navigation">12.3</a>, 2026-11-16)</td></tr>
     <tr><td>Prefab overrides, nested prefabs</td><td>Basic Apply/Revert covers small games</td><td></td></tr>
     <tr><td>Root motion, blend trees</td><td>Crossfades cover basic characters</td><td>Animation events were built early, for Erika's steps (6.4's boxes)</td></tr>
     <tr><td>Async asset loading, streaming</td><td>Small games load fast enough</td><td>Loading screens with progress</td></tr>
@@ -1602,6 +1602,58 @@ Build:
     <li><b>Not in yet:</b> the water's reflection, render textures, the probes' capture; marks lighter than the surface
       (snow, chalk); culling. The wheels' contact points for the racing game's marks come in its 11.3.</li>
   </ul></div>
+
+  <h3 id="navigation">12.3 Navigation</h3>
+  <p>Where characters can walk, and agents that walk there by themselves: Recast and Detour (zlib), built for the shooter
+    (docs/games/Shooter_Plan.html, E1.1 to E1.5, 2026-11-16). The plan's "As built" boxes have the details and the checks;
+    this is how a game uses it.</p>
+  <ul>
+    <li><b>The Nav Mesh</b> (Scene Hierarchy: Add &gt; Nav Mesh, one per scene): what the navmesh is baked for, one size of
+      character (radius 0.3 m, height 1.8 m, step 0.35 m, slope 45 degrees: the character controller's), and <i>Bake</i>
+      (a worker thread, with its progress and Cancel). It is baked from the static colliders and the terrains: not
+      triggers, moving bodies or characters, so a door's slab that moves (a Kinematic body) isn't a wall to it. The tiles
+      are 32 m wide, the cells 0.1 x 0.05 m. Baking is by hand: the Inspector says <i>Out of date</i> when the colliders,
+      areas, links or settings changed since. <code>--bake-navmesh</code> bakes the startup scene unattended.</li>
+    <li><b><code>&lt;Scene&gt;.mnav</code></b> next to the scene file: the baked tiles (binary), written by Bake and by Save
+      As, read when the scene opens. A game's pack carries the <code>.mnav</code> of each scene it ships (the Build
+      settings' scenes) and no other; the player only reads it.</li>
+    <li><b>Nav Area</b> (Add &gt; Nav Area): a box (Half Extents around the entity, turned and scaled with it) whose
+      polygons get rules of their own. <i>Door</i>: closed and opened while the game runs (Open; C#
+      <code>NavArea.IsOpen</code>), no new bake: paths go around it or stop before it. <i>Costly</i>: walking a meter in it
+      costs Cost meters (mud, water, a lit yard), so paths go around when that is cheaper. <i>Blocked</i>: no navmesh in it
+      at all, and the agent's radius kept from it (a pit the colliders don't show). Up to 60 Doors and Costly areas per
+      navmesh; Blocked ones don't count.</li>
+    <li><b>Nav Link</b> (Add &gt; Nav Link): a way the ground doesn't give, from the entity's position to End (from the
+      entity): a <i>Ladder</i>, a <i>Jump</i>, a <i>Walk</i> across a gap. Both ends on the navmesh's floor (within Radius
+      across, a step up and down; the Inspector says when an end missed it), one way or both, Enabled (C#
+      <code>NavLink.Enabled</code>, a raised ladder). Paths take it like ground; a ladder costs three times its length, a
+      jump one and a half.</li>
+    <li><b>Not Walkable</b> on a collider (the Inspector's Physics, beside Trigger): its top isn't navmesh (a table, a car's
+      roof, a crate, a room's walls and ceiling), but it still blocks the navmesh around and under it. Upright Box colliders
+      are solid to the bake: their hollow inside is never floor (a platform as tall as a person was an island of its own
+      inside it).</li>
+    <li><b>Queries</b> (C# <code>Navigation</code>): <code>FindPath(from, to)</code> (a <code>NavPath</code>: its corners,
+      <code>IsComplete</code>, <code>Length</code>; a partial path ends at the reachable point nearest the end: another
+      floor without stairs, behind a closed door), <code>Raycast</code> (a straight walk clear?), <code>NearestPoint</code>,
+      <code>RandomPointAround</code> (patrols, searching). They see the doors and links as they are now.</li>
+    <li><b>Nav Agent</b> (the Inspector's Physics, beside Character): the character walks itself to where
+      <code>NavAgent.SetDestination</code> sends it, around the other characters (Detour's crowd), with Speed, Acceleration,
+      Stopping Distance and Avoidance. Each fixed step the crowd gives the velocity, the character controller moves (physics
+      decides where it gets), and the agent takes the real position back. On a link the engine carries the character along
+      it: up a ladder straight up and onto the top (down: over the edge and down), a jump in an arc, a walk in a line; then
+      it walks on. C#: <code>HasPath</code>, <code>HasArrived</code>, <code>IsPathPartial</code>, <code>IsStuck</code>,
+      <code>Velocity</code> (turn the model to it, give the animator its length), <code>IsOnLink</code>,
+      <code>LinkType</code> and <code>Link</code> (play the climb or the jump). The entity's rotation stays the game's.</li>
+    <li><b>Debug view</b> (the Nav Mesh's Show in Viewport, in Edit and Play): the polygons by island (the largest
+      blue-green), a Door's green while open and red closed, a Costly area's amber; the Nav Areas' boxes and the Nav Links'
+      arcs (green on, red off, an arrow when one way); the agents' paths, widths and velocities; <i>Test Path</i>: two clicks
+      on the navmesh, the path between them.</li>
+    <li><b>The Sample's scenes:</b> <code>Followers</code> (four characters following the player around pillars and each
+      other) and <code>Patrols</code> (two patrollers: one up a ladder onto a platform and down by a one-way jump, one
+      through a door the player opens and closes with Use, around a costly puddle; a Not Walkable table).</li>
+    <li><b>Not in yet:</b> more than one agent size per navmesh; moving obstacles (no TileCache: a door is a Nav Area);
+      baking a single tile again; links that move (a lift's stops follow the lift: Phase 6 of the shooter).</li>
+  </ul>
 </section>
 
 <section id="phase-13">

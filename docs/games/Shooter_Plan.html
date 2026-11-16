@@ -726,6 +726,51 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         five characters in Debug. Outpost's greybox (no agents) still passes E1.3's 16 checks.</li>
     </ul>
   </div>
+  <div class="box ok"><b>As built: E1.5 areas, links, Not Walkable, packs and the player (2026-11-16)</b>
+    <ul>
+      <li><b>Nav Area</b> (<code>NavAreaComponent</code>, saved as <code>NavArea:</code>; Add &gt; Nav Area): a box (Half Extents
+        around the entity, turned and scaled with it). <i>Door</i> and <i>Costly</i> polygons get an area id of their own
+        (1 to 60, by entity ID; <code>NavAreaIds</code>), marked after the agent's radius is taken off; <i>Blocked</i> is
+        taken out before it (the radius kept from it). At run time a Door's Open sets its polygons' flags and a Cost the
+        query filter's area cost (<code>NavMesh::SetAreaWalkable</code>, <code>SetAreaCost</code>), no new bake. C#
+        <code>NavArea</code>: <code>Type</code>, <code>IsOpen</code>, <code>Cost</code>.</li>
+      <li><b>Nav Link</b> (<code>NavLinkComponent</code>, <code>NavLink:</code>; Add &gt; Nav Link): from the entity to End,
+        Ladder, Jump or Walk, one way or both, Radius, Enabled: Detour's off-mesh connections, given to every tile (Detour
+        keeps them where they start), a link's index as its user id. Ladder links cost 3 times their length, jumps 1.5. The
+        Inspector says when an end missed the navmesh (and the bake logs it). C# <code>NavLink.Enabled</code>.</li>
+      <li><b>Agents on links:</b> the engine's, not Detour's (its crowd lerps a link in a fraction of a second, a ladder
+        instantly): an agent near a link's start on its path gets on it before the crowd's step, the crowd leaves it alone
+        (its off-mesh state), and <code>SceneNavigation</code> carries the character along the way (<code>ScenePhysics::
+        CarryCharacter</code>: put there each step through anything, its contacts found again): a ladder straight up at
+        1.5 m/s and onto the top (down: over the edge, then down), a jump in an arc, a walk in a line. Then it walks on.
+        C# <code>NavAgent.IsOnLink</code>, <code>LinkType</code>, <code>Link</code>; <code>Velocity</code> is the carry's
+        then; the Inspector says "Up or down a ladder: 'Ladder Link'".</li>
+      <li><b>States</b> (<code>SceneNavigation::SyncStates</code>): the scene's areas and links into the navmesh: in Edit each
+        frame (the Test Path sees a closed door), in Play each step and at once when a script changes one. The crowd copies
+        the mesh's filter when it changes. Found by the check: Detour's path shortcuts by raycasts don't see costs, so an
+        agent cut through the costly puddle: with a Costly area in the navmesh the agents don't take them (their A* path is
+        the cheapest already).</li>
+      <li><b>Not Walkable</b> on a collider (the Physics section, beside Trigger): its triangles are marked not walkable
+        before rasterizing, so it blocks without a top; in the source hash only when set (older navmeshes stay up to date).
+        Found by the check: a box's hollow inside is floor to Recast (a 2.5 m platform had an 11 m&sup2; island inside it):
+        upright Box colliders are now solid to the bake (no floor inside them below their top).</li>
+      <li><b>.mnav version 2</b> (the areas' and links' entities; version 1 is still read). <b>Packs:</b> a scene's
+        <code>.mnav</code> goes with the scene (PackBuilder adds it when it reads the scene), not with a scene the Build
+        settings leave out. <b>Debug view:</b> Door polygons green open and red closed, Costly amber; the areas' boxes and the
+        links' arcs from the scene (drawn before the first bake too). The engine guide has a Navigation section (12.3).</li>
+      <li><b>Sample's <code>Patrols</code> scene</b> (with <code>Door.cs</code>, <code>Patroller.cs</code>,
+        <code>Patrols.mnav</code>): a wall across Followers' room with a door the player opens and closes with Use (a
+        Kinematic slab and a Door area), a 2.5 m platform with a ladder up and a one-way jump down, a costly puddle, a Not
+        Walkable table (and walls and ceiling: no islands on top), two patrollers walking their waypoints.</li>
+      <li><b>The check</b> (a test copy with a test entity, <code>PatrolTest</code>): paths up the ladder, down the jump, back
+        up the ladder (the jump is one way), through the door around the puddle, nothing on the table; the door closed (paths
+        partial, nobody through it, the patroller waiting), opened (through again); the ladder off and on; the patroller
+        carried up the ladder and jumping down, reaching the platform and the far side; never in the puddle, nobody stuck:
+        19 of 19 in the editor's Play and in <b>a shipped Release build</b> (Build Game; the navmesh read from the pack;
+        the crowd's step 0.014 ms). The self-test also checks a door, a ladder, a Blocked area and a Not Walkable crate. GCC
+        check clean.</li>
+    </ul>
+  </div>
   <h3>E2 The first-person view model</h3>
   <ul>
     <li>Entities marked <b>View Model</b> are drawn after the scene with their own field of view and a near depth range, so

@@ -1,0 +1,803 @@
+Scene:
+  Version: 1
+  Name: Patrols
+EditorCamera:
+  Translation: [0, 17, 13]
+  Rotation: [55, 0, 0]
+  FieldOfView: 45
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Antialiasing: SMAA
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 4797481855757227527
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 8, 9]
+      Rotation: [30, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: true
+      FieldOfView: 45
+      NearClip: 0.01
+      FarClip: 1000
+    Script:
+      Class: Sample.CameraFollow
+      Fields:
+        Target: {Entity: 5528310947716204811}
+        View: {Enum: Behind}
+        BehindDistance: {Float: 3.5}
+        BehindHeight: {Float: 1.2}
+        BehindPitch: {Float: 16}
+  - ID: 16040318626583559303
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      FileID: 2763703905192543074
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 17664899364368859239
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0.0067483177, 0.0065134675, -87.970924]
+      Scale: [0.99996686, 0.99999785, 0.9999558]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 8601021745167664655
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 4645328179557402687
+    Name: Cube
+    Parent: 8601021745167664655
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 11173523489358520666
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [11, 11, 2]
+      Rotation: [0, -0, -90]
+      Scale: [9.999993, 0.9999972, 7.9999247]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+      NotWalkable: true
+  - ID: 11005680830479748476
+    Name: Cube
+    Parent: 11173523489358520666
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 10946202904542493917
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [11, 6, -8]
+      Rotation: [0, -0, -90]
+      Scale: [10, 0.9999972, 1.9998641]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+      NotWalkable: true
+  - ID: 12347905251721334247
+    Name: Cube
+    Parent: 10946202904542493917
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4411623245843787822
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -11]
+      Rotation: [90, 4.3089303e-06, -90]
+      Scale: [9.999842, 0.99993837, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+      NotWalkable: true
+  - ID: 3390355051436957147
+    Name: Cube
+    Parent: 4411623245843787822
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4760625982631271431
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, 11]
+      Rotation: [90, 4.308828e-06, -90]
+      Scale: [9.999682, 0.9999284, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+      NotWalkable: true
+  - ID: 4372998666035804560
+    Name: Cube
+    Parent: 4760625982631271431
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 16332770661743169074
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-11, 11, 0]
+      Rotation: [0, -0, -90]
+      Scale: [9.999993, 0.9999972, 9.999189]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+      NotWalkable: true
+  - ID: 8715774543680231152
+    Name: Cube
+    Parent: 16332770661743169074
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 191337683009812853
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 22, 0]
+      Rotation: [0, -0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+      NotWalkable: true
+  - ID: 1610167032220544294
+    Name: Cube
+    Parent: 191337683009812853
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 5528310947716204811
+    Name: Character
+    Parent: 0
+    Transform:
+      Translation: [0, 1, 2]
+      Rotation: [0, 180, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Models/PirateVoid/walking.dae
+      FileID: 15553284450537077592
+    CharacterController:
+      Height: 1.8
+      Radius: 0.3
+      Offset: [0, 0.9, 0]
+      MaxSlopeDegrees: 45
+      StepHeight: 0.35
+      Mass: 70
+      PushStrength: 100
+    Script:
+      Class: Sample.AnimatedCharacter
+      Fields:
+        Camera: {Entity: 4797481855757227527}
+    Animator: {Controller: Assets/Animators/Character.manim, ControllerID: 17439546297633111421}
+  - ID: 5528310947716204812
+    Name: Mesh1
+    Parent: 5528310947716204811
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 11736250394817262913
+        File: Assets/Materials/Character.mmat
+        Name: Character
+  - ID: 5860937928095992874
+    Name: Nav Mesh
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    NavMesh:
+      AgentRadius: 0.3
+  - ID: 3318840571902216447
+    Name: Player Light
+    Parent: 0
+    Transform:
+      Translation: [0, 7, 3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 30
+      Range: 18
+      CastShadows: true
+  - ID: 12292673721498952904
+    Name: Probe Volume
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -4.7683716e-06]
+      Rotation: [0, -0, 0]
+      Scale: [25.399996, 25.4, 25.399862]
+    ProbeVolume:
+      Enabled: true
+      Counts: [8, 8, 8]
+      NormalBias: 0.25
+      ViewBias: 0.25
+      AutoUpdate: true
+      ProbesPerFrame: 8
+      TracedProbesPerFrame: 1024
+      RaysPerProbe: 192
+      Hysteresis: 0.9
+      RelocateProbes: true
+      OccludeReflections: true
+      ShowProbes: false
+      ProbeRadius: 0.12
+      Show: 0
+  - ID: 6820497035323295070
+    Name: Divider West
+    Parent: 0
+    Transform:
+      Translation: [-5.5, 2, -2]
+      Rotation: [0, 0, 0]
+      Scale: [4.5, 1, 0.2]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 6443664500891265017
+    Name: Cube
+    Parent: 6820497035323295070
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 1390070061541184897
+    Name: Divider East
+    Parent: 0
+    Transform:
+      Translation: [5.5, 2, -2]
+      Rotation: [0, 0, 0]
+      Scale: [4.5, 1, 0.2]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 7174688800210184872
+    Name: Cube
+    Parent: 1390070061541184897
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4146266297491272527
+    Name: Doorway
+    Parent: 0
+    Transform:
+      Translation: [0, 1.5, -2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    NavArea:
+      Type: Door
+      HalfExtents: [1, 1, 0.45]
+      Cost: 1
+      Open: true
+  - ID: 2229964118499027241
+    Name: Door
+    Parent: 0
+    Transform:
+      Translation: [0, 2, -2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 0.1]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+    Script:
+      Class: Sample.Door
+      Fields:
+        Area: {Entity: 4146266297491272527}
+        Player: {Entity: 5528310947716204811}
+  - ID: 5792385968893914987
+    Name: Cube
+    Parent: 2229964118499027241
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 2630119094537614448
+    Name: Platform
+    Parent: 0
+    Transform:
+      Translation: [6, 2.25, 6]
+      Rotation: [0, 0, 0]
+      Scale: [2, 1.25, 2]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 7808544339811018502
+    Name: Cube
+    Parent: 2630119094537614448
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 1028653339157323153
+    Name: Ladder
+    Parent: 0
+    Transform:
+      Translation: [3.95, 2.25, 6]
+      Rotation: [0, 0, 0]
+      Scale: [0.05, 1.25, 0.35]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+  - ID: 8534770517339500341
+    Name: Cube
+    Parent: 1028653339157323153
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 3188352766115189329
+    Name: Ladder Link
+    Parent: 0
+    Transform:
+      Translation: [3.5, 1, 6]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    NavLink:
+      Type: Ladder
+      End: [1, 2.5, 0]
+      Bidirectional: true
+      Radius: 0.5
+      Enabled: true
+  - ID: 4652911292506363702
+    Name: Jump Down
+    Parent: 0
+    Transform:
+      Translation: [7.5, 3.5, 6]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    NavLink:
+      Type: Jump
+      End: [1.7, -2.5, 0]
+      Bidirectional: false
+      Radius: 0.5
+      Enabled: true
+  - ID: 7768554827660226529
+    Name: Puddle
+    Parent: 0
+    Transform:
+      Translation: [-5, 1.01, 5]
+      Rotation: [0, 0, 0]
+      Scale: [2.5, 0.01, 2.5]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+  - ID: 4536572254746526114
+    Name: Cube
+    Parent: 7768554827660226529
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2039148728491603379
+        File: Assets/Materials/Walls_Blue.mmat
+        Name: Walls_Blue
+  - ID: 7072959743345699239
+    Name: Puddle Area
+    Parent: 0
+    Transform:
+      Translation: [-5, 1.25, 5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    NavArea:
+      Type: Costly
+      HalfExtents: [2.5, 0.5, 2.5]
+      Cost: 6
+      Open: true
+  - ID: 5021705236774389686
+    Name: Table
+    Parent: 0
+    Transform:
+      Translation: [-5, 1.4, -6]
+      Rotation: [0, 0, 0]
+      Scale: [2, 0.4, 1.2]
+    Model:
+      File: Models/Primitives/cube.obj
+      FileID: 14090977682447350047
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+      NotWalkable: true
+  - ID: 7217179303838590266
+    Name: Cube
+    Parent: 5021705236774389686
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 7527365583314749461
+    Name: Point A1
+    Parent: 0
+    Transform:
+      Translation: [2, 1, 8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - ID: 1796276592738299347
+    Name: Point A2
+    Parent: 0
+    Transform:
+      Translation: [6, 3.5, 6]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - ID: 8744325443030267991
+    Name: Point A3
+    Parent: 0
+    Transform:
+      Translation: [8.5, 1, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - ID: 6908159598734862676
+    Name: Point B1
+    Parent: 0
+    Transform:
+      Translation: [-7, 1, -8]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - ID: 2979113383809008929
+    Name: Point B2
+    Parent: 0
+    Transform:
+      Translation: [-8.5, 1, 9]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - ID: 6368166646270061634
+    Name: Patroller A
+    Parent: 0
+    Transform:
+      Translation: [1, 1, 8]
+      Rotation: [0, 180, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Models/PirateVoid/walking.dae
+      FileID: 15553284450537077592
+    CharacterController:
+      Height: 1.8
+      Radius: 0.3
+      Offset: [0, 0.9, 0]
+      MaxSlopeDegrees: 45
+      StepHeight: 0.35
+      Mass: 70
+      PushStrength: 100
+    NavAgent:
+      Speed: 1.65
+      Acceleration: 8
+      StoppingDistance: 0.2
+      Avoidance: Medium
+    Script:
+      Class: Sample.Patroller
+      Fields:
+        Point1: {Entity: 7527365583314749461}
+        Point2: {Entity: 1796276592738299347}
+        Point3: {Entity: 8744325443030267991}
+    Animator: {Controller: Assets/Animators/Character.manim, ControllerID: 17439546297633111421}
+  - ID: 2851337696650208689
+    Name: Mesh1
+    Parent: 6368166646270061634
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 8726986848995026288
+        File: Assets/Materials/Follower.mmat
+        Name: Follower
+  - ID: 1649446502599189054
+    Name: Patroller B
+    Parent: 0
+    Transform:
+      Translation: [-7, 1, -7]
+      Rotation: [0, 180, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Models/PirateVoid/walking.dae
+      FileID: 15553284450537077592
+    CharacterController:
+      Height: 1.8
+      Radius: 0.3
+      Offset: [0, 0.9, 0]
+      MaxSlopeDegrees: 45
+      StepHeight: 0.35
+      Mass: 70
+      PushStrength: 100
+    NavAgent:
+      Speed: 1.65
+      Acceleration: 8
+      StoppingDistance: 0.2
+      Avoidance: Medium
+    Script:
+      Class: Sample.Patroller
+      Fields:
+        Point1: {Entity: 6908159598734862676}
+        Point2: {Entity: 2979113383809008929}
+    Animator: {Controller: Assets/Animators/Character.manim, ControllerID: 17439546297633111421}
+  - ID: 3057573172297728461
+    Name: Mesh1
+    Parent: 1649446502599189054
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 8726986848995026288
+        File: Assets/Materials/Follower.mmat
+        Name: Follower

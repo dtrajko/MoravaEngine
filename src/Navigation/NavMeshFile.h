@@ -12,7 +12,8 @@
  *
  *   "MNAV", version (uint32), the settings (float each), SourceHash (uint64), Origin (3 floats), TileWorldSize (float),
  *   TilesX, TilesZ, MaxPolysPerTile, Polygons (int32 each), the tile count (uint32), then each tile: X, Z (int32), its size
- *   in bytes (uint32) and the bytes
+ *   in bytes (uint32) and the bytes; then (version 2) the Nav Areas' entities and the Nav Links' (a count, uint32, and the
+ *   IDs, uint64 each)
  */
 namespace NavMeshFile
 {

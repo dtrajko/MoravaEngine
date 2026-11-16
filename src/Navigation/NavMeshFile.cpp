@@ -10,7 +10,7 @@
 namespace NavMeshFile
 {
 	static constexpr char Magic[4] = { 'M', 'N', 'A', 'V' };
-	static constexpr uint32_t Version = 1;
+	static constexpr uint32_t Version = 2; // 2: the Nav Areas' and Nav Links' entities (E1.5); 1 is read too (none)
 
 	std::string GetPathForScene(const std::string& scenePath)
 	{
@@ -57,6 +57,14 @@ namespace NavMeshFile
 			Put(out, (int32_t)tile.Z);
 			Put(out, (uint32_t)tile.Data.size());
 			out.insert(out.end(), tile.Data.begin(), tile.Data.end());
+		}
+		for (const std::vector<uint64_t>* entities : { &data.AreaEntities, &data.LinkEntities })
+		{
+			Put(out, (uint32_t)entities->size());
+			for (uint64_t entity : *entities)
+			{
+				Put(out, entity);
+			}
 		}
 
 		const std::filesystem::path target = std::filesystem::u8path(path);
@@ -119,7 +127,7 @@ namespace NavMeshFile
 		}
 		Reader in { bytes, 4 };
 		const uint32_t version = in.Get<uint32_t>();
-		if (version != Version)
+		if (version != Version && version != 1)
 		{
 			error = "version " + std::to_string(version) + " (this engine reads " + std::to_string(Version) + "): bake it again";
 			return false;
@@ -159,6 +167,23 @@ namespace NavMeshFile
 			}
 			tile.Data.assign(bytes.begin() + in.Offset, bytes.begin() + in.Offset + size);
 			in.Offset += size;
+		}
+		if (version >= 2)
+		{
+			for (std::vector<uint64_t>* entities : { &result.AreaEntities, &result.LinkEntities })
+			{
+				const uint32_t count = in.Get<uint32_t>();
+				if (in.Failed || in.Offset + (size_t)count * sizeof(uint64_t) > bytes.size())
+				{
+					error = "it is damaged (its areas and links)";
+					return false;
+				}
+				entities->resize(count);
+				for (uint64_t& entity : *entities)
+				{
+					entity = in.Get<uint64_t>();
+				}
+			}
 		}
 		data = std::move(result);
 		return true;

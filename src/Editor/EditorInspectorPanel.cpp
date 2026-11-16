@@ -736,7 +736,13 @@ static void NavAgentControls(EnvMapVulkanEntityID entity, NavAgentComponent& age
 		}
 		else if (navigation->GetAgentState(entity, state))
 		{
-			if (!state.OnNavMesh)
+			if (state.OnLink)
+			{
+				const char* types[] = { "Up or down a ladder", "Jumping", "Walking a link" };
+				const NameComponent* link = s_Scene.Exists(state.LinkEntity) ? s_Scene.TryGet<NameComponent>(state.LinkEntity) : nullptr;
+				ImGui::TextDisabled("%s: '%s' (carried along it)", types[std::clamp(state.LinkType, 0, 2)], link ? link->Name.c_str() : "?");
+			}
+			else if (!state.OnNavMesh)
 			{
 				ImGui::TextDisabled("Off the navmesh");
 			}
@@ -1202,6 +1208,12 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 		if (ImGui::IsItemHovered())
 		{
 			ImGui::SetTooltip("A sensor: things pass through it. It will tell the game what enters and leaves it (Phase 3.6)");
+		}
+		ImGui::Checkbox("Not Walkable", &collider->NotWalkable);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The navmesh: characters don't walk on its top (a table, a car's roof, a crate). It still blocks the\n"
+				"navmesh around and under it. Bake the Nav Mesh again after changing it");
 		}
 	}
 
@@ -1848,6 +1860,29 @@ void OnImGuiRenderInspector()
 			}
 			TerrainControls(entity);
 			break;
+		case EntityKind::NavArea:
+		case EntityKind::NavLink:
+		{
+			if (ImGui::Button(kind == EntityKind::NavArea ? "Delete Nav Area" : "Delete Nav Link"))
+			{
+				DeleteEntity(entity);
+				ImGui::End();
+				return;
+			}
+			TransformComponent& transform = s_Scene.Get<TransformComponent>(entity);
+			ImGui::DragFloat3("Translation", &transform.Translation.x, 0.05f);
+			ImGui::DragFloat3("Rotation", &transform.Rotation.x, 1.0f);
+			ImGui::DragFloat3("Scale", &transform.Scale.x, 0.01f);
+			if (kind == EntityKind::NavArea)
+			{
+				NavAreaControls(entity);
+			}
+			else
+			{
+				NavLinkControls(entity);
+			}
+			break;
+		}
 		case EntityKind::NavMesh:
 			if (ImGui::Button("Delete Nav Mesh"))
 			{

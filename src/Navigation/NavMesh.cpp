@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <cstring>
+#include <iterator>
 #include <random>
 #include <type_traits>
 
@@ -19,6 +20,11 @@ static_assert(std::is_same_v<dtPolyRef, uint64_t>, "Detour must be built with DT
 static constexpr int MaxPathPolygons = 2048;
 static constexpr int MaxQueryNodes = 4096;
 
+
+NavMesh::NavMesh()
+{
+	std::fill(std::begin(m_AreaWalkable), std::end(m_AreaWalkable), true);
+}
 
 NavMesh::~NavMesh()
 {
@@ -39,6 +45,14 @@ void NavMesh::Clear()
 	}
 	delete m_Filter;
 	m_Filter = nullptr;
+	for (std::vector<uint64_t>& polygons : m_AreaPolygons)
+	{
+		polygons.clear();
+	}
+	m_LinkPolygons.clear();
+	m_LinkEnabled.clear();
+	std::fill(std::begin(m_AreaWalkable), std::end(m_AreaWalkable), true);
+	m_StateVersion++;
 }
 
 bool NavMesh::Create(const glm::vec3& origin, float tileWorldSize, int maxTiles, int maxPolysPerTile, const NavMeshSettings& settings)
@@ -70,6 +84,10 @@ bool NavMesh::Create(const glm::vec3& origin, float tileWorldSize, int maxTiles,
 		return false;
 	}
 	m_Filter = new dtQueryFilter();
+	m_Filter->setIncludeFlags(NavAreaIds::WalkableFlag);
+	m_Filter->setAreaCost(NavAreaIds::LadderLink, NavAreaIds::LadderCost);
+	m_Filter->setAreaCost(NavAreaIds::JumpLink, NavAreaIds::JumpCost);
+	m_Filter->setAreaCost(NavAreaIds::WalkLink, NavAreaIds::WalkCost);
 	return true;
 }
 
@@ -86,13 +104,88 @@ bool NavMesh::AddTile(const Tile& tile)
 		return false;
 	}
 	std::memcpy(data, tile.Data.data(), tile.Data.size());
-	if (dtStatusFailed(m_Mesh->addTile(data, (int)tile.Data.size(), DT_TILE_FREE_DATA, 0, nullptr)))
+	dtTileRef added = 0;
+	if (dtStatusFailed(m_Mesh->addTile(data, (int)tile.Data.size(), DT_TILE_FREE_DATA, 0, &added)))
 	{
 		dtFree(data);
 		Log::GetLogger()->error("Navigation: tile ({0}, {1}) couldn't be added to the navmesh", tile.X, tile.Z);
 		return false;
 	}
+	IndexTilePolygons(m_Mesh->getTileByRef(added));
 	return true;
+}
+
+void NavMesh::IndexTilePolygons(const void* tilePointer)
+{
+	const dtMeshTile* tile = static_cast<const dtMeshTile*>(tilePointer);
+	if (!tile || !tile->header)
+	{
+		return;
+	}
+	const dtPolyRef base = m_Mesh->getPolyRefBase(tile);
+	for (int p = 0; p < tile->header->polyCount; p++)
+	{
+		const dtPoly& polygon = tile->polys[p];
+		if (polygon.getType() == DT_POLYTYPE_GROUND && polygon.getArea() != NavAreaIds::Ground)
+		{
+			m_AreaPolygons[polygon.getArea()].push_back(base | (dtPolyRef)p);
+		}
+	}
+	for (int c = 0; c < tile->header->offMeshConCount; c++)
+	{
+		const dtOffMeshConnection& connection = tile->offMeshCons[c];
+		if (connection.userId >= m_LinkPolygons.size())
+		{
+			m_LinkPolygons.resize(connection.userId + 1);
+			m_LinkEnabled.resize(connection.userId + 1, true);
+		}
+		m_LinkPolygons[connection.userId].push_back(base | (dtPolyRef)connection.poly);
+	}
+}
+
+void NavMesh::SetAreaWalkable(uint8_t area, bool walkable)
+{
+	area &= 63;
+	if (!m_Mesh || m_AreaWalkable[area] == walkable)
+	{
+		return;
+	}
+	m_AreaWalkable[area] = walkable;
+	for (dtPolyRef polygon : m_AreaPolygons[area])
+	{
+		m_Mesh->setPolyFlags(polygon, walkable ? NavAreaIds::WalkableFlag : 0);
+	}
+	m_StateVersion++;
+}
+
+void NavMesh::SetAreaCost(uint8_t area, float cost)
+{
+	cost = std::max(cost, 0.01f);
+	if (!m_Filter || m_Filter->getAreaCost(area & 63) == cost)
+	{
+		return;
+	}
+	m_Filter->setAreaCost(area & 63, cost);
+	m_StateVersion++;
+}
+
+float NavMesh::GetAreaCost(uint8_t area) const
+{
+	return m_Filter ? m_Filter->getAreaCost(area & 63) : 1.0f;
+}
+
+void NavMesh::SetLinkEnabled(uint32_t link, bool enabled)
+{
+	if (!m_Mesh || link >= m_LinkEnabled.size() || m_LinkEnabled[link] == enabled)
+	{
+		return;
+	}
+	m_LinkEnabled[link] = enabled;
+	for (dtPolyRef polygon : m_LinkPolygons[link])
+	{
+		m_Mesh->setPolyFlags(polygon, enabled ? NavAreaIds::WalkableFlag : 0);
+	}
+	m_StateVersion++;
 }
 
 static unsigned int NextPowerOfTwo(unsigned int value)
@@ -417,6 +510,67 @@ NavMesh::Islands NavMesh::GetIslands() const
 	}
 	std::sort(result.List.begin(), result.List.end(), [](const Islands::Island& a, const Islands::Island& b) { return a.Area > b.Area; });
 	return result;
+}
+
+// A link's ends from its connection, and whether each is joined to a polygon (Detour's links of its polygon: edge 0 the
+// start's, 1 the end's)
+static NavMesh::LinkInfo MakeLinkInfo(const dtMeshTile* tile, const dtOffMeshConnection& connection)
+{
+	NavMesh::LinkInfo info;
+	info.Start = glm::vec3(connection.pos[0], connection.pos[1], connection.pos[2]);
+	info.End = glm::vec3(connection.pos[3], connection.pos[4], connection.pos[5]);
+	info.Bidirectional = (connection.flags & DT_OFFMESH_CON_BIDIR) != 0;
+	info.Link = connection.userId;
+	const dtPoly& polygon = tile->polys[connection.poly];
+	info.Area = polygon.getArea();
+	for (unsigned int k = polygon.firstLink; k != DT_NULL_LINK; k = tile->links[k].next)
+	{
+		(tile->links[k].edge == 0 ? info.StartJoined : info.EndJoined) = true;
+	}
+	return info;
+}
+
+std::vector<NavMesh::LinkInfo> NavMesh::GetLinks() const
+{
+	std::vector<LinkInfo> links;
+	if (!m_Mesh)
+	{
+		return links;
+	}
+	const dtNavMesh* mesh = m_Mesh;
+	for (int i = 0; i < mesh->getMaxTiles(); i++)
+	{
+		const dtMeshTile* tile = mesh->getTile(i);
+		if (!tile || !tile->header)
+		{
+			continue;
+		}
+		for (int c = 0; c < tile->header->offMeshConCount; c++)
+		{
+			links.push_back(MakeLinkInfo(tile, tile->offMeshCons[c]));
+		}
+	}
+	return links;
+}
+
+bool NavMesh::GetLink(uint64_t polygon, LinkInfo& link) const
+{
+	const dtMeshTile* tile = nullptr;
+	const dtPoly* poly = nullptr;
+	if (!m_Mesh || dtStatusFailed(m_Mesh->getTileAndPolyByRef(polygon, &tile, &poly)) || poly->getType() != DT_POLYTYPE_OFFMESH_CONNECTION)
+	{
+		return false;
+	}
+	const unsigned int index = (unsigned int)(poly - tile->polys);
+	for (int c = 0; c < tile->header->offMeshConCount; c++)
+	{
+		if (tile->offMeshCons[c].poly == index)
+		{
+			link = MakeLinkInfo(tile, tile->offMeshCons[c]);
+			return true;
+		}
+	}
+	return false;
 }
 
 NavMesh::DebugGeometry NavMesh::GetDebugGeometry() const

@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <array>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -87,6 +88,9 @@ public:
 		glm::vec3 Position = glm::vec3(0.0f); // the entity's place in the world after the last step (not between steps: WriteTransforms)
 	};
 	void SetCharacterVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity);
+	// In the next step the character is put at position (the entity's), through anything, instead of moving by its
+	// velocity: the navigation carries it along a Nav Link (a ladder, a jump). Seen between the steps as a move
+	void CarryCharacter(EnvMapVulkanEntityID entity, const glm::vec3& position);
 	// False: the entity isn't a running character
 	bool GetCharacterState(EnvMapVulkanEntityID entity, CharacterState& state) const;
 	static const char* GetGroundName(CharacterGround ground);
@@ -264,8 +268,10 @@ public:
 	// bake: the terrains, and the colliders without a Rigid Body or with a Static one; not triggers, characters or vehicles'
 	// wheels. Box, Sphere and Capsule as their shapes (the round ones in facets); TriangleMesh and ConvexMesh as the model's
 	// triangles (a convex mesh's hollows stay walkable here). A terrain's heights are made when the renderer hasn't yet
+	// notWalkable: per triangle, 1 when its collider is Not Walkable (E1.5). solidBoxes: the upright Box colliders' corners
+	// (turned only around Y), solid inside: the bake sees only surfaces, and a box's hollow inside would be floor
 	static void GetStaticGeometry(EnvMapVulkanScene& scene, std::vector<glm::vec3>& vertices, std::vector<uint32_t>& indices,
-		uint32_t* entityCount = nullptr);
+		uint32_t* entityCount = nullptr, std::vector<uint8_t>* notWalkable = nullptr, std::vector<std::array<glm::vec3, 8>>* solidBoxes = nullptr);
 	// A hash of what GetStaticGeometry gives: the entities, where they are, their shapes, models and terrains' settings
 	// (not the triangles: cheap enough for every frame). A model file changed on disk isn't seen
 	static uint64_t GetStaticGeometryHash(const EnvMapVulkanScene& scene);
@@ -292,6 +298,8 @@ private:
 		glm::vec3 PreviousPosition = glm::vec3(0.0f), Position = glm::vec3(0.0f);
 		glm::vec3 Moved = glm::vec3(0.0f);  // how it really moved in the last step, per second (CharacterState::Velocity)
 		glm::vec3 Written = glm::vec3(0.0f); // the entity's translation as physics last left it
+		bool Carried = false;               // CarryCharacter: put at CarryTo in the next step
+		glm::vec3 CarryTo = glm::vec3(0.0f);
 	};
 
 	// The body or the character of an entity, as its components ask (counted by kind, for the log)

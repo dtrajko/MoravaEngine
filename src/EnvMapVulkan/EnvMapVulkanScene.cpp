@@ -303,6 +303,28 @@ const char* NavAgentComponent::GetAvoidanceName(AvoidanceQuality quality)
 	return "Medium";
 }
 
+const char* NavAreaComponent::GetTypeName(AreaType type)
+{
+	switch (type)
+	{
+		case AreaType::Door:    return "Door";
+		case AreaType::Costly:  return "Costly";
+		case AreaType::Blocked: return "Blocked";
+	}
+	return "Door";
+}
+
+const char* NavLinkComponent::GetTypeName(LinkType type)
+{
+	switch (type)
+	{
+		case LinkType::Ladder: return "Ladder";
+		case LinkType::Jump:   return "Jump";
+		case LinkType::Walk:   return "Walk";
+	}
+	return "Ladder";
+}
+
 const char* VehicleComponent::GetControlName(ControlMode mode)
 {
 	return mode == ControlMode::Script ? "Script" : "Player";

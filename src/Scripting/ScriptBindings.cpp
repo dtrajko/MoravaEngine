@@ -301,6 +301,8 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::ParticleEmitter:   return scene->Has<ParticleEmitterComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Trail:             return scene->Has<TrailComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::NavAgent:          return scene->Has<NavAgentComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::NavArea:           return scene->Has<NavAreaComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::NavLink:           return scene->Has<NavLinkComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -865,6 +867,9 @@ static int32_t NavAgentGetState(uint64_t entity, ScriptNavAgentState* out)
 	out->Speed = state.Settings.Speed;
 	out->Acceleration = state.Settings.Acceleration;
 	out->StoppingDistance = state.Settings.StoppingDistance;
+	out->OnLink = state.OnLink ? 1 : 0;
+	out->LinkType = state.LinkType;
+	out->LinkEntity = state.LinkEntity;
 	return 1;
 }
 
@@ -887,6 +892,62 @@ static int32_t NavAgentGetPath(uint64_t entity, glm::vec3* out, int capacity, in
 	std::copy_n(corners.begin(), std::min((int)corners.size(), std::max(capacity, 0)), out);
 	*complete = reached ? 1 : 0;
 	return (int32_t)corners.size();
+}
+
+// ---- NavArea, NavLink (E1.5): the components, and their states into the navmesh at once
+
+static int32_t NavAreaGet(uint64_t entity, int32_t* type, int32_t* open, float* cost)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	const NavAreaComponent* area = scene && scene->Exists(entity) ? scene->TryGet<NavAreaComponent>(entity) : nullptr;
+	if (!area)
+	{
+		return 0;
+	}
+	*type = (int32_t)area->Type;
+	*open = area->Open ? 1 : 0;
+	*cost = area->Cost;
+	return 1;
+}
+
+static int32_t NavAreaSet(uint64_t entity, int32_t open, float cost)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	NavAreaComponent* area = scene && scene->Exists(entity) ? scene->TryGet<NavAreaComponent>(entity) : nullptr;
+	if (!area)
+	{
+		return 0;
+	}
+	area->Open = open != 0;
+	area->Cost = std::max(cost, 0.01f);
+	SceneNavigation::SyncStates(*scene);
+	return 1;
+}
+
+static int32_t NavLinkGet(uint64_t entity, int32_t* type, int32_t* enabled)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	const NavLinkComponent* link = scene && scene->Exists(entity) ? scene->TryGet<NavLinkComponent>(entity) : nullptr;
+	if (!link)
+	{
+		return 0;
+	}
+	*type = (int32_t)link->Type;
+	*enabled = link->Enabled ? 1 : 0;
+	return 1;
+}
+
+static int32_t NavLinkSetEnabled(uint64_t entity, int32_t enabled)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	NavLinkComponent* link = scene && scene->Exists(entity) ? scene->TryGet<NavLinkComponent>(entity) : nullptr;
+	if (!link)
+	{
+		return 0;
+	}
+	link->Enabled = enabled != 0;
+	SceneNavigation::SyncStates(*scene);
+	return 1;
 }
 
 static int32_t CopyEntities(const std::vector<EnvMapVulkanEntityID>& entities, uint64_t* out, int capacity)
@@ -2143,6 +2204,10 @@ namespace ScriptBindings
 		api.NavAgent_GetState = NavAgentGetState;
 		api.NavAgent_SetSettings = NavAgentSetSettings;
 		api.NavAgent_GetPath = NavAgentGetPath;
+		api.NavArea_Get = NavAreaGet;
+		api.NavArea_Set = NavAreaSet;
+		api.NavLink_Get = NavLinkGet;
+		api.NavLink_SetEnabled = NavLinkSetEnabled;
 	}
 
 	void SetContext(ScriptContext* context)

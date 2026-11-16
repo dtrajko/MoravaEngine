@@ -9,14 +9,77 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstring>
 #include <memory>
 
 
 namespace NavMeshBuilder
 {
-	// The polygons' area and flags: every baked polygon is ground one can walk (Nav Areas, E1.5, add others)
-	static constexpr unsigned char GroundArea = 0;
-	static constexpr unsigned short WalkFlag = 0x01;
+	// The polygons' flags: every baked polygon can be walked (a Door's are closed at run time: NavMesh::SetAreaWalkable)
+	static constexpr unsigned short WalkFlag = NavAreaIds::WalkableFlag;
+
+	// A Nav Area's box across (x and z): the convex hull of its corners (Recast's convex volume), and the heights it spans
+	static int GetAreaOutline(const Input::Area& area, float* outline, float& minY, float& maxY)
+	{
+		glm::vec2 points[8];
+		minY = 1e30f;
+		maxY = -1e30f;
+		for (int i = 0; i < 8; i++)
+		{
+			points[i] = glm::vec2(area.Corners[i].x, area.Corners[i].z);
+			minY = std::min(minY, area.Corners[i].y);
+			maxY = std::max(maxY, area.Corners[i].y);
+		}
+		std::sort(points, points + 8, [](const glm::vec2& a, const glm::vec2& b) { return a.x < b.x || (a.x == b.x && a.y < b.y); });
+		auto cross = [](const glm::vec2& o, const glm::vec2& a, const glm::vec2& b) { return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x); };
+		glm::vec2 hull[17];
+		int n = 0;
+		for (int i = 0; i < 8; i++)
+		{
+			while (n >= 2 && cross(hull[n - 2], hull[n - 1], points[i]) <= 0.0f)
+			{
+				n--;
+			}
+			hull[n++] = points[i];
+		}
+		const int lower = n + 1;
+		for (int i = 6; i >= 0; i--)
+		{
+			while (n >= lower && cross(hull[n - 2], hull[n - 1], points[i]) <= 0.0f)
+			{
+				n--;
+			}
+			hull[n++] = points[i];
+		}
+		n--; // the first point again
+		for (int i = 0; i < n; i++)
+		{
+			outline[i * 3 + 0] = hull[i].x;
+			outline[i * 3 + 1] = minY;
+			outline[i * 3 + 2] = hull[i].y;
+		}
+		return n;
+	}
+
+	// The cells of the walkable area inside the Nav Areas: the Blocked ones (before the agent's radius is taken off the
+	// walkable area, so it keeps away from them) or the others (after: their polygons get their own area)
+	static void MarkAreas(rcContext& context, const Input& input, bool blocked, rcCompactHeightfield& compact)
+	{
+		for (const Input::Area& area : input.Areas)
+		{
+			if (area.Blocked != blocked)
+			{
+				continue;
+			}
+			float outline[17 * 3];
+			float minY = 0.0f, maxY = 0.0f;
+			const int count = GetAreaOutline(area, outline, minY, maxY);
+			if (count >= 3)
+			{
+				rcMarkConvexPolyArea(&context, outline, count, minY, maxY, blocked ? RC_NULL_AREA : area.Id, compact);
+			}
+		}
+	}
 
 	// Recast's structures, freed when leaving the tile's bake whatever happens
 	struct RecastTile
@@ -64,6 +127,7 @@ namespace NavMeshBuilder
 
 		// The triangles over the tile (by their bounding boxes), walkable where they aren't too steep
 		std::vector<int> indices;
+		std::vector<int> kept; // the triangles' own indices
 		indices.reserve(triangles.size() * 3);
 		for (int triangle : triangles)
 		{
@@ -82,6 +146,7 @@ namespace NavMeshBuilder
 			indices.push_back((int)index[0]);
 			indices.push_back((int)index[1]);
 			indices.push_back((int)index[2]);
+			kept.push_back(triangle);
 		}
 		const int triangleCount = (int)indices.size() / 3;
 		if (triangleCount == 0)
@@ -91,6 +156,17 @@ namespace NavMeshBuilder
 		std::vector<unsigned char> areas(triangleCount, 0);
 		rcMarkWalkableTriangles(&context, config.walkableSlopeAngle, vertices.data(), (int)input.Vertices.size(), indices.data(),
 			triangleCount, areas.data());
+		// A Not Walkable collider's triangles: solid, but nothing stands on them
+		if (!input.NotWalkable.empty())
+		{
+			for (int i = 0; i < triangleCount; i++)
+			{
+				if (input.NotWalkable[kept[i]])
+				{
+					areas[i] = RC_NULL_AREA;
+				}
+			}
+		}
 		if (!rcRasterizeTriangles(&context, vertices.data(), (int)input.Vertices.size(), indices.data(), areas.data(), triangleCount,
 			*t.Heightfield, config.walkableClimb))
 		{
@@ -111,12 +187,27 @@ namespace NavMeshBuilder
 		}
 		rcFreeHeightField(t.Heightfield);
 		t.Heightfield = nullptr;
-		// The agent's radius away from walls and edges
+		// Nothing inside the solid boxes (their top stays), the Blocked areas out, then the agent's radius away from walls,
+		// edges and them; then the Doors and Costly areas
+		for (const std::array<glm::vec3, 8>& box : input.Solids)
+		{
+			Input::Area solid;
+			std::copy(box.begin(), box.end(), solid.Corners);
+			float outline[17 * 3];
+			float minY = 0.0f, maxY = 0.0f;
+			const int count = GetAreaOutline(solid, outline, minY, maxY);
+			if (count >= 3 && maxY - minY > config.ch * 3.0f)
+			{
+				rcMarkConvexPolyArea(&context, outline, count, minY - config.ch, maxY - config.ch * 2.0f, RC_NULL_AREA, *t.Compact);
+			}
+		}
+		MarkAreas(context, input, true, *t.Compact);
 		if (!rcErodeWalkableArea(&context, config.walkableRadius, *t.Compact))
 		{
 			error = "the walkable area couldn't be eroded";
 			return false;
 		}
+		MarkAreas(context, input, false, *t.Compact);
 		// Regions by the distance field (watershed): the best polygons for open floors and rooms
 		if (!rcBuildDistanceField(&context, *t.Compact) ||
 			!rcBuildRegions(&context, *t.Compact, config.borderSize, config.minRegionArea, config.mergeRegionArea))
@@ -161,9 +252,26 @@ namespace NavMeshBuilder
 		{
 			if (t.PolyMesh->areas[i] == RC_WALKABLE_AREA)
 			{
-				t.PolyMesh->areas[i] = GroundArea;
+				t.PolyMesh->areas[i] = NavAreaIds::Ground;
 			}
 			t.PolyMesh->flags[i] = WalkFlag;
+		}
+
+		// The links: each tile is given all, Detour keeps the ones that start in it
+		const int linkCount = (int)input.Links.size();
+		std::vector<float> linkVertices(linkCount * 6), linkRadii(linkCount);
+		std::vector<unsigned short> linkFlags(linkCount, WalkFlag);
+		std::vector<unsigned char> linkAreas(linkCount), linkDirections(linkCount);
+		std::vector<unsigned int> linkUserIds(linkCount);
+		for (int i = 0; i < linkCount; i++)
+		{
+			const Input::Link& link = input.Links[i];
+			std::memcpy(&linkVertices[i * 6], &link.Start.x, sizeof(float) * 3);
+			std::memcpy(&linkVertices[i * 6 + 3], &link.End.x, sizeof(float) * 3);
+			linkRadii[i] = link.Radius;
+			linkAreas[i] = link.Area;
+			linkDirections[i] = link.Bidirectional ? DT_OFFMESH_CON_BIDIR : 0;
+			linkUserIds[i] = link.UserId;
 		}
 
 		dtNavMeshCreateParams params = {};
@@ -179,6 +287,16 @@ namespace NavMeshBuilder
 		params.detailVertsCount = t.Detail->nverts;
 		params.detailTris = t.Detail->tris;
 		params.detailTriCount = t.Detail->ntris;
+		if (linkCount > 0)
+		{
+			params.offMeshConVerts = linkVertices.data();
+			params.offMeshConRad = linkRadii.data();
+			params.offMeshConFlags = linkFlags.data();
+			params.offMeshConAreas = linkAreas.data();
+			params.offMeshConDir = linkDirections.data();
+			params.offMeshConUserID = linkUserIds.data();
+			params.offMeshConCount = linkCount;
+		}
 		params.walkableHeight = base.walkableHeight * base.ch;
 		params.walkableRadius = base.walkableRadius * base.cs;
 		params.walkableClimb = base.walkableClimb * base.ch;
@@ -381,6 +499,30 @@ namespace NavMeshBuilder
 		AddBox(input, glm::vec3(0.0f, 0.0f, 5.8f), glm::vec3(8.0f, 3.0f, 6.2f));
 		AddBox(input, glm::vec3(30.0f, 0.0f, 0.0f), glm::vec3(34.0f, 3.0f, 4.0f));
 
+		// E1.5: a crate 1 m high that is Not Walkable, a Blocked area on the floor, a Door across the whole way past the
+		// wall's end (closed, nothing joins the room's two halves), and a ladder up onto the platform
+		AddBox(input, glm::vec3(24.0f, 0.0f, 8.0f), glm::vec3(26.0f, 1.0f, 10.0f));
+		input.NotWalkable.assign(input.Indices.size() / 3, 0);
+		std::fill(input.NotWalkable.end() - 12, input.NotWalkable.end(), 1);
+		auto addArea = [&input](const glm::vec3& lo, const glm::vec3& hi, unsigned char id, bool blocked)
+		{
+			Input::Area area;
+			for (int i = 0; i < 8; i++)
+			{
+				area.Corners[i] = glm::vec3(i & 1 ? hi.x : lo.x, i & 2 ? hi.y : lo.y, i & 4 ? hi.z : lo.z);
+			}
+			area.Id = id;
+			area.Blocked = blocked;
+			input.Areas.push_back(area);
+		};
+		addArea(glm::vec3(14.0f, -0.5f, 1.0f), glm::vec3(16.0f, 1.0f, 3.0f), NavAreaIds::Ground, true);
+		addArea(glm::vec3(7.5f, -0.5f, 5.5f), glm::vec3(40.5f, 2.5f, 6.5f), NavAreaIds::FirstArea, false);
+		Input::Link ladder;
+		ladder.Start = glm::vec3(35.0f, 0.0f, 2.0f);
+		ladder.End = glm::vec3(33.4f, 3.0f, 2.0f);
+		ladder.Area = NavAreaIds::LadderLink;
+		input.Links.push_back(ladder);
+
 		NavMeshSettings settings;
 		const Result result = Build(input, settings);
 		if (!result.Error.empty())
@@ -431,19 +573,56 @@ namespace NavMeshBuilder
 			return fail("a straight walk through the wall wasn't blocked before it");
 		}
 
-		// The platform's top is on the mesh, but no way leads up: a partial path, ending on the floor beside it
+		// The platform's top is on the mesh, but with the ladder off no way leads up: a partial path, ending on the floor
+		// beside it. With the ladder on, the path climbs it
 		glm::vec3 onTop;
 		if (!navMesh.NearestPoint(glm::vec3(32.0f, 3.2f, 2.0f), 0.5f, onTop) || std::abs(onTop.y - 3.0f) > 0.2f)
 		{
 			return fail("the platform's top isn't on the mesh");
 		}
+		const std::vector<NavMesh::LinkInfo> links = navMesh.GetLinks();
+		if (links.size() != 1 || !links[0].StartJoined || !links[0].EndJoined)
+		{
+			return fail("the ladder isn't joined to the floor and the platform's top");
+		}
+		navMesh.SetLinkEnabled(0, false);
 		if (navMesh.FindPath(glm::vec3(20.0f, 0.0f, 8.0f), onTop, corners, &complete) && complete)
 		{
-			return fail("a path leads up onto the platform, which has no way up");
+			return fail("a path leads up onto the platform with its ladder off");
+		}
+		navMesh.SetLinkEnabled(0, true);
+		if (!navMesh.FindPath(glm::vec3(20.0f, 0.0f, 8.0f), onTop, corners, &complete) || !complete)
+		{
+			return fail("no path up the ladder onto the platform");
+		}
+		const float climb = PathLength(corners);
+
+		// The door closed: nothing joins the two halves; open again, the way around the wall is back
+		navMesh.SetAreaWalkable(NavAreaIds::FirstArea, false);
+		if (navMesh.FindPath(glm::vec3(2.0f, 0.0f, 2.0f), glm::vec3(2.0f, 0.0f, 10.0f), corners, &complete) && complete)
+		{
+			return fail("a path goes through the closed door");
+		}
+		navMesh.SetAreaWalkable(NavAreaIds::FirstArea, true);
+		if (!navMesh.FindPath(glm::vec3(2.0f, 0.0f, 2.0f), glm::vec3(2.0f, 0.0f, 10.0f), corners, &complete) || !complete)
+		{
+			return fail("no path through the door opened again");
 		}
 
-		Log::GetLogger()->info("Navigation self-test passed ({0} tiles, {1} polygons baked in {2:.1f} ms; {3:.1f} m around the wall)",
-			data.Tiles.size(), data.Polygons, result.Milliseconds, around);
+		// Nothing on the Blocked area (its 2 x 2 m, and the agent's radius around it: the nearest point is 1.3 m from its
+		// center), nor on the Not Walkable crate's top
+		glm::vec3 point;
+		if (navMesh.NearestPoint(glm::vec3(15.0f, 0.0f, 2.0f), 2.0f, point) && glm::distance(glm::vec2(point.x, point.z), glm::vec2(15.0f, 2.0f)) < 1.2f)
+		{
+			return fail("the Blocked area is on the navmesh");
+		}
+		if (navMesh.NearestPoint(glm::vec3(25.0f, 1.1f, 9.0f), 0.5f, point) && std::abs(point.y - 1.0f) < 0.2f)
+		{
+			return fail("the Not Walkable crate's top is on the navmesh");
+		}
+
+		Log::GetLogger()->info("Navigation self-test passed ({0} tiles, {1} polygons baked in {2:.1f} ms; {3:.1f} m around the wall, "
+			"{4:.1f} m up the ladder)", data.Tiles.size(), data.Polygons, result.Milliseconds, around, climb);
 		return true;
 	}
 }

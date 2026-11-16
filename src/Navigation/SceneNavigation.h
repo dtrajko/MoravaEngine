@@ -10,6 +10,7 @@
 
 class EnvMapVulkanScene;
 class NavMesh;
+struct NavMeshData;
 class ScenePhysics;
 class dtCrowd;
 class dtNavMeshQuery;
@@ -49,7 +50,12 @@ public:
 	void AddEntities(const std::vector<EnvMapVulkanEntityID>& entities);
 
 	// Before the physics step: the agents where their characters are, the crowd's step, its velocities to the characters
+	// (or, on a Nav Link, where the engine carries them)
 	void Update(float fixedStep);
+
+	// The scene's Nav Areas' and Nav Links' states (a Door's Open, a Costly area's Cost, a link's Enabled; E1.5) into its
+	// navmesh: by the game's scene while it runs (each step, and when a script changes one), by the edited scene in Edit
+	static void SyncStates(const EnvMapVulkanScene& scene);
 
 	// ---- The game's (C#: NavAgent). False: the entity isn't a running agent
 
@@ -70,9 +76,13 @@ public:
 		bool Arrived = false;        // within StoppingDistance of its destination (or the partial path's end); stands there
 		bool Stuck = false;          // it should walk, but hasn't moved on for a second (a closed door, the others in the way)
 		bool Yielding = false;       // it stands, and steps aside for a character that comes at it
+		bool OnLink = false;         // the engine carries it along a Nav Link (E1.5): up a ladder, in a jump
+		int LinkType = -1;           // NavLinkComponent::LinkType while OnLink (-1: none)
+		EnvMapVulkanEntityID LinkEntity = NoEntity; // the Nav Link's entity while OnLink
 		glm::vec3 Destination = glm::vec3(0.0f); // on the navmesh
 		glm::vec3 Position = glm::vec3(0.0f);    // its feet, on the navmesh
-		glm::vec3 Velocity = glm::vec3(0.0f);    // the velocity it asks its character for (across: the vertical is the gravity's)
+		glm::vec3 Velocity = glm::vec3(0.0f);    // the velocity it asks its character for (across: the vertical is the gravity's;
+		                                         // on a link, how it is carried: up a ladder, up)
 		glm::vec3 DesiredVelocity = glm::vec3(0.0f); // along its path, before steering around the others
 		float RemainingDistance = 0.0f;          // along its path to the destination (0: arrived, or none)
 		float Radius = 0.0f, Height = 0.0f;
@@ -116,6 +126,19 @@ private:
 		uint64_t DestinationPolygon = 0;
 		float StuckTime = 0.0f;
 		bool Yielding = false;        // making way (the crowd moves it by a velocity: MakeWay)
+
+		// A Nav Link (E1.5): the engine carries it along the link's way (points and each segment's speed), the crowd
+		// leaves it alone (Detour's off-mesh state) until it is at the far end
+		bool OnLink = false;
+		uint8_t LinkArea = 0;
+		uint32_t LinkIndex = 0;
+		std::vector<glm::vec3> LinkPoints; // feet positions: from where it got on to the link's far end
+		std::vector<float> LinkSpeeds;     // per segment
+		size_t LinkSegment = 0;
+		float LinkAlong = 0.0f;            // meters along the segment
+		glm::vec3 LinkFeet = glm::vec3(0.0f); // where the way has it now
+		glm::vec3 LinkVelocity = glm::vec3(0.0f);
+		uint64_t PendingLink = 0;          // the link its corners end at before the crowd's step (Detour may take it on itself)
 	};
 
 	void AddAgent(EnvMapVulkanEntityID entity);
@@ -129,6 +152,13 @@ private:
 	void RequestMove(Agent& agent);
 	// The agents that stand: aside from the characters coming at them, or still again once they have passed
 	void MakeWay();
+	// The walking agents near the start of a link on their paths get on it (before the crowd's step, so Detour doesn't
+	// take them over itself); after it, the ones Detour took on anyway. Then each one on a link carried on along it
+	void StartLinks(float fixedStep);
+	void StartLink(Agent& agent, uint64_t linkPolygon, const glm::vec3& from, const glm::vec3& start, const glm::vec3& end);
+	void UpdateLinks(float fixedStep);
+	// An area costs more than the ground (a Costly one): the agents don't straighten their paths by looking ahead
+	bool HasCostlyAreas() const;
 	Agent* Find(EnvMapVulkanEntityID entity);
 	const Agent* Find(EnvMapVulkanEntityID entity) const;
 	void FillState(const Agent& agent, AgentState& state) const;
@@ -136,6 +166,9 @@ private:
 	EnvMapVulkanScene* m_Scene = nullptr;
 	ScenePhysics* m_Physics = nullptr;
 	std::shared_ptr<const NavMesh> m_Mesh; // kept while the crowd uses it
+	std::shared_ptr<const NavMeshData> m_Data;
+	uint32_t m_FilterVersion = 0;         // the mesh's state version the crowd's filter is of
+	bool m_Shortcuts = true;              // the agents straighten their paths by looking ahead (no Costly areas)
 	dtCrowd* m_Crowd = nullptr;
 	dtNavMeshQuery* m_Query = nullptr;     // the agents' placing and their paths (the crowd's own is its)
 	std::vector<Agent> m_Agents;

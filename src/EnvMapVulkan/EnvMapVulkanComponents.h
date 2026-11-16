@@ -221,9 +221,45 @@ struct NavMeshComponent
 	NavMeshSettings Settings;
 
 	// Runtime: not in the scene file. The baked mesh as its file has it (SourceHash: what it was baked from) and ready for
-	// queries; none: not baked yet. Shared by the copies of the scene (Play), which only read it
+	// queries; none: not baked yet. Shared by the copies of the scene (Play). Only the Nav Areas' and Nav Links' states
+	// change in it (a door locked, a link off: NavMesh::SetAreaWalkable), put there from the running scene's components
+	// (SceneNavigation::SyncStates): the edited scene's again when the game stops
 	std::shared_ptr<const NavMeshData> Data;
-	std::shared_ptr<const NavMesh> Mesh;
+	std::shared_ptr<NavMesh> Mesh;
+};
+
+// A box of the navmesh with rules of its own (docs/games/Shooter_Plan.html, E1.5): the polygons baked inside it. Its box is
+// HalfExtents around the entity, turned and scaled with it (its height too: the floor in it must be inside). A Door's
+// polygons can be closed while the game runs (Open: a locked door; no new bake), a Costly area is walked through only when
+// going around costs more (Cost: mud, water, a lit yard), a Blocked one isn't on the navmesh at all (a pit the colliders
+// don't show, a minefield: kept away from by the agent's radius). Moving the box, or changing its type, needs a new bake;
+// Open and Cost don't.
+struct NavAreaComponent
+{
+	enum class AreaType { Door, Costly, Blocked };
+	AreaType Type = AreaType::Door;
+	glm::vec3 HalfExtents = glm::vec3(1.0f, 1.25f, 0.5f);
+	float Cost = 1.0f;                         // times the length walked in it (1: as the ground; Door and Costly)
+	bool Open = true;                          // a Door: walkable (false: closed, the paths go around or stop before it)
+
+	static const char* GetTypeName(AreaType type);
+};
+
+// A way between two places on the navmesh that the ground doesn't give (E1.5): a ladder, a jump down or across, a step over
+// a gap. It starts at the entity's position and ends at End (from the entity, turned and scaled with it); both ends on the
+// navmesh (within Radius across and a step up and down). Agents take it as part of their paths, and the engine moves them
+// along it (a Ladder straight up or down, a Jump in an arc, a Walk in a line). One way (start to end) or both. Moving it
+// needs a new bake; Enabled doesn't (a raised ladder, a lift away).
+struct NavLinkComponent
+{
+	enum class LinkType { Ladder, Jump, Walk };
+	LinkType Type = LinkType::Ladder;
+	glm::vec3 End = glm::vec3(0.0f, 3.0f, 1.0f);
+	bool Bidirectional = true;
+	float Radius = 0.5f;                       // meters: how far from the navmesh an end may be
+	bool Enabled = true;
+
+	static const char* GetTypeName(LinkType type);
 };
 
 // Particles that start at the entity (World/Particles.h; docs/engine/Game_Engine_Runtime_Guide.html, 12.1): the settings are
@@ -343,6 +379,9 @@ struct ColliderComponent
 	float Friction = 0.5f;
 	float Restitution = 0.0f;                  // bounciness: 0 stays, 1 bounces back as high
 	bool IsTrigger = false;                    // a sensor: things pass through it, and it reports what enters and leaves it
+	// The navmesh (E1.5): its top isn't walkable (a table, a car's roof, a crate characters shouldn't stand on). It still
+	// blocks the navmesh around and under it
+	bool NotWalkable = false;
 
 	// ConvexMesh: the model's meshes wrapped tightly (no holes or hollows), for moving bodies. TriangleMesh: the
 	// meshes' triangles as they are, for static bodies only (a moving one gets the convex hull)
@@ -716,6 +755,6 @@ struct ComponentList
 // The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
-	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, NavMeshComponent, ParticleEmitterComponent, TrailComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
+	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, NavMeshComponent, NavAreaComponent, NavLinkComponent, ParticleEmitterComponent, TrailComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, NavAgentComponent, VehicleComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent,
 	PrefabComponent, UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;
