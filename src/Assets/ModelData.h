@@ -63,7 +63,7 @@ struct ModelMaterialData
 
 struct ModelData
 {
-	bool IsAnimated = false; // the file has animations: AnimatedVertices, else StaticVertices
+	bool IsAnimated = false; // the file has animations or a rigged mesh: AnimatedVertices, else StaticVertices
 	std::vector<H2M::VertexH2M> StaticVertices;
 	std::vector<H2M::AnimatedVertex> AnimatedVertices;
 	std::vector<H2M::Index> Indices;

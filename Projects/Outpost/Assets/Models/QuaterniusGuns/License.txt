@@ -1,0 +1,9 @@
+Ultimate Gun Pack (July 2019) by Quaternius
+https://quaternius.com/packs/ultimategun.html
+https://opengameart.org/content/low-poly-guns-pack
+
+License: CC0 1.0 Universal (CC0 1.0), Public Domain Dedication
+https://creativecommons.org/publicdomain/zero/1.0/
+(as both pages state; the pack's download has no license file of its own)
+
+Files here: AssaultRifle_2.fbx (the AK-style rifle), SniperRifle_3.fbx, Pistol_1.fbx, as downloaded.
