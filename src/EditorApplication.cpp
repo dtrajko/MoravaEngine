@@ -3,6 +3,7 @@
 #include "H2M/ImGui/ImGuiLayerH2M.h"
 #include "H2M/Project/UserPreferencesH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
+#include "Navigation/NavMeshBuilder.h"
 #if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLRendererH2M.h"
 #endif
@@ -287,6 +288,8 @@ void EditorApplication::PushLayers(Application& application)
 					application.PushLayer(new H2M::VulkanTestLayer("VulkanTestLayer")); // to be removed
 					break;
 				case SceneName::ENV_MAP_VULKAN:
+					// The navmesh's bake (Recast) is the editor's: its self-test runs here, not with the renderer's (the player's too)
+					NavMeshBuilder::SelfTest();
 					application.PushLayer(new EnvMapVulkanEditorLayer(H2M::RefH2M<H2M::UserPreferencesH2M>::Create())); // the editor (src/Editor)
 					break;
 				default:
