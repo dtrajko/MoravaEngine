@@ -176,11 +176,12 @@ class Rig:
         self.report = True
         self.hand_target = {s: add_empty(f"Hand_{s}") for s in "rl"}
         self.pole = {s: add_empty(f"Elbow_{s}") for s in "rl"}
+        self.ik = {}  # the arms' IK constraints: aim_elbows sets their pole angles
         for side in "rl":
             ik = armature.pose.bones[f"lowerarm_{side}"].constraints.new("IK")
             ik.target = self.hand_target[side]
             ik.pole_target = self.pole[side]
-            ik.pole_angle = math.radians(-90.0 if side == "r" else 90.0)  # the left arm's axes are mirrored
+            self.ik[side] = ik
             ik.chain_count = 2
             copy = armature.pose.bones[f"hand_{side}"].constraints.new("COPY_ROTATION")
             copy.target = self.hand_target[side]
@@ -300,6 +301,8 @@ class Clip:
         self.left_world = {}         # the left hand's trips to the belt pouch: {"from", "pouch", "to"[, "again"]} times
         self.left_after = None       # [(time, Matrix)] the left hand in the gun's frame after the first trip
         self.weapon = None
+        self.left_free = False        # the left hand leaves the gun (the belt pouch): its elbow rules don't hold
+        self.below_hand_margin = 0.0  # how far (m) an elbow may be above its hand: the gun aimed down lowers the hands
 
 
 def make_clips(weapon):
@@ -309,6 +312,7 @@ def make_clips(weapon):
     clips.append(Clip(f"{weapon}_Idle_Loop", "Idle_Loop", low_ready=True))
     for name, pitch in (("Up", 45.0), ("Neutral", 0.0), ("Down", -45.0)):
         clips.append(Clip(f"{weapon}_Aim_{name}", "Pistol_Aim_Neutral", aim_pitch=pitch))
+        clips[-1].below_hand_margin = 0.04 if pitch < 0.0 else 0.0
 
     shoot = Clip(f"{weapon}_Shoot", "Pistol_Aim_Neutral", frames=int(FPS * (0.35 if weapon == "Rifle" else 0.6)))
     kick = 0.035 if weapon == "Rifle" else 0.06
@@ -323,6 +327,7 @@ def make_clips(weapon):
     tilt = Matrix.Translation((0.0, 0.05, -0.04)) @ rot("X", -25.0) @ rot("Y", 12.0)  # rolled to show the magazine side
     if weapon == "Rifle":
         reload = Clip("Rifle_Reload", "Pistol_Aim_Neutral", frames=int(FPS * 2.2))
+        reload.left_free = True
         reload.gun_motion = [(0.0, Matrix.Identity(4)), (0.3, tilt), (1.9, tilt), (2.2, Matrix.Identity(4))]
         mag = left_hand_on(w["Magazine"])
         mag_out = Matrix.Translation((0.0, 0.0, -0.12)) @ mag
@@ -344,6 +349,7 @@ def make_clips(weapon):
         clips.append(cycle)
 
         reload = Clip("Sniper_Reload", "Pistol_Aim_Neutral", frames=int(FPS * 2.6))
+        reload.left_free = True
         reload.gun_motion = [(0.0, Matrix.Identity(4)), (0.3, tilt), (2.3, tilt), (2.6, Matrix.Identity(4))]
         reload.right = [(0.0, grip), (0.25, knob), (0.4, up), (0.55, back), (1.95, back), (2.1, up), (2.25, knob),
                         (2.6, grip)]
@@ -390,6 +396,73 @@ def left_hand_at(clip, time, gun, rig):
     return gun @ keyed(clip.left, time)
 
 
+# An arm holding a gun hangs from its elbow: the elbow is below the hand and outside the shoulder (checked in every
+# frame, but for the left arm on its way to the belt pouch, and a few centimeters for the hands of the gun aimed down),
+# and never above the line from the shoulder to the hand
+ELBOW_MIN_DROP = 0.0  # never above (a hand down at the belt pouch hangs the arm nearly straight: about 1 cm)
+
+
+def elbow_drop(rig, side):
+    """How far the elbow is below the line from the shoulder to the hand (meters; negative: above it)"""
+    shoulder = rig.bone(f"upperarm_{side}").translation
+    elbow = rig.bone(f"lowerarm_{side}").translation
+    hand = rig.bone(f"hand_{side}").translation
+    arm = hand - shoulder
+    t = max(0.0, min(1.0, (elbow - shoulder).dot(arm) / arm.length_squared))
+    return shoulder.lerp(hand, t).z - elbow.z
+
+
+def elbow_off_target(rig, side):
+    """The angle (degrees) between where the elbow points and where its target is, around the shoulder-hand line"""
+    shoulder = rig.bone(f"upperarm_{side}").translation
+    arm = rig.bone(f"hand_{side}").translation - shoulder
+
+    def across(point):
+        v = point - shoulder
+        return v - arm * (v.dot(arm) / arm.length_squared)
+
+    elbow = across(rig.bone(f"lowerarm_{side}").translation)
+    target = across(rig.pole[side].matrix_world.translation)
+    return math.degrees(elbow.angle(target, math.pi))
+
+
+def aim_elbows(rig):
+    """Turns each IK pole angle until the elbow points at its target. The angle that does depends on the pose (the
+    shoulder's turn): measured on a clip's first frame, kept for the clip"""
+    for side in "rl":
+        ik = rig.ik[side]
+
+        def miss(degrees):
+            ik.pole_angle = math.radians(degrees)
+            rig.update()
+            return elbow_off_target(rig, side)
+
+        best = min(range(-180, 180, 10), key=miss)
+        best = min((best + d for d in range(-10, 11)), key=miss)
+        miss(best)
+
+
+def elbow_place(rig, side):
+    """How far the elbow is below the hand and outside the shoulder (meters; negative: above, inside)"""
+    shoulder = rig.bone(f"upperarm_{side}").translation
+    elbow = rig.bone(f"lowerarm_{side}").translation
+    hand = rig.bone(f"hand_{side}").translation
+    outward = LEFT * -1.0 if side == "r" else LEFT
+    return hand.z - elbow.z, (elbow - shoulder).dot(outward)
+
+
+# Aiming, the chest turns further sideways than the pistol stance's (a bladed stance): the left shoulder comes forward
+# toward the handguard, so the left arm bends and its elbow can hang out and down. The head turns back to face the gun.
+CHEST_TWIST = -30.0  # degrees (negative: the right shoulder further back)
+
+
+def twist_chest(pose):
+    turn = Matrix.Rotation(math.radians(CHEST_TWIST / 2.0), 4, "Y")
+    pose["spine_02"] = pose["spine_02"] @ turn
+    pose["spine_03"] = pose["spine_03"] @ turn
+    pose["neck_01"] = pose["neck_01"] @ Matrix.Rotation(math.radians(-CHEST_TWIST), 4, "Y")
+
+
 def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
     armature = rig.armature
     w = WEAPONS[clip.weapon]
@@ -404,6 +477,7 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
             bend = Matrix.Rotation(math.radians(-clip.aim_pitch * 1.13 / 3.0), 4, "X")  # +x leans forward; 1.13: the bones' axes are twisted, so the gun turned 40 of 45 degrees
             for name in SPINE:
                 pose[name] = pose[name] @ bend
+            twist_chest(pose)
             pose["Head"] = pose["Head"] @ head_bend
         return pose
 
@@ -412,14 +486,15 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
     if clip.low_ready:
         at_shoulder = gun_at_shoulder(w, rig)
         pivot = at_shoulder @ Matrix.Translation(w["Butt"])
-        low = pivot @ rot("Y", 40.0) @ rot("Z", 25.0) @ Matrix.Translation(-w["Butt"])  # muzzle down and to the left
-        placed = low @ Matrix.Translation((0.0, 0.0, -0.06))
+        low = pivot @ rot("Y", 30.0) @ rot("Z", 25.0) @ Matrix.Translation(-w["Butt"])  # muzzle down and to the left
+        placed = low @ Matrix.Translation((0.0, 0.0, 0.02))
         rig.set_pose(base_frames[0])
         rig.update()
     else:
         # Level at the neutral aim, then turned with the chest's bend
         neutral_pose = dict(base_frames[0])
         neutral_pose.update(finger_pose)
+        twist_chest(neutral_pose)
         neutral_pose["Head"] = neutral_pose["Head"] @ head_bend
         rig.set_pose(neutral_pose)
         rig.update()
@@ -432,6 +507,9 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
 
     action = bpy.data.actions.new(clip.name)
     poses = []
+    lowest = {"r": math.inf, "l": math.inf}
+    worst_below = {"r": math.inf, "l": math.inf}
+    worst_outside = {"r": math.inf, "l": math.inf}
     for f in range(count):
         time = f / FPS
         rig.set_pose(body(f))
@@ -442,13 +520,30 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
         left = left_hand_at(clip, time, gun, rig)
         for side, hand in (("r", right), ("l", left)):
             rig.hand_target[side].matrix_world = armature.matrix_world @ hand
-        # Elbows: the right one out and down, the left one under the gun
-        shoulder_r = rig.bone("upperarm_r").translation
-        shoulder_l = rig.bone("upperarm_l").translation
-        rig.pole["r"].matrix_world = Matrix.Translation(armature.matrix_world @ (shoulder_r - LEFT * 0.35 - UP * 0.35 + FORWARD * 0.1))
-        rig.pole["l"].matrix_world = Matrix.Translation(armature.matrix_world @ (shoulder_l + LEFT * 0.1 - UP * 0.6 + FORWARD * 0.25))
+        # Elbows: each one's target out to the side and down from the middle of its arm (the shoulder and the hand)
+        for side, hand in (("r", right), ("l", left)):
+            shoulder = rig.bone(f"upperarm_{side}").translation
+            outward = LEFT * -1.0 if side == "r" else LEFT
+            middle = shoulder.lerp(hand.translation, 0.5)
+            rig.pole[side].matrix_world = Matrix.Translation(armature.matrix_world @ (middle + outward * 0.6 - UP * 0.6))
+        if f == 0:
+            aim_elbows(rig)
         rig.update()
         poses.append((rig.local_pose(), gun.copy()))
+        for side in "rl":
+            drop = elbow_drop(rig, side)
+            lowest[side] = min(lowest[side], drop)
+            below, outside = elbow_place(rig, side)
+            worst_below[side] = min(worst_below[side], below)
+            worst_outside[side] = min(worst_outside[side], outside)
+            if not (side == "l" and clip.left_free) and (below < -clip.below_hand_margin or outside < 0.0):
+                raise SystemExit(f"{clip.name}, frame {f}: the {'right' if side == 'r' else 'left'} elbow is "
+                                 f"{below * 100:.1f} cm below its hand and {outside * 100:.1f} cm outside its shoulder "
+                                 f"(both wanted above 0): check the elbow targets and the chest's twist")
+            if drop < ELBOW_MIN_DROP:
+                raise SystemExit(f"{clip.name}, frame {f}: the {'right' if side == 'r' else 'left'} elbow is "
+                                 f"{drop * 100:.1f} cm below the line from the shoulder to the hand (above it): check the arm's "
+                                 f"IK pole")
         if f == count // 2:
             miss = {s: (rig.bone(f"hand_{s}").translation - rig.hand_target[s].matrix_world.translation).length
                     for s in "rl"}
@@ -465,8 +560,13 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
                   f"{tuple(round(v, 4) for v in in_hand.translation)}, quaternion "
                   f"{tuple(round(v, 4) for v in in_hand.to_quaternion())}")
             print(f"  {clip.name}: gun pitch {pitch:.1f}, yaw {yaw:.1f} (deg); hands off target r {miss['r'] * 100:.1f} cm,"
-                  f" l {miss['l'] * 100:.1f} cm")
+                  f" l {miss['l'] * 100:.1f} cm; elbows below the shoulder-hand line r {elbow_drop(rig, 'r') * 100:.1f} cm,"
+                  f" l {elbow_drop(rig, 'l') * 100:.1f} cm")
 
+    print(f"  {clip.name}: the elbows at least r {lowest['r'] * 100:.1f} cm, l {lowest['l'] * 100:.1f} cm below the "
+          f"shoulder-hand line in every frame; below the hand at least r {worst_below['r'] * 100:.1f}, "
+          f"l {worst_below['l'] * 100:.1f} cm; outside the shoulder at least r {worst_outside['r'] * 100:.1f}, "
+          f"l {worst_outside['l'] * 100:.1f} cm")
     return action, poses
 
 

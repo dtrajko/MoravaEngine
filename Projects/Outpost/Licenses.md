@@ -6,7 +6,7 @@ kept beside its files in `Assets/`.
 
 | Pack | Author, source | License | Used for | Folder |
 |---|---|---|---|---|
-| Universal Base Characters (Standard, free) | Quaternius, https://quaternius.itch.io/universal-base-characters | CC0 1.0 | The soldiers' body (`Superhero_Male_FullBody`, its textures); the gltf's two normal map names fixed to the files the pack has | `Assets/Models/QuaterniusCharacters` |
+| Universal Base Characters (Standard, free) | Quaternius, https://quaternius.itch.io/universal-base-characters | CC0 1.0 | The soldiers' body (`Superhero_Male_FullBody`, its textures: the light skin, `T_Superhero_Male_Ligh.png` in the pack, as `T_Superhero_Male_Light.png`); the gltf's two normal map names fixed to the files the pack has, and its hair material named our dark brown copy of the hair texture (`T_Hair_1_DarkBrown.png`, made by `Tools/CharacterPoses/tint_hair.py`) | `Assets/Models/QuaterniusCharacters` |
 | Universal Animation Library (Standard, free; the itch.io version, new bone names) | Quaternius, https://quaternius.itch.io/universal-animation-library | CC0 1.0 | The characters' clips (`UAL1_Standard.glb`: locomotion, crouch, jump, hits, death, pistol) | `Assets/Models/QuaterniusAnimations` |
 | Ultimate Gun Pack (July 2019) | Quaternius, https://quaternius.com/packs/ultimategun.html, https://opengameart.org/content/low-poly-guns-pack | CC0 1.0 (the pages; no license file in the download) | The rifle (`AssaultRifle_2`), the sniper rifle (`SniperRifle_3`), the pistol (`Pistol_1`); scale 0.0017 in a scene (the files are in centimeters, about 6 times too large) | `Assets/Models/QuaterniusGuns` |
 
