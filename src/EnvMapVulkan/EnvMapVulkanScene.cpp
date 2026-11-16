@@ -291,6 +291,18 @@ const char* RigidBodyComponent::GetTypeName(BodyType type)
 	return "Dynamic";
 }
 
+const char* NavAgentComponent::GetAvoidanceName(AvoidanceQuality quality)
+{
+	switch (quality)
+	{
+		case AvoidanceQuality::None:   return "None";
+		case AvoidanceQuality::Low:    return "Low";
+		case AvoidanceQuality::Medium: return "Medium";
+		case AvoidanceQuality::High:   return "High";
+	}
+	return "Medium";
+}
+
 const char* VehicleComponent::GetControlName(ControlMode mode)
 {
 	return mode == ControlMode::Script ? "Script" : "Player";

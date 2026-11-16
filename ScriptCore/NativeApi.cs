@@ -168,6 +168,12 @@ namespace Morava
         public delegate* unmanaged<Vector3*, Vector3*, Vector3*, int> Navigation_Raycast;
         public delegate* unmanaged<Vector3*, float, Vector3*, int> Navigation_NearestPoint;
         public delegate* unmanaged<Vector3*, float, Vector3*, int> Navigation_RandomPointAround;
+
+        public delegate* unmanaged<ulong, Vector3*, int> NavAgent_SetDestination;
+        public delegate* unmanaged<ulong, int> NavAgent_Stop;
+        public delegate* unmanaged<ulong, NativeNavAgentState*, int> NavAgent_GetState;
+        public delegate* unmanaged<ulong, float, float, float, int> NavAgent_SetSettings;
+        public delegate* unmanaged<ulong, Vector3*, int, int*, int> NavAgent_GetPath;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -185,6 +191,17 @@ namespace Morava
         public Vector3 GroundNormal;
         public Vector3 GroundVelocity;
         public Vector3 GroundAngularVelocity;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeNavAgentState
+    {
+        public int OnNavMesh, HasDestination, PathPending, PathPartial, Arrived, Stuck;
+        public Vector3 Destination;
+        public Vector3 Velocity;
+        public Vector3 DesiredVelocity;
+        public float RemainingDistance;
+        public float Speed, Acceleration, StoppingDistance;
     }
 
     [StructLayout(LayoutKind.Sequential)]

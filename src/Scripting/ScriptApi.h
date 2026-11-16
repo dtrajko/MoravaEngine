@@ -34,6 +34,17 @@ struct ScriptCharacterState
 	glm::vec3 GroundAngularVelocity = glm::vec3(0.0f); // radians per second: what it stands on turns
 };
 
+// A walking agent (NavAgent; SceneNavigation::AgentState) after the last step, and its settings
+struct ScriptNavAgentState
+{
+	int32_t OnNavMesh = 0, HasDestination = 0, PathPending = 0, PathPartial = 0, Arrived = 0, Stuck = 0;
+	glm::vec3 Destination = glm::vec3(0.0f);
+	glm::vec3 Velocity = glm::vec3(0.0f);
+	glm::vec3 DesiredVelocity = glm::vec3(0.0f);
+	float RemainingDistance = 0.0f;
+	float Speed = 0.0f, Acceleration = 0.0f, StoppingDistance = 0.0f;
+};
+
 // A vehicle's driver input (Vehicle.SetInput) and what it does now (ScenePhysics::VehicleInput, VehicleState)
 struct ScriptVehicleInput
 {
@@ -212,7 +223,8 @@ struct ScriptFieldReport
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
-	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14, Trail = 15 };
+	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14, Trail = 15,
+	NavAgent = 16 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -464,6 +476,15 @@ struct ScriptNativeApi
 	int32_t (*Navigation_Raycast)(const glm::vec3* from, const glm::vec3* to, glm::vec3* hit);
 	int32_t (*Navigation_NearestPoint)(const glm::vec3* position, float maxDistance, glm::vec3* out);
 	int32_t (*Navigation_RandomPointAround)(const glm::vec3* center, float radius, glm::vec3* out);
+
+	// NavAgent (E1.4): 0 when the entity isn't a running agent (a Nav Agent on a character, in a scene with a baked navmesh).
+	// SetDestination: 1 on its way, -1 nothing on the navmesh near the destination (nothing changes). GetPath: as
+	// Navigation_FindPath, from its feet (0 corners: no destination, or arrived; -1: not a running agent)
+	int32_t (*NavAgent_SetDestination)(uint64_t entity, const glm::vec3* destination);
+	int32_t (*NavAgent_Stop)(uint64_t entity);
+	int32_t (*NavAgent_GetState)(uint64_t entity, ScriptNavAgentState* out);
+	int32_t (*NavAgent_SetSettings)(uint64_t entity, float speed, float acceleration, float stoppingDistance);
+	int32_t (*NavAgent_GetPath)(uint64_t entity, glm::vec3* out, int capacity, int32_t* complete);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

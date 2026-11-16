@@ -405,6 +405,15 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "PushStrength" << YAML::Value << character->PushStrength;
 			out << YAML::EndMap;
 		}
+		if (const NavAgentComponent* agent = scene.TryGet<NavAgentComponent>(entity))
+		{
+			out << YAML::Key << "NavAgent" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Speed" << YAML::Value << agent->Speed;
+			out << YAML::Key << "Acceleration" << YAML::Value << agent->Acceleration;
+			out << YAML::Key << "StoppingDistance" << YAML::Value << agent->StoppingDistance;
+			out << YAML::Key << "Avoidance" << YAML::Value << NavAgentComponent::GetAvoidanceName(agent->Avoidance);
+			out << YAML::EndMap;
+		}
 		if (const VehicleComponent* vehicle = scene.TryGet<VehicleComponent>(entity))
 		{
 			out << YAML::Key << "Vehicle" << YAML::Value << YAML::BeginMap;
@@ -1107,6 +1116,21 @@ namespace EnvMapVulkanSceneSerializer
 			Read(characterNode, "StepHeight", character.StepHeight);
 			Read(characterNode, "Mass", character.Mass);
 			Read(characterNode, "PushStrength", character.PushStrength);
+		}
+		if (YAML::Node agentNode = node["NavAgent"]; agentNode && agentNode.IsMap())
+		{
+			NavAgentComponent& agent = scene.Add<NavAgentComponent>(entity);
+			Read(agentNode, "Speed", agent.Speed);
+			Read(agentNode, "Acceleration", agent.Acceleration);
+			Read(agentNode, "StoppingDistance", agent.StoppingDistance);
+			const std::string avoidance = agentNode["Avoidance"].as<std::string>("Medium");
+			for (int i = 0; i <= (int)NavAgentComponent::AvoidanceQuality::High; i++)
+			{
+				if (avoidance == NavAgentComponent::GetAvoidanceName((NavAgentComponent::AvoidanceQuality)i))
+				{
+					agent.Avoidance = (NavAgentComponent::AvoidanceQuality)i;
+				}
+			}
 		}
 		if (YAML::Node vehicleNode = node["Vehicle"]; vehicleNode && vehicleNode.IsMap())
 		{

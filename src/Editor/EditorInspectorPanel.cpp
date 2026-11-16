@@ -689,6 +689,79 @@ static void GearControls(VehicleComponent& vehicle)
 	}
 }
 
+// A Nav Agent's settings, and in the running game where it walks
+static void NavAgentControls(EnvMapVulkanEntityID entity, NavAgentComponent& agent)
+{
+	ImGui::Spacing();
+	ImGui::TextUnformatted("Nav Agent");
+	if (!s_Scene.Has<CharacterControllerComponent>(entity))
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.3f, 1.0f), "It needs Character: the agent walks its character");
+	}
+	ImGui::DragFloat("Speed##NavAgent", &agent.Speed, 0.05f, 0.0f, 50.0f, "%.2f m/s", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The fastest it walks (a walk is about 1.5 m/s, a run 4)");
+	}
+	ImGui::DragFloat("Acceleration##NavAgent", &agent.Acceleration, 0.1f, 0.01f, 200.0f, "%.1f m/s2", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How fast it gets to its speed, stops and turns (lower: it swings wider around corners)");
+	}
+	ImGui::DragFloat("Stopping Distance##NavAgent", &agent.StoppingDistance, 0.01f, 0.0f, 20.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("It has arrived this near its destination, and stops there");
+	}
+	int avoidance = (int)agent.Avoidance;
+	const char* qualities[] = { "None", "Low", "Medium", "High" };
+	if (ImGui::Combo("Avoidance##NavAgent", &avoidance, qualities, IM_ARRAYSIZE(qualities)))
+	{
+		agent.Avoidance = (NavAgentComponent::AvoidanceQuality)avoidance;
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How hard it looks for a way around the other characters, from where they are and how they move\n"
+			"(higher: smoother, costs more). None: it keeps to its path, and physics stops it at them");
+	}
+
+	// The running game: where it walks (the editor's copy has none)
+	if (IsPlaying())
+	{
+		SceneNavigation::AgentState state;
+		const SceneNavigation* navigation = GetGameNavigation();
+		if (!navigation)
+		{
+			ImGui::TextDisabled("Not walking: the scene has no baked navmesh");
+		}
+		else if (navigation->GetAgentState(entity, state))
+		{
+			if (!state.OnNavMesh)
+			{
+				ImGui::TextDisabled("Off the navmesh");
+			}
+			else if (state.Yielding)
+			{
+				ImGui::TextDisabled("Making way for a character coming at it");
+			}
+			else if (state.Arrived)
+			{
+				ImGui::TextDisabled("Arrived%s", state.PathPartial ? " as near as it gets" : "");
+			}
+			else if (state.HasDestination)
+			{
+				ImGui::TextDisabled("%s %.1f m to go%s%s", state.PathPending ? "Finding its path:" : "Walking:", state.RemainingDistance,
+					state.PathPartial ? " (can't reach it: as near as it gets)" : "", state.Stuck ? ", stuck" : "");
+			}
+			else
+			{
+				ImGui::TextDisabled("Standing: no destination");
+			}
+			ImGui::TextDisabled("Speed %.2f m/s (along its path %.2f)", glm::length(state.Velocity), glm::length(state.DesiredVelocity));
+		}
+	}
+}
+
 static void VehicleControls(EnvMapVulkanEntityID entity, VehicleComponent& vehicle)
 {
 	const ImVec4 warningColor(1.0f, 0.8f, 0.3f, 1.0f);
@@ -975,6 +1048,7 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 		else
 		{
 			s_Scene.Remove<CharacterControllerComponent>(model);
+			s_Scene.Remove<NavAgentComponent>(model); // an agent walks its character
 		}
 	}
 	if (ImGui::IsItemHovered())
@@ -982,6 +1056,26 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 		ImGui::SetTooltip("A player or another walking figure: a standing capsule (fitted around the model at first) that the game\n"
 			"moves by asking for a velocity, as the Input Test does. It stops at walls and slides along them, walks up\n"
 			"gentle slopes and steps, slides down steep slopes, stands on things and pushes dynamic models.");
+	}
+	ImGui::SameLine();
+	bool isAgent = s_Scene.Has<NavAgentComponent>(model);
+	ImGui::BeginDisabled(!isCharacter && !isAgent);
+	if (ImGui::Checkbox("Nav Agent", &isAgent))
+	{
+		if (isAgent)
+		{
+			s_Scene.Add<NavAgentComponent>(model);
+		}
+		else
+		{
+			s_Scene.Remove<NavAgentComponent>(model);
+		}
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("The character walks by itself to where a script sends it (C#: NavAgent.SetDestination): along the\n"
+			"scene's baked navmesh (its Nav Mesh), around the other characters. Needs Character.");
 	}
 	ImGui::SameLine();
 	bool isVehicle = s_Scene.Has<VehicleComponent>(model);
@@ -1220,6 +1314,10 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 				ImGui::TextDisabled("Ground slope %.0f deg", glm::degrees(std::acos(glm::clamp(state.GroundNormal.y, -1.0f, 1.0f))));
 			}
 		}
+	}
+	if (NavAgentComponent* agent = s_Scene.TryGet<NavAgentComponent>(model))
+	{
+		NavAgentControls(model, *agent);
 	}
 	if (VehicleComponent* vehicle = s_Scene.TryGet<VehicleComponent>(model))
 	{

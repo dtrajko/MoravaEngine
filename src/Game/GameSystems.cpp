@@ -149,6 +149,7 @@ void GameSystems::Start(bool keepClock)
 {
 	m_Scripts.Stop();
 	m_UI.Stop();
+	m_Navigation.Stop();
 	m_Physics.Stop();
 	m_Audio.Stop();
 	m_Animation.Stop();
@@ -179,6 +180,7 @@ void GameSystems::Start(bool keepClock)
 	}
 	m_ScriptContext.Scene = m_Scene;
 	m_ScriptContext.Physics = &m_Physics;
+	m_ScriptContext.Navigation = &m_Navigation;
 	m_ScriptContext.Audio = &m_Audio;
 	m_ScriptContext.Animation = &m_Animation;
 	m_ScriptContext.Scripts = &m_Scripts;
@@ -236,6 +238,8 @@ void GameSystems::Start(bool keepClock)
 					Log::GetLogger()->info("Input: the player's bindings of {0} action(s)", player.Bindings.size());
 				}
 			}
+			// The walking agents, on their characters (not in Simulate: where they go is the game's)
+			m_Navigation.Start(*m_Scene, m_Physics);
 			m_Audio.Start(*m_Scene);
 			m_UI.Start(*m_Scene, m_Input->GetMap());
 			m_Scripts.Start(*m_Scene);
@@ -423,6 +427,10 @@ void GameSystems::FixedUpdate(float fixedStep)
 	// What the game destroyed in this step is gone before physics steps (its bodies with it)
 	ScriptBindings::DestroyQueued(m_ScriptContext);
 	m_Scripts.RemoveDestroyed();
+
+	// The agents' velocities to their characters, where the scripts sent them (NavAgent.SetDestination)
+	m_Navigation.Update(fixedStep);
+	stages.Next("Navigation");
 
 	// Physics, after what moves kinematic bodies (the input test, the scripts), then its collisions and triggers to the
 	// scripts (still the fixed step: Input's edges are the step's), and what they destroyed (a pickup: gone in this frame)

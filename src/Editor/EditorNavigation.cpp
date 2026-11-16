@@ -1,6 +1,6 @@
-// Navigation in the editor (docs/games/Shooter_Plan.html, E1.2, E1.3): the scene's Nav Mesh entity, its Inspector section,
+// Navigation in the editor (docs/games/Shooter_Plan.html, E1.2-E1.4): the scene's Nav Mesh entity, its Inspector section,
 // the bake on a worker thread (the triangles gathered on the main thread, Recast's steps on the worker), the .mnav file
-// next to the scene, and the Navigation debug view over the viewport with its two-click path
+// next to the scene, and the Navigation debug view over the viewport with its two-click path and the running game's agents
 
 
 #include "Core/Application.h"
@@ -9,10 +9,13 @@
 #include "Navigation/NavMesh.h"
 #include "Navigation/NavMeshBuilder.h"
 #include "Navigation/NavMeshFile.h"
+#include "Navigation/SceneNavigation.h"
 #include "Physics/ScenePhysics.h"
 #include "Project/Project.h"
 
 #include "imgui.h"
+
+#include <glm/gtc/constants.hpp>
 
 #include <atomic>
 #include <cfloat>
@@ -770,39 +773,92 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 		drawList->AddLine(toPixel(a), toPixel(b), e.Outline ? IM_COL32(230, 250, 255, 220) : IM_COL32(230, 250, 255, 45), e.Outline ? 1.5f : 1.0f);
 	}
 
+	// Lines and dots on the mesh, just above the polygons they lie on
+	const glm::vec3 lift(0.0f, 0.05f, 0.0f);
+	auto line = [&](const glm::vec3& from, const glm::vec3& to, ImU32 color, float thickness)
+	{
+		glm::vec4 a = viewProjection * glm::vec4(from + lift, 1.0f), b = viewProjection * glm::vec4(to + lift, 1.0f);
+		const float MinW = 0.01f;
+		if (a.w < MinW && b.w < MinW)
+		{
+			return;
+		}
+		if (a.w < MinW)
+		{
+			a = glm::mix(a, b, (MinW - a.w) / (b.w - a.w));
+		}
+		else if (b.w < MinW)
+		{
+			b = glm::mix(b, a, (MinW - b.w) / (a.w - b.w));
+		}
+		drawList->AddLine(toPixel(a), toPixel(b), color, thickness);
+	};
+	auto dot = [&](const glm::vec3& at, ImU32 color, float radius)
+	{
+		const glm::vec4 clip = viewProjection * glm::vec4(at + lift, 1.0f);
+		if (clip.w >= 0.01f)
+		{
+			drawList->AddCircleFilled(toPixel(clip), radius, color);
+			drawList->AddCircle(toPixel(clip), radius, IM_COL32(0, 0, 0, 200), 0, 1.5f);
+		}
+	};
+	auto ring = [&](const glm::vec3& center, float radius, ImU32 color, float thickness)
+	{
+		const int Segments = 20;
+		for (int i = 0; i < Segments; i++)
+		{
+			const float a0 = glm::two_pi<float>() * (float)i / Segments, a1 = glm::two_pi<float>() * (float)(i + 1) / Segments;
+			line(center + glm::vec3(std::cos(a0), 0.0f, std::sin(a0)) * radius, center + glm::vec3(std::cos(a1), 0.0f, std::sin(a1)) * radius,
+				color, thickness);
+		}
+	};
+
+	// The running game's agents (E1.4): each one's path (light blue; orange when partial) and corners, its destination,
+	// its width on the ground (cyan; red when stuck; gray: a character without a Nav Agent, which the agents walk around),
+	// the velocity it walks with (green, half a second of it) and the one along its path (faint)
+	if (const SceneNavigation* navigation = GetGameNavigation())
+	{
+		std::vector<SceneNavigation::DebugAgent> agents;
+		navigation->GetDebugAgents(agents);
+		for (const SceneNavigation::DebugAgent& agent : agents)
+		{
+			const SceneNavigation::AgentState& s = agent.State;
+			const glm::vec3 offset = s.Position - cameraPosition;
+			if (glm::dot(offset, offset) > maxDistance2)
+			{
+				continue;
+			}
+			if (agent.Passive)
+			{
+				ring(s.Position, s.Radius, IM_COL32(200, 200, 200, 160), 1.5f);
+				line(s.Position, s.Position + s.Velocity * 0.5f, IM_COL32(200, 200, 200, 160), 1.5f);
+				continue;
+			}
+			const ImU32 pathColor = s.PathPartial ? IM_COL32(255, 150, 40, 220) : IM_COL32(110, 190, 255, 220);
+			for (size_t i = 1; i < agent.Path.size(); i++)
+			{
+				line(agent.Path[i - 1], agent.Path[i], pathColor, 2.0f);
+			}
+			for (size_t i = 1; i + 1 < agent.Path.size(); i++)
+			{
+				dot(agent.Path[i], pathColor, 3.0f);
+			}
+			if (s.HasDestination)
+			{
+				dot(s.Destination, pathColor, 4.0f);
+				ring(s.Destination, std::max(s.Settings.StoppingDistance, 0.1f), (pathColor & ~IM_COL32_A_MASK) | IM_COL32(0, 0, 0, 60), 1.0f);
+			}
+			ring(s.Position, s.Radius, s.Stuck ? IM_COL32(240, 70, 60, 255) : IM_COL32(60, 230, 230, 255), 2.0f);
+			line(s.Position, s.Position + s.DesiredVelocity * 0.5f, IM_COL32(90, 230, 90, 90), 1.5f);
+			line(s.Position, s.Position + s.Velocity * 0.5f, IM_COL32(90, 230, 90, 255), 2.5f);
+		}
+	}
+
 	// The test path (two clicks): the straight walk under it, the path and its corners, the start and the end
 	if (s_TestPath.Enabled && s_TestPath.Points > 0)
 	{
 		UpdateTestPath(mesh);
 		const NavMeshTestPath& t = s_TestPath;
-		const glm::vec3 lift(0.0f, 0.05f, 0.0f); // just above the polygons it lies on
-		auto line = [&](const glm::vec3& from, const glm::vec3& to, ImU32 color, float thickness)
-		{
-			glm::vec4 a = viewProjection * glm::vec4(from + lift, 1.0f), b = viewProjection * glm::vec4(to + lift, 1.0f);
-			const float MinW = 0.01f;
-			if (a.w < MinW && b.w < MinW)
-			{
-				return;
-			}
-			if (a.w < MinW)
-			{
-				a = glm::mix(a, b, (MinW - a.w) / (b.w - a.w));
-			}
-			else if (b.w < MinW)
-			{
-				b = glm::mix(b, a, (MinW - b.w) / (a.w - b.w));
-			}
-			drawList->AddLine(toPixel(a), toPixel(b), color, thickness);
-		};
-		auto dot = [&](const glm::vec3& at, ImU32 color, float radius)
-		{
-			const glm::vec4 clip = viewProjection * glm::vec4(at + lift, 1.0f);
-			if (clip.w >= 0.01f)
-			{
-				drawList->AddCircleFilled(toPixel(clip), radius, color);
-				drawList->AddCircle(toPixel(clip), radius, IM_COL32(0, 0, 0, 200), 0, 1.5f);
-			}
-		};
 		if (t.Points == 2 && t.Found)
 		{
 			const ImU32 red = IM_COL32(240, 70, 60, 230);
