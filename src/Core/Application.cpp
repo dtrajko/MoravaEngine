@@ -25,6 +25,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <set>
@@ -87,6 +88,9 @@ Application* Application::Get()
 //                           and saved unattended (what opening it changed: prefab links, a newer file format)
 //   --bake-navmesh          the editor bakes the navmesh of the scene opened at startup (its Nav Mesh's Bake), and writes
 //                           its .mnav: with --exit-after, a navmesh baked unattended (the exit waits for the bake)
+//   --nav-path x,y,z,x,y,z  the editor shows the navmesh's two-click path (the Nav Mesh's Test Path) from the first point to
+//                           the second, the Nav Mesh selected, once the startup scene is open; the log has its corners
+//                           and length (no spaces between the numbers)
 //   --debug-overlay         start with the debug overlay shown (F3 shows and hides it)
 //   --frame-stats [seconds] at exit, log the frames' times: the average frame rate, the 1% low (the frame rate of the
 //                           slowest 1% of frames), the worst frame and how many frames were slower than 60 and 120 fps;
@@ -359,8 +363,21 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		{
 			commandLine.BakeNavMesh = true;
 		}
+		else if (option == "--nav-path" && hasValue)
+		{
+			const std::string value = argv[++i];
+			float* p = commandLine.NavPathPoints;
+			if (std::sscanf(value.c_str(), "%f,%f,%f,%f,%f,%f", &p[0], &p[1], &p[2], &p[3], &p[4], &p[5]) == 6)
+			{
+				commandLine.NavPath = true;
+			}
+			else
+			{
+				Log::GetLogger()->warn("Command line: --nav-path takes two points as x,y,z,x,y,z, got '{0}' (ignored)", value);
+			}
+		}
 		else if (option == "--project" || option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select" ||
-			option == "--frames-in-flight" || option == "--fps-limit")
+			option == "--frames-in-flight" || option == "--fps-limit" || option == "--nav-path")
 		{
 			Log::GetLogger()->warn("Command line: {0} needs a value (ignored)", option);
 		}

@@ -676,6 +676,20 @@ void ProcessSceneOperations()
 			s_StartupBakeDone = true;
 			StartNavMeshBake();
 		}
+		// --nav-path: the Nav Mesh's two-click path between the points given, the Nav Mesh selected (its Inspector shows it)
+		static bool s_StartupNavPathDone = false;
+		const ApplicationCommandLine& commandLine = Application::Get()->GetCommandLine();
+		if (!s_StartupNavPathDone && commandLine.NavPath)
+		{
+			s_StartupNavPathDone = true;
+			const float* p = commandLine.NavPathPoints;
+			const EnvMapVulkanEntityID navMesh = s_Scene.FindFirst<NavMeshComponent>();
+			if (navMesh != NoEntity)
+			{
+				s_EditorSelection.SelectOnly(navMesh);
+			}
+			SetNavMeshTestPath(glm::vec3(p[0], p[1], p[2]), glm::vec3(p[3], p[4], p[5]));
+		}
 		// --select on the command line: an entity of the startup scene
 		static bool s_StartupSelectionDone = false;
 		const std::string& selectName = Application::Get()->GetCommandLine().SelectName;

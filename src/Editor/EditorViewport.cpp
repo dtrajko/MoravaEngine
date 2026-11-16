@@ -996,15 +996,25 @@ void OnImGuiRenderViewport()
 		Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift);
 	const glm::vec2 mouseInView(ImGui::GetMousePos().x - s_ViewportImageMin.x, ImGui::GetMousePos().y - s_ViewportImageMin.y);
 	SetGamePointer(viewportImageHovered, mouseInView, glm::vec2(s_ViewportImageSize.x, s_ViewportImageSize.y)); // the game's UI (Play)
-	if (HandleViewportUIMouse(mouseInView, clickedScene, toggle))
+	// The navmesh's two-click path takes the click while its Test Path is on and the Nav Mesh selected
+	bool clickedNavMesh = false;
+	if (clickedScene)
 	{
-		if (clickedScene)
+		const glm::vec2 ndc = GetViewportMouseNdc();
+		glm::vec3 rayOrigin, rayDirection;
+		GetCameraRay(ndc.x, ndc.y, rayOrigin, rayDirection);
+		clickedNavMesh = HandleNavMeshClick(rayOrigin, rayDirection);
+	}
+	const bool clickedSelect = clickedScene && !clickedNavMesh;
+	if (HandleViewportUIMouse(mouseInView, clickedSelect, toggle))
+	{
+		if (clickedSelect)
 		{
 			ExtractLights(); // the selected light's kind and the water's selection follow the primary entity
 			ExtractWater();
 		}
 	}
-	else if (clickedScene)
+	else if (clickedSelect)
 	{
 		EnvMapVulkanEntityID clicked = NoEntity;
 		EnvMapVulkanEntityID clickedModel = NoEntity;

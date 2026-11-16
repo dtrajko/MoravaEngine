@@ -1,6 +1,6 @@
-// Navigation in the editor (docs/games/Shooter_Plan.html, E1.2): the scene's Nav Mesh entity, its Inspector section, the
-// bake on a worker thread (the triangles gathered on the main thread, Recast's steps on the worker), the .mnav file next
-// to the scene, and the Navigation debug view over the viewport
+// Navigation in the editor (docs/games/Shooter_Plan.html, E1.2, E1.3): the scene's Nav Mesh entity, its Inspector section,
+// the bake on a worker thread (the triangles gathered on the main thread, Recast's steps on the worker), the .mnav file
+// next to the scene, and the Navigation debug view over the viewport with its two-click path
 
 
 #include "Core/Application.h"
@@ -15,6 +15,7 @@
 #include "imgui.h"
 
 #include <atomic>
+#include <cfloat>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -22,6 +23,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <vector>
 
 
 #include "EditorState.h"
@@ -50,6 +52,169 @@ static NavMeshBake s_Bake;
 // The scene file the Nav Mesh's baked mesh is next to (its .mnav): saving the scene elsewhere writes it there too
 static std::string s_NavMeshSceneFile;
 
+// The debug view's two-click path (E1.3): two points clicked on the navmesh, the path between them and the straight walk,
+// found again when a point or the navmesh changes
+struct NavMeshTestPath
+{
+	bool Enabled = false;
+	int Points = 0;                         // 0 none, 1 the start, 2 both
+	glm::vec3 Start = glm::vec3(0.0f), End = glm::vec3(0.0f);
+	std::weak_ptr<const NavMesh> FoundOn;   // the navmesh the result is of (expired: to be found)
+	bool Found = false, Complete = false;
+	std::vector<glm::vec3> Corners;
+	float Length = 0.0f;
+	bool StraightClear = false;
+	glm::vec3 StraightHit = glm::vec3(0.0f);
+	double Milliseconds = 0.0;
+};
+static NavMeshTestPath s_TestPath;
+
+static std::shared_ptr<const NavMesh> GetSceneNavMesh()
+{
+	const EnvMapVulkanEntityID entity = s_Scene.FindFirst<NavMeshComponent>();
+	return entity != NoEntity ? s_Scene.Get<NavMeshComponent>(entity).Mesh : nullptr;
+}
+
+// The debug view's triangles and edges, made again when the navmesh is another
+static const NavMesh::DebugGeometry& GetDebugGeometryOf(const std::shared_ptr<const NavMesh>& mesh)
+{
+	static std::weak_ptr<const NavMesh> s_GeometryOf;
+	static NavMesh::DebugGeometry s_Geometry;
+	if (s_GeometryOf.lock() != mesh)
+	{
+		s_GeometryOf = mesh;
+		s_Geometry = mesh ? mesh->GetDebugGeometry() : NavMesh::DebugGeometry();
+	}
+	return s_Geometry;
+}
+
+// The test path's result for its points on this navmesh (found once per change)
+static void UpdateTestPath(const std::shared_ptr<const NavMesh>& mesh)
+{
+	NavMeshTestPath& t = s_TestPath;
+	if (t.Points < 2 || !mesh)
+	{
+		t.Found = false;
+		t.Corners.clear();
+		t.FoundOn.reset();
+		return;
+	}
+	if (t.FoundOn.lock() == mesh)
+	{
+		return;
+	}
+	const auto started = std::chrono::steady_clock::now();
+	t.FoundOn = mesh;
+	t.Found = mesh->FindPath(t.Start, t.End, t.Corners, &t.Complete);
+	t.Length = 0.0f;
+	for (size_t i = 1; i < t.Corners.size(); i++)
+	{
+		t.Length += glm::distance(t.Corners[i - 1], t.Corners[i]);
+	}
+	t.StraightClear = mesh->Raycast(t.Start, t.End, &t.StraightHit);
+	t.Milliseconds = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count();
+}
+
+// A click: the start, then the end; a third starts again
+static void SetTestPathPoint(const glm::vec3& point)
+{
+	NavMeshTestPath& t = s_TestPath;
+	if (t.Points != 1)
+	{
+		t.Start = point;
+		t.Points = 1;
+	}
+	else
+	{
+		t.End = point;
+		t.Points = 2;
+	}
+	t.FoundOn.reset();
+}
+
+// The nearest of the navmesh's (detail) triangles a ray hits (Moller-Trumbore): the debug view's surface under the cursor
+static bool RaycastNavMeshTriangles(const NavMesh::DebugGeometry& geometry, const glm::vec3& origin, const glm::vec3& direction, glm::vec3& hit)
+{
+	float nearest = FLT_MAX;
+	for (const NavMesh::DebugGeometry::Triangle& tri : geometry.Triangles)
+	{
+		const glm::vec3 e1 = tri.B - tri.A, e2 = tri.C - tri.A;
+		const glm::vec3 p = glm::cross(direction, e2);
+		const float det = glm::dot(e1, p);
+		if (std::fabs(det) < 1e-9f)
+		{
+			continue;
+		}
+		const float inverse = 1.0f / det;
+		const glm::vec3 s = origin - tri.A;
+		const float u = glm::dot(s, p) * inverse;
+		if (u < 0.0f || u > 1.0f)
+		{
+			continue;
+		}
+		const glm::vec3 q = glm::cross(s, e1);
+		const float v = glm::dot(direction, q) * inverse;
+		if (v < 0.0f || u + v > 1.0f)
+		{
+			continue;
+		}
+		const float distance = glm::dot(e2, q) * inverse;
+		if (distance > 0.0f && distance < nearest)
+		{
+			nearest = distance;
+		}
+	}
+	if (nearest == FLT_MAX)
+	{
+		return false;
+	}
+	hit = origin + direction * nearest;
+	return true;
+}
+
+bool HandleNavMeshClick(const glm::vec3& rayOrigin, const glm::vec3& rayDirection)
+{
+	const EnvMapVulkanEntityID entity = s_Scene.FindFirst<NavMeshComponent>();
+	if (!s_TestPath.Enabled || !s_ShowNavMesh || entity == NoEntity || s_EditorSelection.GetPrimary() != entity)
+	{
+		return false;
+	}
+	const std::shared_ptr<const NavMesh> mesh = GetSceneNavMesh();
+	glm::vec3 hit;
+	if (mesh && RaycastNavMeshTriangles(GetDebugGeometryOf(mesh), rayOrigin, glm::normalize(rayDirection), hit))
+	{
+		SetTestPathPoint(hit);
+	}
+	return true; // the click is the path's, also beside the navmesh: the Nav Mesh stays selected
+}
+
+bool SetNavMeshTestPath(const glm::vec3& start, const glm::vec3& end)
+{
+	s_TestPath.Enabled = true;
+	s_TestPath.Start = start;
+	s_TestPath.End = end;
+	s_TestPath.Points = 2;
+	s_TestPath.FoundOn.reset();
+	const std::shared_ptr<const NavMesh> mesh = GetSceneNavMesh();
+	if (!mesh)
+	{
+		Log::GetLogger()->warn("Navigation: the test path needs a baked navmesh");
+		return false;
+	}
+	UpdateTestPath(mesh);
+	const NavMeshTestPath& t = s_TestPath;
+	if (!t.Found)
+	{
+		Log::GetLogger()->info("Navigation: test path from ({0:.2f}, {1:.2f}, {2:.2f}) to ({3:.2f}, {4:.2f}, {5:.2f}): none", start.x, start.y,
+			start.z, end.x, end.y, end.z);
+		return true;
+	}
+	Log::GetLogger()->info("Navigation: test path from ({0:.2f}, {1:.2f}, {2:.2f}) to ({3:.2f}, {4:.2f}, {5:.2f}): {6} corners, {7:.2f} m, {8}; "
+		"straight walk {9}", start.x, start.y, start.z, end.x, end.y, end.z, t.Corners.size(), t.Length, t.Complete ? "complete" : "partial",
+		t.StraightClear ? "clear" : "blocked");
+	return true;
+}
+
 // What a navmesh is baked from: the static colliders and terrains, and the settings
 static uint64_t GetNavMeshSourceHash(const EnvMapVulkanScene& scene, const NavMeshSettings& settings)
 {
@@ -67,6 +232,8 @@ static const char* GetNavMeshFileName(const std::string& sceneFile, std::string&
 void SetNavMeshSceneFile(const std::string& scenePath)
 {
 	s_NavMeshSceneFile = scenePath;
+	s_TestPath.Points = 0; // another scene's points
+	s_TestPath.FoundOn.reset();
 }
 
 void AddNavMesh()
@@ -424,6 +591,58 @@ void NavMeshControls(EnvMapVulkanEntityID entity)
 	ImGui::BeginDisabled(!s_ShowNavMesh);
 	ImGui::SliderFloat("Draw Distance", &s_NavMeshDrawDistance, 10.0f, 1000.0f, "%.0f m", ImGuiSliderFlags_Logarithmic);
 	Tooltip("Polygons farther from the camera aren't drawn (a large terrain's navmesh is many polygons)");
+
+	// The two-click path: what Navigation.FindPath and Navigation.Raycast give a script, between two points
+	ImGui::BeginDisabled(!component->Mesh || IsPlaying());
+	ImGui::Checkbox("Test Path", &s_TestPath.Enabled);
+	ImGui::EndDisabled();
+	Tooltip("Click two points on the navmesh in the viewport, the start and then the end (while this is on and the Nav Mesh\n"
+		"is selected, clicks don't select): the path between them (yellow; orange when it can't reach the end) and the\n"
+		"straight walk (green when clear, red to where it leaves the navmesh), as Navigation.FindPath and Raycast give them");
+	if (s_TestPath.Enabled && component->Mesh)
+	{
+		UpdateTestPath(component->Mesh);
+		const NavMeshTestPath& t = s_TestPath;
+		if (t.Points == 0)
+		{
+			ImGui::TextDisabled("Click the start on the navmesh");
+		}
+		else if (t.Points == 1)
+		{
+			ImGui::TextDisabled("Click the end");
+		}
+		else if (!t.Found)
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.4f, 1.0f), "No path: a point isn't near the navmesh");
+		}
+		else
+		{
+			ImGui::Text("%d corners, %.2f m (%.2f ms)", (int)t.Corners.size(), t.Length, t.Milliseconds);
+			if (t.Complete)
+			{
+				ImGui::TextColored(ImVec4(0.55f, 0.9f, 0.55f, 1.0f), "Reaches the end");
+			}
+			else
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.65f, 0.3f, 1.0f), "Partial: stops %.2f m from the end", glm::distance(t.Corners.back(), t.End));
+				Tooltip("Nothing joins the end to the start (another island): the path goes to the reachable point nearest it");
+			}
+			if (t.StraightClear)
+			{
+				ImGui::Text("Straight walk: clear");
+			}
+			else
+			{
+				ImGui::Text("Straight walk: leaves it after %.2f m",
+					glm::distance(glm::vec2(t.Start.x, t.Start.z), glm::vec2(t.StraightHit.x, t.StraightHit.z)));
+			}
+		}
+		if (t.Points > 0 && ImGui::SmallButton("Clear Points"))
+		{
+			s_TestPath.Points = 0;
+			s_TestPath.FoundOn.reset();
+		}
+	}
 	ImGui::EndDisabled();
 	ImGui::PopID();
 }
@@ -464,15 +683,8 @@ static int ClipPolygon(const glm::vec4* in, int count, glm::vec4* out)
 void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const ImVec2& viewportMin,
 	const ImVec2& viewportSize)
 {
-	const EnvMapVulkanEntityID entity = s_Scene.FindFirst<NavMeshComponent>();
-	const std::shared_ptr<const NavMesh> mesh = entity != NoEntity ? s_Scene.Get<NavMeshComponent>(entity).Mesh : nullptr;
-	static std::weak_ptr<const NavMesh> s_GeometryOf;
-	static NavMesh::DebugGeometry s_Geometry;
-	if (s_GeometryOf.lock() != mesh)
-	{
-		s_GeometryOf = mesh;
-		s_Geometry = mesh ? mesh->GetDebugGeometry() : NavMesh::DebugGeometry();
-	}
+	const std::shared_ptr<const NavMesh> mesh = GetSceneNavMesh();
+	const NavMesh::DebugGeometry& geometry = GetDebugGeometryOf(mesh);
 	if (!mesh)
 	{
 		return;
@@ -506,7 +718,7 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 	// The polygons without anti-aliased edges: neighbors would overlap at their fringes, as seams
 	const ImDrawListFlags flags = drawList->Flags;
 	drawList->Flags &= ~ImDrawListFlags_AntiAliasedFill;
-	for (const NavMesh::DebugGeometry::Triangle& t : s_Geometry.Triangles)
+	for (const NavMesh::DebugGeometry::Triangle& t : geometry.Triangles)
 	{
 		const glm::vec3 center = (t.A + t.B + t.C) / 3.0f;
 		const glm::vec3 offset = center - cameraPosition;
@@ -529,7 +741,7 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 		drawList->AddConvexPolyFilled(points, count, GetIslandColor(t.Island, 70));
 	}
 	drawList->Flags = flags;
-	for (const NavMesh::DebugGeometry::Edge& e : s_Geometry.Edges)
+	for (const NavMesh::DebugGeometry::Edge& e : geometry.Edges)
 	{
 		const glm::vec3 offset = (e.A + e.B) * 0.5f - cameraPosition;
 		if (glm::dot(offset, offset) > maxDistance2)
@@ -556,6 +768,74 @@ void DrawNavMeshOverlay(ImDrawList* drawList, const glm::mat4& viewProjection, c
 			continue;
 		}
 		drawList->AddLine(toPixel(a), toPixel(b), e.Outline ? IM_COL32(230, 250, 255, 220) : IM_COL32(230, 250, 255, 45), e.Outline ? 1.5f : 1.0f);
+	}
+
+	// The test path (two clicks): the straight walk under it, the path and its corners, the start and the end
+	if (s_TestPath.Enabled && s_TestPath.Points > 0)
+	{
+		UpdateTestPath(mesh);
+		const NavMeshTestPath& t = s_TestPath;
+		const glm::vec3 lift(0.0f, 0.05f, 0.0f); // just above the polygons it lies on
+		auto line = [&](const glm::vec3& from, const glm::vec3& to, ImU32 color, float thickness)
+		{
+			glm::vec4 a = viewProjection * glm::vec4(from + lift, 1.0f), b = viewProjection * glm::vec4(to + lift, 1.0f);
+			const float MinW = 0.01f;
+			if (a.w < MinW && b.w < MinW)
+			{
+				return;
+			}
+			if (a.w < MinW)
+			{
+				a = glm::mix(a, b, (MinW - a.w) / (b.w - a.w));
+			}
+			else if (b.w < MinW)
+			{
+				b = glm::mix(b, a, (MinW - b.w) / (a.w - b.w));
+			}
+			drawList->AddLine(toPixel(a), toPixel(b), color, thickness);
+		};
+		auto dot = [&](const glm::vec3& at, ImU32 color, float radius)
+		{
+			const glm::vec4 clip = viewProjection * glm::vec4(at + lift, 1.0f);
+			if (clip.w >= 0.01f)
+			{
+				drawList->AddCircleFilled(toPixel(clip), radius, color);
+				drawList->AddCircle(toPixel(clip), radius, IM_COL32(0, 0, 0, 200), 0, 1.5f);
+			}
+		};
+		if (t.Points == 2 && t.Found)
+		{
+			const ImU32 red = IM_COL32(240, 70, 60, 230);
+			line(t.Start, t.StraightClear ? t.End : t.StraightHit, t.StraightClear ? IM_COL32(90, 230, 90, 200) : red, 1.5f);
+			if (!t.StraightClear)
+			{
+				const glm::vec4 clip = viewProjection * glm::vec4(t.StraightHit + lift, 1.0f);
+				if (clip.w >= 0.01f)
+				{
+					const ImVec2 c = toPixel(clip);
+					drawList->AddLine(ImVec2(c.x - 5.0f, c.y - 5.0f), ImVec2(c.x + 5.0f, c.y + 5.0f), red, 2.0f);
+					drawList->AddLine(ImVec2(c.x - 5.0f, c.y + 5.0f), ImVec2(c.x + 5.0f, c.y - 5.0f), red, 2.0f);
+				}
+			}
+			const ImU32 pathColor = t.Complete ? IM_COL32(255, 225, 60, 255) : IM_COL32(255, 150, 40, 255);
+			for (size_t i = 1; i < t.Corners.size(); i++)
+			{
+				line(t.Corners[i - 1], t.Corners[i], pathColor, 3.0f);
+			}
+			for (size_t i = 1; i + 1 < t.Corners.size(); i++)
+			{
+				dot(t.Corners[i], pathColor, 3.5f);
+			}
+			if (!t.Complete)
+			{
+				line(t.Corners.back(), t.End, IM_COL32(255, 150, 40, 110), 1.0f); // what it couldn't reach
+			}
+		}
+		if (t.Points == 2)
+		{
+			dot(t.End, IM_COL32(240, 70, 60, 255), 6.0f);
+		}
+		dot(t.Start, IM_COL32(90, 230, 90, 255), 6.0f);
 	}
 	drawList->PopClipRect();
 }
