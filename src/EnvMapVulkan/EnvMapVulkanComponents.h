@@ -381,6 +381,24 @@ struct CharacterControllerComponent
 	float PushStrength = 100.0f;               // newtons: the most it pushes a dynamic body with
 };
 
+// The character walks by itself to where the game sends it (docs/games/Shooter_Plan.html, E1.4; Navigation/SceneNavigation.h):
+// along the scene's baked navmesh, around the other characters (Detour's crowd). Beside a CharacterControllerComponent (its
+// size is the agent's): each fixed step the crowd gives the velocity to walk with, which goes to the character, and after
+// the step the agent takes the character's real position back (physics decides where it is). The game says where to go
+// (C#: NavAgent.SetDestination); the entity's rotation stays the game's (a script turns it to Velocity).
+struct NavAgentComponent
+{
+	float Speed = 3.5f;                        // meters per second at most
+	float Acceleration = 8.0f;                 // meters per second squared: how fast it gets to its speed, and turns
+	float StoppingDistance = 0.2f;             // meters: it has arrived this near its destination
+	// How hard it looks for a way around the other characters (theirs: where they are and how they move). None: only its
+	// path (physics still stops it at them)
+	enum class AvoidanceQuality { None, Low, Medium, High };
+	AvoidanceQuality Avoidance = AvoidanceQuality::Medium;
+
+	static const char* GetAvoidanceName(AvoidanceQuality quality);
+};
+
 // The entity is a wheeled vehicle (docs/engine/Game_Engine_Runtime_Guide.html, the vehicle scene, part B): its dynamic body
 // (Collider + Rigid Body, Dynamic: the mass is the Rigid Body's) rides on wheels with springs, an engine drives some of
 // them through an automatic gearbox, and some steer. Jolt's VehicleConstraint with a WheeledVehicleController does the
@@ -699,5 +717,5 @@ struct ComponentList
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, NavMeshComponent, ParticleEmitterComponent, TrailComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
-	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, VehicleComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent,
+	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, NavAgentComponent, VehicleComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent,
 	PrefabComponent, UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;

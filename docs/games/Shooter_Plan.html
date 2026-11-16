@@ -679,6 +679,53 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         Crouch keep theirs.</li>
     </ul>
   </div>
+  <div class="box ok"><b>As built: E1.4 the Nav Agent, the crowd and the character (2026-11-16)</b>
+    <ul>
+      <li><b>The Nav Agent</b> (<code>NavAgentComponent</code>, saved as <code>NavAgent:</code>): the Inspector's
+        <i>Nav Agent</i> beside <i>Character</i> (it needs one: the character's capsule is the agent's size), with Speed
+        (3.5 m/s), Acceleration (8 m/s&sup2;), Stopping Distance (0.2 m) and Avoidance (None, Low, Medium, High: how many
+        velocities Detour tries around the others, as its demo's presets). In Play the Inspector says what it does: walking
+        and how far it has to go, arrived, making way, stuck, off the navmesh.</li>
+      <li><b><code>Navigation/SceneNavigation</code></b>, a game system beside physics (<code>GameSystems</code>; not in
+        Simulate): Detour's crowd on the scene's navmesh, an agent for each character with a Nav Agent. Each fixed step,
+        after the scripts' and before physics: each agent is put where its character's feet are after the last step (along
+        its corridor; pushed off it or put elsewhere: on the navmesh where it is again, its path asked for again), the crowd
+        plans and steers, and its velocity goes to the character's <code>Move</code> across, with the world's gravity
+        when it isn't on the ground. <code>ScenePhysics::CharacterState</code> got the character's <code>Position</code>
+        for it. Prefabs' characters join the crowd when placed.</li>
+      <li><b>The others in the crowd:</b> the characters without a Nav Agent (the player) are crowd agents moved by their
+        own velocity, so the agents see where they go and steer around them. Detour's crowd steers only the walking ones, so
+        a standing agent (arrived, stopped) <b>makes way</b>: a character coming at it within about half a second pushes it
+        aside from that one's line, then it stands again. Found by the check: without it the player, driven straight, was
+        held by followers standing in its way for the rest of the run.</li>
+      <li><b>Arrival and stuck</b> are the engine's, not Detour's: arrived within Stopping Distance of the path's end (the
+        destination, or a partial path's end: as near as it gets), then it stands; stuck when it should walk but physics
+        hasn't got it on for a second (something the navmesh doesn't know, the others in the way).</li>
+      <li><b>C#</b> <code>NavAgent</code> (<code>ScriptCore/Navigation.cs</code>): <code>SetDestination</code> (false when
+        nothing on the navmesh is near it), <code>Stop</code>, <code>Destination</code>, <code>HasPath</code>,
+        <code>IsPathPending</code>, <code>IsPathPartial</code>, <code>HasArrived</code>, <code>IsStuck</code>,
+        <code>IsOnNavMesh</code>, <code>RemainingDistance</code>, <code>Velocity</code> (for turning the model and its
+        animator), <code>DesiredVelocity</code>, <code>Speed</code>, <code>Acceleration</code>,
+        <code>StoppingDistance</code> and its <code>Path</code> (a <code>NavPath</code>). The entity's rotation stays the
+        game's. <code>NavAgent_*</code> at the end of <code>ScriptApi.h</code>.</li>
+      <li><b>Debug view</b> (the Nav Mesh's Show in Viewport, in Play): each agent's path (light blue; orange when partial)
+        and corners, its destination with a faint ring of its stopping distance, its width on the ground (cyan; red when
+        stuck), its velocity (green, half a second of it) and the one along its path (faint); the characters without a Nav
+        Agent in gray.</li>
+      <li><b>The Sample scene <code>Followers</code></b> (Character's room with two pillars, a wall and a crate, a Nav Mesh and
+        <code>Followers.mnav</code>): four followers (<code>Sample.Follower</code>, a bluish <code>Follower.mmat</code>) walk
+        after the player, each stopping at its own distance (1.6 to 3.4 m), hurrying when 6 m behind, turning to their
+        velocity, their animator's Speed from it. Stuck near the player (the others stand where it would go) is near enough:
+        it stops there until the player moves on.</li>
+      <li><b>The check</b> (a test copy: a driver walks the player around six stops of the room, past the pillars, behind
+        the wall and through the followers, waiting at each): at each stop every follower within its distance (and 1.2 m),
+        not stuck; no two characters inside each other (the closest 0.62 m apart: touching is 0.6); no follower stuck for
+        long; the API (a path while walking, SetDestination outside the room false): 31 of 31 in the editor's Play (three
+        runs) and in the player. The first runs found the follower kept farthest stuck behind the others (now: near
+        enough) and the player held by standing followers (now: they make way). The crowd's step takes about 0.08 ms for
+        five characters in Debug. Outpost's greybox (no agents) still passes E1.3's 16 checks.</li>
+    </ul>
+  </div>
   <h3>E2 The first-person view model</h3>
   <ul>
     <li>Entities marked <b>View Model</b> are drawn after the scene with their own field of view and a near depth range, so

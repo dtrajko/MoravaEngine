@@ -1677,6 +1677,7 @@ bool ScenePhysics::GetCharacterState(EnvMapVulkanEntityID entity, CharacterState
 		{
 			state.Ground = ToCharacterGround(character.Controller->GetGroundState());
 			state.Velocity = character.Moved;
+			state.Position = character.Position;
 			state.GroundNormal = ToGlm(character.Controller->GetGroundNormal());
 			state.GroundVelocity = ToGlm(character.Controller->GetGroundVelocity());
 			// The ground body's turn (a character's heading isn't the physics': its game turns it, AnimatedCharacter)

@@ -536,6 +536,11 @@ ScenePhysics* GetGamePhysics()
 	return IsPlaying() ? &s_GameSystems.GetPhysics() : nullptr;
 }
 
+SceneNavigation* GetGameNavigation()
+{
+	return IsPlaying() && s_GameSystems.GetNavigation().IsRunning() ? &s_GameSystems.GetNavigation() : nullptr;
+}
+
 SceneAudio* GetGameAudio()
 {
 	return s_PlayState == PlayState::Play ? &s_GameSystems.GetAudio() : nullptr;

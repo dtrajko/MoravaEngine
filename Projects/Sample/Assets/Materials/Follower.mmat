@@ -1,0 +1,26 @@
+Material:
+  Version: 1
+  ID: 8726986848995026288
+  Name: Follower
+  Source:
+    File: Models/PirateVoid/walking.dae
+    FileID: 15553284450537077592
+    Index: 0
+  AlbedoColor: [0.55, 0.75, 1]
+  Metalness: 0
+  Roughness: 0.6
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 0
+    Solid: 1
+  Maps:
+    Albedo:
+      File: Textures/PirateVoid/piratevoid_diffuse.png
+      FileID: 5734083973565131253
+      Enabled: true

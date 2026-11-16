@@ -16,6 +16,7 @@ class InputSystem;
 class SceneAnimation;
 class SceneAudio;
 class ScenePhysics;
+class SceneNavigation;
 class ScriptRuntime;
 class SceneUI;
 
@@ -28,6 +29,7 @@ struct ScriptContext
 {
 	EnvMapVulkanScene* Scene = nullptr;
 	ScenePhysics* Physics = nullptr;
+	SceneNavigation* Navigation = nullptr; // the walking agents (E1.4: NavAgent)
 	SceneAudio* Audio = nullptr;
 	SceneAnimation* Animation = nullptr;
 	ScriptRuntime* Scripts = nullptr;

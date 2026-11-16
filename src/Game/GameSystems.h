@@ -9,6 +9,8 @@
 
 #include "Input/InputMap.h"
 
+#include "Navigation/SceneNavigation.h"
+
 #include "Physics/ScenePhysics.h"
 
 #include "Scripting/ScriptBindings.h"
@@ -22,13 +24,13 @@ class InputSystem;
 
 /**
  * The game's systems, run by the game loop on the running game's scene: the same in the player and in the editor's Play.
- * Now the input test (InputTestComponent), physics (ScenePhysics), the C# scripts (ScriptRuntime) and what their API works
+ * Now the input test (InputTestComponent), physics (ScenePhysics), the walking agents (SceneNavigation: E1.4), the C# scripts (ScriptRuntime) and what their API works
  * on (ScriptContext: time, and the entities scripts destroy, at the end of each update), the game UI's buttons (SceneUI,
  * 7.3: each frame, before the scripts' OnUpdate, in real time), the animators (SceneAnimation, 6.4: each frame, after the
  * scripts set their parameters; also in Simulate) and the sounds (SceneAudio, 5.1: at the end of each frame, where the
  * frame left the entities).
  *
- * A fixed step: the scripts' OnFixedUpdate, what they destroyed, the physics step, its collisions and triggers to the
+ * A fixed step: the scripts' OnFixedUpdate, what they destroyed, the agents' velocities to their characters, the physics step, its collisions and triggers to the
  * scripts, what those destroyed. A frame: the bodies' interpolated transforms, the UI's clicks to the scripts, the
  * scripts' OnUpdate, what it destroyed, the animators' poses, the sounds.
  *
@@ -93,6 +95,7 @@ public:
 	virtual float GetTimeScale() const override { return m_ScriptContext.TimeScale; }
 
 	ScenePhysics& GetPhysics() { return m_Physics; }
+	SceneNavigation& GetNavigation() { return m_Navigation; }
 	ScriptRuntime& GetScripts() { return m_Scripts; }
 	SceneAudio& GetAudio() { return m_Audio; }
 	SceneAnimation& GetAnimation() { return m_Animation; }
@@ -116,6 +119,7 @@ private:
 	EnvMapVulkanScene* m_Scene = nullptr;
 	InputSystem* m_Input = nullptr;
 	ScenePhysics m_Physics;
+	SceneNavigation m_Navigation;
 	ScriptContext m_ScriptContext; // what the scripts' C# API works on (ScriptBindings)
 	ScriptRuntime m_Scripts;
 	SceneAudio m_Audio;

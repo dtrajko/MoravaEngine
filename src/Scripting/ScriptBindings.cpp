@@ -19,6 +19,7 @@
 #include "Input/InputSystem.h"
 
 #include "Navigation/NavMesh.h"
+#include "Navigation/SceneNavigation.h"
 
 #include "Physics/ScenePhysics.h"
 
@@ -299,6 +300,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::Vehicle:           return scene->Has<VehicleComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::ParticleEmitter:   return scene->Has<ParticleEmitterComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Trail:             return scene->Has<TrailComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::NavAgent:          return scene->Has<NavAgentComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -411,6 +413,10 @@ static uint64_t SceneInstantiate(const char16_t* text, int length, const glm::ve
 	if (s_Context->Physics)
 	{
 		s_Context->Physics->AddEntities(entities);
+	}
+	if (s_Context->Navigation)
+	{
+		s_Context->Navigation->AddEntities(entities);
 	}
 	if (s_Context->Audio)
 	{
@@ -812,6 +818,75 @@ static int32_t NavigationRandomPointAround(const glm::vec3* center, float radius
 {
 	const NavMesh* navMesh = GetNavMesh();
 	return navMesh && navMesh->RandomPointAround(*center, radius, *out) ? 1 : 0;
+}
+
+// ---- NavAgent (E1.4): the running game's agents (SceneNavigation)
+
+static SceneNavigation* GetNavigation()
+{
+	return s_Context && s_Context->Navigation && s_Context->Navigation->IsRunning() ? s_Context->Navigation : nullptr;
+}
+
+static int32_t NavAgentSetDestination(uint64_t entity, const glm::vec3* destination)
+{
+	SceneNavigation* navigation = GetNavigation();
+	bool found = false;
+	if (!navigation || !navigation->SetDestination(entity, *destination, &found))
+	{
+		return 0;
+	}
+	return found ? 1 : -1;
+}
+
+static int32_t NavAgentStop(uint64_t entity)
+{
+	SceneNavigation* navigation = GetNavigation();
+	return navigation && navigation->StopAgent(entity) ? 1 : 0;
+}
+
+static int32_t NavAgentGetState(uint64_t entity, ScriptNavAgentState* out)
+{
+	SceneNavigation* navigation = GetNavigation();
+	SceneNavigation::AgentState state;
+	if (!navigation || !navigation->GetAgentState(entity, state))
+	{
+		return 0;
+	}
+	out->OnNavMesh = state.OnNavMesh ? 1 : 0;
+	out->HasDestination = state.HasDestination ? 1 : 0;
+	out->PathPending = state.PathPending ? 1 : 0;
+	out->PathPartial = state.PathPartial ? 1 : 0;
+	out->Arrived = state.Arrived ? 1 : 0;
+	out->Stuck = state.Stuck ? 1 : 0;
+	out->Destination = state.Destination;
+	out->Velocity = state.Velocity;
+	out->DesiredVelocity = state.DesiredVelocity;
+	out->RemainingDistance = state.RemainingDistance;
+	out->Speed = state.Settings.Speed;
+	out->Acceleration = state.Settings.Acceleration;
+	out->StoppingDistance = state.Settings.StoppingDistance;
+	return 1;
+}
+
+static int32_t NavAgentSetSettings(uint64_t entity, float speed, float acceleration, float stoppingDistance)
+{
+	SceneNavigation* navigation = GetNavigation();
+	return navigation && navigation->SetSettings(entity, speed, acceleration, stoppingDistance) ? 1 : 0;
+}
+
+static int32_t NavAgentGetPath(uint64_t entity, glm::vec3* out, int capacity, int32_t* complete)
+{
+	*complete = 0;
+	SceneNavigation* navigation = GetNavigation();
+	std::vector<glm::vec3> corners;
+	bool reached = false;
+	if (!navigation || !navigation->GetAgentPath(entity, corners, &reached))
+	{
+		return -1;
+	}
+	std::copy_n(corners.begin(), std::min((int)corners.size(), std::max(capacity, 0)), out);
+	*complete = reached ? 1 : 0;
+	return (int32_t)corners.size();
 }
 
 static int32_t CopyEntities(const std::vector<EnvMapVulkanEntityID>& entities, uint64_t* out, int capacity)
@@ -2063,6 +2138,11 @@ namespace ScriptBindings
 		api.Navigation_Raycast = NavigationRaycast;
 		api.Navigation_NearestPoint = NavigationNearestPoint;
 		api.Navigation_RandomPointAround = NavigationRandomPointAround;
+		api.NavAgent_SetDestination = NavAgentSetDestination;
+		api.NavAgent_Stop = NavAgentStop;
+		api.NavAgent_GetState = NavAgentGetState;
+		api.NavAgent_SetSettings = NavAgentSetSettings;
+		api.NavAgent_GetPath = NavAgentGetPath;
 	}
 
 	void SetContext(ScriptContext* context)

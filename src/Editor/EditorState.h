@@ -199,6 +199,9 @@ const InputSystem* GetGameInput();
 
 // The running game's physics, for the Inspector and the Physics panel (nullptr: no game)
 ScenePhysics* GetGamePhysics();
+// The running game's walking agents, for the Inspector and the Navigation debug view (nullptr: no game, Simulate, or no
+// baked navmesh)
+SceneNavigation* GetGameNavigation();
 // The running game's UI (Play, not Simulate; nullptr otherwise): its selected button, the element under the mouse
 const SceneUI* GetGameUI();
 // The mouse over the Viewport panel's image (view pixels from its top-left corner; inside: the image is hovered) and the
