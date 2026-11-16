@@ -1,0 +1,56 @@
+{
+  "Name": "Greybox",
+  "Scene": "../Scenes/Greybox.mscene",
+  "Settings": { "StoryHeight": 3.5, "WallThickness": 0.2, "FloorThickness": 0.3 },
+  "Ground": { "Min": [-40, -40], "Size": [80, 80] },
+  "Buildings": [
+    {
+      "Name": "Barracks",
+      "Min": [-12, -14],
+      "Size": [16, 10],
+      "Floors": 2,
+      "Openings": [
+        { "Floor": 0, "Wall": "South", "Offset": 4, "Kind": "Door", "Width": 1.2 },
+        { "Floor": 0, "Wall": "South", "Offset": 10, "Kind": "Window" },
+        { "Floor": 0, "Wall": "South", "Offset": 13.5, "Kind": "Window" },
+        { "Floor": 0, "Wall": "North", "Offset": 4, "Kind": "Window" },
+        { "Floor": 0, "Wall": "North", "Offset": 12, "Kind": "Window" },
+        { "Floor": 0, "Wall": "East", "Offset": 8, "Kind": "Door" },
+        { "Floor": 0, "Wall": "West", "Offset": 5, "Kind": "Window" },
+        { "Floor": 1, "Wall": "South", "Offset": 4, "Kind": "Window" },
+        { "Floor": 1, "Wall": "South", "Offset": 8, "Kind": "Window" },
+        { "Floor": 1, "Wall": "South", "Offset": 12, "Kind": "Window" },
+        { "Floor": 1, "Wall": "North", "Offset": 8, "Kind": "Window", "Width": 3 },
+        { "Floor": 1, "Wall": "East", "Offset": 5, "Kind": "Window" }
+      ],
+      "Walls": [
+        { "Floor": 0, "From": [8, 0.2], "To": [8, 9.8], "Openings": [{ "Offset": 2.5, "Kind": "Door" }] },
+        { "Floor": 0, "From": [8, 6], "To": [15.8, 6], "Openings": [{ "Offset": 3, "Kind": "Door" }] },
+        { "Floor": 1, "From": [5, 0.2], "To": [5, 9.8], "Openings": [{ "Offset": 7.5, "Kind": "Door" }] },
+        { "Floor": 1, "From": [11, 0.2], "To": [11, 9.8], "Openings": [{ "Offset": 7.5, "Kind": "Door" }] }
+      ],
+      "Stairs": [
+        { "From": 0, "At": [2, 8.4], "Direction": "North" }
+      ]
+    },
+    {
+      "Name": "Warehouse",
+      "Min": [8, -16],
+      "Size": [14, 20],
+      "Floors": 1,
+      "Settings": { "StoryHeight": 6 },
+      "Openings": [
+        { "Wall": "West", "Offset": 12, "Kind": "Door", "Width": 4, "Height": 4.5 },
+        { "Wall": "South", "Offset": 10, "Kind": "Door" },
+        { "Wall": "North", "Offset": 4, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },
+        { "Wall": "North", "Offset": 10, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },
+        { "Wall": "East", "Offset": 6, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },
+        { "Wall": "East", "Offset": 14, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 }
+      ],
+      "Walls": [
+        { "From": [4, 0.2], "To": [4, 6], "Openings": [{ "Offset": 3, "Kind": "Window" }] },
+        { "From": [0.2, 6], "To": [4, 6], "Openings": [{ "Offset": 2, "Kind": "Door" }] }
+      ]
+    }
+  ]
+}
