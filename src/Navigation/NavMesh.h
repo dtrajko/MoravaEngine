@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 class dtNavMesh;
@@ -12,20 +13,60 @@ class dtNavMeshQuery;
 class dtQueryFilter;
 
 
+// One tile as Detour stores it (dtCreateNavMeshData's output): what a bake makes and a file keeps
+struct NavMeshTile
+{
+	int X = 0;
+	int Z = 0;
+	std::vector<uint8_t> Data;
+};
+
+// A baked navmesh as the bake makes it and its file (.mnav, NavMeshFile) keeps it: the tiles and how they lie
+struct NavMeshData
+{
+	NavMeshSettings Settings;            // what it was baked for
+	uint64_t SourceHash = 0;             // of what it was baked from (the colliders and the settings): out of date when it differs
+	glm::vec3 Origin = glm::vec3(0.0f);  // the baked area's lowest corner: tile (0, 0) starts there
+	float TileWorldSize = 0.0f;          // a tile's width in meters (a whole number of cells)
+	int TilesX = 0, TilesZ = 0;          // the grid of tiles over the area
+	int MaxPolysPerTile = 0;
+	int Polygons = 0;
+	std::vector<NavMeshTile> Tiles;      // the tiles that have something walkable
+};
+
 /**
  * A tiled navmesh and its queries (Detour), for the editor and the player (docs/games/Shooter_Plan.html, E1). Its tiles
- * come from NavMeshBuilder (the editor's bake, Recast) or, later, from a scene's .mnav file. Positions are the engine's:
- * meters, Y up.
+ * come from NavMeshBuilder (the editor's bake, Recast) or from a scene's .mnav file (NavMeshFile). Positions are the
+ * engine's: meters, Y up.
  */
 class NavMesh
 {
 public:
-	// One tile as Detour stores it (dtCreateNavMeshData's output): what a bake makes and a file keeps
-	struct Tile
+	using Tile = NavMeshTile;
+
+	// The polygons as triangles in the world, for drawing it (the debug view): the detail mesh's (on the ground's real
+	// height), each with its polygon's area and the part (island) it belongs to; and the polygons' edges, each either an
+	// outline (nothing walkable beyond it: a wall, a ledge) or an inner edge between two polygons
+	struct DebugGeometry
 	{
-		int X = 0;
-		int Z = 0;
-		std::vector<uint8_t> Data;
+		struct Triangle { glm::vec3 A, B, C; uint8_t Area; uint32_t Island; };
+		struct Edge { glm::vec3 A, B; bool Outline; };
+		std::vector<Triangle> Triangles;
+		std::vector<Edge> Edges;
+	};
+
+	// The parts of the mesh one can't walk between (islands, joined only through the polygons' links): their number and,
+	// for the largest (by area), its area and the heights it spans. Two floors joined by stairs are one part
+	struct Islands
+	{
+		struct Island
+		{
+			float Area = 0.0f;              // square meters
+			float MinY = 0.0f, MaxY = 0.0f; // the heights its polygons' corners span
+		};
+		uint32_t Count = 0;
+		float TotalArea = 0.0f;
+		std::vector<Island> List;           // the largest first
 	};
 
 	NavMesh() = default;
@@ -37,6 +78,8 @@ public:
 	bool Create(const glm::vec3& origin, float tileWorldSize, int maxTiles, int maxPolysPerTile, const NavMeshSettings& settings);
 	// Adds a tile (copied); false if Detour refuses it
 	bool AddTile(const Tile& tile);
+	// A baked navmesh's tiles, ready for queries; false (an error logged) if Detour refuses them
+	bool Load(const NavMeshData& data);
 	void Clear();
 
 	bool IsReady() const { return m_Mesh != nullptr && m_Query != nullptr; }
@@ -53,9 +96,15 @@ public:
 	// The mesh's nearest point to a position, within maxDistance across and the agent's height up and down
 	bool NearestPoint(const glm::vec3& position, float maxDistance, glm::vec3& point) const;
 
+	DebugGeometry GetDebugGeometry() const;
+	Islands GetIslands() const;
+
 	dtNavMesh* GetDetourMesh() const { return m_Mesh; }
 
 private:
+	// Each polygon's island (by its tile and index), and the islands' areas
+	void FindIslands(std::vector<std::vector<uint32_t>>& islandOfPolygon, std::vector<float>& areas, std::vector<glm::vec2>& heights) const;
+
 	// The polygon nearest a point, searched in a box around it
 	uint64_t FindPolygon(const glm::vec3& position, const glm::vec3& halfExtents, glm::vec3& nearest) const;
 

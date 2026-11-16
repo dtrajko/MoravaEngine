@@ -85,6 +85,8 @@ Application* Application::Get()
 //   --simulate              the same with Simulate: physics only, seen through the editor's camera
 //   --save-scene            the editor saves the open scene to its file when it closes: with --exit-after, a scene opened
 //                           and saved unattended (what opening it changed: prefab links, a newer file format)
+//   --bake-navmesh          the editor bakes the navmesh of the scene opened at startup (its Nav Mesh's Bake), and writes
+//                           its .mnav: with --exit-after, a navmesh baked unattended (the exit waits for the bake)
 //   --debug-overlay         start with the debug overlay shown (F3 shows and hides it)
 //   --frame-stats [seconds] at exit, log the frames' times: the average frame rate, the 1% low (the frame rate of the
 //                           slowest 1% of frames), the worst frame and how many frames were slower than 60 and 120 fps;
@@ -352,6 +354,10 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		else if (option == "--save-scene")
 		{
 			commandLine.SaveScene = true;
+		}
+		else if (option == "--bake-navmesh")
+		{
+			commandLine.BakeNavMesh = true;
 		}
 		else if (option == "--project" || option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select" ||
 			option == "--frames-in-flight" || option == "--fps-limit")

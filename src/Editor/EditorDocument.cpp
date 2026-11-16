@@ -171,6 +171,7 @@ static bool SaveSceneTo(const std::string& requestedPath)
 
 	s_SceneFilePath = ProjectPaths::Normalize(path.string());
 	MarkSceneSaved();
+	SaveNavMeshWithScene(s_SceneFilePath); // Save As: the navmesh goes along
 	const std::string shownPath = ProjectPaths::ToStored(s_SceneFilePath);
 	Log::GetLogger()->info("Scene '{0}' saved to '{1}' ({2} entities, {3} material(s) saved with it)", s_SceneName, shownPath,
 		s_Scene.GetEntityCount(), savedCount);
@@ -272,6 +273,7 @@ static void NewSceneNow()
 	CreateCameraAtView(); // a game camera where the editor looks from
 	s_PendingSunAlign = true; // the sun on the map's sun, as at startup
 	s_SceneFilePath.clear();
+	SetNavMeshSceneFile(std::string());
 	s_SceneName = "Untitled";
 	ExtractLights();
 	ExtractWater();
@@ -324,6 +326,7 @@ static bool OpenSceneNow(const std::string& filepath)
 	s_RenderSettings = settings;
 	s_SceneName = name;
 	s_SceneFilePath = ProjectPaths::Normalize(filepath);
+	SetNavMeshSceneFile(s_SceneFilePath);
 	ExtractEnvironment();
 	ExtractLights();
 	ExtractWater();
@@ -666,6 +669,13 @@ void ProcessSceneOperations()
 	else
 	{
 		OpenSceneNow(s_PendingScenePath);
+		// --bake-navmesh on the command line: the startup scene's navmesh, as its Bake button does
+		static bool s_StartupBakeDone = false;
+		if (!s_StartupBakeDone && Application::Get()->GetCommandLine().BakeNavMesh)
+		{
+			s_StartupBakeDone = true;
+			StartNavMeshBake();
+		}
 		// --select on the command line: an entity of the startup scene
 		static bool s_StartupSelectionDone = false;
 		const std::string& selectName = Application::Get()->GetCommandLine().SelectName;

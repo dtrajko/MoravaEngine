@@ -6,6 +6,8 @@
 #include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
 
+#include <algorithm>
+#include <cfloat>
 #include <cstring>
 #include <type_traits>
 
@@ -88,6 +90,34 @@ bool NavMesh::AddTile(const Tile& tile)
 		dtFree(data);
 		Log::GetLogger()->error("Navigation: tile ({0}, {1}) couldn't be added to the navmesh", tile.X, tile.Z);
 		return false;
+	}
+	return true;
+}
+
+static unsigned int NextPowerOfTwo(unsigned int value)
+{
+	unsigned int result = 1;
+	while (result < value)
+	{
+		result <<= 1;
+	}
+	return result;
+}
+
+bool NavMesh::Load(const NavMeshData& data)
+{
+	const int maxTiles = (int)NextPowerOfTwo((unsigned int)std::max(1, data.TilesX * data.TilesZ));
+	if (!Create(data.Origin, data.TileWorldSize, maxTiles, data.MaxPolysPerTile, data.Settings))
+	{
+		return false;
+	}
+	for (const Tile& tile : data.Tiles)
+	{
+		if (!AddTile(tile))
+		{
+			Clear();
+			return false;
+		}
 	}
 	return true;
 }
@@ -232,4 +262,177 @@ bool NavMesh::NearestPoint(const glm::vec3& position, float maxDistance, glm::ve
 		return false;
 	}
 	return FindPolygon(position, glm::vec3(maxDistance, m_Settings.AgentHeight, maxDistance), point) != 0;
+}
+
+
+// ------------------------------------------------------------------------------------------------- the debug view, islands
+
+// A polygon's corner in the world
+static glm::vec3 PolygonVertex(const dtMeshTile* tile, const dtPoly& polygon, int corner)
+{
+	const float* v = &tile->verts[polygon.verts[corner] * 3];
+	return glm::vec3(v[0], v[1], v[2]);
+}
+
+void NavMesh::FindIslands(std::vector<std::vector<uint32_t>>& islandOfPolygon, std::vector<float>& areas, std::vector<glm::vec2>& heights) const
+{
+	const dtNavMesh* mesh = m_Mesh;
+	islandOfPolygon.assign(mesh->getMaxTiles(), {});
+	for (int i = 0; i < mesh->getMaxTiles(); i++)
+	{
+		const dtMeshTile* tile = mesh->getTile(i);
+		if (tile && tile->header)
+		{
+			islandOfPolygon[i].assign(tile->header->polyCount, UINT32_MAX);
+		}
+	}
+	// A flood over the polygons' links (within a tile, across tiles, and the links of E1.5)
+	std::vector<std::pair<int, int>> stack;
+	for (int i = 0; i < mesh->getMaxTiles(); i++)
+	{
+		for (int p = 0; p < (int)islandOfPolygon[i].size(); p++)
+		{
+			if (islandOfPolygon[i][p] != UINT32_MAX)
+			{
+				continue;
+			}
+			const uint32_t island = (uint32_t)areas.size();
+			areas.push_back(0.0f);
+			heights.push_back(glm::vec2(FLT_MAX, -FLT_MAX));
+			islandOfPolygon[i][p] = island;
+			stack.push_back({ i, p });
+			while (!stack.empty())
+			{
+				const auto [ti, pi] = stack.back();
+				stack.pop_back();
+				const dtMeshTile* tile = mesh->getTile(ti);
+				const dtPoly& polygon = tile->polys[pi];
+				if (polygon.getType() == DT_POLYTYPE_GROUND)
+				{
+					const glm::vec3 first = PolygonVertex(tile, polygon, 0);
+					for (int c = 0; c < polygon.vertCount; c++)
+					{
+						const glm::vec3 v = PolygonVertex(tile, polygon, c);
+						heights[island].x = std::min(heights[island].x, v.y);
+						heights[island].y = std::max(heights[island].y, v.y);
+						if (c >= 2)
+						{
+							areas[island] += 0.5f * glm::length(glm::cross(PolygonVertex(tile, polygon, c - 1) - first, v - first));
+						}
+					}
+				}
+				for (unsigned int k = polygon.firstLink; k != DT_NULL_LINK; k = tile->links[k].next)
+				{
+					unsigned int salt = 0, it = 0, ip = 0;
+					mesh->decodePolyId(tile->links[k].ref, salt, it, ip);
+					if (it < islandOfPolygon.size() && ip < islandOfPolygon[it].size() && islandOfPolygon[it][ip] == UINT32_MAX)
+					{
+						islandOfPolygon[it][ip] = island;
+						stack.push_back({ (int)it, (int)ip });
+					}
+				}
+			}
+		}
+	}
+}
+
+NavMesh::Islands NavMesh::GetIslands() const
+{
+	Islands result;
+	if (!m_Mesh)
+	{
+		return result;
+	}
+	std::vector<std::vector<uint32_t>> islandOfPolygon;
+	std::vector<float> areas;
+	std::vector<glm::vec2> heights;
+	FindIslands(islandOfPolygon, areas, heights);
+	result.Count = (uint32_t)areas.size();
+	for (size_t i = 0; i < areas.size(); i++)
+	{
+		result.TotalArea += areas[i];
+		result.List.push_back({ areas[i], heights[i].x, heights[i].y });
+	}
+	std::sort(result.List.begin(), result.List.end(), [](const Islands::Island& a, const Islands::Island& b) { return a.Area > b.Area; });
+	return result;
+}
+
+NavMesh::DebugGeometry NavMesh::GetDebugGeometry() const
+{
+	DebugGeometry geometry;
+	if (!m_Mesh)
+	{
+		return geometry;
+	}
+	std::vector<std::vector<uint32_t>> islandOfPolygon;
+	std::vector<float> areas;
+	std::vector<glm::vec2> heights;
+	FindIslands(islandOfPolygon, areas, heights);
+	// The islands by size, the largest 0: its color stays when a small island comes or goes
+	std::vector<uint32_t> order(areas.size()), rank(areas.size());
+	for (uint32_t i = 0; i < (uint32_t)order.size(); i++)
+	{
+		order[i] = i;
+	}
+	std::sort(order.begin(), order.end(), [&](uint32_t a, uint32_t b) { return areas[a] > areas[b]; });
+	for (uint32_t i = 0; i < (uint32_t)order.size(); i++)
+	{
+		rank[order[i]] = i;
+	}
+
+	const dtNavMesh* mesh = m_Mesh;
+	for (int i = 0; i < mesh->getMaxTiles(); i++)
+	{
+		const dtMeshTile* tile = mesh->getTile(i);
+		if (!tile || !tile->header)
+		{
+			continue;
+		}
+		for (int p = 0; p < tile->header->polyCount; p++)
+		{
+			const dtPoly& polygon = tile->polys[p];
+			if (polygon.getType() != DT_POLYTYPE_GROUND)
+			{
+				continue; // the links (E1.5) are drawn as arcs
+			}
+			const uint32_t island = rank[islandOfPolygon[i][p]];
+			// The detail mesh's triangles: its corners are the polygon's (index < vertCount) or the detail's own
+			const dtPolyDetail& detail = tile->detailMeshes[p];
+			for (int t = 0; t < detail.triCount; t++)
+			{
+				const unsigned char* corners = &tile->detailTris[(detail.triBase + t) * 4];
+				glm::vec3 v[3];
+				for (int k = 0; k < 3; k++)
+				{
+					const float* source = corners[k] < polygon.vertCount ? &tile->verts[polygon.verts[corners[k]] * 3]
+						: &tile->detailVerts[(detail.vertBase + corners[k] - polygon.vertCount) * 3];
+					v[k] = glm::vec3(source[0], source[1], source[2]);
+				}
+				geometry.Triangles.push_back({ v[0], v[1], v[2], polygon.getArea(), island });
+			}
+			// The edges: an outline where no polygon is beyond (none inside the tile, and no link across its border)
+			for (int e = 0; e < polygon.vertCount; e++)
+			{
+				bool outline = polygon.neis[e] == 0;
+				if (polygon.neis[e] & DT_EXT_LINK)
+				{
+					outline = true;
+					for (unsigned int k = polygon.firstLink; k != DT_NULL_LINK; k = tile->links[k].next)
+					{
+						if (tile->links[k].edge == e)
+						{
+							outline = false;
+							break;
+						}
+					}
+				}
+				else if (!outline && (int)(polygon.neis[e] - 1) < p)
+				{
+					continue; // an inner edge once, from the polygon with the lower index
+				}
+				geometry.Edges.push_back({ PolygonVertex(tile, polygon, e), PolygonVertex(tile, polygon, (e + 1) % polygon.vertCount), outline });
+			}
+		}
+	}
+	return geometry;
 }

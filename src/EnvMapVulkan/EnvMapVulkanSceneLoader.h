@@ -37,4 +37,9 @@ namespace EnvMapVulkanSceneLoader
 	// the scene then keeps its content.
 	bool Open(const std::string& filepath, EnvMapVulkanScene& scene, std::string& sceneName, EnvMapVulkanRenderSettings& renderSettings,
 		std::string& error);
+
+	// The scene's navmesh (its NavMeshComponent's Data and Mesh) from the .mnav next to its file (docs/games/Shooter_Plan.html,
+	// E1); Open calls it. False: the scene has no Nav Mesh, or its file is missing or can't be read (logged); the
+	// component then has none
+	bool LoadNavMesh(const std::string& sceneFile, EnvMapVulkanScene& scene);
 }

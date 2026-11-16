@@ -577,6 +577,7 @@ EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 	if (s_Scene.Has<WaterComponent>(entity))       return EntityKind::Water;
 	if (s_Scene.Has<ProbeVolumeComponent>(entity)) return EntityKind::ProbeVolume;
 	if (s_Scene.Has<TerrainComponent>(entity))     return EntityKind::Terrain;
+	if (s_Scene.Has<NavMeshComponent>(entity))     return EntityKind::NavMesh;
 	if (s_Scene.Has<EnvironmentComponent>(entity)) return EntityKind::Environment;
 	if (s_Scene.Has<CameraComponent>(entity))      return EntityKind::Camera;
 	if (s_Scene.Has<AudioSourceComponent>(entity)) return EntityKind::Sound; // a sound alone (a model's is the model's)
@@ -600,6 +601,7 @@ const char* GetEntityKindName(EntityKind kind)
 		case EntityKind::SpotLight:   return "Spot Light";
 		case EntityKind::Water:       return "Water";
 		case EntityKind::Terrain:     return "Terrain";
+		case EntityKind::NavMesh:     return "Nav Mesh";
 		case EntityKind::ProbeVolume: return "Probe Volume";
 		case EntityKind::Model:       return "Model";
 		case EntityKind::Part:        return "Mesh (part of a model)";
@@ -623,6 +625,7 @@ ImU32 GetEntityKindColor(EntityKind kind)
 		case EntityKind::SpotLight:   return IM_COL32(90, 200, 255, 255);
 		case EntityKind::Water:       return IM_COL32(60, 120, 230, 255);
 		case EntityKind::ProbeVolume: return IM_COL32(190, 130, 255, 255);
+		case EntityKind::NavMesh:     return IM_COL32(60, 200, 230, 255);
 		case EntityKind::Model:       return IM_COL32(200, 200, 210, 255);
 		case EntityKind::Part:        return IM_COL32(140, 140, 150, 255);
 		case EntityKind::Sound:       return IM_COL32(80, 220, 200, 255);
@@ -662,7 +665,7 @@ bool CanBeDeleted(EntityKind kind)
 {
 	return kind == EntityKind::Empty || kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
 		kind == EntityKind::Water || kind == EntityKind::ProbeVolume || kind == EntityKind::Sound || kind == EntityKind::Camera ||
-		kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
+		kind == EntityKind::NavMesh || kind == EntityKind::UICanvas || kind == EntityKind::UIElement;
 }
 
 // Removes an entity (and its children): a model or a part at the start of the next frame (its GPU resources may be in use),
@@ -690,6 +693,7 @@ void DeleteEntity(EnvMapVulkanEntityID entity)
 			break;
 		case EntityKind::Sound:
 		case EntityKind::Camera:
+		case EntityKind::NavMesh:
 		case EntityKind::UICanvas:
 		case EntityKind::UIElement:
 			s_Scene.DestroyEntity(entity);

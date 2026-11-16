@@ -5,6 +5,7 @@
 
 #include <glm/glm.hpp>
 
+#include <atomic>
 #include <string>
 #include <vector>
 
@@ -15,7 +16,8 @@
  */
 namespace NavMeshBuilder
 {
-	// The geometry to walk on and around: triangles in the world (the scene's static colliders, E1.2)
+	// The geometry to walk on and around: triangles in the world (the scene's static colliders:
+	// ScenePhysics::GetStaticGeometry)
 	struct Input
 	{
 		std::vector<glm::vec3> Vertices;
@@ -24,20 +26,23 @@ namespace NavMeshBuilder
 
 	struct Result
 	{
-		glm::vec3 Origin = glm::vec3(0.0f);  // the baked area's lowest corner: tile (0, 0) starts there
-		float TileWorldSize = 0.0f;          // a tile's width in meters (a whole number of cells)
-		int TilesX = 0, TilesZ = 0;          // the grid of tiles over the area
-		int MaxPolysPerTile = 0;
-		std::vector<NavMesh::Tile> Tiles;    // the tiles that have something walkable
-		int Polygons = 0;
+		NavMeshData Data;                    // its SourceHash is the caller's to set
 		double Milliseconds = 0.0;
 		std::string Error;                   // empty when it worked
+		bool Canceled = false;
 	};
 
-	Result Build(const Input& input, const NavMeshSettings& settings);
+	// How far a bake is, for a bake on another thread: the tiles done of all, and a request to stop
+	struct Progress
+	{
+		std::atomic<int> TilesDone { 0 };
+		std::atomic<int> TilesTotal { 0 };
+		std::atomic<bool> Cancel { false };
+	};
 
-	// The baked tiles into a navmesh for queries; false (and an error logged) if Detour refuses them
-	bool Load(const Result& result, const NavMeshSettings& settings, NavMesh& navMesh);
+	// Bakes the tiles over the triangles' area (each tile from the triangles over it and its border). progress, when
+	// given, is updated as tiles finish and read for a cancel (then Result.Canceled, no tiles)
+	Result Build(const Input& input, const NavMeshSettings& settings, Progress* progress = nullptr);
 
 	// Bakes a room made in code (a floor, a wall across most of it, a raised platform) and checks paths through it:
 	// around the wall, not through it, and only partly onto the platform. Logs "navigation self-test failed: ..." (CI

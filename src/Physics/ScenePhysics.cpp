@@ -2351,6 +2351,234 @@ void ScenePhysics::GetColliderLines(const EnvMapVulkanScene& scene, std::vector<
 	});
 }
 
+// ------------------------------------------------------------------------------------------------- the navmesh's source
+
+// A collider Start makes a static, solid body of (a terrain apart)
+static bool IsStaticSolidCollider(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, const ColliderComponent& collider)
+{
+	if (collider.IsTrigger || scene.Has<TerrainComponent>(entity) || scene.Has<CharacterControllerComponent>(entity) ||
+		scene.Has<VehicleComponent>(entity) || IsVehicleWheel(scene, entity))
+	{
+		return false;
+	}
+	const RigidBodyComponent* rigidBody = scene.TryGet<RigidBodyComponent>(entity);
+	return !rigidBody || rigidBody->Type == RigidBodyComponent::BodyType::Static;
+}
+
+// A capsule standing along the transform's Y (halfHeight 0: a sphere), in rings of facets, facing out
+static void AddCapsuleTriangles(const glm::mat4& transform, float halfHeight, float radius, std::vector<glm::vec3>& vertices,
+	std::vector<uint32_t>& indices)
+{
+	const int segments = 12;
+	const int halfRings = 4; // from a pole to the middle
+	const uint32_t first = (uint32_t)vertices.size();
+	int rings = 0;
+	// The lower half's rings from the bottom pole up to the middle, then the upper half's from the middle up
+	for (int half = 0; half < 2; half++)
+	{
+		for (int r = 0; r <= halfRings; r++)
+		{
+			const float latitude = half == 0 ? -glm::half_pi<float>() + glm::half_pi<float>() * r / halfRings
+				: glm::half_pi<float>() * r / halfRings;
+			const float y = std::sin(latitude) * radius + (half == 0 ? -halfHeight : halfHeight);
+			const float ringRadius = std::cos(latitude) * radius;
+			for (int s = 0; s < segments; s++)
+			{
+				const float angle = glm::two_pi<float>() * s / segments;
+				vertices.push_back(glm::vec3(transform * glm::vec4(ringRadius * std::cos(angle), y, ringRadius * std::sin(angle), 1.0f)));
+			}
+			rings++;
+		}
+	}
+	for (int r = 0; r + 1 < rings; r++)
+	{
+		for (int s = 0; s < segments; s++)
+		{
+			const uint32_t a = first + r * segments + s, b = first + r * segments + (s + 1) % segments;
+			const uint32_t c = a + segments, d = b + segments;
+			for (uint32_t k : { a, c, b, b, c, d })
+			{
+				indices.push_back(k);
+			}
+		}
+	}
+}
+
+// A box of half extents around the transform's origin, facing out
+static void AddBoxTriangles(const glm::mat4& transform, const glm::vec3& half, std::vector<glm::vec3>& vertices, std::vector<uint32_t>& indices)
+{
+	const uint32_t first = (uint32_t)vertices.size();
+	for (int i = 0; i < 8; i++)
+	{
+		const glm::vec3 corner(i & 1 ? half.x : -half.x, i & 2 ? half.y : -half.y, i & 4 ? half.z : -half.z);
+		vertices.push_back(glm::vec3(transform * glm::vec4(corner, 1.0f)));
+	}
+	// Corners: bit 0 x, bit 1 y, bit 2 z. Each face as two triangles, counterclockwise from outside
+	static const uint32_t faces[6][4] = { { 2, 6, 7, 3 }, { 0, 1, 5, 4 }, { 1, 3, 7, 5 }, { 0, 4, 6, 2 }, { 4, 5, 7, 6 }, { 0, 2, 3, 1 } };
+	for (const auto& f : faces)
+	{
+		for (uint32_t k : { f[0], f[1], f[2], f[0], f[2], f[3] })
+		{
+			indices.push_back(first + k);
+		}
+	}
+}
+
+void ScenePhysics::GetStaticGeometry(EnvMapVulkanScene& scene, std::vector<glm::vec3>& vertices, std::vector<uint32_t>& indices, uint32_t* entityCount)
+{
+	vertices.clear();
+	indices.clear();
+	uint32_t entities = 0;
+
+	// The terrains' height fields, as CreateTerrainBody makes them: sample (x, z) at offset + (x, height, z) * spacing
+	scene.Each<TerrainComponent>([&](EnvMapVulkanEntityID entity, TerrainComponent& terrain)
+	{
+		EnvMapVulkanTerrain::UpdateHeights(scene, entity, terrain);
+		if (!terrain.Heights || terrain.Heights->SampleCount < 2)
+		{
+			return;
+		}
+		const TerrainHeights& heights = *terrain.Heights;
+		const glm::vec3 position = glm::vec3(scene.GetWorldTransform(entity)[3]);
+		const float half = heights.Size * 0.5f;
+		const uint32_t n = heights.SampleCount;
+		const uint32_t first = (uint32_t)vertices.size();
+		for (uint32_t z = 0; z < n; z++)
+		{
+			for (uint32_t x = 0; x < n; x++)
+			{
+				vertices.push_back(position + glm::vec3(x * heights.Spacing - half, heights.Heights[(size_t)z * n + x], z * heights.Spacing - half));
+			}
+		}
+		for (uint32_t z = 0; z + 1 < n; z++)
+		{
+			for (uint32_t x = 0; x + 1 < n; x++)
+			{
+				const uint32_t a = first + z * n + x, b = a + 1, c = a + n, d = c + 1;
+				for (uint32_t k : { a, c, b, b, c, d })
+				{
+					indices.push_back(k);
+				}
+			}
+		}
+		entities++;
+	});
+
+	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, const ColliderComponent& collider)
+	{
+		if (!IsStaticSolidCollider(scene, entity, collider))
+		{
+			return;
+		}
+		const glm::mat4 world = scene.GetWorldTransform(entity);
+		glm::vec3 position, scale;
+		glm::quat rotation;
+		DecomposeWorld(world, position, rotation, scale);
+		const glm::vec3 size = glm::abs(scale);
+		// As CreateShape makes them: the shape at the world scale, around its scaled offset
+		const glm::mat4 shapeTransform = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation) *
+			glm::translate(glm::mat4(1.0f), collider.Offset * scale);
+		switch (collider.Type)
+		{
+			case ColliderComponent::Shape::Box:
+				AddBoxTriangles(shapeTransform, glm::max(collider.HalfExtents * size, glm::vec3(0.001f)), vertices, indices);
+				break;
+			case ColliderComponent::Shape::Sphere:
+				AddCapsuleTriangles(shapeTransform, 0.0f, std::max(collider.Radius * std::max({ size.x, size.y, size.z }), 0.001f), vertices, indices);
+				break;
+			case ColliderComponent::Shape::Capsule:
+				AddCapsuleTriangles(shapeTransform, collider.HalfHeight * size.y, std::max(collider.Radius * std::max(size.x, size.z), 0.001f),
+					vertices, indices);
+				break;
+			case ColliderComponent::Shape::ConvexMesh:
+			case ColliderComponent::Shape::TriangleMesh:
+			{
+				// A mirroring transform turns the triangles inside out: their corners swap to keep them facing out
+				const bool mirrored = glm::determinant(glm::mat3(world)) < 0.0f;
+				for (const std::array<glm::vec3, 3>& t : GetModelTriangles(scene, entity))
+				{
+					const uint32_t first = (uint32_t)vertices.size();
+					for (const glm::vec3& corner : t)
+					{
+						vertices.push_back(glm::vec3(world * glm::vec4(corner, 1.0f)));
+					}
+					indices.push_back(first);
+					indices.push_back(first + (mirrored ? 2 : 1));
+					indices.push_back(first + (mirrored ? 1 : 2));
+				}
+				break;
+			}
+		}
+		entities++;
+	});
+	if (entityCount)
+	{
+		*entityCount = entities;
+	}
+}
+
+uint64_t ScenePhysics::GetStaticGeometryHash(const EnvMapVulkanScene& scene)
+{
+	// FNV-1a over the values that make the triangles. The entities in the registry's order, which only a new or removed
+	// entity changes
+	uint64_t hash = 14695981039346656037ull;
+	auto add = [&hash](const void* data, size_t size)
+	{
+		const uint8_t* bytes = static_cast<const uint8_t*>(data);
+		for (size_t i = 0; i < size; i++)
+		{
+			hash = (hash ^ bytes[i]) * 1099511628211ull;
+		}
+	};
+	scene.Each<TerrainComponent>([&](EnvMapVulkanEntityID entity, const TerrainComponent& terrain)
+	{
+		const glm::vec3 position = glm::vec3(scene.GetWorldTransform(entity)[3]);
+		const uint64_t shape = terrain.Heights ? terrain.Heights->ShapeHash : terrain.Settings.GetShapeHash();
+		add(&entity, sizeof(entity));
+		add(&position, sizeof(position));
+		add(&shape, sizeof(shape));
+	});
+	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, const ColliderComponent& collider)
+	{
+		if (!IsStaticSolidCollider(scene, entity, collider))
+		{
+			return;
+		}
+		const glm::mat4 world = scene.GetWorldTransform(entity);
+		add(&entity, sizeof(entity));
+		add(&world, sizeof(world));
+		const int type = (int)collider.Type;
+		add(&type, sizeof(type));
+		if (collider.Type == ColliderComponent::Shape::ConvexMesh || collider.Type == ColliderComponent::Shape::TriangleMesh)
+		{
+			// The model and where its meshes are in it (a removed or moved part changes the triangles)
+			if (const ModelComponent* model = scene.TryGet<ModelComponent>(entity))
+			{
+				add(model->FilePath.data(), model->FilePath.size());
+				if (model->Model)
+				{
+					const auto& meshes = model->Model->GetMeshes();
+					for (uint32_t m = 0; m < (uint32_t)meshes.size(); m++)
+					{
+						const glm::mat4 transform = EnvMapVulkanSceneData::GetMeshTransform(model->Model, meshes[m], glm::mat4(1.0f));
+						const size_t triangles = model->Model->GetTriangleCache(m).size();
+						add(&transform, sizeof(transform));
+						add(&triangles, sizeof(triangles));
+					}
+				}
+			}
+		}
+		else
+		{
+			add(&collider.Offset, sizeof(collider.Offset));
+			add(&collider.HalfExtents, sizeof(collider.HalfExtents));
+			add(&collider.Radius, sizeof(collider.Radius));
+			add(&collider.HalfHeight, sizeof(collider.HalfHeight));
+		}
+	});
+	return hash;
+}
+
 ScenePhysics::Stats ScenePhysics::GetStats() const
 {
 	Stats stats;

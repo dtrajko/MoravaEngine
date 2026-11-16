@@ -1750,6 +1750,19 @@ void OnImGuiRenderInspector()
 			}
 			TerrainControls(entity);
 			break;
+		case EntityKind::NavMesh:
+			if (ImGui::Button("Delete Nav Mesh"))
+			{
+				DeleteEntity(entity);
+				ImGui::End();
+				return;
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The scene's navmesh goes (its .mnav file stays until it is baked or saved again)");
+			}
+			NavMeshControls(entity);
+			break;
 		case EntityKind::Camera:
 		{
 			if (ImGui::Button("Delete Camera"))
