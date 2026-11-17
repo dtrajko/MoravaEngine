@@ -44,6 +44,17 @@ Entities:
       Class: Outpost.Player
       Fields:
         Camera: {Entity: 1001}
+        Body: {Entity: 1101}
+  - ID: 1101
+    Name: Body
+    Parent: 1100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 180, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+    Animator: {Controller: Assets/Animators/Player.manim}
   - ID: 1002
     Name: Environment
     Parent: 0

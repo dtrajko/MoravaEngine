@@ -12,7 +12,7 @@ namespace Morava
         // The engine's numbers for the kinds (ScriptComponent in src/Scripting/ScriptApi.h)
         internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5, Animator = 6,
             UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14, Trail = 15,
-            NavAgent = 16, NavArea = 17, NavLink = 18 }
+            NavAgent = 16, NavArea = 17, NavLink = 18, Model = 19 }
 
         internal static Kind KindOf(Type type)
         {
@@ -35,6 +35,7 @@ namespace Morava
             if (type == typeof(NavAgent)) return Kind.NavAgent;
             if (type == typeof(NavArea)) return Kind.NavArea;
             if (type == typeof(NavLink)) return Kind.NavLink;
+            if (type == typeof(Model)) return Kind.Model;
             throw new ArgumentException($"{type.Name} is not a component of the engine");
         }
 
@@ -708,6 +709,28 @@ namespace Morava
         public void Clear()
         {
             if (Interop.Game->ParticleEmitter_Clear(Entity.Id) == 0) throw Missing("particle emitter");
+        }
+    }
+
+    /// <summary>A model (an entity with a model file, Inspector: Models and Meshes).</summary>
+    public sealed unsafe class Model : Component
+    {
+        /// <summary>
+        /// Not drawn in the main view (the game's camera): a first-person player's own body. Its shadow stays, and the water's
+        /// reflection, the render textures' cameras and the ray-traced passes still see it.
+        /// </summary>
+        public bool HiddenInMainView
+        {
+            get
+            {
+                int hidden;
+                if (Interop.Game->Model_GetHiddenInMainView(Entity.Id, &hidden) == 0) throw Missing("model");
+                return hidden != 0;
+            }
+            set
+            {
+                if (Interop.Game->Model_SetHiddenInMainView(Entity.Id, value ? 1 : 0) == 0) throw Missing("model");
+            }
         }
     }
 

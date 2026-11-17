@@ -240,7 +240,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <tr><td>Reload, use (doors, switches, pick up)</td><td>R, E</td><td>X, Y</td></tr>
     <tr><td>Weapons: next, previous, by number</td><td>wheel, Q (last), 1–4</td><td>right bumper, left bumper</td></tr>
     <tr><td>Fire mode (semi, automatic)</td><td>B</td><td>D-pad down</td></tr>
-    <tr><td>First person, third person</td><td>V</td><td>right stick press</td></tr>
+    <tr><td>First person, third person; the shoulder (third person)</td><td>V; X</td><td>right stick press; D-pad left</td></tr>
     <tr><td>Objectives, pause</td><td>Tab, Escape</td><td>Back, Start</td></tr>
   </table></div>
 </section>
@@ -1022,7 +1022,13 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>Input as commands from the start (<a href="#multiplayer">the rules</a>).</li>
   </ul>
   <p>In three steps, one PR each (as E1): <b>1.1</b> first-person movement, crouching (E7) and input as commands; <b>1.2</b>
-    the body, its animator, the third-person camera and the V switch; <b>1.3</b> the view model (E2).</p>
+    the body, its animator, the third-person camera and the V switch; <b>1.3</b> the soldier's uniform and the view model
+    (E2).</p>
+  <p><b>The soldier's look (the user, 2026-11-18: the player is dressed as a soldier):</b> it opens 1.3, because the view
+    model's arms are cut from the player's model and should already wear the sleeves and gloves. The uniform is painted
+    into the base body's color map by script (trousers, a long-sleeved shirt, boots, gloves; the head covered by a cap or
+    balaclava, so the bald head and the face stay out of sight); the helmet and the vest go on bones in Phase 2 with E3,
+    the same step that puts the gun in the body's hands. The guards (Phase 5) wear the same uniform in other colors.</p>
   <div class="box ok"><b>As built: 1.1 movement, crouching (E7) and commands (2026-11-17)</b>
     <ul>
       <li><b>E7 in the engine:</b> <code>ScenePhysics::SetCharacterHeight</code> gives a running character's capsule another
@@ -1063,6 +1069,40 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         slab) in editor Play, 13 of 13 (after the user's changes): run, sprint, quiet walk and crouch speeds, crouched height, standing refused under the slab and
         done beside it, a jump 1.05 m high, no damage from it, 70 damage from a 6 m fall. 0 validation messages; GCC
         clean.</li>
+    </ul>
+  </div>
+  <div class="box ok"><b>As built: 1.2 the body, its animator, the third-person camera and V (2026-11-17)</b>
+    <ul>
+      <li><b>In the engine:</b> a model can be <b>Hidden In Main View</b> (<code>ModelComponent::HiddenInMainView</code>, the
+        Inspector's checkbox, <code>HiddenInMainView: true</code> in the scene, copy and paste, C#
+        <code>Model.HiddenInMainView</code>, a new component for scripts): the main view's passes leave it out (the frustum
+        culling marks its meshes out of view), everything else still sees it: the shadow maps, the water's reflection, the
+        render textures' cameras (a security monitor, the HUD map later), the rays and the probes. Unreal calls it "owner no
+        see"; a plain "shadows only" would have hidden the player from the monitors too.</li>
+      <li><b>The body:</b> Greybox's <i>Player</i> got a child, <i>Body</i> (the Quaternius base male, the content check's model),
+        with <code>Assets/Animators/Player.manim</code>: Idle, Walk, Run, Sprint, CrouchIdle, CrouchWalk, Fall, Land from UAL1, no
+        transitions. <code>PlayerBody</code> picks the state from the motor (<code>Animator.Play</code> on a change) and the
+        moving clips' play rate (<i>Rate</i>: the speed over the clip's own, measured from the clips' feet: walk 0.95 m/s,
+        crouched 0.7, run about 3, sprint about 4.2), held between 0.6 and 2. It turns to where it moves (the library has no
+        strafing or backward clips) and, standing, to the look once that is 80 degrees away; the same in both views (the
+        guards see one body).</li>
+      <li><b>The view:</b> <code>PlayerView</code>: the eyes in first person; over the right shoulder in third person, 2.5 m
+        behind, 0.5 m to the side, 0.15 m up, by two sphere casts (sideways from the eyes, then back), closer at once, out
+        again smoothly. Both views look the same way (the crosshair aims the same); a switch glides in 0.25 s. V
+        (<i>SwitchView</i>) and X (<i>SwapShoulder</i>, a new action) are kept in the settings (<code>ThirdPerson</code>,
+        <code>LeftShoulder</code>). The body is hidden while the camera is within 1 m of the eyes: first person, a switch's
+        glide, a wall pushing the camera in.</li>
+      <li><b>The user's finding (2026-11-17):</b> the first switch showed the face and eyes from close by, the camera gliding
+        out through the head of a body turned towards it. Now the body is hidden within 1 m (it was 0.5) and a switch turns a
+        standing body to the look, so the camera sees its back.</li>
+      <li><b>Limits:</b> the motor is faster than the UAL1 clips: walking quietly (2.2 m/s) and crouched (1.8) are capped at
+        twice the clip's pace, so the feet slide a little. No strafing: aiming (Phase 2, E5) needs the body facing the aim,
+        and with it strafe and backward clips (UAL Pro, or our own from the pose tool). The base body has no clothes yet: the
+        uniform opens 1.3 (above).</li>
+      <li><b>Checked:</b> the test copy's driver (<code>PlayerTest</code>) got 13 more checks, 26 of 26 in editor Play: the
+        body hidden in first person with the camera at the eyes, Run, Sprint, Walk, CrouchWalk with their headings, Fall in the
+        jump, Land after the 6 m fall; third person behind and to the right, the body shown; the left shoulder; the camera
+        pulled in front of the Barracks' wall (0.78 m from the eyes); back in first person. 0 validation messages.</li>
     </ul>
   </div>
   <h3>Phase 2: weapons</h3>

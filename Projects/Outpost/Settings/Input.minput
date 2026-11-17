@@ -75,6 +75,9 @@ Actions:
   - Name: SwitchView    # first person or third person
     Type: Button
     Bindings: [ { Key: V }, { Gamepad: RightThumb } ]
+  - Name: SwapShoulder  # third person: the camera over the other shoulder
+    Type: Button
+    Bindings: [ { Key: X }, { Gamepad: DPadLeft } ]
   - Name: Objectives    # held: the mission's objectives
     Type: Button
     Bindings: [ { Key: Tab }, { Gamepad: Back } ]

@@ -228,6 +228,7 @@ struct SubmittedModel
 	glm::mat4 Transform;
 	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> Materials;
 	uint32_t FirstDraw = 0; // its first mesh in s_PreviousDrawTransforms (mesh s is at FirstDraw + s)
+	bool HiddenInMainView = false; // ModelComponent's: out of the main view's passes (CullMainView), in all others
 };
 static std::vector<SubmittedModel> s_SubmittedModels;
 // For the motion vectors: where every mesh of the submitted models was drawn in the previous frame (GetMeshTransform then),
@@ -1547,13 +1548,13 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 
 /**** BEGIN to be removed from VulkanRenderer ****/
 void EnvMapVulkanRenderer::SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials,
-	const std::vector<glm::mat4>& previousMeshTransforms)
+	const std::vector<glm::mat4>& previousMeshTransforms, bool hiddenInMainView)
 {
 	// Temporary code - populate selected mesh
 	// std::vector<Submesh> submeshes = mesh->GetMeshes();
 	// s_SelectedSubmesh = &submeshes.at(0);
 
-	s_SubmittedModels.push_back({ model, transform, materials, (uint32_t)s_PreviousDrawTransforms.size() });
+	s_SubmittedModels.push_back({ model, transform, materials, (uint32_t)s_PreviousDrawTransforms.size(), hiddenInMainView });
 	H2M::RefH2M<H2M::ModelH2M> modelRef = model;
 	const auto& meshes = modelRef->GetMeshes();
 	for (size_t s = 0; s < meshes.size(); s++)
@@ -3160,6 +3161,15 @@ static void CullMainView()
 		for (uint32_t s = 0; s < (uint32_t)meshes.size(); s++)
 		{
 			s_CullingStats.Meshes++;
+			if (submitted.HiddenInMainView)
+			{
+				// Not in the camera's view at all (the shadows, reflections and render textures don't read s_MeshInView)
+				if (submitted.FirstDraw + s < s_MeshInView.size())
+				{
+					s_MeshInView[submitted.FirstDraw + s] = 0;
+				}
+				continue;
+			}
 			if (skinned)
 			{
 				s_CullingStats.Skinned++;
@@ -5122,7 +5132,8 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 
 		UpdateObjectUniforms(model, previousState.BoneTransforms);
 		const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> meshMaterials = EnvMapVulkanSceneData::GetMeshMaterials(*s_Scene, entity);
-		SubmitModelTemp(model, worldTransform, meshMaterials, previousState.MeshTransforms);
+		const ModelComponent* modelComponent = s_Scene->TryGet<ModelComponent>(entity);
+		SubmitModelTemp(model, worldTransform, meshMaterials, previousState.MeshTransforms, modelComponent && modelComponent->HiddenInMainView);
 
 		// The model, where its meshes are, its pose and which materials they have (the materials' values: below)
 		probeSceneVersion = HashBytes(probeSceneVersion, &state.Model, sizeof(state.Model));

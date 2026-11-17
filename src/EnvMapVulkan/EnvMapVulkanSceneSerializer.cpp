@@ -245,6 +245,10 @@ namespace EnvMapVulkanSceneSerializer
 		{
 			out << YAML::Key << "Model" << YAML::Value << YAML::BeginMap;
 			AssetReference::Write(out, "File", model->FilePath);
+			if (model->HiddenInMainView)
+			{
+				out << YAML::Key << "HiddenInMainView" << YAML::Value << true;
+			}
 			out << YAML::EndMap;
 		}
 		if (const MeshPartComponent* part = scene.TryGet<MeshPartComponent>(entity))
@@ -852,7 +856,9 @@ namespace EnvMapVulkanSceneSerializer
 		}
 		if (YAML::Node modelNode = node["Model"])
 		{
-			scene.Add<ModelComponent>(entity).FilePath = AssetReference::Read(modelNode, "File");
+			ModelComponent& model = scene.Add<ModelComponent>(entity);
+			model.FilePath = AssetReference::Read(modelNode, "File");
+			model.HiddenInMainView = modelNode["HiddenInMainView"].as<bool>(false);
 		}
 		if (YAML::Node partNode = node["MeshPart"])
 		{

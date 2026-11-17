@@ -5,10 +5,12 @@ using Morava;
 namespace Outpost
 {
     /// <summary>
-    /// The player (docs/games/Shooter_Plan.html, Phase 1): first person, on a Character (Inspector: Physics) whose entity
-    /// stands at the feet. Each fixed step the local input becomes a PlayerCommand and the PlayerMotor moves the character
-    /// by it (run, walk quietly, crouch, jump, fall damage); each frame the camera goes to the eyes (lower when crouched,
-    /// eased) and the steps are heard.
+    /// The player (docs/games/Shooter_Plan.html, Phase 1), on a Character (Inspector: Physics) whose entity stands at the
+    /// feet. Each fixed step the local input becomes a PlayerCommand and the PlayerMotor moves the character by it (run,
+    /// walk quietly, crouch, jump, fall damage); each frame the body (PlayerBody: the Body child's model and animator) shows
+    /// it, the camera goes to the eyes (lower when crouched, eased) or over the shoulder (PlayerView), and the steps are
+    /// heard. SwitchView (V) changes the view, SwapShoulder (X) the shoulder; both are kept in the settings. In first person
+    /// the body is hidden from the camera, its shadow stays.
     ///
     /// F2 (DebugFly) hands the view to the debug fly camera (the Camera entity's FlyCamera) and back: the player stands
     /// still meanwhile.
@@ -17,6 +19,13 @@ namespace Outpost
     {
         /// <summary>The view: the scene's camera entity (with a FlyCamera script for F2).</summary>
         public Entity? Camera;
+
+        /// <summary>The body: a child at the feet with the model and its animator (Player.manim).</summary>
+        public Entity? Body;
+
+        /// <summary>Third person: meters behind the shoulder, and to the side of the eyes.</summary>
+        public float ThirdPersonDistance = 2.5f;
+        public float ShoulderOffset = 0.5f;
 
         /// <summary>Times the input map's Look.</summary>
         public float Sensitivity = 1.0f;
@@ -45,6 +54,8 @@ namespace Outpost
         CharacterController character = null!;
         PlayerMotor motor = null!;
         LocalPlayerInput input = null!;
+        PlayerBody? body;
+        PlayerView view = null!;
         float eyeOffset;          // the eyes below EyeHeight now (eased towards the crouch's)
         float stepDistance;       // meters walked since the last step's sound
         int lastVariant;
@@ -66,6 +77,36 @@ namespace Outpost
         public bool IsSprinting => motor.IsSprinting;
         public float CurrentHeight => character.Height;
 
+        /// <summary>The view (V switches it) and the shoulder (X): kept in the settings.</summary>
+        public ViewMode View
+        {
+            get => view.Mode;
+            set
+            {
+                view.Mode = value;
+                body?.FaceLook();
+                Settings.SetBool(ThirdPersonSetting, value == ViewMode.ThirdPerson);
+            }
+        }
+
+        public bool LeftShoulder
+        {
+            get => view.LeftShoulder;
+            set
+            {
+                view.LeftShoulder = value;
+                Settings.SetBool(LeftShoulderSetting, value);
+            }
+        }
+
+        /// <summary>The body's state (Player.manim's), its heading, and where the camera is: for what shows them (a test).</summary>
+        public string BodyState => body?.State ?? "";
+        public float BodyHeading => body?.Heading ?? 0.0f;
+        public bool BodyHidden => body?.HiddenInMainView ?? false;
+        public Vector3 CameraPosition => view.Position;
+
+        const string ThirdPersonSetting = "ThirdPerson", LeftShoulderSetting = "LeftShoulder";
+
         protected override void OnCreate()
         {
             character = GetComponent<CharacterController>() ??
@@ -76,14 +117,22 @@ namespace Outpost
             };
             motor = new PlayerMotor(character, settings);
             motor.Jumped += () => PlaySound(JumpSound, 0.5f);
+            motor.Jumped += () => body?.OnJumped();
             motor.Landed += OnLanded;
+
+            if (Body != null)
+                body = new PlayerBody(Body, new PlayerBodySettings());
+            else
+                Log.Warn($"{Name}: no Body, the player has no model (and no shadow)");
+            view = new PlayerView(new PlayerViewSettings { Distance = ThirdPersonDistance, ShoulderOffset = ShoulderOffset },
+                Settings.GetBool(ThirdPersonSetting) ? ViewMode.ThirdPerson : ViewMode.FirstPerson, Settings.GetBool(LeftShoulderSetting));
 
             // The look starts as the camera was placed in the scene
             Vector3 angles = Camera != null ? Camera.EulerAngles : EulerAngles;
             input = new LocalPlayerInput(angles.Y, angles.X) { Sensitivity = Sensitivity };
             Input.CursorLocked = true;
             lastFeet = WorldPosition;
-            Log.Info($"{Name}: the player, {character.StandingHeight:0.00} m tall ({CrouchHeight:0.00} m crouched), F2 the fly camera");
+            Log.Info($"{Name}: the player, {character.StandingHeight:0.00} m tall ({CrouchHeight:0.00} m crouched), {view.Mode}; V the view, X the shoulder, F2 the fly camera");
         }
 
         protected override void OnFixedUpdate(float dt)
@@ -99,19 +148,36 @@ namespace Outpost
             if (Input.WasPressed("DebugFly") && Camera is FlyCamera fly)
                 fly.IsActive = !fly.IsActive;
             if (Flying)
+            {
+                body?.Update(dt, Vector3.Zero, motor.IsGrounded, motor.IsCrouched, false, false, lastCommand.Yaw);
+                if (body != null)
+                    body.HiddenInMainView = false; // the fly camera sees the player standing there
                 return;
+            }
+            if (Input.WasPressed("SwitchView"))
+                View = View == ViewMode.FirstPerson ? ViewMode.ThirdPerson : ViewMode.FirstPerson;
+            if (Input.WasPressed("SwapShoulder"))
+                LeftShoulder = !LeftShoulder;
 
             if (CommandSource == null)
                 input.UpdateLook(dt);
-            PlayerCommand look = lastCommand;
+            float yaw = CommandSource != null ? lastCommand.Yaw : input.Yaw;
+            float pitch = CommandSource != null ? lastCommand.Pitch : input.Pitch;
 
-            // The eyes: down with the capsule when crouched, eased so the view doesn't jump
+            // The body shows what the motor does (the same in both views)
+            body?.Update(dt, motor.Velocity, motor.IsGrounded, motor.IsCrouched, motor.IsWalking, motor.IsSprinting, yaw);
+
+            // The eyes: down with the capsule when crouched, eased so the view doesn't jump; the camera there or over the shoulder
             float crouchDrop = character.StandingHeight - character.Height;
             eyeOffset += (crouchDrop - eyeOffset) * MathF.Min(1.0f, 14.0f * dt);
+            Vector3 eyes = WorldPosition + new Vector3(0.0f, EyeHeight - eyeOffset, 0.0f);
+            Vector3 cameraPosition = view.Update(dt, eyes, yaw, pitch, this);
+            if (body != null)
+                body.HiddenInMainView = view.HidesBody;
             if (Camera != null)
             {
-                Camera.Translation = WorldPosition + new Vector3(0.0f, EyeHeight - eyeOffset, 0.0f);
-                Camera.EulerAngles = CommandSource != null ? new Vector3(look.Pitch, look.Yaw, 0.0f) : new Vector3(input.Pitch, input.Yaw, 0.0f);
+                Camera.Translation = cameraPosition;
+                Camera.EulerAngles = new Vector3(pitch, yaw, 0.0f);
             }
 
             // The steps: one each stride walked on the ground, louder sprinting, quieter walking, none crouched
@@ -135,6 +201,7 @@ namespace Outpost
         void OnLanded(float speed, float damage)
         {
             PlaySound(LandSound, Math.Clamp(speed / 12.0f, 0.15f, 1.0f));
+            body?.OnLanded(speed);
             stepDistance = 0.0f;
             if (damage > 0.0f)
                 Damage.Apply(this, new DamageInfo { Amount = damage, Point = WorldPosition, Direction = -Vector3.UnitY, Kind = "Fall" });

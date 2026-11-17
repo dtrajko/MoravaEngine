@@ -303,6 +303,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::NavAgent:          return scene->Has<NavAgentComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::NavArea:           return scene->Has<NavAreaComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::NavLink:           return scene->Has<NavLinkComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::Model:             return scene->Has<ModelComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -607,6 +608,32 @@ static int32_t CharacterSetHeight(uint64_t entity, float height)
 		return 0;
 	}
 	return physics->SetCharacterHeight(entity, height) ? 1 : -1;
+}
+
+// ---- Model
+
+static int32_t ModelGetHiddenInMainView(uint64_t entity, int32_t* hidden)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	const ModelComponent* model = scene ? scene->TryGet<ModelComponent>(entity) : nullptr;
+	if (!model || !hidden)
+	{
+		return 0;
+	}
+	*hidden = model->HiddenInMainView ? 1 : 0;
+	return 1;
+}
+
+static int32_t ModelSetHiddenInMainView(uint64_t entity, int32_t hidden)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	ModelComponent* model = scene ? scene->TryGet<ModelComponent>(entity) : nullptr;
+	if (!model)
+	{
+		return 0;
+	}
+	model->HiddenInMainView = hidden != 0;
+	return 1;
 }
 
 // ---- Vehicle
@@ -2222,6 +2249,8 @@ namespace ScriptBindings
 		api.NavLink_Get = NavLinkGet;
 		api.NavLink_SetEnabled = NavLinkSetEnabled;
 		api.Character_SetHeight = CharacterSetHeight;
+		api.Model_GetHiddenInMainView = ModelGetHiddenInMainView;
+		api.Model_SetHiddenInMainView = ModelSetHiddenInMainView;
 	}
 
 	void SetContext(ScriptContext* context)

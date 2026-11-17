@@ -180,6 +180,9 @@ namespace Morava
         public delegate* unmanaged<ulong, int, int> NavLink_SetEnabled;
 
         public delegate* unmanaged<ulong, float, int> Character_SetHeight;
+
+        public delegate* unmanaged<ulong, int*, int> Model_GetHiddenInMainView;
+        public delegate* unmanaged<ulong, int, int> Model_SetHiddenInMainView;
     }
 
     [StructLayout(LayoutKind.Sequential)]
