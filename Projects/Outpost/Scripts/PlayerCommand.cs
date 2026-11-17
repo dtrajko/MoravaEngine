@@ -23,8 +23,11 @@ namespace Outpost
         /// <summary>It wants to be crouched (Crouch held, or CrouchToggle on).</summary>
         public bool Crouch;
 
-        /// <summary>Walking quietly: slower, and steps the guards hear less.</summary>
+        /// <summary>Walking quietly: slower, and steps the guards hear less (Alt; a gamepad: a light push of the stick).</summary>
         public bool Walk;
+
+        /// <summary>Sprinting: faster forward, louder steps (Shift). Walking quietly or crouching takes over from it.</summary>
+        public bool Sprint;
 
         /// <summary>The horizontal direction the yaw faces (length 1).</summary>
         public Vector3 Forward
@@ -88,9 +91,14 @@ namespace Outpost
             bool crouchHeld = Input.IsHeld("Crouch");
             if (crouchHeld)
                 crouchToggled = false; // holding Crouch takes over from the toggle
-            Vector2 move = Input.GetAxis2D("Move");
+            InputAction moveAction = Input.GetAction("Move");
+            Vector2 move = moveAction.Value;
             if (move.LengthSquared() > 1.0f)
                 move = Vector2.Normalize(move);
+            // A gamepad's stick pushed a little walks quietly (a key is all the way)
+            bool lightPush = moveAction.FromGamepad && move.LengthSquared() > 0.0f && move.LengthSquared() < 0.55f * 0.55f;
+            if (lightPush)
+                move /= 0.55f; // the quiet walk's full speed at the edge of the light push
             return new PlayerCommand
             {
                 Move = move,
@@ -98,7 +106,8 @@ namespace Outpost
                 Pitch = pitch,
                 Jump = Input.WasPressed("Jump"),
                 Crouch = crouchHeld || crouchToggled,
-                Walk = Input.IsHeld("Walk"),
+                Walk = Input.IsHeld("Walk") || lightPush,
+                Sprint = Input.IsHeld("Sprint"),
             };
         }
     }

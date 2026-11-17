@@ -236,7 +236,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <tr><th>Action</th><th>Keyboard and mouse</th><th>Gamepad</th></tr>
     <tr><td>Move, look</td><td>W A S D, mouse</td><td>left stick, right stick</td></tr>
     <tr><td>Fire, aim down the sights (the sniper's scope: its zoom levels)</td><td>left button, right button</td><td>right trigger, left trigger</td></tr>
-    <tr><td>Jump, crouch, walk quietly</td><td>Space, Ctrl (C toggles), Shift</td><td>A, B, left stick press</td></tr>
+    <tr><td>Jump, crouch, sprint, walk quietly</td><td>Space, Ctrl (C toggles), Shift, Alt (the user, 2026-11-17)</td><td>A, B, left stick press, a light push of the stick</td></tr>
     <tr><td>Reload, use (doors, switches, pick up)</td><td>R, E</td><td>X, Y</td></tr>
     <tr><td>Weapons: next, previous, by number</td><td>wheel, Q (last), 1–4</td><td>right bumper, left bumper</td></tr>
     <tr><td>Fire mode (semi, automatic)</td><td>B</td><td>D-pad down</td></tr>
@@ -1034,7 +1034,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         player; <code>LocalPlayerInput</code> makes it from the input actions (the look each frame, the buttons in the
         fixed step; C toggles crouching, holding Ctrl takes over). <code>Player.CommandSource</code> takes commands from
         elsewhere: a bot, a test driver, later a remote player.</li>
-      <li><b><code>PlayerMotor</code></b> (the fixed step): run 5 m/s, walk quietly 2.4 (Shift), crouched 1.8; a jump of
+      <li><b><code>PlayerMotor</code></b> (the fixed step): run 4.5 m/s, sprint 6.5 (Shift, forward only), walk quietly 2.2
+        (Alt; on a gamepad a light push of the stick), crouched 1.8; a jump of
         1 m (gravity 20 m/s&sup2;), a little control in the air, a ceiling stops the rise; crouching down at once and up when
         there is room (asked each step); landing faster than 9 m/s (a fall of about 2 m) hurts, 11 points per m/s over
         it.</li>
@@ -1046,10 +1047,20 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         landing sounds (our own, Sample's soft steps, in <code>Assets/Audio</code>). F2 (<i>DebugFly</i>, a new action)
         hands the view to the camera's <code>FlyCamera</code> and back; it has <i>StartActive</i> for scenes without a
         player.</li>
+      <li><b>The user's changes (2026-11-17):</b> Shift sprints instead of slowing down (a new action, <i>Sprint</i>);
+        walking quietly is held Alt (<i>Walk</i>), slower and quiet; crouched the player makes no sound at all, with Alt or
+        without. The editor turns ImGui's keyboard navigation off while the game has the mouse, so Alt stays the
+        game's. Steps: a stride of 1.6 m running (volume 0.6), 2.1 m sprinting (0.9), 1.0 m walking quietly (0.12).</li>
+      <li><b>The greybox, climbable (the user's request):</b> stairs from the Barracks' upper floor and from the Warehouse's
+        floor onto their roofs, parapets of 1 m around both roofs, and <i>Catwalk_Roofs</i> between them (the Barracks'
+        roof at 7 m to the Warehouse's at 6 m: 2.3 m flat, then 6 steps down). The level builder got parapets (with gaps:
+        the roof's openings) and catwalks (README). The navmesh is one island from the yard to both roofs: a path roof to
+        roof crosses the catwalk (26 m), the yard to the Barracks' roof goes up both stairs (61 m). A lift is Phase 6's
+        (links that move with it).</li>
       <li><b>With it:</b> the Navigation debug views drawn depth-tested (the user's request; see E1 and the engine guide's
         12.3), and the stale navmesh of another scene fixed.</li>
       <li><b>Checked:</b> a test copy (<code>D:\Workspace\Temp\OutpostPlayerTest</code>, a driver script and a low test
-        slab) in editor Play, 12 of 12: run, walk and crouch speeds, crouched height, standing refused under the slab and
+        slab) in editor Play, 13 of 13 (after the user's changes): run, sprint, quiet walk and crouch speeds, crouched height, standing refused under the slab and
         done beside it, a jump 1.05 m high, no damage from it, 70 damage from a 6 m fall. 0 validation messages; GCC
         clean.</li>
     </ul>

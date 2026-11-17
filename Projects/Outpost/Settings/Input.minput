@@ -32,9 +32,12 @@ Actions:
   - Name: CrouchToggle  # a press: crouched until pressed again
     Type: Button
     Bindings: [ { Key: C } ]
-  - Name: Walk          # held: walking quietly (the guards hear less), steadying the scope; the debug fly camera goes faster
+  - Name: Sprint        # held: running faster (louder steps), forward; the debug fly camera goes faster
     Type: Button
     Bindings: [ { Key: LeftShift }, { Gamepad: LeftThumb } ]
+  - Name: Walk          # held: walking quietly, slower (the guards hear less), steadying the scope; a gamepad: a light push of the stick
+    Type: Button
+    Bindings: [ { Key: LeftAlt } ]
   - Name: Reload
     Type: Button
     Bindings: [ { Key: R }, { Gamepad: X } ]

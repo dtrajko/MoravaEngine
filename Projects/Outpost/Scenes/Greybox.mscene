@@ -142,6 +142,20 @@ Entities:
       Restitution: 0
       IsTrigger: false
   - ID: 60004
+    Name: Level_Greybox_Catwalk_Roofs
+    Parent: 60000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Levels/Greybox/Level_Greybox_Catwalk_Roofs.gltf
+    Collider:
+      Shape: TriangleMesh
+      Friction: 0.6
+      Restitution: 0
+      IsTrigger: false
+  - ID: 60005
     Name: Level_Greybox_Ground
     Parent: 60000
     Transform:
@@ -155,7 +169,7 @@ Entities:
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
-  - ID: 60005
+  - ID: 60006
     Name: Level_Greybox_Warehouse_F0
     Parent: 60000
     Transform:
@@ -169,7 +183,7 @@ Entities:
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
-  - ID: 60006
+  - ID: 60007
     Name: Level_Greybox_Warehouse_Roof
     Parent: 60000
     Transform:

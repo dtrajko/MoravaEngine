@@ -7,12 +7,12 @@ namespace Outpost
     /// <summary>
     /// A free camera for looking around a level while it is built (docs/games/Shooter_Plan.html, Phase 0): Look (the mouse,
     /// the right stick) turns it, Move (W A S D, the left stick) flies along the view, FlyUp and FlyDown (E or Space, Q or
-    /// Ctrl) rise and sink, Walk (Shift) is faster. It goes through walls. A debug camera beside the player (Phase 1): off
+    /// Ctrl) rise and sink, Sprint (Shift) is faster. It goes through walls. A debug camera beside the player (Phase 1): off
     /// at the start when StartActive is off, the Player's F2 (DebugFly) turns it on and off.
     /// </summary>
     public class FlyCamera : Entity
     {
-        /// <summary>Meters per second, and times that while Walk is held.</summary>
+        /// <summary>Meters per second, and times that while Sprint is held.</summary>
         public float Speed = 6.0f;
         public float FastFactor = 4.0f;
 
@@ -71,7 +71,7 @@ namespace Outpost
             Vector3 velocity = forward * move.Y + right * move.X + Vector3.UnitY * rise;
             if (velocity.LengthSquared() > 1.0f)
                 velocity = Vector3.Normalize(velocity);
-            float speed = Speed * (Input.IsHeld("Walk") ? FastFactor : 1.0f);
+            float speed = Speed * (Input.IsHeld("Sprint") ? FastFactor : 1.0f);
             Translation += velocity * speed * dt;
         }
     }

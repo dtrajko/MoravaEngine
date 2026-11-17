@@ -596,6 +596,17 @@ void UpdateGameViewportFocus(bool viewportFocused)
 		viewportFocused = true;
 	}
 	s_GameViewportFocused = viewportFocused && IsGameRunning();
+	// While the game has the mouse, the keyboard is the game's: no keyboard navigation of the editor's panels (Alt would
+	// move it to the menu bar, and the viewport would lose the focus: the shooter's Alt walks quietly)
+	ImGuiIO& navIO = ImGui::GetIO();
+	if (s_GameViewportFocused && s_GameInput.IsMouseCaptured())
+	{
+		navIO.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+	}
+	else
+	{
+		navIO.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	}
 	if (!s_GameViewportFocused)
 	{
 		return;
