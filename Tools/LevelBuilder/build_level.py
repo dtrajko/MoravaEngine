@@ -9,6 +9,7 @@
 #   <ModelsDirectory>/<Level>/Level_<Level>_<Building>_F<n>.gltf   a building's floor n: its slab, its walls, its stairs up
 #   <ModelsDirectory>/<Level>/Level_<Level>_<Building>_Roof.gltf   the roof (a model of its own: hidden to look inside)
 #   <ModelsDirectory>/<Level>/Level_<Level>_Ground.gltf            the ground around the buildings
+#   <ModelsDirectory>/<Level>/Level_<Level>_<Catwalk>.gltf         a catwalk between buildings (its deck, steps, railings)
 #   <ModelsDirectory>/Textures/Greybox_<Material>.png              the greybox materials' grid (1 m), shared by levels
 # and puts them in the scene named by the data (Scene): one entity per model under an entity named Level_<Level>, each
 # with a TriangleMesh collider (the greybox's surfaces are its colliders). The scene's other entities are kept; the
@@ -39,6 +40,11 @@ DEFAULTS = {
     "StairRiser": 0.18,    # at most: a stair's steps are its rise divided evenly
     "StairTread": 0.28,
     "GroundThickness": 0.5,
+    "Parapet": 0.0,        # a low wall around the roof, this high (0: none); its gaps are the roof's Openings
+    "CatwalkWidth": 1.2,
+    "CatwalkThickness": 0.15,
+    "RailingHeight": 1.0,  # a catwalk's railings above its deck and steps (0: none)
+    "RailingThickness": 0.05,
 }
 
 # The greybox materials: a base color (sRGB) under a grid of 1 m lines; the floor's lines are darker every 5 m
@@ -49,6 +55,7 @@ MATERIALS = {
     "WallOutside": ((0.62, 0.64, 0.68), 0.9),
     "Stairs": ((0.85, 0.52, 0.22), 0.8),
     "Roof": ((0.36, 0.37, 0.40), 0.9),
+    "Catwalk": ((0.30, 0.42, 0.55), 0.6),
 }
 
 DIRECTIONS = {  # the engine's: Y up, North is -Z
@@ -198,6 +205,77 @@ def stairs(builder, material, at, direction, width, bottom, rise, settings):
     return rect(0.0, run), steps, riser, run
 
 
+def catwalk(builder, name, c, s):
+    """A catwalk: a deck along x or z from From to To ([x, y, z] each: the deck's top at that end, on its middle line),
+    Width wide, with railings along both sides. Ends at different heights: flat at the higher one, and steps down at the
+    lower end (each at most StairRiser), as long as they need. Returns the report's line"""
+    a, b = c["From"], c["To"]
+    width = c.get("Width", s["CatwalkWidth"])
+    deck = s["CatwalkThickness"]
+    railing = s["RailingHeight"]
+    rail = s["RailingThickness"]
+    if abs(a[0] - b[0]) > 1e-6 and abs(a[2] - b[2]) > 1e-6:
+        raise SystemExit(f"build_level: the catwalk {name} from {a} to {b} isn't along x or z")
+    axis = 0 if abs(a[2] - b[2]) < 1e-6 else 2
+    other = 2 - axis
+    high, low = (a, b) if a[1] >= b[1] else (b, a)
+    length = abs(b[axis] - a[axis])
+    sign = 1.0 if low[axis] > high[axis] else -1.0  # from the high end towards the low end along the axis
+
+    def span(u0, u1):
+        # From u0 to u1 along the catwalk (measured from the high end), its width across: (lo, hi) corners without y
+        p0 = high[axis] + sign * u0
+        p1 = high[axis] + sign * u1
+        lo, hi = [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]
+        lo[axis], hi[axis] = min(p0, p1), max(p0, p1)
+        lo[other], hi[other] = high[other] - width / 2, high[other] + width / 2
+        return lo, hi
+
+    rise = high[1] - low[1]
+    run, steps = 0.0, 0
+    if rise > 1e-6:
+        # The steps climb from the low end towards the high one
+        direction = {(0, 1.0): "West", (0, -1.0): "East", (2, 1.0): "North", (2, -1.0): "South"}[(axis, sign)]
+        _, steps, _, run = stairs(builder, "Catwalk", (low[0], low[2]), direction, width, low[1], rise, s)
+        if run > length + 1e-6:
+            raise SystemExit(f"build_level: the catwalk {name} is {length:.2f} m long, its steps need {run:.2f} m")
+    if length - run > 1e-6:
+        lo, hi = span(0.0, length - run)
+        builder.box("Catwalk", (lo[0], high[1] - deck, lo[2]), (hi[0], high[1], hi[2]))
+    if railing > 0.0:
+        for side in (-1.0, 1.0):
+            edge = high[other] + side * (width / 2 - rail / 2)
+            for u0, u1, bottom in ((0.0, length - run, high[1] - deck), (length - run, length, low[1])):
+                if u1 - u0 < 1e-6:
+                    continue
+                lo, hi = span(u0, u1)
+                lo[other], hi[other] = edge - rail / 2, edge + rail / 2
+                builder.box("Catwalk", (lo[0], bottom, lo[2]), (hi[0], high[1] + railing, hi[2]))
+    return (f"{name}: {length:.2f} m from {a} to {b}, {width} m wide" +
+            (f", {steps} steps down {rise:.2f} m over {run:.2f} m" if steps else ""))
+
+
+def outer_walls(model, building, floor, bottom, top, s):
+    """The four outer walls of a building's floor (or its roof's parapet), in the footprint's edge, from bottom to top,
+    with the openings of that floor: North and South run its whole width, East and West between them"""
+    mx, mz = building["Min"]
+    width, depth = building["Size"]
+    t = s["WallThickness"]
+    openings = {side: [] for side in WALL_SIDES}
+    for o in building.get("Openings", []):
+        if o.get("Floor", 0) == floor:
+            openings[o["Wall"]].append(o)
+    outside = "WallOutside"
+    wall(model, outside, (mx, 0, mz + t / 2), (mx + width, 0, mz + t / 2), 0, t, bottom, top, openings["North"], s)
+    wall(model, outside, (mx, 0, mz + depth - t / 2), (mx + width, 0, mz + depth - t / 2), 0, t, bottom, top,
+         openings["South"], s)
+    # East and West: their openings' offsets count from the footprint's north edge, as the walls' own start
+    east = [dict(o, Offset=o["Offset"] - t) for o in openings["East"]]
+    west = [dict(o, Offset=o["Offset"] - t) for o in openings["West"]]
+    wall(model, outside, (mx + width - t / 2, 0, mz + t), (mx + width - t / 2, 0, mz + depth - t), 2, t, bottom, top, east, s)
+    wall(model, outside, (mx + t / 2, 0, mz + t), (mx + t / 2, 0, mz + depth - t), 2, t, bottom, top, west, s)
+
+
 # ---------------------------------------------------------------------------------------------------------------------
 # The level
 
@@ -250,25 +328,13 @@ def build_level(data):
             for x0, z0, x1, z1 in subtract_rects((mx, mz, mx + width, mz + depth), holes[f]):
                 model.box(material, (x0, top - slab, z0), (x1, top, z1))
             if f == floors:
+                if s["Parapet"] > 0.0:
+                    outer_walls(model, building, f, top, top + s["Parapet"], s)
                 break
 
-            # The outer walls, in the footprint's edge: North and South run its whole width, East and West between them
+            # The outer walls, in the footprint's edge
             bottom, wall_top = top, top + story - slab
-            openings = {side: [] for side in WALL_SIDES}
-            for o in building.get("Openings", []):
-                if o.get("Floor", 0) == f:
-                    openings[o["Wall"]].append(o)
-            outside = "WallOutside"
-            wall(model, outside, (mx, 0, mz + t / 2), (mx + width, 0, mz + t / 2), 0, t, bottom, wall_top,
-                 openings["North"], s)
-            wall(model, outside, (mx, 0, mz + depth - t / 2), (mx + width, 0, mz + depth - t / 2), 0, t, bottom, wall_top,
-                 openings["South"], s)
-            # East and West: their openings' offsets count from the footprint's north edge, as the walls' own start
-            east = [dict(o, Offset=o["Offset"] - t) for o in openings["East"]]
-            west = [dict(o, Offset=o["Offset"] - t) for o in openings["West"]]
-            wall(model, outside, (mx + width - t / 2, 0, mz + t), (mx + width - t / 2, 0, mz + depth - t), 2, t, bottom,
-                 wall_top, east, s)
-            wall(model, outside, (mx + t / 2, 0, mz + t), (mx + t / 2, 0, mz + depth - t), 2, t, bottom, wall_top, west, s)
+            outer_walls(model, building, f, bottom, wall_top, s)
 
             # The rooms' walls
             for w in building.get("Walls", []):
@@ -282,7 +348,14 @@ def build_level(data):
                      w.get("Openings", []), s)
 
         report.append(f"{name}: {width} x {depth} m, {floors} floor(s) of {story} m" +
-                      ("; stairs " + "; ".join(stair_parts) if stair_parts else ""))
+                      ("; stairs " + "; ".join(stair_parts) if stair_parts else "") +
+                      (f"; a parapet of {s['Parapet']} m" if s["Parapet"] > 0.0 else ""))
+
+    for i, c in enumerate(data.get("Catwalks", [])):
+        name = c.get("Name", f"Catwalk{i + 1}")
+        s = dict(settings)
+        s.update(c.get("Settings", {}))
+        report.append(catwalk(models.setdefault(name, MeshBuilder()), name, c, s))
 
     ground = data.get("Ground")
     if ground:

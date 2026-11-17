@@ -28,6 +28,16 @@
 				"metallicFactor":0,
 				"roughnessFactor":0.8999999761581421
 			}
+		},
+		{
+			"name":"Greybox_WallOutside",
+			"pbrMetallicRoughness":{
+				"baseColorTexture":{
+					"index":1
+				},
+				"metallicFactor":0,
+				"roughnessFactor":0.8999999761581421
+			}
 		}
 	],
 	"meshes":[
@@ -42,6 +52,15 @@
 					},
 					"indices":3,
 					"material":0
+				},
+				{
+					"attributes":{
+						"POSITION":4,
+						"NORMAL":5,
+						"TEXCOORD_0":6
+					},
+					"indices":7,
+					"material":1
 				}
 			]
 		}
@@ -50,6 +69,10 @@
 		{
 			"sampler":0,
 			"source":0
+		},
+		{
+			"sampler":0,
+			"source":1
 		}
 	],
 	"images":[
@@ -57,13 +80,18 @@
 			"mimeType":"image/png",
 			"name":"Greybox_Roof",
 			"uri":"../Textures/Greybox_Roof.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"Greybox_WallOutside",
+			"uri":"../Textures/Greybox_WallOutside.png"
 		}
 	],
 	"accessors":[
 		{
 			"bufferView":0,
 			"componentType":5126,
-			"count":24,
+			"count":96,
 			"max":[
 				22,
 				6,
@@ -79,45 +107,103 @@
 		{
 			"bufferView":1,
 			"componentType":5126,
-			"count":24,
+			"count":96,
 			"type":"VEC3"
 		},
 		{
 			"bufferView":2,
 			"componentType":5126,
-			"count":24,
+			"count":96,
 			"type":"VEC2"
 		},
 		{
 			"bufferView":3,
 			"componentType":5123,
-			"count":36,
+			"count":144,
+			"type":"SCALAR"
+		},
+		{
+			"bufferView":4,
+			"componentType":5126,
+			"count":120,
+			"max":[
+				22,
+				7,
+				4
+			],
+			"min":[
+				8,
+				6,
+				-16
+			],
+			"type":"VEC3"
+		},
+		{
+			"bufferView":5,
+			"componentType":5126,
+			"count":120,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":6,
+			"componentType":5126,
+			"count":120,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":7,
+			"componentType":5123,
+			"count":180,
 			"type":"SCALAR"
 		}
 	],
 	"bufferViews":[
 		{
 			"buffer":0,
-			"byteLength":288,
+			"byteLength":1152,
 			"byteOffset":0,
 			"target":34962
 		},
 		{
 			"buffer":0,
+			"byteLength":1152,
+			"byteOffset":1152,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":768,
+			"byteOffset":2304,
+			"target":34962
+		},
+		{
+			"buffer":0,
 			"byteLength":288,
-			"byteOffset":288,
+			"byteOffset":3072,
+			"target":34963
+		},
+		{
+			"buffer":0,
+			"byteLength":1440,
+			"byteOffset":3360,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":192,
-			"byteOffset":576,
+			"byteLength":1440,
+			"byteOffset":4800,
 			"target":34962
 		},
 		{
 			"buffer":0,
-			"byteLength":72,
-			"byteOffset":768,
+			"byteLength":960,
+			"byteOffset":6240,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":360,
+			"byteOffset":7200,
 			"target":34963
 		}
 	],
@@ -129,7 +215,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":840,
+			"byteLength":7560,
 			"uri":"Level_Greybox_Warehouse_Roof.bin"
 		}
 	]

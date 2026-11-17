@@ -30,10 +30,20 @@
 			}
 		},
 		{
-			"name":"Greybox_Wall",
+			"name":"Greybox_Stairs",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
 					"index":1
+				},
+				"metallicFactor":0,
+				"roughnessFactor":0.800000011920929
+			}
+		},
+		{
+			"name":"Greybox_Wall",
+			"pbrMetallicRoughness":{
+				"baseColorTexture":{
+					"index":2
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.8999999761581421
@@ -43,7 +53,7 @@
 			"name":"Greybox_WallOutside",
 			"pbrMetallicRoughness":{
 				"baseColorTexture":{
-					"index":2
+					"index":3
 				},
 				"metallicFactor":0,
 				"roughnessFactor":0.8999999761581421
@@ -80,6 +90,15 @@
 					},
 					"indices":11,
 					"material":2
+				},
+				{
+					"attributes":{
+						"POSITION":12,
+						"NORMAL":13,
+						"TEXCOORD_0":14
+					},
+					"indices":15,
+					"material":3
 				}
 			]
 		}
@@ -96,6 +115,10 @@
 		{
 			"sampler":0,
 			"source":2
+		},
+		{
+			"sampler":0,
+			"source":3
 		}
 	],
 	"images":[
@@ -103,6 +126,11 @@
 			"mimeType":"image/png",
 			"name":"Greybox_Floor",
 			"uri":"../Textures/Greybox_Floor.png"
+		},
+		{
+			"mimeType":"image/png",
+			"name":"Greybox_Stairs",
+			"uri":"../Textures/Greybox_Stairs.png"
 		},
 		{
 			"mimeType":"image/png",
@@ -153,6 +181,40 @@
 		{
 			"bufferView":4,
 			"componentType":5126,
+			"count":480,
+			"max":[
+				3.0999999046325684,
+				7,
+				-5.599999904632568
+			],
+			"min":[
+				1.899999976158142,
+				3.5,
+				-11.199999809265137
+			],
+			"type":"VEC3"
+		},
+		{
+			"bufferView":5,
+			"componentType":5126,
+			"count":480,
+			"type":"VEC3"
+		},
+		{
+			"bufferView":6,
+			"componentType":5126,
+			"count":480,
+			"type":"VEC2"
+		},
+		{
+			"bufferView":7,
+			"componentType":5123,
+			"count":720,
+			"type":"SCALAR"
+		},
+		{
+			"bufferView":8,
+			"componentType":5126,
 			"count":144,
 			"max":[
 				-0.8999999761581421,
@@ -167,25 +229,25 @@
 			"type":"VEC3"
 		},
 		{
-			"bufferView":5,
+			"bufferView":9,
 			"componentType":5126,
 			"count":144,
 			"type":"VEC3"
 		},
 		{
-			"bufferView":6,
+			"bufferView":10,
 			"componentType":5126,
 			"count":144,
 			"type":"VEC2"
 		},
 		{
-			"bufferView":7,
+			"bufferView":11,
 			"componentType":5123,
 			"count":216,
 			"type":"SCALAR"
 		},
 		{
-			"bufferView":8,
+			"bufferView":12,
 			"componentType":5126,
 			"count":456,
 			"max":[
@@ -201,19 +263,19 @@
 			"type":"VEC3"
 		},
 		{
-			"bufferView":9,
+			"bufferView":13,
 			"componentType":5126,
 			"count":456,
 			"type":"VEC3"
 		},
 		{
-			"bufferView":10,
+			"bufferView":14,
 			"componentType":5126,
 			"count":456,
 			"type":"VEC2"
 		},
 		{
-			"bufferView":11,
+			"bufferView":15,
 			"componentType":5123,
 			"count":684,
 			"type":"SCALAR"
@@ -246,50 +308,74 @@
 		},
 		{
 			"buffer":0,
-			"byteLength":1728,
+			"byteLength":5760,
 			"byteOffset":3360,
 			"target":34962
 		},
 		{
 			"buffer":0,
+			"byteLength":5760,
+			"byteOffset":9120,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":3840,
+			"byteOffset":14880,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":1440,
+			"byteOffset":18720,
+			"target":34963
+		},
+		{
+			"buffer":0,
 			"byteLength":1728,
-			"byteOffset":5088,
+			"byteOffset":20160,
+			"target":34962
+		},
+		{
+			"buffer":0,
+			"byteLength":1728,
+			"byteOffset":21888,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":1152,
-			"byteOffset":6816,
+			"byteOffset":23616,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":432,
-			"byteOffset":7968,
+			"byteOffset":24768,
 			"target":34963
 		},
 		{
 			"buffer":0,
 			"byteLength":5472,
-			"byteOffset":8400,
+			"byteOffset":25200,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":5472,
-			"byteOffset":13872,
+			"byteOffset":30672,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":3648,
-			"byteOffset":19344,
+			"byteOffset":36144,
 			"target":34962
 		},
 		{
 			"buffer":0,
 			"byteLength":1368,
-			"byteOffset":22992,
+			"byteOffset":39792,
 			"target":34963
 		}
 	],
@@ -301,7 +387,7 @@
 	],
 	"buffers":[
 		{
-			"byteLength":24360,
+			"byteLength":41160,
 			"uri":"Level_Greybox_Barracks_F1.bin"
 		}
 	]

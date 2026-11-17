@@ -24,18 +24,21 @@ namespace Outpost
         /// <summary>Meters from the feet to the eyes, standing (crouched: lower by what the capsule is).</summary>
         public float EyeHeight = 1.62f;
 
-        public float RunSpeed = 5.0f, WalkSpeed = 2.4f, CrouchSpeed = 1.8f;
+        public float RunSpeed = 4.5f, SprintSpeed = 6.5f, WalkSpeed = 2.2f, CrouchSpeed = 1.8f;
         public float JumpHeight = 1.0f;
         public float CrouchHeight = 1.2f;
 
         /// <summary>Health points; falls take from them (Phase 3: death, health packs, armor).</summary>
         public float Health = 100.0f;
 
-        /// <summary>Steps: the sound ({0}: 1 to FootstepVariants), meters between steps running, and volumes by the way it moves.</summary>
+        /// <summary>
+        /// Steps: the sound ({0}: 1 to FootstepVariants), meters between steps and volumes by the way it moves. Crouched it
+        /// makes none (with Alt or without).
+        /// </summary>
         public string FootstepSound = "Assets/Audio/Footstep_{0}.wav";
         public int FootstepVariants = 4;
-        public float StrideRun = 1.8f, StrideWalk = 1.1f, StrideCrouch = 0.9f;
-        public float RunVolume = 0.7f, WalkVolume = 0.2f, CrouchVolume = 0.15f;
+        public float StrideRun = 1.6f, StrideSprint = 2.1f, StrideWalk = 1.0f;
+        public float RunVolume = 0.6f, SprintVolume = 0.9f, WalkVolume = 0.12f;
         public string JumpSound = "Assets/Audio/JumpTakeoff.wav";
         public string LandSound = "Assets/Audio/Land.wav";
 
@@ -60,6 +63,7 @@ namespace Outpost
         /// <summary>The motor's state, for what shows it (the HUD, a test).</summary>
         public bool IsCrouched => motor.IsCrouched;
         public bool IsGrounded => motor.IsGrounded;
+        public bool IsSprinting => motor.IsSprinting;
         public float CurrentHeight => character.Height;
 
         protected override void OnCreate()
@@ -68,7 +72,7 @@ namespace Outpost
                 throw new InvalidOperationException($"{Name} needs a Character (Inspector: Physics) for Player");
             PlayerMotorSettings settings = new PlayerMotorSettings
             {
-                RunSpeed = RunSpeed, WalkSpeed = WalkSpeed, CrouchSpeed = CrouchSpeed, JumpHeight = JumpHeight, CrouchHeight = CrouchHeight,
+                RunSpeed = RunSpeed, SprintSpeed = SprintSpeed, WalkSpeed = WalkSpeed, CrouchSpeed = CrouchSpeed, JumpHeight = JumpHeight, CrouchHeight = CrouchHeight,
             };
             motor = new PlayerMotor(character, settings);
             motor.Jumped += () => PlaySound(JumpSound, 0.5f);
@@ -110,19 +114,21 @@ namespace Outpost
                 Camera.EulerAngles = CommandSource != null ? new Vector3(look.Pitch, look.Yaw, 0.0f) : new Vector3(input.Pitch, input.Yaw, 0.0f);
             }
 
-            // The steps: one each stride walked on the ground, quieter walking and crouched
+            // The steps: one each stride walked on the ground, louder sprinting, quieter walking, none crouched
             Vector3 feet = WorldPosition;
             Vector3 moved = feet - lastFeet;
             lastFeet = feet;
-            if (!motor.IsGrounded)
+            if (!motor.IsGrounded || motor.IsCrouched)
+            {
+                stepDistance = 0.0f;
                 return;
+            }
             stepDistance += new Vector2(moved.X, moved.Z).Length();
-            float stride = motor.IsCrouched ? StrideCrouch : motor.IsWalking ? StrideWalk : StrideRun;
+            float stride = motor.IsWalking ? StrideWalk : motor.IsSprinting ? StrideSprint : StrideRun;
             if (stepDistance >= stride)
             {
                 stepDistance = 0.0f;
-                float volume = motor.IsCrouched ? CrouchVolume : motor.IsWalking ? WalkVolume : RunVolume;
-                PlayFootstep(volume);
+                PlayFootstep(motor.IsWalking ? WalkVolume : motor.IsSprinting ? SprintVolume : RunVolume);
             }
         }
 

@@ -1,8 +1,15 @@
 {
   "Name": "Greybox",
   "Scene": "../Scenes/Greybox.mscene",
-  "Settings": { "StoryHeight": 3.5, "WallThickness": 0.2, "FloorThickness": 0.3 },
-  "Ground": { "Min": [-40, -40], "Size": [80, 80] },
+  "Settings": {
+    "StoryHeight": 3.5,
+    "WallThickness": 0.2,
+    "FloorThickness": 0.3
+  },
+  "Ground": {
+    "Min": [-40, -40],
+    "Size": [80, 80]
+  },
   "Buildings": [
     {
       "Name": "Barracks",
@@ -21,36 +28,86 @@
         { "Floor": 1, "Wall": "South", "Offset": 8, "Kind": "Window" },
         { "Floor": 1, "Wall": "South", "Offset": 12, "Kind": "Window" },
         { "Floor": 1, "Wall": "North", "Offset": 8, "Kind": "Window", "Width": 3 },
-        { "Floor": 1, "Wall": "East", "Offset": 5, "Kind": "Window" }
+        { "Floor": 1, "Wall": "East", "Offset": 5, "Kind": "Window" },
+        { "Floor": 2, "Wall": "East", "Offset": 1.6, "Kind": "Door", "Width": 1.4 }
       ],
       "Walls": [
-        { "Floor": 0, "From": [8, 0.2], "To": [8, 9.8], "Openings": [{ "Offset": 2.5, "Kind": "Door" }] },
-        { "Floor": 0, "From": [8, 6], "To": [15.8, 6], "Openings": [{ "Offset": 3, "Kind": "Door" }] },
-        { "Floor": 1, "From": [5, 0.2], "To": [5, 9.8], "Openings": [{ "Offset": 7.5, "Kind": "Door" }] },
-        { "Floor": 1, "From": [11, 0.2], "To": [11, 9.8], "Openings": [{ "Offset": 7.5, "Kind": "Door" }] }
+        {
+          "Floor": 0,
+          "From": [8, 0.2],
+          "To": [8, 9.8],
+          "Openings": [
+            { "Offset": 2.5, "Kind": "Door" }
+          ]
+        },
+        {
+          "Floor": 0,
+          "From": [8, 6],
+          "To": [15.8, 6],
+          "Openings": [
+            { "Offset": 3, "Kind": "Door" }
+          ]
+        },
+        {
+          "Floor": 1,
+          "From": [5, 0.2],
+          "To": [5, 9.8],
+          "Openings": [
+            { "Offset": 7.5, "Kind": "Door" }
+          ]
+        },
+        {
+          "Floor": 1,
+          "From": [11, 0.2],
+          "To": [11, 9.8],
+          "Openings": [
+            { "Offset": 7.5, "Kind": "Door" }
+          ]
+        }
       ],
       "Stairs": [
-        { "From": 0, "At": [2, 8.4], "Direction": "North" }
-      ]
+        { "From": 0, "At": [2, 8.4], "Direction": "North" },
+        { "From": 1, "At": [14.5, 8.4], "Direction": "North" }
+      ],
+      "Settings": { "Parapet": 1.0 }
     },
     {
       "Name": "Warehouse",
       "Min": [8, -16],
       "Size": [14, 20],
       "Floors": 1,
-      "Settings": { "StoryHeight": 6 },
+      "Settings": { "StoryHeight": 6, "Parapet": 1.0 },
       "Openings": [
         { "Wall": "West", "Offset": 12, "Kind": "Door", "Width": 4, "Height": 4.5 },
         { "Wall": "South", "Offset": 10, "Kind": "Door" },
         { "Wall": "North", "Offset": 4, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },
         { "Wall": "North", "Offset": 10, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },
         { "Wall": "East", "Offset": 6, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },
-        { "Wall": "East", "Offset": 14, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 }
+        { "Wall": "East", "Offset": 14, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },
+        { "Floor": 1, "Wall": "West", "Offset": 3.6, "Kind": "Door", "Width": 1.4 }
       ],
       "Walls": [
-        { "From": [4, 0.2], "To": [4, 6], "Openings": [{ "Offset": 3, "Kind": "Window" }] },
-        { "From": [0.2, 6], "To": [4, 6], "Openings": [{ "Offset": 2, "Kind": "Door" }] }
+        {
+          "From": [4, 0.2],
+          "To": [4, 6],
+          "Openings": [
+            { "Offset": 3, "Kind": "Window" }
+          ]
+        },
+        {
+          "From": [0.2, 6],
+          "To": [4, 6],
+          "Openings": [
+            { "Offset": 2, "Kind": "Door" }
+          ]
+        }
+      ],
+      "Stairs": [
+        { "From": 0, "At": [12.5, 18.5], "Direction": "North" }
       ]
     }
+  ],
+  "Catwalks": [
+    { "Name": "Catwalk_Roofs", "From": [4, 7, -12.4], "To": [8, 6, -12.4] }
   ]
 }
