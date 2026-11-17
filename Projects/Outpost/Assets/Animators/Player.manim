@@ -1,0 +1,53 @@
+# The player's body (Shooter plan, Phase 1.2): the clips and their speeds. The game picks the state (PlayerBody calls
+# Animator.Play when the motor's state changes), so there are no transitions here. Rate is the play speed the game sets for
+# the moving clips: the motor's speed over the clip's own (the UAL1 clips walk slower than the motor, so it is capped).
+Animator:
+  Version: 1
+  Entry: Idle
+  Parameters:
+    - {Name: Rate, Type: Float, Default: 1}
+  States:
+    - Name: Idle
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Idle_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: Walk
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Walk_Loop}
+      Speed: 1
+      SpeedParameter: Rate
+      Loop: true
+      InPlace: true
+    - Name: Run
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Jog_Fwd_Loop}
+      Speed: 1
+      SpeedParameter: Rate
+      Loop: true
+      InPlace: true
+    - Name: Sprint
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Sprint_Loop}
+      Speed: 1
+      SpeedParameter: Rate
+      Loop: true
+      InPlace: true
+    - Name: CrouchIdle
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Crouch_Idle_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: CrouchWalk
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Crouch_Fwd_Loop}
+      Speed: 1
+      SpeedParameter: Rate
+      Loop: true
+      InPlace: true
+    - Name: Fall
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Jump_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: Land
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Jump_Land}
+      Speed: 1.6
+      Loop: false
+      InPlace: true

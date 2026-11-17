@@ -227,7 +227,7 @@ struct ScriptFieldReport
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
 	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14, Trail = 15,
-	NavAgent = 16, NavArea = 17, NavLink = 18 };
+	NavAgent = 16, NavArea = 17, NavLink = 18, Model = 19 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -499,6 +499,11 @@ struct ScriptNativeApi
 	// E7: the character's capsule another height, its bottom kept (crouching): 1 done, -1 refused (no room above to stand
 	// up), 0 not a running character
 	int32_t (*Character_SetHeight)(uint64_t entity, float height);
+
+	// Model (Shooter Phase 1.2): ModelComponent::HiddenInMainView, the first-person player's body (its shadow stays). 0: the
+	// entity has no model
+	int32_t (*Model_GetHiddenInMainView)(uint64_t entity, int32_t* hidden);
+	int32_t (*Model_SetHiddenInMainView)(uint64_t entity, int32_t hidden);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

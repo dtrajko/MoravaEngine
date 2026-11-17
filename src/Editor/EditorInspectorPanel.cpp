@@ -1352,6 +1352,15 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 	ImGui::DragFloat3("Translation", &entry.Translation.x, 0.1f);
 	ImGui::DragFloat3("Rotation", &entry.Rotation.x, 1.0f);
 	ScaleDragScalingChildLights("Scale", selectedModel, entry.Scale);
+	if (ModelComponent* modelComponent = s_Scene.TryGet<ModelComponent>(selectedModel))
+	{
+		ImGui::Checkbox("Hidden In Main View", &modelComponent->HiddenInMainView);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Not drawn in the game's camera and this viewport: a first-person player's own body.\n"
+				"Its shadow stays, and the water's reflection, render textures and rays still see it");
+		}
+	}
 
 	// The selected part's place in the model (the viewport gizmo moves it too)
 	const EnvMapVulkanEntityID selectedPart = selectedMeshIndex >= 0 ? s_EditorSelection.GetPrimary() : NoEntity;

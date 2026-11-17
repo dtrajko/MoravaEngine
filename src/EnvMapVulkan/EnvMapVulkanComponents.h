@@ -103,6 +103,9 @@ struct ModelComponent
 {
 	std::string FilePath;
 	H2M::RefH2M<H2M::ModelH2M> Model; // each model entity has its own, so its parts can be edited; the file's geometry is shared (ModelH2M::LoadShared)
+	// Not drawn in the main view (the game's camera, the editor's viewport): the first-person player's own body. Everything
+	// else still sees it: its shadow, the water's reflection, the render textures' cameras, the rays and the probes
+	bool HiddenInMainView = false;
 };
 
 // A part of a model: one of its meshes. Its TransformComponent is the part's place in the model (relative to the model
