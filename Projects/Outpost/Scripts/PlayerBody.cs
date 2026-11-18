@@ -15,9 +15,18 @@ namespace Outpost
 
         /// <summary>
         /// Meters per second each clip covers at its own pace (measured from the UAL1 clips' feet; the runs have a flight
-        /// phase the measure misses, so they are set a little higher). The play rate is the speed over this.
+        /// phase the measure misses, so they are set a little higher; the fast walk is our own, made for 3 m/s by
+        /// Tools/CharacterPoses/make_fast_walk.py). The play rate is the speed over this.
         /// </summary>
-        public float WalkClipSpeed = 0.95f, RunClipSpeed = 3.0f, SprintClipSpeed = 4.2f, CrouchClipSpeed = 0.7f;
+        public float WalkClipSpeed = 0.95f, WalkFastClipSpeed = 3.0f, RunClipSpeed = 3.0f, SprintClipSpeed = 4.2f;
+        public float CrouchClipSpeed = 0.7f;
+
+        /// <summary>
+        /// Meters per second between the states: slower than WalkFastFrom the walk (starting, stopping), faster than RunFrom
+        /// the jog (only between the fast walk and the sprint, speeding up or slowing down), faster than SprintFrom the
+        /// sprint (while sprinting).
+        /// </summary>
+        public float WalkFastFrom = 1.3f, RunFrom = 4.0f, SprintFrom = 5.0f;
 
         /// <summary>The play rate's limits: faster than MaxRate the clip looks hurried, so the feet slide a little instead.</summary>
         public float MinRate = 0.6f, MaxRate = 2.0f;
@@ -34,10 +43,11 @@ namespace Outpost
 
     /// <summary>
     /// The player's body (docs/games/Shooter_Plan.html, Phase 1.2): the model and its animator, the same in both views (the
-    /// guards see and hit the same body whichever view the player chose). It shows what the motor does: idle, walk, run,
-    /// sprint, crouched idle and walk, falling and landing, played at the rate the speed asks for; it turns to where it
-    /// moves, and standing, to where the player looks once that is far enough round. Only presentation: it never changes
-    /// the movement.
+    /// guards see and hit the same body whichever view the player chose). It shows what the motor does: idle, the fast
+    /// walk (the default pace), the walk (walking quietly), the jog (between the fast walk and the sprint), sprint,
+    /// crouched idle and walk, falling and landing, played at the rate the speed asks for; it turns to where it moves, and
+    /// standing, to where the player looks once that is far enough round. Only presentation: it never changes the
+    /// movement.
     /// </summary>
     public sealed class PlayerBody
     {
@@ -124,20 +134,25 @@ namespace Outpost
             }
             else if (speed < 0.3f)
                 wanted = "Idle";
-            else if (walking || speed < 2.0f)
+            else if (walking || speed < settings.WalkFastFrom)
             {
                 wanted = "Walk";
                 clipSpeed = settings.WalkClipSpeed;
             }
-            else if (sprinting && speed > 5.0f)
+            else if (sprinting && speed > settings.SprintFrom)
             {
                 wanted = "Sprint";
                 clipSpeed = settings.SprintClipSpeed;
             }
-            else
+            else if (speed > settings.RunFrom)
             {
                 wanted = "Run";
                 clipSpeed = settings.RunClipSpeed;
+            }
+            else
+            {
+                wanted = "WalkFast";
+                clipSpeed = settings.WalkFastClipSpeed;
             }
 
             if (animator == null)

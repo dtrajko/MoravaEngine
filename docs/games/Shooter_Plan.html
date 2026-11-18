@@ -332,9 +332,9 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   <h2>The game's design</h2>
   <h3>The player</h3>
   <ul>
-    <li><b>Moving:</b> running at about 5.5 m/s, walking quietly at 2.5 (guards hear less), crouching at 2. Jumping about
-      0.6 m (onto crates, over railings). No sprint at first: in CS's tradition, speed depends on the weapon held (the
-      knife is fastest).</li>
+    <li><b>Moving</b> (as built, the user's choices, 2026-11-17 and 18): a fast walk at 3 m/s (WASD), a sprint at 6.5 (Shift,
+      forward), walking quietly at 2.2 (Alt: guards hear less), crouching at 1.8. Jumping 1 m (onto crates, over
+      railings). Later, in CS's tradition, the weapon held may change the speeds (the knife fastest).</li>
     <li><b>Health 100, armor up to 100:</b> armor takes two thirds of the damage while it lasts. No health regeneration:
       health comes from health packs (small +25, large +50) and armor from vests.</li>
     <li><b>Falling:</b> damage from about 5 m.</li>
@@ -1103,6 +1103,43 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         body hidden in first person with the camera at the eyes, Run, Sprint, Walk, CrouchWalk with their headings, Fall in the
         jump, Land after the 6 m fall; third person behind and to the right, the body shown; the left shoulder; the camera
         pulled in front of the Barracks' wall (0.78 m from the eyes); back in first person. 0 validation messages.</li>
+    </ul>
+  </div>
+  <div class="box ok"><b>As built: the fast walk (2026-11-18, after 1.2)</b>
+    <ul>
+      <li><b>The user's finding:</b> WASD (4.5 m/s) played the library's jog at 1.5 times its pace: the body ran in jumps, as on a
+        planet with half the Earth's gravity. The library has no fast walk, and no gait looks like a walk at 4.5 m/s (a
+        brisk walk is about 2 m/s). The user chose a fast walk at 3 m/s; the sprint (Shift, 6.5 m/s) stays as it was.</li>
+      <li><b>The clip:</b> <code>Walk_Fast_Loop</code> in <code>Assets/Models/SoldierAnimations/Soldier_Locomotion.glb</code>, made by
+        <code>Tools/CharacterPoses/make_fast_walk.py</code> (Blender without its window, <code>--preview</code> renders the frames).
+        The legs by two-bone IK on feet that roll heel, flat, ball on a ground moving at 3 m/s: steps of 1.00 m, 3 a second (the longest that still looks like a walk: at 1.05 m the hips sink and the
+        knees bend),
+        one foot always down (each down 53 % of the cycle, the back leg up on its toes reaching furthest, the hips
+        turning with the step), the swinging foot kept low (a high knee is a march); the hips as
+        high as both legs reach, rising 7.7 cm over the standing leg (a run bounces about 10), 3 to 11 cm under the library's
+        walk, the standing leg nearly straight; the upper body is the library's walk on the same timing, upright (the spine turned until the head is over the
+        hips, as standing: the library's walk carries it 8.8 cm ahead), the arms relaxed (the elbows 12 to 22 degrees from
+        straight, a little more as the arm swings forward) and swinging 1.15 times as far, the hands open; the shoulders
+        steady (the user: less cocky): the chest doesn't take the hips' wider turn, and its turn and tilt in the world are
+        kept to 0.4 of themselves, the collarbones' motion to 0.3: the shoulder line turns 7.5 and tilts 3.1 degrees round
+        the cycle (the library's walk: 20.5 and 5.3, a swagger). The script checks the feet on the ground: 0.00 m/s off the ground's speed (no sliding at 3 m/s).</li>
+      <li><b>The game:</b> <code>PlayerMotor.MoveSpeed</code> 3 m/s (it was <code>RunSpeed</code> 4.5; <code>Player</code>'s fields
+        <i>MoveSpeed</i>, <i>StrideMove</i> 1.0 m, one sound each step, and <i>MoveVolume</i> 0.45); <code>Player.manim</code>'s new
+        <i>WalkFast</i> state; <code>PlayerBody</code> plays Walk under 1.3 m/s (starting, stopping, and walking quietly),
+        WalkFast up to 4, the jog (Run) only between the fast walk and the sprint, Sprint over 5 while sprinting.</li>
+      <li><b>The user's findings on the first clip (2026-11-18):</b> the arms clenched, bent at the elbows (they should hang
+        relaxed and long), the back bent forward and the head ahead of the hips (it should be upright, the head over the
+        hips); it looked unnatural, where the sprint looks almost perfect. The clip was made again: upright, relaxed arms and
+        open hands, the swinging foot lower; then (the user: the legs bent too) shorter steps (0.85 m to 0.80) and a longer
+        roll onto the toes, so the hips stay high and the standing leg nearly straight; then (the user: fewer, longer
+        steps at the same 3 m/s, as long as they don't look awkward) 1.00 m steps, 3 a second.</li>
+      <li><b>With it, the user's finding:</b> in third person the body disappeared now and then, with the camera's place: 1.2 hid
+        it whenever the camera was within 1 m of the eyes, and a wall behind or the ground (looking up) pulls the camera that
+        close. Now <code>PlayerView</code> hides it within 1 m only in first person and while a switch glides (the glide passes
+        the head); in third person it is always shown, unless the camera is inside the head (<i>InsideHeadWithin</i>, 0.3 m).</li>
+      <li><b>Checked:</b> the test copy's driver, 28 of 28 in editor Play (moving at 3.00 m/s, the body in WalkFast; against
+        the wall and looking up in third person, the body shown); the clip seen in the engine from the side in third person.
+        0 validation messages.</li>
     </ul>
   </div>
   <h3>Phase 2: weapons</h3>
