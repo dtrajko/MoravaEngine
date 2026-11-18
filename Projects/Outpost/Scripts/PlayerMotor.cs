@@ -7,8 +7,8 @@ namespace Outpost
     /// <summary>How a player's character moves: the numbers (the same on every machine: the rules, characters as data).</summary>
     public sealed class PlayerMotorSettings
     {
-        /// <summary>Meters per second: running (the default), sprinting (Sprint, forward), walking quietly (Walk), crouched.</summary>
-        public float RunSpeed = 4.5f, SprintSpeed = 6.5f, WalkSpeed = 2.2f, CrouchSpeed = 1.8f;
+        /// <summary>Meters per second: moving (the default, a fast walk), sprinting (Sprint, forward), walking quietly (Walk), crouched.</summary>
+        public float MoveSpeed = 3.0f, SprintSpeed = 6.5f, WalkSpeed = 2.2f, CrouchSpeed = 1.8f;
 
         /// <summary>Meters per second squared to the wanted speed: on the ground, and the little control in the air.</summary>
         public float GroundAcceleration = 45.0f, AirAcceleration = 10.0f;
@@ -82,7 +82,7 @@ namespace Outpost
             IsWalking = command.Walk && !IsCrouched;
             // Sprinting: forward only (not sideways or back), not while walking quietly or crouched
             IsSprinting = command.Sprint && !IsWalking && !IsCrouched && command.Move.Y > 0.5f;
-            float speed = IsCrouched ? settings.CrouchSpeed : IsWalking ? settings.WalkSpeed : IsSprinting ? settings.SprintSpeed : settings.RunSpeed;
+            float speed = IsCrouched ? settings.CrouchSpeed : IsWalking ? settings.WalkSpeed : IsSprinting ? settings.SprintSpeed : settings.MoveSpeed;
             Vector3 wanted = (command.Forward * command.Move.Y + command.Right * command.Move.X) * speed;
             Vector2 horizontal = new Vector2(velocity.X, velocity.Z);
             horizontal = MoveTowards(horizontal, new Vector2(wanted.X, wanted.Z), (grounded ? settings.GroundAcceleration : settings.AirAcceleration) * dt);

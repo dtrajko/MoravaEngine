@@ -37,6 +37,7 @@
 
 
 bool s_ShowNavMesh = true;
+bool s_ShowNavMeshInPlay = false; // while the game runs (Play, Simulate): off, the game seen as it is; on, its agents and paths
 static float s_NavMeshDrawDistance = 120.0f; // meters from the camera: farther, the debug view draws nothing (a large terrain's navmesh)
 static bool s_NavMeshShowHidden = true;      // what the scene hides, drawn faintly
 
@@ -713,8 +714,10 @@ void NavMeshControls(EnvMapVulkanEntityID entity)
 	ImGui::SeparatorText("Debug View");
 	ImGui::Checkbox("Show in Viewport", &s_ShowNavMesh);
 	Tooltip("The navmesh in the scene: its polygons, colored by island, their outline bright (a wall or a ledge beyond)\n"
-		"and the edges between them faint; hidden by the walls and floors in front of it. In Edit and while the game runs");
+		"and the edges between them faint; hidden by the walls and floors in front of it");
 	ImGui::BeginDisabled(!s_ShowNavMesh);
+	ImGui::Checkbox("While Playing", &s_ShowNavMeshInPlay);
+	Tooltip("Also while the game runs (Play, Simulate), with the agents and their paths. Off: the game is seen as it is");
 	ImGui::SliderFloat("Draw Distance", &s_NavMeshDrawDistance, 10.0f, 1000.0f, "%.0f m", ImGuiSliderFlags_Logarithmic);
 	Tooltip("Farther from the camera the debug view draws nothing (it fades out over the last tenth)");
 	ImGui::Checkbox("Show Hidden", &s_NavMeshShowHidden);

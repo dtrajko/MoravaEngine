@@ -524,6 +524,7 @@ void SetNavMeshSceneFile(const std::string& scenePath);
 // the running game's agents and the test path, handed to the renderer for the next frame (EnvMapVulkanDebugDraw: hidden
 // by the scene's depth)
 extern bool s_ShowNavMesh;
+extern bool s_ShowNavMeshInPlay; // also while the game runs (off by default: Play shows the game as it is)
 void SubmitNavMeshDrawings();
 // A click in the viewport (Edit) along this ray: a point of the debug view's two-click path (E1.3) while its Test Path is
 // on and the Nav Mesh is selected. True: the click was the path's (it selects nothing)

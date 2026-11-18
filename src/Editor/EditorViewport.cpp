@@ -960,7 +960,7 @@ void OnImGuiRenderViewport()
 
 	SyncLightSelection();
 	DrawPhysicsOverlay();
-	if (s_ShowNavMesh)
+	if (s_ShowNavMesh && (!gameRunning || s_ShowNavMeshInPlay))
 	{
 		SubmitNavMeshDrawings();
 	}

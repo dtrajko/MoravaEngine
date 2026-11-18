@@ -26,10 +26,16 @@ namespace Outpost
         public float SwitchSeconds = 0.25f;
 
         /// <summary>
-        /// The body is hidden while the camera is this close to the eyes: first person, the glide of a switch (the camera
-        /// would pass through the head and close by the face), and a wall pushing it in.
+        /// While a switch glides (V), the body is hidden as long as the camera is this close to the eyes: the camera would
+        /// pass through the head and close by the face. In first person it is always hidden.
         /// </summary>
         public float HideBodyWithin = 1.0f;
+
+        /// <summary>
+        /// In third person the body is always shown, however close a wall or the ground (looking up) pulls the camera in,
+        /// unless the camera is this close to the eyes: inside the head, where only the head's inside would be seen.
+        /// </summary>
+        public float InsideHeadWithin = 0.3f;
     }
 
     /// <summary>
@@ -73,7 +79,10 @@ namespace Outpost
         /// <summary>The camera's place after the last Update.</summary>
         public Vector3 Position { get; private set; }
 
-        /// <summary>The camera is closer to the eyes than HideBodyWithin: the body would fill the view, so it is hidden.</summary>
+        /// <summary>
+        /// The body is hidden: first person, a switch's glide close by the head (HideBodyWithin), or in third person the
+        /// camera inside the head (InsideHeadWithin).
+        /// </summary>
         public bool HidesBody { get; private set; }
 
         /// <summary>
@@ -97,7 +106,10 @@ namespace Outpost
                 distance = shoulder = -1.0f; // the next third person starts from where the walls allow, not from here
             }
             Position = position;
-            HidesBody = Vector3.Distance(position, eyes) < settings.HideBodyWithin;
+            // Third person, the switch done: shown unless the camera is inside the head. First person or gliding: hidden
+            // while close (the glide passes the head)
+            bool settled = mode == ViewMode.ThirdPerson && thirdWeight >= 1.0f;
+            HidesBody = Vector3.Distance(position, eyes) < (settled ? settings.InsideHeadWithin : settings.HideBodyWithin);
             return position;
         }
 

@@ -1,6 +1,8 @@
 # The player's body (Shooter plan, Phase 1.2): the clips and their speeds. The game picks the state (PlayerBody calls
 # Animator.Play when the motor's state changes), so there are no transitions here. Rate is the play speed the game sets for
 # the moving clips: the motor's speed over the clip's own (the UAL1 clips walk slower than the motor, so it is capped).
+# WalkFast, the default pace (3 m/s), is our own clip (Tools/CharacterPoses/make_fast_walk.py); Run, the library's jog,
+# only shows between it and the sprint.
 Animator:
   Version: 1
   Entry: Idle
@@ -14,6 +16,12 @@ Animator:
       InPlace: true
     - Name: Walk
       Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Walk_Loop}
+      Speed: 1
+      SpeedParameter: Rate
+      Loop: true
+      InPlace: true
+    - Name: WalkFast
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Locomotion.glb, Name: Walk_Fast_Loop}
       Speed: 1
       SpeedParameter: Rate
       Loop: true
