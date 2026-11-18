@@ -1137,6 +1137,9 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         it whenever the camera was within 1 m of the eyes, and a wall behind or the ground (looking up) pulls the camera that
         close. Now <code>PlayerView</code> hides it within 1 m only in first person and while a switch glides (the glide passes
         the head); in third person it is always shown, unless the camera is inside the head (<i>InsideHeadWithin</i>, 0.3 m).</li>
+      <li><b>With it, in the editor (the user's choice):</b> the navmesh's debug view is off while the game runs: the Nav Mesh's
+        new <i>While Playing</i> checkbox (under <i>Show in Viewport</i>, off by default) brings it back, with the agents and their
+        paths. In Edit it shows as before.</li>
       <li><b>Checked:</b> the test copy's driver, 28 of 28 in editor Play (moving at 3.00 m/s, the body in WalkFast; against
         the wall and looking up in third person, the body shown); the clip seen in the engine from the side in third person.
         0 validation messages.</li>
