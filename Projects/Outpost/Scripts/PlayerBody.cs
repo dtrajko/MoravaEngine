@@ -12,11 +12,18 @@ namespace Outpost
 
         /// <summary>
         /// Meters per second each clip covers at its own pace (measured from the UAL1 clips' feet; the runs have a flight
-        /// phase the measure misses, so they are set a little higher; the walks every way are our own, made for 3 m/s by
-        /// Tools/CharacterPoses/make_fast_walk.py). The play rate is the speed over this.
+        /// phase the measure misses, so they are set a little higher; the walks every way are our own, made for 3 m/s
+        /// forward and back and 1.15 m/s to the side by Tools/CharacterPoses/make_fast_walk.py). The play rate is the
+        /// speed over this.
         /// </summary>
         public float MoveClipSpeed = 3.0f, RunClipSpeed = 3.0f, SprintClipSpeed = 4.2f;
         public float CrouchClipSpeed = 0.7f;
+
+        /// <summary>
+        /// Move's side walks (a step-together: 1.15 m/s) and the seconds of a cycle, forward and to the side: Move blends
+        /// them by MoveAngle, its length between theirs, so its speed between is the meters over the seconds, both blended.
+        /// </summary>
+        public float MoveSideClipSpeed = 1.15f, MoveClipSeconds = 20.0f / 30.0f, MoveSideClipSeconds = 19.0f / 30.0f;
 
         /// <summary>
         /// Meters per second between the states: faster than RunFrom the jog (only between the fast walk and the sprint,
@@ -96,6 +103,20 @@ namespace Outpost
         /// <summary>The move's direction from where the body faces, degrees (0 ahead, 90 right, ±180 back): MoveAngle.</summary>
         public float MoveAngle { get; private set; }
 
+        /// <summary>
+        /// The meters per second Move covers at its own pace with the move this many degrees from the body's facing:
+        /// the side walks' weight in its blend is how far the angle is to the side (0 ahead or back, 1 at ±90).
+        /// </summary>
+        public float MoveClipSpeedAt(float moveAngle)
+        {
+            float angle = MathF.Abs(moveAngle);
+            float side = (angle <= 90.0f ? angle : 180.0f - angle) / 90.0f;
+            float seconds = settings.MoveClipSeconds + (settings.MoveSideClipSeconds - settings.MoveClipSeconds) * side;
+            float meters = settings.MoveClipSpeed * settings.MoveClipSeconds
+                + (settings.MoveSideClipSpeed * settings.MoveSideClipSeconds - settings.MoveClipSpeed * settings.MoveClipSeconds) * side;
+            return meters / seconds;
+        }
+
         /// <summary>The motor jumped (from the fixed step): the body leaves the ground at once.</summary>
         public void OnJumped() => jumped = true;
 
@@ -156,7 +177,7 @@ namespace Outpost
             else
             {
                 wanted = "Move"; // the fast walk or walking quietly, every way
-                clipSpeed = settings.MoveClipSpeed;
+                clipSpeed = MoveClipSpeedAt(MoveAngle);
             }
 
             if (animator == null)

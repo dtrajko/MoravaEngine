@@ -1231,16 +1231,22 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         <code>GetBoneTransform</code>.</li>
       <li><b>The walks every way</b> (the user chose our own clips over a torso twisted toward the look or feet sliding):
         <code>make_fast_walk.py</code> makes four, the left foot landing at the start of each so they blend in step.
-        Forward as before; back is forward played backwards; to the sides the feet roll along the hips' line, flat, the
-        trailing foot crossing in front of the other leg and the leading one behind it, with shorter and quicker steps
-        (0.7 m, 4.3 a second: a meter's sidestep straddled the legs and sank the hips 22 cm).</li>
+        Forward as before; back is forward played backwards; to the sides a step-together (the user, 2026-11-19, after
+        a first version crossed the legs: people don't walk sideways that way): the leading foot steps out, the trailing
+        one closes in until the feet nearly touch (the ankles 16 cm apart across, opening to 89), flat, the legs never
+        crossing (the bake fails if they come closer). A cycle covers only the opening, 0.73 m in 0.63 s (3.2 steps a
+        second; the user: 0.46 m at 5 a second was too short and quick, twice that too long: 60 % more; the hips up to
+        8.6 cm lower): 1.15 m/s, not 3 (faster, people hop). The motor's speed goes from 3 m/s ahead or back to 1.15 straight to
+        the side (<code>SideSpeedScale</code>, by the move's angle; walking quietly too, crouching not: its clip has no
+        side walks), <code>PlayerBody</code> plays <i>Move</i> at the blend's own speed (the engine blends the clips'
+        lengths, so the meters over the seconds, both blended), and the steps' sounds come every 0.36 m to the side.</li>
       <li><b>The player</b>: <code>Player.manim</code>'s base has <i>Move</i>, the four walks blended by <i>MoveAngle</i>
         (the move's direction from where the body faces), for the fast walk and walking quietly; its <i>UpperBody</i> layer
         (from <code>spine_01</code> up) aims the rifle by <i>AimPitch</i> (the rifle clips' up, ahead and down poses) and
         lowers it to the ready while sprinting or jogging. <code>PlayerBody</code> faces the look; Greybox's body has the
         rifle on its right hand (<i>Rifle</i>, the Player's <i>BodyGun</i>), hidden with the body in first person. Its
-        offset in <code>hand_r</code>'s space (-0.028, 0.107, -0.024) was taken from the view model's rifle in the aim
-        pose, and matches what the rifle poses' script prints.</li>
+        offset in <code>hand_r</code>'s space (-0.024, 0.1035, -0.0244), rotation (90, -14.45, 90), is what the rifle
+        poses' script prints for the level aim (its quaternion turned by the FBX's 90 degrees about x).</li>
       <li><b>The hands on the rifle</b> (the user, 2026-11-19: the left fingers hung open, the right hand hung down under
         the grip, and asked for it level along the rifle with the index finger on the trigger): <code>make_rifle_poses.py</code>
         closes each finger from open along the library's fist until its tip reaches what it holds, a glove's thickness out.
@@ -1260,6 +1266,29 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         white: re-imported to cut the arms, the body's material came back as a copy named
         <code>MI_Soldier_Player.001</code> (the pockets share it), which the export didn't match to its maps; it matches
         names without Blender's copy suffix now.</li>
+      <li><b>The left hand under the handguard and the face off the rifle</b> (the user, 2026-11-19, after 2.1 merged:
+        the left hand went through the rifle and should turn 90 degrees to hold it, the wrist natural, not wrung; a few
+        centimeters between the face and the rifle). The 70 degrees had left the palm on the handguard's left side, the
+        fingers curled over its top: under it the palm needs about 100 (the rig's rest has it down), so the turn may now
+        be 120, half of it still the forearm's roll. The palm faces up and 35 degrees toward the rifle's right
+        (<code>LEFT_PALM_TILT</code>): the handguard lies in the hand from its lower left, so the turn stays near 100 and the
+        left elbow outside its shoulder's line (lowering the elbow under the rifle would have saved little and broken that
+        rule). The handguard is measured by rays under the palm (its bottom, where the support point goes, and its width
+        every 5 mm up; a scan of the vertices missed the sniper's deep forend and its keel) and taken as a box with
+        rounded corners; the fingers stop on it with all their joints, the thumb (the user: not twisted, stretched or relaxed,
+        forward and a little up along the barrel, touching the handguard) is nearly straight and aimed with the least turn
+        along the rifle, 16 degrees up and 14 in, onto the handguard's left side (the rise and turn searched for the
+        nearest to touching, 1 cm out). Then the hand's skin is tested against the rifle's mesh on the dressed body
+        (Soldier_Player): a finger in it is held further out, a palm in it moves out, until nothing is in deeper than
+        1.5 mm (a glove pressed on it). The face: the chin and mouth lay on the receiver, the sight line being only 5 mm
+        over it at the eye. The rifle is held 6.5 cm forward and 4.5 cm lower in the aim poses (<code>GUN_FORWARD</code>,
+        <code>EYE_ABOVE</code>); leaning the neck back, tilting the head less, moving the rifle right didn't help. Every
+        frame of the aiming clips is checked: 3.3 cm at the closest (the bake fails under 3; 2 at a shot's kick), the
+        reload's tilt and the sniper's bolt roll made smaller to keep it. <code>Player.ViewModelEye</code> moves with the
+        rifle, so the first-person view keeps its picture. Aimed down, the left arm reaches nearly straight down the gun:
+        its elbow may be 13 cm over the wrist there (was 6; the wrist is lower, under the handguard). The previews add
+        close-ups of the left hand and the face and cross-sections through the handguard. Left for 2.5: the sniper's
+        idle hold has the index finger 7 mm in its forend (wider above its keel than the box).</li>
       <li><b>Limits</b>: crouched, the body faces the look too and plays the library's forward crouch walk, so the feet
         slide when it moves sideways or back crouched (crouched walks every way: with the guards' animations, Phase 5).
         The upper body takes the rifle pose's spine, so a crouch's forward lean and the walk's chest sway are the rifle

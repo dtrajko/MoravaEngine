@@ -1,10 +1,10 @@
 # Makes the player's fast walk (the shooter's plan, Phase 1: the default pace of WASD, 3 m/s) on the animation library's
 # rig, in Blender without its window, in four directions (Phase 2.1: holding a gun the body faces the look, so it walks
 # forward, back and to each side; PlayerBody blends them by the move's direction). Forward is described below; back is
-# forward played backwards (a step back is a step forward reversed in time); to the sides the feet roll along the
-# character's left-right axis, flat (no heel strike), the trailing foot crossing in front of the other leg and the
-# leading one swinging out behind it (a walk this fast to the side crosses over: side steps that never cross would need
-# about nine a second). The library's walks are slow (0.9 m/s) and its jog leaves the ground, so this is
+# forward played backwards (a step back is a step forward reversed in time); to the sides a step-together at SIDE_SPEED
+# (the user, 2026-11-19: people don't cross their legs to walk sideways): the leading foot steps out, the trailing one
+# closes in until the feet nearly touch, flat (no heel strike), the legs never crossing (the bake fails if they come
+# closer across than SIDE_CLOSED). The library's walks are slow (0.9 m/s) and its jog leaves the ground, so this is
 # our own: the legs are placed by two-bone IK on feet that roll heel to toe on a ground moving at the walk's speed (no
 # sliding at the speed it is made for), the hips a little lower (longer steps, a soldier's bent knees), one foot always
 # down; the upper body is the library's Walk_Loop on the same timing, upright (the head over the hips), the arms relaxed
@@ -15,8 +15,8 @@
 #
 # Reads  Projects/Outpost/Assets/Models/QuaterniusAnimations/UAL1_Standard.glb (the rig, Walk_Loop)
 # Writes Projects/Outpost/Assets/Models/SoldierAnimations/Soldier_Locomotion.glb (the mannequin and Walk_Fast_Loop,
-#        Walk_Fast_Back_Loop, Walk_Fast_Left_Loop, Walk_Fast_Right_Loop: the same length, the left foot landing at the
-#        start of each, so they blend in step)
+#        Walk_Fast_Back_Loop, Walk_Fast_Left_Loop, Walk_Fast_Right_Loop: the left foot landing at the start of each, so
+#        they blend in step; the side walks' cycle is shorter, the engine blends the lengths)
 #
 # Everything is generated: edits by hand in Blender are lost on the next run. --preview renders the clip's frames from
 # the side and one from the front (Workbench), to check the gait.
@@ -60,17 +60,29 @@ HIP_SWING = 2.2        # the library's pelvis turn and sway, scaled (the hips tu
 CHEST_STEADY = 0.4     # the chest's turn and tilt in the world round the cycle, scaled (the library's walk: 20 and 5 degrees)
 CLAVICLE_SWING = 0.3   # the library's collarbone motion (the shoulders' rise and fall, forward and back), scaled
 
-# The directions: each one's move in the rig's armature space (x the character's left, -y forward), its step (meters; to
-# the side shorter and quicker, so the legs don't straddle: the engine's blend keeps clips of other lengths in step), the
-# stance's middle behind the hips along the move, the heel strike's and the toe-off's angles, and how far each swinging
-# foot arcs out of the other leg's way at the middle of its swing (meters along y: negative in front, positive behind)
+# To the side the legs never cross (the user, 2026-11-19): the leading leg steps out, the trailing one closes in until
+# the feet nearly touch, and steps out again from there: a step-together. Its cycle covers one step's opening (the
+# closing step gives nothing back), so it is slower than the walk: SIDE_SPEED, not 3 m/s (faster, people hop)
+SIDE_SPEED = 1.15      # meters per second to the side (the motor's SideSpeed; PlayerBody's MoveSideClipSpeed)
+SIDE_OPEN = 0.728      # meters a cycle covers (the user: 0.46 was too short and quick, 0.92 too long; 60 % more: 19 frames): the ankles from SIDE_CLOSED apart to SIDE_CLOSED + SIDE_OPEN
+SIDE_CLOSED = 0.16     # meters between the ankles when the trailing foot has closed in (the feet' sides nearly touching)
+SIDE_TOE_OFF = 8.0     # degrees the heel comes up as a foot leaves the ground (a side step lifts it nearly flat)
+
+# The directions: each one's move in the rig's armature space (x the character's left, -y forward), its speed and the
+# meters a cycle covers (the engine's blend keeps clips of other lengths in step), the stance's middle behind the hips
+# along the move, the heel strike's and the toe-off's angles, and where each foot's stance is centered across (None: the
+# library's walk's width; to the side the two centers SIDE_CLOSED + SIDE_OPEN / 2 apart, so the ankles open to
+# SIDE_CLOSED + SIDE_OPEN as the leading foot lands and close to SIDE_CLOSED as the trailing one does)
+SIDE_X = (SIDE_CLOSED + SIDE_OPEN * 0.5) * 0.5
 DIRECTIONS = {
-    "Walk_Fast_Loop": {"move": (0.0, -1.0), "step": STEP, "center": CENTER, "heel_strike": HEEL_STRIKE, "toe_off": TOE_OFF,
-                       "arc": {"l": 0.0, "r": 0.0}},
-    "Walk_Fast_Left_Loop": {"move": (1.0, 0.0), "step": 0.70, "center": 0.0, "heel_strike": 0.0, "toe_off": 25.0,
-                            "arc": {"l": 0.10, "r": -0.12}},
-    "Walk_Fast_Right_Loop": {"move": (-1.0, 0.0), "step": 0.70, "center": 0.0, "heel_strike": 0.0, "toe_off": 25.0,
-                             "arc": {"l": -0.12, "r": 0.10}},
+    "Walk_Fast_Loop": {"move": (0.0, -1.0), "speed": SPEED, "cycle": 2.0 * STEP, "center": CENTER,
+                       "heel_strike": HEEL_STRIKE, "toe_off": TOE_OFF, "x": None, "hip_swing": HIP_SWING},
+    "Walk_Fast_Left_Loop": {"move": (1.0, 0.0), "speed": SIDE_SPEED, "cycle": SIDE_OPEN, "center": 0.0,
+                            "heel_strike": 0.0, "toe_off": SIDE_TOE_OFF, "x": {"l": SIDE_X, "r": -SIDE_X},
+                            "hip_swing": 0.5},
+    "Walk_Fast_Right_Loop": {"move": (-1.0, 0.0), "speed": SIDE_SPEED, "cycle": SIDE_OPEN, "center": 0.0,
+                             "heel_strike": 0.0, "toe_off": SIDE_TOE_OFF, "x": {"l": SIDE_X, "r": -SIDE_X},
+                             "hip_swing": 0.5},
 }
 BACK = "Walk_Fast_Back_Loop"  # Walk_Fast_Loop played backwards
 
@@ -205,14 +217,15 @@ class Foot:
     def at(self, phase, cycle_seconds, direction):
         """(ankle, foot rotation, ball rotation or None to follow the foot, what it stands on: "heel", "flat", "ball" or
         None), walking in a direction of DIRECTIONS"""
-        ground_speed = SPEED
+        ground_speed = direction["cycle"] / cycle_seconds
         stance_length = ground_speed * STANCE * cycle_seconds
         move = Vector((direction["move"][0], direction["move"][1], 0.0))
         heel_strike, toe_off = direction["heel_strike"], direction["toe_off"]
         phase %= 1.0
         if phase < STANCE:
             # On the ground, moving back with it (against the move): rolls from the heel, flat, then up onto the ball
-            base = Vector((self.x, 0.0, self.height)) - move * direction["center"]
+            x = self.x if direction["x"] is None else direction["x"][self.side]
+            base = Vector((x, 0.0, self.height)) - move * direction["center"]
             flat = base + move * (stance_length * 0.5 - ground_speed * phase * cycle_seconds)
             if phase < HEEL_DOWN and heel_strike > 0.0:
                 angle = heel_strike * (1.0 - smooth(phase / HEEL_DOWN))
@@ -232,7 +245,6 @@ class Foot:
         land, land_rotation, _, _ = self.at(0.0, cycle_seconds, direction)
         s = minimum_jerk(t)
         ankle = leave.lerp(land, s)
-        ankle.y += direction["arc"][self.side] * math.sin(math.pi * t)  # out of the other leg's way
         # Height: down from the toe-off's quickly, a low clearance over the ground through the middle (a walk keeps the
         # swinging foot low; a high knee is a march), up to the heel strike's at the end
         ankle.z = (self.height + LIFT * math.sin(math.pi * t)
@@ -338,13 +350,14 @@ def build_direction(armature, clip, direction, bodies, sources, feet, offsets, f
         heights = [min(allowed[i], (heights[i - 1] + 2.0 * heights[i] + heights[(i + 1) % frames]) * 0.25)
                    for i in range(frames)]
     print(f"{clip}: {frames} frames ({cycle_seconds:.3f} s a cycle, {2.0 / cycle_seconds:.2f} steps a second), "
-          f"steps of {direction['step']:.2f} m, {speed:.2f} m/s; hips {pelvis_z - max(heights):.3f} to {pelvis_z - min(heights):.3f} m "
+          f"{direction['cycle']:.2f} m a cycle, {speed:.2f} m/s; hips {pelvis_z - max(heights):.3f} to {pelvis_z - min(heights):.3f} m "
           f"lower than the library's walk (a bob of {(max(heights) - min(heights)) * 100:.1f} cm)")
 
     poses = []
     contacts = {"l": [], "r": []}
     stretched_frames = 0
-    closest = math.inf  # the ankles' nearest approach (the crossing steps keep the legs apart)
+    closest = math.inf  # the ankles' nearest approach
+    across = math.inf   # the left ankle's least distance to the left of the right one (the legs never cross)
     for f in range(frames):
         phase = f / frames
         pose = dict(bodies[f])
@@ -376,11 +389,15 @@ def build_direction(armature, clip, direction, bodies, sources, feet, offsets, f
                 ball = armature.pose.bones[f"ball_{side}"].matrix.translation
                 contacts[side].append((f, down, heel.copy(), ball.copy()))
         closest = min(closest, (ankles["l"] - ankles["r"]).length)
+        across = min(across, ankles["l"].x - ankles["r"].x)
         poses.append(local_pose(armature))
+    if direction["x"] is not None and across < SIDE_CLOSED - 0.02:
+        raise SystemExit(f"{clip}: the ankles came within {across * 100:.0f} cm across (wanted {SIDE_CLOSED * 100:.0f}): "
+                         f"the legs mustn't cross")
 
     # The feet on the ground move against the move at the walk's speed: the point each stands on (the heel's ground point
     # rolling down and flat, the ball's joint on the toes), frame to frame
-    ground = -Vector((direction["move"][0], direction["move"][1], 0.0)) * SPEED
+    ground = -Vector((direction["move"][0], direction["move"][1], 0.0)) * (direction["cycle"] / cycle_seconds)
     worst = 0.0
     for side in "lr":
         points = contacts[side]
@@ -390,7 +407,8 @@ def build_direction(armature, clip, direction, bodies, sources, feet, offsets, f
             moved = (b1 - b0) if kind == "ball" else (h1 - h0)
             worst = max(worst, (moved * FPS - ground).length)
     print(f"{clip}: the feet on the ground off the walk's speed by at most {worst:.2f} m/s; "
-          f"{stretched_frames} leg frames at the IK's full stretch; the ankles {closest * 100:.0f} cm apart at the closest")
+          f"{stretched_frames} leg frames at the IK's full stretch; the ankles {closest * 100:.0f} cm apart at the closest, "
+          f"the left one at least {across * 100:.0f} cm to the left of the right")
     return poses
 
 
@@ -452,7 +470,7 @@ def main():
         low, high = min(values), max(values)
         return (values[f] - low) / (high - low) * 2.0 - 1.0 if high > low else 0.0
 
-    def upper_body(f, lean_degrees):
+    def upper_body(f, lean_degrees, hip_swing=HIP_SWING):
         pose = dict(sources[f])
         pose.update(fingers)
         def swung(name, k):
@@ -464,8 +482,8 @@ def main():
         for name in CLAVICLES:
             pose[name] = swung(name, CLAVICLE_SWING)
         original = pose["pelvis"].to_quaternion()
-        rotation = means["pelvis"] @ scaled(means["pelvis"].inverted() @ original, HIP_SWING)
-        location = pelvis_mean + (pose["pelvis"].translation - pelvis_mean) * HIP_SWING
+        rotation = means["pelvis"] @ scaled(means["pelvis"].inverted() @ original, hip_swing)
+        location = pelvis_mean + (pose["pelvis"].translation - pelvis_mean) * hip_swing
         pose["pelvis"] = Matrix.Translation(location) @ rotation.to_matrix().to_4x4()
         # The spine turns back what the hips turned more than the library's: the chest as on the library's hips
         back = pelvis_to_spine.inverted() @ (rotation.inverted() @ original) @ pelvis_to_spine
@@ -509,32 +527,36 @@ def main():
 
     # The chest steadied in the world: its turn and tilt round the cycle (the spine's top, as the hips and the spine put
     # it) kept to CHEST_STEADY of themselves, the difference given to the spine's lowest bone; the arms hang from it
-    bodies = [upper_body(f, lean) for f in range(frames)]
-    chest = []
-    for f in range(frames):
-        set_pose(armature, bodies[f])
-        update()
-        chest.append(armature.pose.bones["spine_03"].matrix.to_quaternion())
-    chest_mean = mean_rotation(chest)
-    for f in range(frames):
-        set_pose(armature, bodies[f])
-        update()
-        wanted = chest_mean @ scaled(chest_mean.inverted() @ chest[f], CHEST_STEADY)
-        spine = armature.pose.bones["spine_01"]
-        m = spine.matrix.copy()
-        spine.matrix = Matrix.Translation(m.translation) @ ((wanted @ chest[f].inverted()) @ m.to_quaternion()).to_matrix().to_4x4()
-        update()
-        bodies[f]["spine_01"] = spine.matrix_basis.copy()
+    def steady_bodies(hip_swing):
+        bodies = [upper_body(f, lean, hip_swing) for f in range(frames)]
+        chest = []
+        for f in range(frames):
+            set_pose(armature, bodies[f])
+            update()
+            chest.append(armature.pose.bones["spine_03"].matrix.to_quaternion())
+        chest_mean = mean_rotation(chest)
+        for f in range(frames):
+            set_pose(armature, bodies[f])
+            update()
+            wanted = chest_mean @ scaled(chest_mean.inverted() @ chest[f], CHEST_STEADY)
+            spine = armature.pose.bones["spine_01"]
+            m = spine.matrix.copy()
+            spine.matrix = Matrix.Translation(m.translation) @ ((wanted @ chest[f].inverted()) @ m.to_quaternion()).to_matrix().to_4x4()
+            update()
+            bodies[f]["spine_01"] = spine.matrix_basis.copy()
+        return bodies
 
     clips = {}
     for clip, direction in DIRECTIONS.items():
-        # The direction's cycle: two of its steps at the walk's speed; the upper body's frames resampled to it
-        clip_frames = max(8, round(2.0 * direction["step"] / SPEED * FPS))
+        # The direction's cycle: the meters it covers at its speed; the upper body's frames resampled to it (to the side
+        # the hips turn less: a step-together doesn't swing them)
+        bodies = steady_bodies(direction["hip_swing"])
+        clip_frames = max(8, round(direction["cycle"] / direction["speed"] * FPS))
         clip_seconds = clip_frames / FPS
         clip_bodies = bodies if clip_frames == frames else resample(bodies, clip_frames)
         clip_sources = sources if clip_frames == frames else resample(sources, clip_frames)
         clips[clip] = build_direction(armature, clip, direction, clip_bodies, clip_sources, feet, offsets, clip_frames,
-                                      clip_seconds, 2.0 * direction["step"] / clip_seconds, thigh_length, calf_length)
+                                      clip_seconds, direction["cycle"] / clip_seconds, thigh_length, calf_length)
     # Back: forward reversed in time (its frame f is forward's frame -f: the left foot down at the start, as in the others)
     forward = clips["Walk_Fast_Loop"]
     clips[BACK] = [forward[(frames - f) % frames] for f in range(frames)]

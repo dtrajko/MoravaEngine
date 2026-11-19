@@ -38,8 +38,10 @@ namespace Outpost
         /// <summary>
         /// Where the view model's eye is in its model (the aim pose's right eye, by the sight line) and how far it is moved from
         /// the camera in the camera's space (meters: right, up, forward), so the gun sits low and to the right of the crosshair.
+        /// The aim pose holds the gun 6.5 cm forward and 4.5 cm lower than the sight line at the eye (the face off the gun in
+        /// third person): the eye here moves with the gun, so the first-person view keeps its picture.
         /// </summary>
-        public Vector3 ViewModelEye = new Vector3(-0.118f, 1.574f, 0.115f);
+        public Vector3 ViewModelEye = new Vector3(-0.118f, 1.529f, 0.180f);
         public Vector3 ViewModelOffset = new Vector3(0.11f, -0.09f, 0.0f);
 
         /// <summary>Third person: meters behind the shoulder, and to the side of the eyes.</summary>
@@ -66,6 +68,8 @@ namespace Outpost
         public string FootstepSound = "Assets/Audio/Footstep_{0}.wav";
         public int FootstepVariants = 4;
         public float StrideMove = 1.0f, StrideSprint = 2.1f, StrideWalk = 1.0f;
+        /// <summary>Straight to the side the strides are this times as long (a step-together's: 0.36 m), in between blended as Move's clips are.</summary>
+        public float StrideSideScale = 0.364f;
         public float MoveVolume = 0.45f, SprintVolume = 0.9f, WalkVolume = 0.12f;
         public string JumpSound = "Assets/Audio/JumpTakeoff.wav";
         public string LandSound = "Assets/Audio/Land.wav";
@@ -220,6 +224,12 @@ namespace Outpost
             }
             stepDistance += new Vector2(moved.X, moved.Z).Length();
             float stride = motor.IsWalking ? StrideWalk : motor.IsSprinting ? StrideSprint : StrideMove;
+            if (!motor.IsSprinting && body != null)
+            {
+                float angle = MathF.Abs(body.MoveAngle);
+                float side = (angle <= 90.0f ? angle : 180.0f - angle) / 90.0f;
+                stride *= 1.0f + (StrideSideScale - 1.0f) * side;
+            }
             if (stepDistance >= stride)
             {
                 stepDistance = 0.0f;

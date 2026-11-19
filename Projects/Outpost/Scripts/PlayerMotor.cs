@@ -10,6 +10,14 @@ namespace Outpost
         /// <summary>Meters per second: moving (the default, a fast walk), sprinting (Sprint, forward), walking quietly (Walk), crouched.</summary>
         public float MoveSpeed = 3.0f, SprintSpeed = 6.5f, WalkSpeed = 2.2f, CrouchSpeed = 1.8f;
 
+        /// <summary>
+        /// The speeds above are forward and back; straight to the side (the fast walk and walking quietly; crouched as
+        /// before, its clip has no side walks) this times as fast, in between scaled by how far
+        /// the move is to the side (the angle's, linearly). People step sideways leading with one leg and closing with the
+        /// other, never crossing them, which covers about a third of the walk (the fast walk's side clips: 1.15 m/s).
+        /// </summary>
+        public float SideSpeedScale = 1.15f / 3.0f;
+
         /// <summary>Meters per second squared to the wanted speed: on the ground, and the little control in the air.</summary>
         public float GroundAcceleration = 45.0f, AirAcceleration = 10.0f;
 
@@ -59,6 +67,20 @@ namespace Outpost
         /// <summary>It came down: the speed it landed with (meters per second) and the damage that does (0: a safe landing).</summary>
         public event Action<float, float>? Landed;
 
+        /// <summary>
+        /// How far a move (the command's: x right, y forward) is to the side, 0 ahead or back to 1 straight to the side:
+        /// its angle from the forward-back line over 90 degrees. The body's clips blend by the same (Player.manim's Move).
+        /// </summary>
+        public static float Sideways(Vector2 move)
+        {
+            if (move.LengthSquared() < 1e-6f)
+                return 0.0f;
+            return MathF.Atan2(MathF.Abs(move.X), MathF.Abs(move.Y)) / (MathF.PI * 0.5f);
+        }
+
+        /// <summary>The speed's scale for a move's direction: 1 ahead or back, sideScale straight to the side.</summary>
+        public static float SideScale(Vector2 move, float sideScale) => 1.0f + (sideScale - 1.0f) * Sideways(move);
+
         public void Step(in PlayerCommand command, float dt)
         {
             bool grounded = character.IsGrounded;
@@ -83,6 +105,8 @@ namespace Outpost
             // Sprinting: forward only (not sideways or back), not while walking quietly or crouched
             IsSprinting = command.Sprint && !IsWalking && !IsCrouched && command.Move.Y > 0.5f;
             float speed = IsCrouched ? settings.CrouchSpeed : IsWalking ? settings.WalkSpeed : IsSprinting ? settings.SprintSpeed : settings.MoveSpeed;
+            if (!IsCrouched && !IsSprinting)
+                speed *= SideScale(command.Move, settings.SideSpeedScale); // (crouched: the library's walk, forward only, no side clips yet)
             Vector3 wanted = (command.Forward * command.Move.Y + command.Right * command.Move.X) * speed;
             Vector2 horizontal = new Vector2(velocity.X, velocity.Z);
             horizontal = MoveTowards(horizontal, new Vector2(wanted.X, wanted.Z), (grounded ? settings.GroundAcceleration : settings.AirAcceleration) * dt);

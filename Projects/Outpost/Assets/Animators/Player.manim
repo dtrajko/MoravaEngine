@@ -1,8 +1,8 @@
 # The player's body (Shooter plan, Phases 1.2 and 2.1): the clips and their speeds. The game picks the base's state
 # (PlayerBody calls Animator.Play when the motor's state changes), so there are no transitions in the base. Rate is the
 # play speed the game sets for the moving clips: the motor's speed over the clip's own (capped).
-# Move: the body faces the look while it holds the rifle, so it walks every way: our own fast walks (3 m/s; forward,
-# back, left, right: Tools/CharacterPoses/make_fast_walk.py) blended by MoveAngle, the move's direction from the look
+# Move: the body faces the look while it holds the rifle, so it walks every way: our own fast walks (3 m/s forward and
+# back, a step-together at 1.15 m/s left and right: Tools/CharacterPoses/make_fast_walk.py) blended by MoveAngle, the move's direction from the look
 # (degrees, right positive), the walking quietly too (slower). Run, the library's jog, only shows between the fast walk
 # and the sprint.
 # UpperBody: from the spine up, the rifle aimed where the camera looks (Tools/CharacterPoses/make_rifle_poses.py's poses
