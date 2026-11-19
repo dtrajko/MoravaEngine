@@ -93,6 +93,31 @@ void AnimationSkeleton::ComputeBoneTransforms(const AnimationPose& pose, std::ve
 	}
 }
 
+glm::mat4 AnimationSkeleton::GetNodeTransform(const AnimationPose& pose, int node) const
+{
+	glm::mat4 world(1.0f);
+	for (int i = node; i >= 0 && i < (int)m_Nodes.size(); i = m_Nodes[i].Parent)
+	{
+		const bool animated = i < (int)pose.Nodes.size() && i < (int)pose.Animated.size() && pose.Animated[i] != 0;
+		world = (animated ? pose.Nodes[i].GetMatrix() : m_Nodes[i].BindMatrix) * world;
+	}
+	return world;
+}
+
+void AnimationSkeleton::GetMask(const std::vector<std::string>& names, std::vector<uint8_t>& mask) const
+{
+	mask.assign(m_Nodes.size(), names.empty() ? 1 : 0);
+	if (names.empty())
+	{
+		return;
+	}
+	for (size_t i = 0; i < m_Nodes.size(); i++) // each parent before its children: a child takes its parent's mark
+	{
+		const Node& node = m_Nodes[i];
+		mask[i] = (node.Parent >= 0 && mask[node.Parent]) || std::find(names.begin(), names.end(), node.Name) != names.end() ? 1 : 0;
+	}
+}
+
 // ---- AnimationBinding
 
 AnimationBinding AnimationBinding::Bind(const AnimationSkeleton& skeleton, const AnimationClip& clip)
@@ -262,6 +287,31 @@ namespace AnimationSampling
 			blended.Rotation = glm::normalize(glm::slerp(a.Rotation, b.Rotation, weight)); // glm's slerp takes the short way
 			out.Nodes[i] = blended;
 			out.Animated[i] = 1;
+		}
+	}
+
+	void BlendPosesMasked(AnimationPose& pose, const AnimationPose& to, float weight, const std::vector<uint8_t>& mask, const AnimationSkeleton& skeleton)
+	{
+		const std::vector<AnimationSkeleton::Node>& nodes = skeleton.GetNodes();
+		const size_t count = nodes.size();
+		pose.Nodes.resize(count, AnimationTransform());
+		pose.Animated.resize(count, 0);
+		weight = glm::clamp(weight, 0.0f, 1.0f);
+		for (size_t i = 0; i < count && i < mask.size(); i++)
+		{
+			const bool toAnimated = i < to.Nodes.size() && i < to.Animated.size() && to.Animated[i] != 0;
+			if (!mask[i] || !toAnimated)
+			{
+				continue; // a node the layer's clip doesn't key keeps the pose under it
+			}
+			const AnimationTransform& a = pose.Animated[i] != 0 ? pose.Nodes[i] : nodes[i].Bind;
+			const AnimationTransform& b = toAnimated ? to.Nodes[i] : nodes[i].Bind;
+			AnimationTransform blended;
+			blended.Translation = glm::mix(a.Translation, b.Translation, weight);
+			blended.Scale = glm::mix(a.Scale, b.Scale, weight);
+			blended.Rotation = glm::normalize(glm::slerp(a.Rotation, b.Rotation, weight));
+			pose.Nodes[i] = blended;
+			pose.Animated[i] = 1;
 		}
 	}
 }

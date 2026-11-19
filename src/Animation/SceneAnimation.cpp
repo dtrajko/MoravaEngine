@@ -6,6 +6,7 @@
 
 #include "Core/Log.h"
 
+#include <algorithm>
 #include <cmath>
 
 
@@ -99,8 +100,7 @@ void SceneAnimation::AddEntity(EnvMapVulkanEntityID entity)
 		return;
 	}
 	Bind(animator);
-	animator.Current = animator.Controller->GetEntryState();
-	if (animator.Current < 0)
+	if (animator.Machines.empty() || animator.Machines.front().Current < 0)
 	{
 		Log::GetLogger()->warn("Animator of '{0}': its controller '{1}' has no states", name, component.Controller);
 	}
@@ -134,32 +134,85 @@ void SceneAnimation::Bind(Animator& animator)
 		animator.ParameterNames.push_back(parameter.Name);
 	}
 
-	// The states' clips: from the model's own file (its clips) or another file of the same rig
-	animator.Clips.assign(controller.States.size(), StateClip());
-	for (size_t s = 0; s < controller.States.size(); s++)
+	// The base and the layers: a layer kept by its name keeps its states
+	std::vector<Machine> machines(controller.Layers.size() + 1);
+	for (size_t m = 0; m < machines.size(); m++)
 	{
-		const AnimatorState& state = controller.States[s];
-		StateClip& clip = animator.Clips[s];
-		if (state.ClipFile.empty())
+		const std::string layer = m == 0 ? std::string() : controller.Layers[m - 1].Name;
+		bool kept = false;
+		for (Machine& old : animator.Machines)
 		{
-			clip.Clip = AnimationClipLibrary::Find(animator.Model->GetClips(), state.ClipName);
+			if (old.Layer == layer && (m == 0 || !old.Layer.empty()))
+			{
+				machines[m] = std::move(old);
+				old.Layer = "\x01"; // taken
+				kept = true;
+				break;
+			}
+		}
+		machines[m].Layer = layer;
+		const AnimatorStateMachine& states = m == 0 ? static_cast<const AnimatorStateMachine&>(controller) : controller.Layers[m - 1];
+		BindMachine(animator, states, machines[m], rebinding && kept);
+		skeleton.GetMask(m == 0 ? std::vector<std::string>() : controller.Layers[m - 1].Mask, machines[m].Mask);
+		if (m > 0 && !controller.Layers[m - 1].Mask.empty())
+		{
+			for (const std::string& node : controller.Layers[m - 1].Mask)
+			{
+				if (skeleton.FindNode(node) < 0)
+				{
+					Log::GetLogger()->warn("Animator of '{0}': the mask of layer '{1}' names '{2}', which the model hasn't", name, layer, node);
+				}
+			}
+		}
+	}
+	animator.Machines = std::move(machines);
+	animator.Revision = controller.Revision;
+}
+
+void SceneAnimation::BindMachine(Animator& animator, const AnimatorStateMachine& states, Machine& machine, bool rebinding)
+{
+	const AnimationSkeleton& skeleton = *animator.Model->GetSkeleton();
+	const std::string& name = m_Scene->Get<NameComponent>(animator.Entity).Name;
+	const std::string where = machine.Layer.empty() ? std::string() : " (layer '" + machine.Layer + "')";
+
+	// The states' clips: from the model's own file (its clips) or another file of the same rig
+	auto bindClip = [&](const std::string& file, const std::string& clipName, const std::string& state) -> StateClip
+	{
+		StateClip clip;
+		if (file.empty())
+		{
+			clip.Clip = AnimationClipLibrary::Find(animator.Model->GetClips(), clipName);
 		}
 		else
 		{
-			clip.File = AnimationClipLibrary::Load(state.ClipFile);
-			clip.Clip = AnimationClipLibrary::Find(*clip.File, state.ClipName);
+			clip.File = AnimationClipLibrary::Load(file);
+			clip.Clip = AnimationClipLibrary::Find(*clip.File, clipName);
 		}
 		if (!clip.Clip)
 		{
-			Log::GetLogger()->warn("Animator of '{0}': state '{1}' has no clip ({2}{3}): it shows the bind pose", name, state.Name,
-				state.ClipFile.empty() ? std::string("the model's own file") : state.ClipFile,
-				state.ClipName.empty() ? std::string() : ", '" + state.ClipName + "'");
-			continue;
+			Log::GetLogger()->warn("Animator of '{0}'{1}: state '{2}' has no clip ({3}{4}): it shows the bind pose", name, where, state,
+				file.empty() ? std::string("the model's own file") : file, clipName.empty() ? std::string() : ", '" + clipName + "'");
+			return clip;
 		}
 		clip.Binding = AnimationBinding::Bind(skeleton, *clip.Clip);
 		if (clip.Binding.BoundChannels == 0)
 		{
-			Log::GetLogger()->warn("Animator of '{0}': the clip of state '{1}' moves no node of the model (another rig?)", name, state.Name);
+			Log::GetLogger()->warn("Animator of '{0}'{1}: the clip of state '{2}' moves no node of the model (another rig?)", name, where, state);
+		}
+		return clip;
+	};
+	machine.Clips.assign(states.States.size(), std::vector<StateClip>());
+	for (size_t s = 0; s < states.States.size(); s++)
+	{
+		const AnimatorState& state = states.States[s];
+		if (state.Blend.empty())
+		{
+			machine.Clips[s].push_back(bindClip(state.ClipFile, state.ClipName, state.Name));
+			continue;
+		}
+		for (const AnimatorBlendClip& clip : state.Blend)
+		{
+			machine.Clips[s].push_back(bindClip(clip.ClipFile, clip.ClipName, state.Name));
 		}
 	}
 
@@ -168,37 +221,43 @@ void SceneAnimation::Bind(Animator& animator)
 	{
 		auto rename = [&](int state) -> int
 		{
-			return state >= 0 && state < (int)animator.StateNames.size() ? controller.FindState(animator.StateNames[state]) : -1;
+			return state >= 0 && state < (int)machine.StateNames.size() ? states.FindState(machine.StateNames[state]) : -1;
 		};
-		const int current = rename(animator.Current);
-		const int previous = rename(animator.Previous);
-		if (animator.Fading && animator.Previous >= 0 && previous < 0)
+		const int current = rename(machine.Current);
+		const int previous = rename(machine.Previous);
+		if (machine.Fading && machine.Previous >= 0 && previous < 0)
 		{
-			animator.Fading = false;
+			machine.Fading = false;
 		}
-		animator.Previous = previous;
+		machine.Previous = previous;
 		if (current < 0)
 		{
-			animator.Current = controller.GetEntryState();
-			animator.CurrentTime = 0.0f;
-			animator.Fading = false;
+			machine.Current = states.GetEntryState();
+			machine.CurrentTime = 0.0f;
+			machine.Fading = false;
 		}
 		else
 		{
-			animator.Current = current;
+			machine.Current = current;
 		}
 	}
-	animator.StateNames.clear();
-	for (const AnimatorState& state : controller.States)
+	else
 	{
-		animator.StateNames.push_back(state.Name);
+		machine.Current = states.GetEntryState();
+		machine.CurrentTime = 0.0f;
+		machine.Previous = -1;
+		machine.Fading = false;
 	}
-	animator.Revision = controller.Revision;
+	machine.StateNames.clear();
+	for (const AnimatorState& state : states.States)
+	{
+		machine.StateNames.push_back(state.Name);
+	}
 }
 
-float SceneAnimation::GetStateSpeed(const Animator& animator, int state) const
+float SceneAnimation::GetStateSpeed(const Animator& animator, const AnimatorStateMachine& states, int state) const
 {
-	const AnimatorState& settings = animator.Controller->States[state];
+	const AnimatorState& settings = states.States[state];
 	float speed = settings.Speed;
 	if (!settings.SpeedParameter.empty())
 	{
@@ -211,36 +270,81 @@ float SceneAnimation::GetStateSpeed(const Animator& animator, int state) const
 	return speed;
 }
 
-float SceneAnimation::GetNormalizedTime(const Animator& animator, int state, float time) const
+void SceneAnimation::GetBlend(const Animator& animator, const AnimatorState& state, size_t clips, size_t& a, size_t& b, float& weight) const
 {
-	const AnimationClip* clip = state >= 0 && state < (int)animator.Clips.size() ? animator.Clips[state].Clip : nullptr;
-	return clip && clip->GetDuration() > 0.0f ? time / clip->GetDuration() : 1.0f; // a state without a clip is over at once
+	a = b = 0;
+	weight = 0.0f;
+	const size_t count = std::min(clips, state.Blend.size());
+	const int parameter = animator.Controller->FindParameter(state.BlendParameter);
+	if (count < 2 || parameter < 0 || parameter >= (int)animator.Values.size())
+	{
+		return; // the first clip alone
+	}
+	const float value = animator.Values[parameter];
+	if (value <= state.Blend.front().Threshold)
+	{
+		return;
+	}
+	if (value >= state.Blend[count - 1].Threshold)
+	{
+		a = b = count - 1;
+		return;
+	}
+	for (size_t i = 0; i + 1 < count; i++)
+	{
+		const float low = state.Blend[i].Threshold, high = state.Blend[i + 1].Threshold;
+		if (value >= low && value <= high)
+		{
+			a = i;
+			b = i + 1;
+			weight = high > low ? (value - low) / (high - low) : 0.0f;
+			return;
+		}
+	}
 }
 
-bool SceneAnimation::CanTake(const Animator& animator, const AnimatorTransition& transition) const
+float SceneAnimation::GetStateLength(const Animator& animator, const Machine& machine, const AnimatorStateMachine& states, int state) const
+{
+	if (state < 0 || state >= (int)machine.Clips.size() || machine.Clips[state].empty())
+	{
+		return 0.0f;
+	}
+	const std::vector<StateClip>& clips = machine.Clips[state];
+	auto length = [&](size_t i) { return clips[i].Clip ? clips[i].Clip->GetDuration() : 0.0f; };
+	if (clips.size() == 1 || states.States[state].Blend.empty())
+	{
+		return length(0);
+	}
+	size_t a, b;
+	float weight;
+	GetBlend(animator, states.States[state], clips.size(), a, b, weight);
+	return length(a) + (length(b) - length(a)) * weight;
+}
+
+bool SceneAnimation::CanTake(const Animator& animator, const Machine& machine, const AnimatorStateMachine& states, const AnimatorTransition& transition) const
 {
 	const AnimatorController& controller = *animator.Controller;
-	const int to = controller.FindState(transition.To);
+	const int to = states.FindState(transition.To);
 	if (to < 0)
 	{
 		return false;
 	}
 	if (transition.FromAny)
 	{
-		if (to == animator.Current)
+		if (to == machine.Current)
 		{
 			return false; // Any State doesn't start the state it is in again
 		}
 	}
-	else if (controller.FindState(transition.From) != animator.Current)
+	else if (states.FindState(transition.From) != machine.Current)
 	{
 		return false;
 	}
 
 	if (transition.HasExitTime)
 	{
-		const float normalized = GetNormalizedTime(animator, animator.Current, animator.CurrentTime);
-		const bool loop = controller.States[animator.Current].Loop;
+		const float normalized = machine.CurrentTime;
+		const bool loop = states.States[machine.Current].Loop;
 		const bool reached = loop && transition.ExitTime < 1.0f ? normalized - std::floor(normalized) >= transition.ExitTime
 			: normalized >= transition.ExitTime;
 		if (!reached)
@@ -282,69 +386,172 @@ bool SceneAnimation::CanTake(const Animator& animator, const AnimatorTransition&
 	return true;
 }
 
-void SceneAnimation::StartTransition(Animator& animator, int to, float fade)
+void SceneAnimation::StartTransition(Animator& animator, Machine& machine, int to, float fade)
 {
 	if (fade <= 0.0f)
 	{
-		animator.Fading = false;
-		animator.Previous = -1;
+		machine.Fading = false;
+		machine.Previous = -1;
 	}
 	else
 	{
-		if (animator.Fading || animator.Current < 0)
+		if (machine.Fading || machine.Current < 0)
 		{
 			// From what is shown now: a crossfade cut short, or nothing played yet (the bind pose)
-			if (animator.Pose.Nodes.empty())
+			if (machine.Pose.Nodes.empty())
 			{
-				animator.Model->GetSkeleton()->GetBindPose(animator.Pose);
+				animator.Model->GetSkeleton()->GetBindPose(machine.Pose);
 			}
-			animator.Snapshot = animator.Pose;
-			animator.Previous = -1;
+			machine.Snapshot = machine.Pose;
+			machine.Previous = -1;
 		}
 		else
 		{
-			animator.Previous = animator.Current;
-			animator.PreviousTime = animator.CurrentTime;
+			machine.Previous = machine.Current;
+			machine.PreviousTime = machine.CurrentTime;
 		}
-		animator.FadeDuration = fade;
-		animator.FadeElapsed = 0.0f;
-		animator.Fading = true;
+		machine.FadeDuration = fade;
+		machine.FadeElapsed = 0.0f;
+		machine.Fading = true;
 	}
-	animator.Current = to;
-	animator.CurrentTime = 0.0f;
+	machine.Current = to;
+	machine.CurrentTime = 0.0f;
 	animator.Transitions++;
 }
 
-void SceneAnimation::SampleState(const Animator& animator, int state, float time, AnimationPose& pose) const
+void SceneAnimation::SampleState(const Animator& animator, const Machine& machine, const AnimatorStateMachine& states, int state, float time, AnimationPose& pose)
 {
-	animator.Model->GetSkeleton()->GetBindPose(pose);
-	if (state < 0 || state >= (int)animator.Clips.size() || !animator.Clips[state].Clip)
+	const AnimationSkeleton& skeleton = *animator.Model->GetSkeleton();
+	skeleton.GetBindPose(pose);
+	if (state < 0 || state >= (int)machine.Clips.size() || machine.Clips[state].empty())
 	{
 		return;
 	}
-	const AnimatorState& settings = animator.Controller->States[state];
-	AnimationSampling::SampleClip(*animator.Clips[state].Clip, animator.Clips[state].Binding, time, settings.Loop, settings.InPlace, pose);
+	const AnimatorState& settings = states.States[state];
+	const std::vector<StateClip>& clips = machine.Clips[state];
+	// Each clip at the same fraction of its length (time is normalized)
+	auto sample = [&](size_t i, AnimationPose& into)
+	{
+		if (clips[i].Clip)
+		{
+			AnimationSampling::SampleClip(*clips[i].Clip, clips[i].Binding, time * clips[i].Clip->GetDuration(), settings.Loop, settings.InPlace, into);
+		}
+	};
+	if (settings.Blend.empty() || clips.size() == 1)
+	{
+		sample(0, pose);
+		return;
+	}
+	size_t a, b;
+	float weight;
+	GetBlend(animator, settings, clips.size(), a, b, weight);
+	if (a == b || weight <= 0.0f)
+	{
+		sample(a, pose);
+		return;
+	}
+	m_BlendA = pose;
+	m_BlendB = pose;
+	sample(a, m_BlendA);
+	sample(b, m_BlendB);
+	AnimationSampling::BlendPoses(m_BlendA, m_BlendB, weight, skeleton, pose);
 }
 
-void SceneAnimation::FireEvents(Animator& animator, int state, float from, float to)
+void SceneAnimation::UpdateMachine(Animator& animator, Machine& machine, const AnimatorStateMachine& states, float frameTime)
 {
-	if (state < 0 || state >= (int)animator.Clips.size() || from == to)
+	if (machine.Current < 0 || machine.Current >= (int)states.States.size())
 	{
-		return;
+		machine.Current = states.GetEntryState();
+		machine.CurrentTime = 0.0f;
+		if (machine.Current < 0)
+		{
+			return; // no states
+		}
 	}
-	const AnimatorState& settings = animator.Controller->States[state];
-	if (settings.Events.empty())
+
+	// The clips move on by the frame (each state at its speed over its length: normalized), and the crossfade with them.
+	// The events passed: the state that weighs more's (the one faded to, from halfway through the crossfade)
+	auto advance = [&](int state, float& time)
 	{
-		return;
+		const float length = GetStateLength(animator, machine, states, state);
+		if (length <= 0.0f)
+		{
+			time = std::max(time, 1.0f); // a state without a clip is over at once
+			return;
+		}
+		time += frameTime * GetStateSpeed(animator, states, state) / length;
+	};
+	const float currentTime = machine.CurrentTime;
+	advance(machine.Current, machine.CurrentTime);
+	bool currentFires = true;
+	if (machine.Fading)
+	{
+		machine.FadeElapsed += frameTime;
+		currentFires = machine.FadeDuration <= 0.0f || machine.FadeElapsed >= 0.5f * machine.FadeDuration;
+		if (machine.Previous >= 0)
+		{
+			const float previousTime = machine.PreviousTime;
+			advance(machine.Previous, machine.PreviousTime);
+			if (!currentFires)
+			{
+				FireEvents(animator, states, machine.Previous, previousTime, machine.PreviousTime);
+			}
+		}
+		if (machine.FadeElapsed >= machine.FadeDuration)
+		{
+			machine.Fading = false;
+			machine.Previous = -1;
+		}
 	}
-	std::vector<size_t>& passed = m_PassedEvents;
-	AnimatorController::GetPassedEvents(settings, GetNormalizedTime(animator, state, from), GetNormalizedTime(animator, state, to), passed);
-	for (size_t e : passed)
+	if (currentFires)
 	{
-		const AnimatorEvent& event = settings.Events[e];
-		m_Events.push_back({ animator.Entity, event.Name, settings.Name });
-		animator.Events++;
-		animator.LastEvent = event.Name + " (" + settings.Name + ")";
+		FireEvents(animator, states, machine.Current, currentTime, machine.CurrentTime);
+	}
+
+	// The first transition that may be taken: from Any State first, then from the current state. Its triggers are used up
+	const AnimatorController& controller = *animator.Controller;
+	for (int pass = 0; pass < 2; pass++)
+	{
+		bool taken = false;
+		for (const AnimatorTransition& transition : states.Transitions)
+		{
+			if (transition.FromAny != (pass == 0) || !CanTake(animator, machine, states, transition))
+			{
+				continue;
+			}
+			for (const AnimatorCondition& condition : transition.Conditions)
+			{
+				const int parameter = controller.FindParameter(condition.Parameter);
+				if (parameter >= 0 && controller.Parameters[parameter].Type == AnimatorParameterType::Trigger)
+				{
+					animator.Values[parameter] = 0.0f;
+				}
+			}
+			StartTransition(animator, machine, states.FindState(transition.To), transition.Fade);
+			taken = true;
+			break;
+		}
+		if (taken)
+		{
+			break;
+		}
+	}
+
+	// The pose: the current state's, faded in over what it came from
+	SampleState(animator, machine, states, machine.Current, machine.CurrentTime, machine.To);
+	if (machine.Fading)
+	{
+		if (machine.Previous >= 0)
+		{
+			SampleState(animator, machine, states, machine.Previous, machine.PreviousTime, machine.From);
+		}
+		const AnimationPose& from = machine.Previous >= 0 ? machine.From : machine.Snapshot;
+		const float weight = machine.FadeDuration > 0.0f ? machine.FadeElapsed / machine.FadeDuration : 1.0f;
+		AnimationSampling::BlendPoses(from, machine.To, weight, *animator.Model->GetSkeleton(), machine.Pose);
+	}
+	else
+	{
+		machine.Pose = machine.To;
 	}
 }
 
@@ -373,91 +580,96 @@ void SceneAnimation::Update(float frameTime)
 		{
 			Bind(animator);
 		}
-		if (animator.Current < 0 || animator.Current >= (int)controller.States.size())
+		if (animator.Machines.empty() || controller.States.empty())
 		{
-			animator.Current = controller.GetEntryState();
-			animator.CurrentTime = 0.0f;
-			if (animator.Current < 0)
-			{
-				continue; // no states: the model keeps its own pose
-			}
+			continue; // no states: the model keeps its own pose
 		}
 
-		// The clips move on by the frame (each state at its speed), and the crossfade with them. The events passed: the
-		// state that weighs more's (the one faded to, from halfway through the crossfade)
-		const float currentTime = animator.CurrentTime;
-		animator.CurrentTime += frameTime * GetStateSpeed(animator, animator.Current);
-		bool currentFires = true;
-		if (animator.Fading)
+		// The base, then each layer over it by its weight on the nodes of its mask
+		for (size_t m = 0; m < animator.Machines.size(); m++)
 		{
-			animator.FadeElapsed += frameTime;
-			currentFires = animator.FadeDuration <= 0.0f || animator.FadeElapsed >= 0.5f * animator.FadeDuration;
-			if (animator.Previous >= 0)
+			Machine& machine = animator.Machines[m];
+			const AnimatorStateMachine& states = m == 0 ? static_cast<const AnimatorStateMachine&>(controller) : controller.Layers[m - 1];
+			if (m > 0)
 			{
-				const float previousTime = animator.PreviousTime;
-				animator.PreviousTime += frameTime * GetStateSpeed(animator, animator.Previous);
-				if (!currentFires)
+				const AnimatorLayer& layer = controller.Layers[m - 1];
+				machine.Weight = layer.Weight;
+				const int parameter = layer.WeightParameter.empty() ? -1 : controller.FindParameter(layer.WeightParameter);
+				if (parameter >= 0 && parameter < (int)animator.Values.size() && controller.Parameters[parameter].Type == AnimatorParameterType::Float)
 				{
-					FireEvents(animator, animator.Previous, previousTime, animator.PreviousTime);
+					machine.Weight *= animator.Values[parameter];
 				}
+				machine.Weight = std::clamp(machine.Weight, 0.0f, 1.0f);
 			}
-			if (animator.FadeElapsed >= animator.FadeDuration)
+			UpdateMachine(animator, machine, states, frameTime);
+			if (m == 0)
 			{
-				animator.Fading = false;
-				animator.Previous = -1;
+				animator.Pose = machine.Pose;
 			}
-		}
-		if (currentFires)
-		{
-			FireEvents(animator, animator.Current, currentTime, animator.CurrentTime);
-		}
-
-		// The first transition that may be taken: from Any State first, then from the current state. Its triggers are used up
-		for (int pass = 0; pass < 2; pass++)
-		{
-			bool taken = false;
-			for (const AnimatorTransition& transition : controller.Transitions)
+			else if (machine.Current >= 0 && machine.Weight > 0.0f)
 			{
-				if (transition.FromAny != (pass == 0) || !CanTake(animator, transition))
-				{
-					continue;
-				}
-				for (const AnimatorCondition& condition : transition.Conditions)
-				{
-					const int parameter = controller.FindParameter(condition.Parameter);
-					if (parameter >= 0 && controller.Parameters[parameter].Type == AnimatorParameterType::Trigger)
-					{
-						animator.Values[parameter] = 0.0f;
-					}
-				}
-				StartTransition(animator, controller.FindState(transition.To), transition.Fade);
-				taken = true;
-				break;
+				AnimationSampling::BlendPosesMasked(animator.Pose, machine.Pose, machine.Weight, machine.Mask, *animator.Model->GetSkeleton());
 			}
-			if (taken)
-			{
-				break;
-			}
-		}
-
-		// The pose: the current state's, faded in over what it came from
-		SampleState(animator, animator.Current, animator.CurrentTime, animator.To);
-		if (animator.Fading)
-		{
-			if (animator.Previous >= 0)
-			{
-				SampleState(animator, animator.Previous, animator.PreviousTime, animator.From);
-			}
-			const AnimationPose& from = animator.Previous >= 0 ? animator.From : animator.Snapshot;
-			const float weight = animator.FadeDuration > 0.0f ? animator.FadeElapsed / animator.FadeDuration : 1.0f;
-			AnimationSampling::BlendPoses(from, animator.To, weight, *animator.Model->GetSkeleton(), animator.Pose);
-		}
-		else
-		{
-			animator.Pose = animator.To;
 		}
 		animator.Model->SetPose(animator.Pose);
 	}
+	UpdateAttachments();
+}
+
+const AnimationPose* SceneAnimation::GetPose(EnvMapVulkanEntityID entity) const
+{
+	auto it = m_Animators.find(entity);
+	return it != m_Animators.end() && it->second.Model && !it->second.Pose.Nodes.empty() ? &it->second.Pose : nullptr;
+}
+
+void SceneAnimation::UpdateAttachments()
+{
+	static const AnimationPose bindPose; // empty: the skeleton's bind places
+	m_Scene->Each<BoneAttachmentComponent>([&](EnvMapVulkanEntityID entity, BoneAttachmentComponent& attachment)
+	{
+		attachment.BoneTransform = glm::mat4(1.0f);
+		const EnvMapVulkanEntityID parent = m_Scene->GetParent(entity);
+		const ModelComponent* model = parent != NoEntity ? m_Scene->TryGet<ModelComponent>(parent) : nullptr;
+		const AnimationSkeleton* skeleton = model && model->Model ? model->Model->GetSkeleton() : nullptr;
+		const int node = skeleton ? skeleton->FindNode(attachment.Bone) : -1;
+		if (node >= 0)
+		{
+			const AnimationPose* pose = GetPose(parent);
+			attachment.BoneTransform = skeleton->GetNodeTransform(pose ? *pose : bindPose, node);
+		}
+	});
+}
+
+bool SceneAnimation::GetNodeTransform(EnvMapVulkanEntityID entity, const std::string& node, glm::mat4& world) const
+{
+	if (!m_Scene || !m_Scene->Exists(entity))
+	{
+		return false;
+	}
+	const ModelComponent* model = m_Scene->TryGet<ModelComponent>(entity);
+	const AnimationSkeleton* skeleton = model && model->Model ? model->Model->GetSkeleton() : nullptr;
+	const int index = skeleton ? skeleton->FindNode(node) : -1;
+	if (index < 0)
+	{
+		return false;
+	}
+	static const AnimationPose bindPose;
+	const AnimationPose* pose = GetPose(entity);
+	world = m_Scene->GetWorldTransform(entity) * skeleton->GetNodeTransform(pose ? *pose : bindPose, index);
+	return true;
+}
+
+bool SceneAnimation::GetBindNodeTransform(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, const std::string& node, glm::mat4& world)
+{
+	const ModelComponent* model = scene.TryGet<ModelComponent>(entity);
+	const AnimationSkeleton* skeleton = model && model->Model ? model->Model->GetSkeleton() : nullptr;
+	const int index = skeleton ? skeleton->FindNode(node) : -1;
+	if (index < 0)
+	{
+		return false;
+	}
+	world = scene.GetWorldTransform(entity) * skeleton->GetNodeTransform(AnimationPose(), index);
+	return true;
 }
 
 void SceneAnimation::Stop()
@@ -521,7 +733,7 @@ SceneAnimation::Result SceneAnimation::GetParameter(EnvMapVulkanEntityID entity,
 	return Result::Done;
 }
 
-SceneAnimation::Result SceneAnimation::Play(EnvMapVulkanEntityID entity, const std::string& state, float fade)
+SceneAnimation::Result SceneAnimation::Play(EnvMapVulkanEntityID entity, const std::string& state, float fade, const std::string& layer)
 {
 	auto it = m_Animators.find(entity);
 	if (it == m_Animators.end() || !it->second.Model || !it->second.Controller)
@@ -533,12 +745,18 @@ SceneAnimation::Result SceneAnimation::Play(EnvMapVulkanEntityID entity, const s
 	{
 		Bind(animator);
 	}
-	const int to = animator.Controller->FindState(state);
+	const int index = layer.empty() ? -1 : animator.Controller->FindLayer(layer);
+	const AnimatorStateMachine* states = animator.Controller->GetMachine(index);
+	if ((!layer.empty() && index < 0) || !states || index + 1 >= (int)animator.Machines.size())
+	{
+		return Result::NoLayer;
+	}
+	const int to = states->FindState(state);
 	if (to < 0)
 	{
 		return Result::NoState;
 	}
-	StartTransition(animator, to, fade);
+	StartTransition(animator, animator.Machines[index + 1], to, fade);
 	return Result::Done;
 }
 
@@ -557,16 +775,33 @@ bool SceneAnimation::GetInfo(EnvMapVulkanEntityID entity, Info& info) const
 	info.Events = animator.Events;
 	info.LastEvent = animator.LastEvent;
 	info.Values = animator.Values;
-	auto stateName = [&](int state)
+	for (size_t m = 0; m < animator.Machines.size() && animator.Controller; m++)
 	{
-		return state >= 0 && state < (int)animator.StateNames.size() ? animator.StateNames[state] : std::string();
-	};
-	info.State = stateName(animator.Current);
-	info.StateTime = animator.CurrentTime;
-	info.NormalizedTime = animator.Controller ? GetNormalizedTime(animator, animator.Current, animator.CurrentTime) : 0.0f;
-	info.InTransition = animator.Fading;
-	info.PreviousState = animator.Fading ? stateName(animator.Previous) : std::string();
-	info.FadeProgress = animator.Fading && animator.FadeDuration > 0.0f ? animator.FadeElapsed / animator.FadeDuration : 0.0f;
+		const Machine& machine = animator.Machines[m];
+		const AnimatorStateMachine* states = animator.Controller->GetMachine((int)m - 1);
+		LayerInfo layer;
+		auto stateName = [&](int state)
+		{
+			return state >= 0 && state < (int)machine.StateNames.size() ? machine.StateNames[state] : std::string();
+		};
+		layer.Name = machine.Layer;
+		layer.State = stateName(machine.Current);
+		layer.NormalizedTime = machine.CurrentTime;
+		layer.StateTime = states && animator.Revision == animator.Controller->Revision ?
+			machine.CurrentTime * GetStateLength(animator, machine, *states, machine.Current) : 0.0f;
+		layer.InTransition = machine.Fading;
+		layer.PreviousState = machine.Fading ? stateName(machine.Previous) : std::string();
+		layer.FadeProgress = machine.Fading && machine.FadeDuration > 0.0f ? machine.FadeElapsed / machine.FadeDuration : 0.0f;
+		layer.Weight = m == 0 ? 1.0f : machine.Weight;
+		if (m == 0)
+		{
+			static_cast<LayerInfo&>(info) = layer;
+		}
+		else
+		{
+			info.Layers.push_back(layer);
+		}
+	}
 	return true;
 }
 
@@ -574,4 +809,26 @@ std::shared_ptr<AnimatorController> SceneAnimation::GetController(EnvMapVulkanEn
 {
 	auto it = m_Animators.find(entity);
 	return it != m_Animators.end() ? it->second.Controller : nullptr;
+}
+
+void SceneAnimation::FireEvents(Animator& animator, const AnimatorStateMachine& states, int state, float from, float to)
+{
+	if (state < 0 || state >= (int)states.States.size() || from == to)
+	{
+		return;
+	}
+	const AnimatorState& settings = states.States[state];
+	if (settings.Events.empty())
+	{
+		return;
+	}
+	std::vector<size_t>& passed = m_PassedEvents;
+	AnimatorController::GetPassedEvents(settings, from, to, passed);
+	for (size_t e : passed)
+	{
+		const AnimatorEvent& event = settings.Events[e];
+		m_Events.push_back({ animator.Entity, event.Name, settings.Name });
+		animator.Events++;
+		animator.LastEvent = event.Name + " (" + settings.Name + ")";
+	}
 }

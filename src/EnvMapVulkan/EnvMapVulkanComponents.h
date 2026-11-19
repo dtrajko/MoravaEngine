@@ -572,6 +572,17 @@ struct AnimatorComponent
 	std::string Controller; // the .manim file: absolute here, relative to the project in the scene file
 };
 
+// The entity follows a bone (a node) of its parent's model (docs/engine/Game_Engine_Runtime_Guide.html, 6.4; the shooter's
+// E3): a gun in a hand, a helmet on a head. Its own transform is then an offset in the bone's space. The bone moves with
+// the parent's animator (in the game, and in the editor's preview of the entry states), or stands where the model's bind
+// pose has it without one. Without a parent, or a model with that node, the entity is placed as any child
+struct BoneAttachmentComponent
+{
+	std::string Bone; // the node's name in the parent's model (hand_r)
+	// Where the bone is now in the parent's space (SceneAnimation keeps it each frame; not saved). Identity: not found
+	glm::mat4 BoneTransform = glm::mat4(1.0f);
+};
+
 // The root of a placed prefab (docs/engine/Game_Engine_Runtime_Guide.html, 6.1): the prefab file it came from, and what
 // it was when it last matched it, to tell what changed since (EnvMapVulkanPrefab). The root's translation and rotation
 // are the instance's own (where it is placed); the rest of the instance is the prefab's
@@ -770,4 +781,4 @@ struct ComponentList
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, NavMeshComponent, NavAreaComponent, NavLinkComponent, ParticleEmitterComponent, TrailComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, NavAgentComponent, VehicleComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent,
-	PrefabComponent, UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;
+	BoneAttachmentComponent, PrefabComponent, UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;

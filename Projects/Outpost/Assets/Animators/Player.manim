@@ -1,27 +1,34 @@
-# The player's body (Shooter plan, Phase 1.2): the clips and their speeds. The game picks the state (PlayerBody calls
-# Animator.Play when the motor's state changes), so there are no transitions here. Rate is the play speed the game sets for
-# the moving clips: the motor's speed over the clip's own (the UAL1 clips walk slower than the motor, so it is capped).
-# WalkFast, the default pace (3 m/s), is our own clip (Tools/CharacterPoses/make_fast_walk.py); Run, the library's jog,
-# only shows between it and the sprint.
+# The player's body (Shooter plan, Phases 1.2 and 2.1): the clips and their speeds. The game picks the base's state
+# (PlayerBody calls Animator.Play when the motor's state changes), so there are no transitions in the base. Rate is the
+# play speed the game sets for the moving clips: the motor's speed over the clip's own (capped).
+# Move: the body faces the look while it holds the rifle, so it walks every way: our own fast walks (3 m/s; forward,
+# back, left, right: Tools/CharacterPoses/make_fast_walk.py) blended by MoveAngle, the move's direction from the look
+# (degrees, right positive), the walking quietly too (slower). Run, the library's jog, only shows between the fast walk
+# and the sprint.
+# UpperBody: from the spine up, the rifle aimed where the camera looks (Tools/CharacterPoses/make_rifle_poses.py's poses
+# blended by AimPitch, the look's pitch in degrees, down positive), lowered to the ready while sprinting.
 Animator:
   Version: 1
   Entry: Idle
   Parameters:
     - {Name: Rate, Type: Float, Default: 1}
+    - {Name: MoveAngle, Type: Float, Default: 0}
+    - {Name: AimPitch, Type: Float, Default: 0}
+    - {Name: Sprinting, Type: Bool, Default: false}
   States:
     - Name: Idle
       Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Idle_Loop}
       Speed: 1
       Loop: true
       InPlace: true
-    - Name: Walk
-      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Walk_Loop}
-      Speed: 1
-      SpeedParameter: Rate
-      Loop: true
-      InPlace: true
-    - Name: WalkFast
-      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Locomotion.glb, Name: Walk_Fast_Loop}
+    - Name: Move
+      BlendParameter: MoveAngle
+      Blend:
+        - {File: Assets/Models/SoldierAnimations/Soldier_Locomotion.glb, Name: Walk_Fast_Back_Loop, Threshold: -180}
+        - {File: Assets/Models/SoldierAnimations/Soldier_Locomotion.glb, Name: Walk_Fast_Left_Loop, Threshold: -90}
+        - {File: Assets/Models/SoldierAnimations/Soldier_Locomotion.glb, Name: Walk_Fast_Loop, Threshold: 0}
+        - {File: Assets/Models/SoldierAnimations/Soldier_Locomotion.glb, Name: Walk_Fast_Right_Loop, Threshold: 90}
+        - {File: Assets/Models/SoldierAnimations/Soldier_Locomotion.glb, Name: Walk_Fast_Back_Loop, Threshold: 180}
       Speed: 1
       SpeedParameter: Rate
       Loop: true
@@ -59,3 +66,27 @@ Animator:
       Speed: 1.6
       Loop: false
       InPlace: true
+  Transitions: []
+  Layers:
+    - Name: UpperBody
+      Mask: [spine_01]
+      Weight: 1
+      Entry: Aim
+      States:
+        - Name: Aim
+          BlendParameter: AimPitch
+          Blend:
+            - {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Rifle_Aim_Up, Threshold: -45}
+            - {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Rifle_Aim_Neutral, Threshold: 0}
+            - {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Rifle_Aim_Down, Threshold: 45}
+          Speed: 1
+          Loop: true
+          InPlace: true
+        - Name: Ready
+          Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Rifle_Idle_Loop}
+          Speed: 1
+          Loop: true
+          InPlace: true
+      Transitions:
+        - {From: Aim, To: Ready, Fade: 0.25, Conditions: [{Parameter: Sprinting, Test: True}]}
+        - {From: Ready, To: Aim, Fade: 0.2, Conditions: [{Parameter: Sprinting, Test: False}]}

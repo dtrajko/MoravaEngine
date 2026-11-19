@@ -80,7 +80,7 @@ struct ClipboardComponents
 
 // How an entity plays: copied with any entity, whatever its kind
 using ClipboardGame = ClipboardComponents<TagComponent, ColliderComponent, RigidBodyComponent, CharacterControllerComponent, NavAgentComponent, VehicleComponent,
-	ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, InputTestComponent, ParticleEmitterComponent, TrailComponent, NavAreaComponent, NavLinkComponent>;
+	ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent, BoneAttachmentComponent, InputTestComponent, ParticleEmitterComponent, TrailComponent, NavAreaComponent, NavLinkComponent>;
 
 struct ClipboardEntity
 {

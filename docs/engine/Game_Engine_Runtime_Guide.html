@@ -1012,6 +1012,49 @@ struct AudioListenerComponent { bool Active = true; };      <span class="c">// u
     <li><b>Checked</b>: the self-test (events read and written; the windows of looped, held and backwards states); a scratch project driving Erika by a timer in the player: steps every 0.51 s walking and 0.35 s running (the clips' lengths over their speeds, two steps a cycle), none doubled in the crossfades, the take-off and the landing at the push and the touchdown, the steps again after each jump. CI plays the Erika scene on Linux and macOS (its materials, the animator with its events, the scripts, the sound files there). The Project panel got a <i>Scenes</i> list on the way (the project's scenes, opened with a double-click or <i>Open</i>, the open and the start scene marked, and <i>Open Scene...</i>).</li>
   </ul></div>
 
+  <div class="box note"><b>As built: animator layers, blend states and bone attachments (the shooter's Phase 2.1: E3 and E5, 2026-11-19)</b>
+  <ul>
+    <li><b>Why:</b> the shooter's player holds a rifle in third person: the gun must follow the hand (E3), and the upper body
+      aim where the camera looks while the legs walk any way (E5). Holding the rifle the body faces the look, so it walks
+      forward, back and to the sides: the moving clips are blended by the direction.</li>
+    <li><b>Layers</b> (<code>AnimatorLayer</code>, a <code>.manim</code> file's <code>Layers</code>): each has its own states,
+      transitions and entry (an <code>AnimatorStateMachine</code>: the controller is its own base layer, so its states and
+      transitions stay where they were in the file), a <i>Mask</i> (node names, each with every node under it; empty: all)
+      and a <i>Weight</i> (0 to 1, times a Float parameter when it names one). Each frame the base is played, then each layer
+      in order, its pose taking over the nodes of its mask that its clip keys, by its weight (<code>BlendPosesMasked</code>).
+      The parameters are every layer's. Events fire from the layers too. <code>Play(state, fade, layer)</code> plays a
+      layer's state.</li>
+    <li><b>Blend states</b> (a state's <code>Blend</code>: clips with a <i>Threshold</i> each, sorted, and its
+      <i>BlendParameter</i>, a Float): the two clips whose thresholds the parameter lies between, blended by where it is
+      between them (below the first or above the last: that one alone). The clips play in step: a state's time is
+      normalized, each clip sampled at the same fraction of its length, and the state's length is the two clips' weighted
+      as they show, so a walk's feet meet the ground together in clips of other lengths. A one-dimensional blend; blend
+      trees of two parameters stay in the table below.</li>
+    <li><b>Bone attachments</b> (<code>BoneAttachmentComponent { Bone }</code>, <code>BoneAttachment: {Bone: hand_r}</code>
+      in the scene file): the entity follows a node of its parent's model; its transform is then an offset in the bone's
+      space (<code>EnvMapVulkanScene::GetWorldTransform</code> puts the bone between the parent and the entity, and
+      <code>SetWorldTransform</code> takes it out). <code>SceneAnimation</code> keeps each attachment's bone after the poses
+      of the frame (the game's, and the editor's preview of the entry states), or the bind pose when the parent has no
+      animator. A rigged mesh is drawn with the model transform, the root transform and the bone matrices, the inverse root
+      inside them cancelling: a node's place in the model is its matrix up the file's node tree
+      (<code>AnimationSkeleton::GetNodeTransform</code>).</li>
+    <li><b>C#</b>: <code>Animator.Play(state, fade, layer)</code> (the old <code>Play(state, fade)</code> stays),
+      <code>GetLayerState(layer)</code>, <code>GetBoneTransform(bone)</code> (a bone in the world as the frame's pose has it:
+      a muzzle, a hit).</li>
+    <li><b>Editor</b>: the Animator panel's <i>Layer</i> combo (the base, the layers with their current state while the
+      game runs; <i>Add Layer</i>, <i>Delete Layer</i>, its name, mask, weight and weight parameter); a state's <i>Blend</i>
+      checkbox turns its clip into a blend's first, with <i>By</i> (the parameter), a threshold per clip and <i>Add Clip</i>.
+      Renaming or deleting a parameter follows it into every layer, the blends and the weights. The Inspector's
+      <i>Bone Attachment</i> section on a child of a model with bones: the checkbox (the right hand when the rig has one),
+      the bone from the rig's tree, the entity keeping its place in the world when attached or moved to another bone, and
+      <i>Snap to Bone</i> (no offset). The animator's debug view lists each layer's state and weight.</li>
+    <li><b>Checked</b>: the animation self-test (masks, the masked blend, a node's transform, a controller with a layer and a
+      blend state read and written); the shooter's test copy, 34 checks (the body walking ahead, back and to the side by its
+      move angle while it faces the look, the upper body aiming and lowered while sprinting, the rifle 7.3 cm from the
+      hand's joint); its content check scene's 16 animators, which have no layers, still animating; no validation
+      messages; GCC on the changed files.</li>
+  </ul></div>
+
   <h3>6.5 Frustum culling for the main view</h3>
   <p>Only the shadow and water passes cull today. With spawned objects, the main view needs it too: each mesh part's world bounding box against the six frustum planes, before the G-buffer prepass and the scene pass. The profiler shows drawn versus culled counts.</p>
   <div class="box note"><b>Debug views</b>
@@ -1490,7 +1533,7 @@ Build:
     <tr><td>Particles and VFX in the Vulkan renderer</td><td>Games look better with them; not needed to play</td><td>GPU particles with compute, emitters as components: planned in <a href="#particles">12.1</a> for the racing game's tire smoke (2026-11-14), with trails for skid marks (<a href="#trails">12.2</a>)</td></tr>
     <tr><td>Navigation for AI</td><td>Needed for enemies that find their way</td><td>Recast/Detour: navmesh baked in the editor, agents as components: built for the shooter (<a href="#navigation">12.3</a>, 2026-11-16)</td></tr>
     <tr><td>Prefab overrides, nested prefabs</td><td>Basic Apply/Revert covers small games</td><td></td></tr>
-    <tr><td>Root motion, blend trees</td><td>Crossfades cover basic characters</td><td>Animation events were built early, for Erika's steps (6.4's boxes)</td></tr>
+    <tr><td>Root motion, blend trees</td><td>Crossfades cover basic characters</td><td>Animation events were built early, for Erika's steps (6.4's boxes); layers, one-parameter blend states and bone attachments for the shooter's Phase 2.1</td></tr>
     <tr><td>Async asset loading, streaming</td><td>Small games load fast enough</td><td>Loading screens with progress</td></tr>
     <tr><td>Localization</td><td>Text tables keyed by ID</td><td></td></tr>
     <tr><td>Steamworks, achievements</td><td>Only when publishing on Steam</td><td></td></tr>

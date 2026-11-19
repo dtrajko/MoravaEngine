@@ -327,9 +327,13 @@ struct ScriptNativeApi
 	// Play: to the state at once, crossfading for fade seconds. GetState: the current state's name, as Entity_GetName
 	int32_t (*Animator_SetParameter)(uint64_t entity, const char16_t* name, int length, int32_t type, float value);
 	int32_t (*Animator_GetParameter)(uint64_t entity, const char16_t* name, int length, int32_t type, float* out);
-	int32_t (*Animator_Play)(uint64_t entity, const char16_t* state, int length, float fade);
+	// layer: the layer's name ("": the base)
+	int32_t (*Animator_Play)(uint64_t entity, const char16_t* state, int length, const char16_t* layer, int layerLength, float fade);
 	int32_t (*Animator_GetInfo)(uint64_t entity, ScriptAnimatorInfo* out);
-	int32_t (*Animator_GetState)(uint64_t entity, char16_t* buffer, int capacity);
+	// The state's name in the base or a layer: its length, -1 when the buffer is too small, -2 without an animator, -3 no such layer
+	int32_t (*Animator_GetState)(uint64_t entity, const char16_t* layer, int layerLength, char16_t* buffer, int capacity);
+	// A node of the entity's model in the world (Animator.GetBoneTransform): 1, 0 without such a model or node
+	int32_t (*Animator_GetBoneTransform)(uint64_t entity, const char16_t* bone, int length, glm::mat4* out);
 
 	// Game UI (7.1): 0 when the entity has no such component. The text and the files (relative to the project) as
 	// Entity_GetName; an empty font or texture: the engine's font, a plain rectangle

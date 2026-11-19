@@ -611,24 +611,47 @@ namespace Morava
         public void ResetTrigger(string name) => Set(name, TriggerType, 0, "Trigger");
 
         /// <summary>To the state at once, whatever the transitions say, crossfading for fade seconds (0: a cut).</summary>
-        public void Play(string state, float fade = 0.0f)
+        public void Play(string state, float fade = 0.0f) => Play(state, fade, "");
+
+        /// <summary>
+        /// The same in a layer: the state of that layer ("": the base), as an upper body's Reload while the legs walk.
+        /// </summary>
+        public void Play(string state, float fade, string layer)
         {
             int result;
             fixed (char* chars = state)
-                result = Interop.Game->Animator_Play(Entity.Id, chars, state.Length, fade);
-            Check(result, $"state '{state}'");
+            fixed (char* layerChars = layer)
+                result = Interop.Game->Animator_Play(Entity.Id, chars, state.Length, layerChars, layer.Length, fade);
+            Check(result, layer.Length == 0 ? $"state '{state}'" : $"state '{state}' in a layer '{layer}'");
         }
 
         /// <summary>The state it is in ("" when its controller has none, or can't be read).</summary>
-        public string CurrentState
+        public string CurrentState => GetLayerState("");
+
+        /// <summary>The state a layer is in ("": the base, as CurrentState).</summary>
+        public string GetLayerState(string layer)
         {
-            get
-            {
-                char* buffer = stackalloc char[256];
-                int length = Interop.Game->Animator_GetState(Entity.Id, buffer, 256);
-                if (length == -2) throw Missing("animator");
-                return length >= 0 ? new string(buffer, 0, length) : "";
-            }
+            char* buffer = stackalloc char[256];
+            int length;
+            fixed (char* layerChars = layer)
+                length = Interop.Game->Animator_GetState(Entity.Id, layerChars, layer.Length, buffer, 256);
+            if (length == -2) throw Missing("animator");
+            if (length == -3) throw new ArgumentException($"The animator of {Entity} has no layer '{layer}' (see its controller in the Animator panel)");
+            return length >= 0 ? new string(buffer, 0, length) : "";
+        }
+
+        /// <summary>
+        /// A bone (a node of the model: hand_r) in the world, as the frame's pose has it: where a gun's muzzle or a hit is
+        /// (Shooter E3). Its translation is the bone's place, its rotation the bone's.
+        /// </summary>
+        public Matrix4x4 GetBoneTransform(string bone)
+        {
+            Matrix4x4 value;
+            int result;
+            fixed (char* chars = bone)
+                result = Interop.Game->Animator_GetBoneTransform(Entity.Id, chars, bone.Length, &value);
+            if (result == 0) throw new ArgumentException($"The model of {Entity} has no bone '{bone}' (or no animator)");
+            return value;
         }
 
         NativeAnimatorInfo Info

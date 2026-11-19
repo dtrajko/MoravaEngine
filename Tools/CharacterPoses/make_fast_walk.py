@@ -1,5 +1,10 @@
 # Makes the player's fast walk (the shooter's plan, Phase 1: the default pace of WASD, 3 m/s) on the animation library's
-# rig, in Blender without its window. The library's walks are slow (0.9 m/s) and its jog leaves the ground, so this is
+# rig, in Blender without its window, in four directions (Phase 2.1: holding a gun the body faces the look, so it walks
+# forward, back and to each side; PlayerBody blends them by the move's direction). Forward is described below; back is
+# forward played backwards (a step back is a step forward reversed in time); to the sides the feet roll along the
+# character's left-right axis, flat (no heel strike), the trailing foot crossing in front of the other leg and the
+# leading one swinging out behind it (a walk this fast to the side crosses over: side steps that never cross would need
+# about nine a second). The library's walks are slow (0.9 m/s) and its jog leaves the ground, so this is
 # our own: the legs are placed by two-bone IK on feet that roll heel to toe on a ground moving at the walk's speed (no
 # sliding at the speed it is made for), the hips a little lower (longer steps, a soldier's bent knees), one foot always
 # down; the upper body is the library's Walk_Loop on the same timing, upright (the head over the hips), the arms relaxed
@@ -9,7 +14,9 @@
 #       --python Tools/CharacterPoses/make_fast_walk.py -- [--preview <folder>]
 #
 # Reads  Projects/Outpost/Assets/Models/QuaterniusAnimations/UAL1_Standard.glb (the rig, Walk_Loop)
-# Writes Projects/Outpost/Assets/Models/SoldierAnimations/Soldier_Locomotion.glb (the mannequin and Walk_Fast_Loop)
+# Writes Projects/Outpost/Assets/Models/SoldierAnimations/Soldier_Locomotion.glb (the mannequin and Walk_Fast_Loop,
+#        Walk_Fast_Back_Loop, Walk_Fast_Left_Loop, Walk_Fast_Right_Loop: the same length, the left foot landing at the
+#        start of each, so they blend in step)
 #
 # Everything is generated: edits by hand in Blender are lost on the next run. --preview renders the clip's frames from
 # the side and one from the front (Workbench), to check the gait.
@@ -52,6 +59,20 @@ HIP_SWING = 2.2        # the library's pelvis turn and sway, scaled (the hips tu
 # turns back what the hips turned more), then its turn and tilt in the world are scaled down, and the collarbones' too
 CHEST_STEADY = 0.4     # the chest's turn and tilt in the world round the cycle, scaled (the library's walk: 20 and 5 degrees)
 CLAVICLE_SWING = 0.3   # the library's collarbone motion (the shoulders' rise and fall, forward and back), scaled
+
+# The directions: each one's move in the rig's armature space (x the character's left, -y forward), its step (meters; to
+# the side shorter and quicker, so the legs don't straddle: the engine's blend keeps clips of other lengths in step), the
+# stance's middle behind the hips along the move, the heel strike's and the toe-off's angles, and how far each swinging
+# foot arcs out of the other leg's way at the middle of its swing (meters along y: negative in front, positive behind)
+DIRECTIONS = {
+    "Walk_Fast_Loop": {"move": (0.0, -1.0), "step": STEP, "center": CENTER, "heel_strike": HEEL_STRIKE, "toe_off": TOE_OFF,
+                       "arc": {"l": 0.0, "r": 0.0}},
+    "Walk_Fast_Left_Loop": {"move": (1.0, 0.0), "step": 0.70, "center": 0.0, "heel_strike": 0.0, "toe_off": 25.0,
+                            "arc": {"l": 0.10, "r": -0.12}},
+    "Walk_Fast_Right_Loop": {"move": (-1.0, 0.0), "step": 0.70, "center": 0.0, "heel_strike": 0.0, "toe_off": 25.0,
+                             "arc": {"l": -0.12, "r": 0.10}},
+}
+BACK = "Walk_Fast_Back_Loop"  # Walk_Fast_Loop played backwards
 
 ARM_BONES = ["upperarm_l", "upperarm_r"]
 CLAVICLES = ["clavicle_l", "clavicle_r"]
@@ -181,39 +202,43 @@ class Foot:
         self.ball = ball.translation - foot.translation                   # the ball's joint from the ankle, flat
         self.heel = Vector((0.0, 0.055, -self.height))                    # the heel's ground point from the ankle
 
-    def at(self, phase, cycle_seconds):
-        """(ankle, foot rotation, ball rotation or None to follow the foot, what it stands on: "heel", "flat", "ball" or None)"""
+    def at(self, phase, cycle_seconds, direction):
+        """(ankle, foot rotation, ball rotation or None to follow the foot, what it stands on: "heel", "flat", "ball" or
+        None), walking in a direction of DIRECTIONS"""
         ground_speed = SPEED
         stance_length = ground_speed * STANCE * cycle_seconds
-        strike_y = CENTER - stance_length * 0.5
+        move = Vector((direction["move"][0], direction["move"][1], 0.0))
+        heel_strike, toe_off = direction["heel_strike"], direction["toe_off"]
         phase %= 1.0
         if phase < STANCE:
-            # On the ground, moving back with it: rolls from the heel, flat, then up onto the ball
-            flat = Vector((self.x, strike_y + ground_speed * phase * cycle_seconds, self.height))
-            if phase < HEEL_DOWN:
-                angle = HEEL_STRIKE * (1.0 - smooth(phase / HEEL_DOWN))
+            # On the ground, moving back with it (against the move): rolls from the heel, flat, then up onto the ball
+            base = Vector((self.x, 0.0, self.height)) - move * direction["center"]
+            flat = base + move * (stance_length * 0.5 - ground_speed * phase * cycle_seconds)
+            if phase < HEEL_DOWN and heel_strike > 0.0:
+                angle = heel_strike * (1.0 - smooth(phase / HEEL_DOWN))
                 pivot = flat + self.heel
                 ankle = pivot + (pitch(angle).to_3x3() @ (flat - pivot))
                 return ankle, pitch(angle).to_quaternion() @ self.rotation, None, "heel"
             if phase < HEEL_RISE:
                 return flat, self.rotation, None, "flat"
             t = (phase - HEEL_RISE) / (STANCE - HEEL_RISE)
-            angle = -TOE_OFF * smooth(t) ** 1.3
+            angle = -toe_off * smooth(t) ** 1.3
             pivot = flat + self.ball
             ankle = pivot + (pitch(angle).to_3x3() @ (flat - pivot))
             return ankle, pitch(angle).to_quaternion() @ self.rotation, self.ball_rotation, "ball"
         # In the air: from where the toes left to where the heel lands, the toes coming up on the way
         t = (phase - STANCE) / (1.0 - STANCE)
-        leave, leave_rotation, _, _ = self.at(STANCE - 1e-6, cycle_seconds)
-        land, land_rotation, _, _ = self.at(0.0, cycle_seconds)
+        leave, leave_rotation, _, _ = self.at(STANCE - 1e-6, cycle_seconds, direction)
+        land, land_rotation, _, _ = self.at(0.0, cycle_seconds, direction)
         s = minimum_jerk(t)
         ankle = leave.lerp(land, s)
+        ankle.y += direction["arc"][self.side] * math.sin(math.pi * t)  # out of the other leg's way
         # Height: down from the toe-off's quickly, a low clearance over the ground through the middle (a walk keeps the
         # swinging foot low; a high knee is a march), up to the heel strike's at the end
         ankle.z = (self.height + LIFT * math.sin(math.pi * t)
                    + (leave.z - self.height) * (1.0 - smooth(t / 0.45))
                    + (land.z - self.height) * smooth((t - 0.6) / 0.4))
-        angle_leave, angle_land = -TOE_OFF, HEEL_STRIKE
+        angle_leave, angle_land = -toe_off, heel_strike
         # Quickly out of the toe-off, level in the middle, the toes up for the strike at the end
         if t < 0.35:
             angle = angle_leave * (1.0 - smooth(t / 0.35))
@@ -260,6 +285,132 @@ def elbow_axis(armature, side):
     pb.matrix_basis = base
     update()
     return best[1], best[2]
+
+
+def resample(poses, count):
+    """A looped cycle of poses (bone name to matrix_basis) at another number of frames: each bone's place lerped and its
+    turn slerped between the two nearest frames"""
+    result = []
+    for f in range(count):
+        at = f * len(poses) / count
+        a, t = int(at), at - int(at)
+        p0, p1 = poses[a % len(poses)], poses[(a + 1) % len(poses)]
+        pose = {}
+        for name in p0:
+            l0, r0, s0 = p0[name].decompose()
+            l1, r1, s1 = p1[name].decompose()
+            pose[name] = Matrix.LocRotScale(l0.lerp(l1, t), r0.slerp(r1, t), s0.lerp(s1, t))
+        result.append(pose)
+    return result
+
+
+def build_direction(armature, clip, direction, bodies, sources, feet, offsets, frames, cycle_seconds, speed, thigh_length,
+                    calf_length):
+    """One direction's frames: the upper body's (bodies), the hips' height as the legs reach, the legs by IK onto the
+    feet's paths; each frame's local pose"""
+    # The hips' height, frame by frame: as high as both legs reach (within STRETCH), never above the library's walk
+    # less KNEES (a soldier's bent knees), smoothed round the cycle (never above what reaches): the hips rise over
+    # the standing leg and come down as the steps are long, as a walk's do, without a run's bounce
+    pelvis_z = -math.inf  # the library's hips at their highest (over the standing leg)
+    for f in range(frames):
+        set_pose(armature, sources[f])
+        update()
+        pelvis_z = max(pelvis_z, armature.pose.bones["pelvis"].matrix.translation.z)
+    reach = (thigh_length + calf_length) * STRETCH
+    allowed = []
+    for f in range(frames):
+        set_pose(armature, bodies[f])
+        update()
+        phase = f / frames
+        pelvis_now = armature.pose.bones["pelvis"].matrix.translation.z
+        highest = pelvis_z - KNEES
+        for side in "lr":
+            ankle = feet[side].at(phase + offsets[side], cycle_seconds, direction)[0]
+            hip = armature.pose.bones[f"thigh_{side}"].matrix.translation
+            horizontal = Vector((ankle.x - hip.x, ankle.y - hip.y)).length
+            vertical = math.sqrt(max(0.0, reach * reach - horizontal * horizontal))
+            highest = min(highest, ankle.z + vertical - (hip.z - pelvis_now))
+        allowed.append(highest)
+    ceiling = min(allowed) + BOB  # the rise over the standing leg held to a walk's (more is a run's bounce)
+    allowed = [min(a, ceiling) for a in allowed]
+    heights = list(allowed)
+    for _ in range(3):
+        heights = [min(allowed[i], (heights[i - 1] + 2.0 * heights[i] + heights[(i + 1) % frames]) * 0.25)
+                   for i in range(frames)]
+    print(f"{clip}: {frames} frames ({cycle_seconds:.3f} s a cycle, {2.0 / cycle_seconds:.2f} steps a second), "
+          f"steps of {direction['step']:.2f} m, {speed:.2f} m/s; hips {pelvis_z - max(heights):.3f} to {pelvis_z - min(heights):.3f} m "
+          f"lower than the library's walk (a bob of {(max(heights) - min(heights)) * 100:.1f} cm)")
+
+    poses = []
+    contacts = {"l": [], "r": []}
+    stretched_frames = 0
+    closest = math.inf  # the ankles' nearest approach (the crossing steps keep the legs apart)
+    for f in range(frames):
+        phase = f / frames
+        pose = dict(bodies[f])
+        set_pose(armature, pose)
+        update()
+        # The pelvis's height in armature space: its matrix_basis moves it in the bone's own axes, so set the matrix
+        pb = armature.pose.bones["pelvis"]
+        m = pb.matrix.copy()
+        m.translation.z = heights[f]
+        pb.matrix = m
+        update()
+        ankles = {}
+        for side in "lr":
+            ankle, foot_rotation, ball_rotation, down = feet[side].at(phase + offsets[side], cycle_seconds, direction)
+            ankles[side] = ankle
+            hip = armature.pose.bones[f"thigh_{side}"].matrix.translation.copy()
+            knee, stretched = knee_place(hip, ankle, thigh_length, calf_length, side)
+            stretched_frames += 1 if stretched else 0
+            aim_bone(armature, f"thigh_{side}", knee - hip)
+            knee_now = armature.pose.bones[f"calf_{side}"].matrix.translation.copy()
+            aim_bone(armature, f"calf_{side}", ankle - knee_now)
+            place_bone(armature, f"foot_{side}", foot_rotation)
+            # The toes flat on the ground while the heel is up; else they follow the foot as in the flat pose
+            foot_flat_to_ball = feet[side].rotation.inverted() @ feet[side].ball_rotation
+            place_bone(armature, f"ball_{side}", ball_rotation if ball_rotation is not None else foot_rotation @ foot_flat_to_ball)
+            if down:
+                foot = armature.pose.bones[f"foot_{side}"].matrix
+                heel = foot.translation + foot.to_quaternion() @ (feet[side].rotation.inverted() @ feet[side].heel)
+                ball = armature.pose.bones[f"ball_{side}"].matrix.translation
+                contacts[side].append((f, down, heel.copy(), ball.copy()))
+        closest = min(closest, (ankles["l"] - ankles["r"]).length)
+        poses.append(local_pose(armature))
+
+    # The feet on the ground move against the move at the walk's speed: the point each stands on (the heel's ground point
+    # rolling down and flat, the ball's joint on the toes), frame to frame
+    ground = -Vector((direction["move"][0], direction["move"][1], 0.0)) * SPEED
+    worst = 0.0
+    for side in "lr":
+        points = contacts[side]
+        for (f0, _, h0, b0), (f1, kind, h1, b1) in zip(points, points[1:]):
+            if f1 != f0 + 1:
+                continue
+            moved = (b1 - b0) if kind == "ball" else (h1 - h0)
+            worst = max(worst, (moved * FPS - ground).length)
+    print(f"{clip}: the feet on the ground off the walk's speed by at most {worst:.2f} m/s; "
+          f"{stretched_frames} leg frames at the IK's full stretch; the ankles {closest * 100:.0f} cm apart at the closest")
+    return poses
+
+
+def bake(armature, clip, poses):
+    """Location and rotation of every bone, frame by frame, the loop closed by the first frame again"""
+    action = bpy.data.actions.new(clip)
+    armature.animation_data.action = action
+    for f, pose in enumerate(poses + [poses[0]]):
+        for pb in armature.pose.bones:
+            loc, quat, scale = pose[pb.name].decompose()
+            pb.rotation_mode = "QUATERNION"
+            pb.location = loc
+            pb.rotation_quaternion = quat
+            pb.scale = scale
+            pb.keyframe_insert("location", frame=f)
+            pb.keyframe_insert("rotation_quaternion", frame=f)
+            pb.keyframe_insert("scale", frame=f)
+    action.use_fake_user = True
+    armature.animation_data.action = None
+    return action
 
 
 def main():
@@ -375,121 +526,29 @@ def main():
         update()
         bodies[f]["spine_01"] = spine.matrix_basis.copy()
 
-    # The hips' height, frame by frame: as high as both legs reach (within STRETCH), never above the library's walk
-    # less KNEES (a soldier's bent knees), smoothed round the cycle (never above what reaches): the hips rise over
-    # the standing leg and come down as the steps are long, as a walk's do, without a run's bounce
-    pelvis_z = -math.inf  # the library's hips at their highest (over the standing leg)
-    for f in range(frames):
-        set_pose(armature, sources[f])
-        update()
-        pelvis_z = max(pelvis_z, armature.pose.bones["pelvis"].matrix.translation.z)
-    reach = (thigh_length + calf_length) * STRETCH
-    allowed = []
-    for f in range(frames):
-        set_pose(armature, bodies[f])
-        update()
-        phase = f / frames
-        pelvis_now = armature.pose.bones["pelvis"].matrix.translation.z
-        highest = pelvis_z - KNEES
-        for side in "lr":
-            ankle = feet[side].at(phase + offsets[side], cycle_seconds)[0]
-            hip = armature.pose.bones[f"thigh_{side}"].matrix.translation
-            horizontal = Vector((ankle.x - hip.x, ankle.y - hip.y)).length
-            vertical = math.sqrt(max(0.0, reach * reach - horizontal * horizontal))
-            highest = min(highest, ankle.z + vertical - (hip.z - pelvis_now))
-        allowed.append(highest)
-    ceiling = min(allowed) + BOB  # the rise over the standing leg held to a walk's (more is a run's bounce)
-    allowed = [min(a, ceiling) for a in allowed]
-    heights = list(allowed)
-    for _ in range(3):
-        heights = [min(allowed[i], (heights[i - 1] + 2.0 * heights[i] + heights[(i + 1) % frames]) * 0.25)
-                   for i in range(frames)]
-    print(f"{CLIP}: {frames} frames ({cycle_seconds:.3f} s a cycle, {2.0 / cycle_seconds:.2f} steps a second), "
-          f"steps of {STEP:.2f} m, {speed:.2f} m/s; hips {pelvis_z - max(heights):.3f} to {pelvis_z - min(heights):.3f} m "
-          f"lower than the library's walk (a bob of {(max(heights) - min(heights)) * 100:.1f} cm)")
+    clips = {}
+    for clip, direction in DIRECTIONS.items():
+        # The direction's cycle: two of its steps at the walk's speed; the upper body's frames resampled to it
+        clip_frames = max(8, round(2.0 * direction["step"] / SPEED * FPS))
+        clip_seconds = clip_frames / FPS
+        clip_bodies = bodies if clip_frames == frames else resample(bodies, clip_frames)
+        clip_sources = sources if clip_frames == frames else resample(sources, clip_frames)
+        clips[clip] = build_direction(armature, clip, direction, clip_bodies, clip_sources, feet, offsets, clip_frames,
+                                      clip_seconds, 2.0 * direction["step"] / clip_seconds, thigh_length, calf_length)
+    # Back: forward reversed in time (its frame f is forward's frame -f: the left foot down at the start, as in the others)
+    forward = clips["Walk_Fast_Loop"]
+    clips[BACK] = [forward[(frames - f) % frames] for f in range(frames)]
+    print(f"{BACK}: Walk_Fast_Loop played backwards, {frames} frames")
+    frames = {clip: len(poses) for clip, poses in clips.items()}
 
-    def shoulder_motion(pose_of):
-        turns, tilts = [], []
-        for f in range(frames):
-            set_pose(armature, pose_of(f))
-            update()
-            line = armature.pose.bones["upperarm_l"].matrix.translation - armature.pose.bones["upperarm_r"].matrix.translation
-            turns.append(math.degrees(math.atan2(line.y, line.x)))
-            tilts.append(math.degrees(math.atan2(line.z, line.x)))
-        return max(turns) - min(turns), max(tilts) - min(tilts)
-
-    library_turn, library_tilt = shoulder_motion(lambda f: sources[f])
-    turn, tilt = shoulder_motion(lambda f: bodies[f])
-    print(f"{CLIP}: the shoulders turn {turn:.1f} and tilt {tilt:.1f} degrees round the cycle (the library's walk: "
-          f"{library_turn:.1f} and {library_tilt:.1f})")
-
-    action = bpy.data.actions.new(CLIP)
-    poses = []
-    contacts = {"l": [], "r": []}
-    stretched_frames = 0
-    for f in range(frames):
-        phase = f / frames
-        pose = dict(bodies[f])
-        set_pose(armature, pose)
-        update()
-        # The pelvis's height in armature space: its matrix_basis moves it in the bone's own axes, so set the matrix
-        pb = armature.pose.bones["pelvis"]
-        m = pb.matrix.copy()
-        m.translation.z = heights[f]
-        pb.matrix = m
-        update()
-        for side in "lr":
-            ankle, foot_rotation, ball_rotation, down = feet[side].at(phase + offsets[side], cycle_seconds)
-            hip = armature.pose.bones[f"thigh_{side}"].matrix.translation.copy()
-            knee, stretched = knee_place(hip, ankle, thigh_length, calf_length, side)
-            stretched_frames += 1 if stretched else 0
-            aim_bone(armature, f"thigh_{side}", knee - hip)
-            knee_now = armature.pose.bones[f"calf_{side}"].matrix.translation.copy()
-            aim_bone(armature, f"calf_{side}", ankle - knee_now)
-            place_bone(armature, f"foot_{side}", foot_rotation)
-            # The toes flat on the ground while the heel is up; else they follow the foot as in the flat pose
-            foot_flat_to_ball = feet[side].rotation.inverted() @ feet[side].ball_rotation
-            place_bone(armature, f"ball_{side}", ball_rotation if ball_rotation is not None else foot_rotation @ foot_flat_to_ball)
-            if down:
-                foot = armature.pose.bones[f"foot_{side}"].matrix
-                heel = foot.translation + foot.to_quaternion() @ (feet[side].rotation.inverted() @ feet[side].heel)
-                ball = armature.pose.bones[f"ball_{side}"].matrix.translation
-                contacts[side].append((f, down, heel.copy(), ball.copy()))
-        poses.append(local_pose(armature))
-
-    # The feet on the ground move back at the walk's speed: the point each stands on (the heel's ground point rolling
-    # down and flat, the ball's joint on the toes), frame to frame
-    worst = 0.0
-    for side in "lr":
-        points = contacts[side]
-        for (f0, _, h0, b0), (f1, kind, h1, b1) in zip(points, points[1:]):
-            if f1 != f0 + 1:
-                continue
-            moved = (b1 - b0) if kind == "ball" else (h1 - h0)
-            worst = max(worst, (moved * FPS - Vector((0.0, SPEED, 0.0))).length)
-    print(f"{CLIP}: the feet on the ground off the walk's speed by at most {worst:.2f} m/s; "
-          f"{stretched_frames} leg frames at the IK's full stretch")
-
-    # Baked: location and rotation of every bone, frame by frame, the loop closed by the first frame again
-    armature.animation_data.action = action
-    for f, pose in enumerate(poses + [poses[0]]):
-        for pb in armature.pose.bones:
-            loc, quat, scale = pose[pb.name].decompose()
-            pb.rotation_mode = "QUATERNION"
-            pb.location = loc
-            pb.rotation_quaternion = quat
-            pb.scale = scale
-            pb.keyframe_insert("location", frame=f)
-            pb.keyframe_insert("rotation_quaternion", frame=f)
-            pb.keyframe_insert("scale", frame=f)
-    action.use_fake_user = True
-    armature.animation_data.action = None
-
-    if preview:
-        render_preview(preview, armature, poses)
+    actions = []
+    for clip, poses in clips.items():
+        actions.append(bake(armature, clip, poses))
+        if preview:
+            render_preview(preview, armature, poses, clip)
 
     for a in list(bpy.data.actions):
-        if a != action:
+        if a not in actions:
             bpy.data.actions.remove(a)
     for pb in armature.pose.bones:
         pb.matrix_basis = Matrix.Identity(4)
@@ -505,10 +564,10 @@ def main():
     bpy.ops.export_scene.gltf(filepath=OUTPUT, export_format="GLB", export_animations=True,
                               export_animation_mode="ACTIONS", export_force_sampling=True, export_skins=True,
                               export_yup=True)
-    print(f"Wrote {OUTPUT}: {CLIP}, {frames} frames, {speed:.2f} m/s")
+    print(f"Wrote {OUTPUT}: " + ", ".join(f"{clip} ({count} frames)" for clip, count in frames.items()) + f"; {SPEED:.2f} m/s")
 
 
-def render_preview(folder, armature, poses):
+def render_preview(folder, armature, poses, clip):
     os.makedirs(folder, exist_ok=True)
     scene = bpy.context.scene
     scene.render.engine = "BLENDER_WORKBENCH"
@@ -532,9 +591,10 @@ def render_preview(folder, armature, poses):
                 continue
             camera.location = location
             camera.rotation_euler = rotation
-            scene.render.filepath = os.path.join(folder, f"{CLIP}_{view}_{f:02d}.png")
+            scene.render.filepath = os.path.join(folder, f"{clip}_{view}_{f:02d}.png")
             bpy.ops.render.render(write_still=True)
     bpy.data.objects.remove(bpy.data.objects["Plane"])
+    bpy.data.objects.remove(camera)
 
 
 main()

@@ -7,26 +7,22 @@ namespace Outpost
     /// <summary>The body's numbers: how fast it turns, and the speed each moving clip covers at its own pace.</summary>
     public sealed class PlayerBodySettings
     {
-        /// <summary>Degrees per second the body turns towards where it moves (or where it looks, standing).</summary>
-        public float TurnSpeed = 600.0f;
-
-        /// <summary>Standing, the body turns to the look once the look is this many degrees away from it.</summary>
-        public float StandingTurnAngle = 80.0f;
+        /// <summary>Degrees per second the body turns to face the look (it holds the rifle: it walks every way, aiming).</summary>
+        public float TurnSpeed = 720.0f;
 
         /// <summary>
         /// Meters per second each clip covers at its own pace (measured from the UAL1 clips' feet; the runs have a flight
-        /// phase the measure misses, so they are set a little higher; the fast walk is our own, made for 3 m/s by
+        /// phase the measure misses, so they are set a little higher; the walks every way are our own, made for 3 m/s by
         /// Tools/CharacterPoses/make_fast_walk.py). The play rate is the speed over this.
         /// </summary>
-        public float WalkClipSpeed = 0.95f, WalkFastClipSpeed = 3.0f, RunClipSpeed = 3.0f, SprintClipSpeed = 4.2f;
+        public float MoveClipSpeed = 3.0f, RunClipSpeed = 3.0f, SprintClipSpeed = 4.2f;
         public float CrouchClipSpeed = 0.7f;
 
         /// <summary>
-        /// Meters per second between the states: slower than WalkFastFrom the walk (starting, stopping), faster than RunFrom
-        /// the jog (only between the fast walk and the sprint, speeding up or slowing down), faster than SprintFrom the
-        /// sprint (while sprinting).
+        /// Meters per second between the states: faster than RunFrom the jog (only between the fast walk and the sprint,
+        /// speeding up or slowing down), faster than SprintFrom the sprint (while sprinting).
         /// </summary>
-        public float WalkFastFrom = 1.3f, RunFrom = 4.0f, SprintFrom = 5.0f;
+        public float RunFrom = 4.0f, SprintFrom = 5.0f;
 
         /// <summary>The play rate's limits: faster than MaxRate the clip looks hurried, so the feet slide a little instead.</summary>
         public float MinRate = 0.6f, MaxRate = 2.0f;
@@ -42,32 +38,35 @@ namespace Outpost
     }
 
     /// <summary>
-    /// The player's body (docs/games/Shooter_Plan.html, Phase 1.2): the model and its animator, the same in both views (the
-    /// guards see and hit the same body whichever view the player chose). It shows what the motor does: idle, the fast
-    /// walk (the default pace), the walk (walking quietly), the jog (between the fast walk and the sprint), sprint,
-    /// crouched idle and walk, falling and landing, played at the rate the speed asks for; it turns to where it moves, and
-    /// standing, to where the player looks once that is far enough round. Only presentation: it never changes the
-    /// movement.
+    /// The player's body (docs/games/Shooter_Plan.html, Phases 1.2 and 2.1): the model and its animator, the same in both
+    /// views (the guards see and hit the same body whichever view the player chose), and the rifle in its right hand (a
+    /// child on the hand's bone: E3). It shows what the motor does: idle, walking every way (the fast walk and walking
+    /// quietly: Move, blended by the move's direction), the jog (between the fast walk and the sprint), sprint, crouched
+    /// idle and walk, falling and landing, played at the rate the speed asks for. Holding the rifle it faces the look, and
+    /// its upper body (Player.manim's UpperBody layer: E5) aims where the camera looks, lowered while sprinting. Only
+    /// presentation: it never changes the movement.
     /// </summary>
     public sealed class PlayerBody
     {
         readonly Entity body;
         readonly Animator? animator;
-        readonly Model? model;
+        readonly Model? model, gun;
         readonly PlayerBodySettings settings;
         string state = "";
         float speed;        // horizontal, smoothed
         float airTime;      // seconds off the ground
         float landing;      // seconds of the landing left
         bool jumped;        // since the jump (or a fall) until the landing
-        bool turningToLook; // standing: turning on the spot until it faces the look
+        bool sprinting;     // the UpperBody layer's: the rifle lowered
 
-        public PlayerBody(Entity body, PlayerBodySettings settings)
+        /// <summary>gun: the rifle in the body's hand (a child on its bone), hidden with the body.</summary>
+        public PlayerBody(Entity body, PlayerBodySettings settings, Entity? gun = null)
         {
             this.body = body;
             this.settings = settings;
             animator = body.GetComponent<Animator>();
             model = body.GetComponent<Model>();
+            this.gun = gun?.GetComponent<Model>();
             if (animator == null)
                 Log.Warn($"{body.Name}: no Animator, the body won't move its limbs");
         }
@@ -81,7 +80,7 @@ namespace Outpost
         /// <summary>The body's heading in degrees (0: it faces +Z, the model's front).</summary>
         public float Heading => body.EulerAngles.Y;
 
-        /// <summary>Hidden from the main view (first person: only its shadow is seen). False without a Model.</summary>
+        /// <summary>Hidden from the main view, with the gun in its hand (first person: only their shadows are seen). False without a Model.</summary>
         public bool HiddenInMainView
         {
             get => model != null && model.HiddenInMainView;
@@ -89,11 +88,13 @@ namespace Outpost
             {
                 if (model != null && model.HiddenInMainView != value)
                     model.HiddenInMainView = value;
+                if (gun != null && gun.HiddenInMainView != value)
+                    gun.HiddenInMainView = value;
             }
         }
 
-        /// <summary>Standing, turn to face the look (a switch to third person: the camera then sees its back, not its face).</summary>
-        public void FaceLook() => turningToLook = true;
+        /// <summary>The move's direction from where the body faces, degrees (0 ahead, 90 right, ±180 back): MoveAngle.</summary>
+        public float MoveAngle { get; private set; }
 
         /// <summary>The motor jumped (from the fixed step): the body leaves the ground at once.</summary>
         public void OnJumped() => jumped = true;
@@ -108,8 +109,8 @@ namespace Outpost
             jumped = false;
         }
 
-        /// <summary>Each frame: velocity (meters per second, the world's), lookYaw (the command's, degrees).</summary>
-        public void Update(float dt, Vector3 velocity, bool grounded, bool crouched, bool walking, bool sprinting, float lookYaw)
+        /// <summary>Each frame: velocity (meters per second, the world's), the look (the command's yaw and pitch, degrees).</summary>
+        public void Update(float dt, Vector3 velocity, bool grounded, bool crouched, bool walking, bool sprinting, float lookYaw, float lookPitch)
         {
             float horizontal = new Vector2(velocity.X, velocity.Z).Length();
             speed += (horizontal - speed) * MathF.Min(1.0f, 12.0f * dt);
@@ -118,7 +119,15 @@ namespace Outpost
                 jumped = true; // in the air long enough to fall: the landing is waited for, as after a jump
             landing = MathF.Max(0.0f, landing - dt);
 
-            Turn(dt, velocity, horizontal, lookYaw);
+            Turn(dt, lookYaw);
+            // Where it moves, from where it faces (the model faces +Z at heading 0; right of it is -X turned by the heading)
+            if (horizontal > 0.05f)
+            {
+                float heading = body.EulerAngles.Y * MathF.PI / 180.0f;
+                Vector3 forward = new Vector3(MathF.Sin(heading), 0.0f, MathF.Cos(heading));
+                Vector3 right = new Vector3(-MathF.Cos(heading), 0.0f, MathF.Sin(heading));
+                MoveAngle = MathF.Atan2(Vector3.Dot(velocity, right), Vector3.Dot(velocity, forward)) * 180.0f / MathF.PI;
+            }
 
             // The state: from the motor's, the speed it really has deciding between standing and moving (a wall stops it)
             string wanted;
@@ -134,25 +143,20 @@ namespace Outpost
             }
             else if (speed < 0.3f)
                 wanted = "Idle";
-            else if (walking || speed < settings.WalkFastFrom)
-            {
-                wanted = "Walk";
-                clipSpeed = settings.WalkClipSpeed;
-            }
             else if (sprinting && speed > settings.SprintFrom)
             {
                 wanted = "Sprint";
                 clipSpeed = settings.SprintClipSpeed;
             }
-            else if (speed > settings.RunFrom)
+            else if (!walking && speed > settings.RunFrom)
             {
                 wanted = "Run";
                 clipSpeed = settings.RunClipSpeed;
             }
             else
             {
-                wanted = "WalkFast";
-                clipSpeed = settings.WalkFastClipSpeed;
+                wanted = "Move"; // the fast walk or walking quietly, every way
+                clipSpeed = settings.MoveClipSpeed;
             }
 
             if (animator == null)
@@ -162,6 +166,14 @@ namespace Outpost
             }
             if (clipSpeed > 0.0f)
                 animator.SetFloat("Rate", Math.Clamp(speed / clipSpeed, settings.MinRate, settings.MaxRate));
+            animator.SetFloat("MoveAngle", MoveAngle);
+            animator.SetFloat("AimPitch", lookPitch);
+            bool lowered = wanted == "Sprint" || wanted == "Run";
+            if (lowered != this.sprinting)
+            {
+                this.sprinting = lowered;
+                animator.SetBool("Sprinting", lowered);
+            }
             if (wanted != state)
             {
                 float fade = wanted == "Fall" ? 0.15f : state == "Fall" || wanted == "Land" ? 0.1f : 0.2f;
@@ -170,27 +182,11 @@ namespace Outpost
             }
         }
 
-        // Moving: towards where it goes. Standing: towards the look once it is StandingTurnAngle away (a turn on the spot)
-        void Turn(float dt, Vector3 velocity, float horizontal, float lookYaw)
+        // Towards the look, at TurnSpeed (holding the rifle it faces where it aims, moving any way)
+        void Turn(float dt, float lookYaw)
         {
             float current = body.EulerAngles.Y;
-            float target;
-            if (horizontal > 0.5f)
-            {
-                target = MathF.Atan2(velocity.X, velocity.Z) * 180.0f / MathF.PI; // the model faces +Z at heading 0
-                turningToLook = false;
-            }
-            else
-            {
-                target = lookYaw + 180.0f; // the look's yaw faces -Z at 0
-                float away = MathF.Abs(DeltaAngle(current, target));
-                if (away >= settings.StandingTurnAngle)
-                    turningToLook = true;
-                else if (away < 1.0f)
-                    turningToLook = false;
-                if (!turningToLook)
-                    return;
-            }
+            float target = lookYaw + 180.0f; // the look's yaw faces -Z at 0, the model +Z
             float delta = DeltaAngle(current, target);
             float step = settings.TurnSpeed * dt;
             float heading = current + Math.Clamp(delta, -step, step);

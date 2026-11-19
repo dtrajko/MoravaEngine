@@ -787,6 +787,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>Hitboxes: capsules and boxes on bones, on a <b>Hitbox</b> physics layer: kinematic, moved to the bones each step,
       only hit by shot rays. A hit tells which part (head, chest, limb) for damage multipliers.</li>
     <li>C#: <code>Animator.GetBoneTransform(name)</code>, for the muzzle in third person and for effects.</li>
+    <li>Built in Phase 2.1 (its box below): the Bone Attachment and <code>GetBoneTransform</code>. The hitboxes (E4) come
+      with the guards (Phase 5).</li>
   </ul>
   <h3>E5 Animation layers and aim offset</h3>
   <ul>
@@ -796,6 +798,9 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       the gun where the camera or the guard looks.</li>
     <li>A 1D blend for locomotion (idle, walk, run by speed) instead of crossfades only. Blend trees in general stay in
       "Later" unless needed.</li>
+    <li>Built in Phase 2.1 (its box below): layers with masks and weights, and blend states of one parameter. The aim is
+      blended up and down by the look's pitch; left and right need no poses, as the body holding a gun faces the look
+      (the player's: walking every way by a blend of the move's direction).</li>
   </ul>
   <h3>E6 Decals</h3>
   <ul>
@@ -1207,6 +1212,43 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       sounds; the gun in the body's hands (E3) and the upper body aiming (E5).</li>
     <li>Damage, and targets to shoot (dummies) in the greybox.</li>
   </ul>
+  <p>In five steps, one PR each (2026-11-19), the engine's pieces first so the shooting has the real muzzle in both views:
+    <b>2.1</b> the gun in the body's hands and the upper body aiming (E3, E5), and the walks every way that holding a gun
+    needs; <b>2.2</b> the rifle fires: the weapon data files, the hit test, damage, recoil and spread, ammo and reloading,
+    its sounds, dummies to shoot; <b>2.3</b> the effects: lights in C# (E8), decals (E6), the muzzle flash, tracers, impacts;
+    <b>2.4</b> the pistol and the knife, switching, aiming down the sights; <b>2.5</b> the sniper rifle and its scope (E10).</p>
+  <div class="box ok"><b>As built: 2.1 the gun in the hands, the upper body aiming, walking every way (E3, E5; 2026-11-19)</b>
+    <ul>
+      <li><b>E5 in the engine</b> (the runtime guide's 6.4 box): animator layers (their own states and transitions, a mask
+        of nodes with what is under them, a weight times a parameter) over the base, and blend states (clips blended by a
+        Float parameter between their thresholds, played in step at the same fraction of their lengths). The Animator panel
+        edits both (the Layer combo; a state's Blend).</li>
+      <li><b>E3 in the engine</b>: the Bone Attachment component (an entity follows a bone of its parent's model; its
+        transform an offset in the bone's space), in the game and in the editor's preview; the Inspector attaches keeping
+        the entity's place. C#: <code>Animator.Play(state, fade, layer)</code>, <code>GetLayerState</code>,
+        <code>GetBoneTransform</code>.</li>
+      <li><b>The walks every way</b> (the user chose our own clips over a torso twisted toward the look or feet sliding):
+        <code>make_fast_walk.py</code> makes four, the left foot landing at the start of each so they blend in step.
+        Forward as before; back is forward played backwards; to the sides the feet roll along the hips' line, flat, the
+        trailing foot crossing in front of the other leg and the leading one behind it, with shorter and quicker steps
+        (0.7 m, 4.3 a second: a meter's sidestep straddled the legs and sank the hips 22 cm).</li>
+      <li><b>The player</b>: <code>Player.manim</code>'s base has <i>Move</i>, the four walks blended by <i>MoveAngle</i>
+        (the move's direction from where the body faces), for the fast walk and walking quietly; its <i>UpperBody</i> layer
+        (from <code>spine_01</code> up) aims the rifle by <i>AimPitch</i> (the rifle clips' up, ahead and down poses) and
+        lowers it to the ready while sprinting or jogging. <code>PlayerBody</code> faces the look; Greybox's body has the
+        rifle on its right hand (<i>Rifle</i>, the Player's <i>BodyGun</i>), hidden with the body in first person. Its
+        offset in <code>hand_r</code>'s space (-0.03, 0.066, 0.001) was taken from the view model's rifle in the aim pose,
+        and matches what the rifle poses' script prints.</li>
+      <li><b>Limits</b>: crouched, the body faces the look too and plays the library's forward crouch walk, so the feet
+        slide when it moves sideways or back crouched (crouched walks every way: with the guards' animations, Phase 5).
+        The upper body takes the rifle pose's spine, so a crouch's forward lean and the walk's chest sway are the rifle
+        pose's. The jog and the sprint are forward only, as the motor sprints only forward.</li>
+      <li><b>Checked</b>: the animation self-test; the test copy 34/34 (the body ahead, back and sideways by its move angle
+        facing the look, the rifle aimed and lowered, the rifle in the hand); a capture from the side with the rifle in
+        both hands at the cheek while the look's pitch sweeps; the content check scene's 16 animators; no validation
+        messages; GCC clean on the changed files.</li>
+    </ul>
+  </div>
   <h3>Phase 3: health, pickups and the HUD</h3>
   <ul>
     <li>Health and armor, health packs, vests, ammo boxes; death and restart.</li>

@@ -122,6 +122,46 @@ namespace AnimationSelfTest
 			}
 		}
 
+		// A layer's mask (a node with everything under it) and a blend over it: the nodes outside keep the pose under it
+		std::vector<uint8_t> mask;
+		skeleton.GetMask({ "Bone" }, mask);
+		if (mask.size() != 2 || mask[0] != 0 || mask[1] != 1)
+		{
+			return fail("a mask from a node down");
+		}
+		skeleton.GetMask({}, mask);
+		if (mask[0] != 1 || mask[1] != 1)
+		{
+			return fail("a mask without nodes is all of them");
+		}
+		skeleton.GetMask({ "Root" }, mask);
+		if (mask[0] != 1 || mask[1] != 1)
+		{
+			return fail("a mask takes the nodes under its node");
+		}
+		AnimationPose layered = start;
+		skeleton.GetMask({ "Bone" }, mask);
+		AnimationSampling::BlendPosesMasked(layered, end, 0.5f, mask, skeleton);
+		if (!Near(layered.Nodes[1].Translation, half.Nodes[1].Translation) || layered.Animated[0])
+		{
+			return fail("a layer's blend over its mask");
+		}
+		AnimationPose bindOnly;
+		skeleton.GetBindPose(bindOnly);
+		layered = start;
+		AnimationSampling::BlendPosesMasked(layered, bindOnly, 1.0f, mask, skeleton);
+		if (!Near(layered.Nodes[1].Translation, start.Nodes[1].Translation))
+		{
+			return fail("a node the layer's clip doesn't key keeps the pose under it");
+		}
+
+		// A node's place in the model (an attachment's bone): its parents' and its own
+		if (!Near(glm::vec3(skeleton.GetNodeTransform(AnimationPose(), 1)[3]), glm::vec3(0.0f, 1.0f, 0.0f)) ||
+			!Near(glm::vec3(skeleton.GetNodeTransform(end, 1)[3]), glm::vec3(2.0f, 3.0f, 0.0f)))
+		{
+			return fail("a node's transform in the model");
+		}
+
 		// A controller's file: read, written, read again the same
 		const char* text =
 			"Animator:\n"
@@ -137,7 +177,17 @@ namespace AnimationSelfTest
 			"       Events: [{Name: Footstep, Time: 0.6}, {Name: Footstep, Time: 0.1}]}\n"
 			"  Transitions:\n"
 			"    - {From: Idle, To: Walk, Fade: 0.2, Conditions: [{Parameter: Speed, Test: Greater, Value: 0.1}]}\n"
-			"    - {FromAny: true, To: Idle, Fade: 0.1, ExitTime: 0.9, Conditions: [{Parameter: Jump}, {Parameter: Grounded, Test: False}]}\n";
+			"    - {FromAny: true, To: Idle, Fade: 0.1, ExitTime: 0.9, Conditions: [{Parameter: Jump}, {Parameter: Grounded, Test: False}]}\n"
+			"  Layers:\n"
+			"    - Name: UpperBody\n"
+			"      Mask: [Bone]\n"
+			"      Weight: 0.5\n"
+			"      WeightParameter: Speed\n"
+			"      Entry: Aim\n"
+			"      States:\n"
+			"        - {Name: Aim, BlendParameter: Speed, Blend: [{File: '', Name: Up, Threshold: 1}, {File: '', Name: Down, Threshold: -1}],\n"
+			"           Speed: 1, Loop: true, InPlace: false}\n"
+			"      Transitions: []\n";
 		AnimatorController controller;
 		std::string error;
 		if (!AnimatorController::FromText(text, "(self-test)", controller, error))
@@ -151,6 +201,14 @@ namespace AnimationSelfTest
 			controller.Transitions[0].HasExitTime || controller.States[1].Events.size() != 2 || controller.States[1].Events[0].Time != 0.1f)
 		{
 			return fail("a controller's states, parameters, events and transitions as read");
+		}
+		if (controller.Layers.size() != 1 || controller.FindLayer("UpperBody") != 0 || controller.Layers[0].Mask.size() != 1 ||
+			controller.Layers[0].Weight != 0.5f || controller.Layers[0].WeightParameter != "Speed" || controller.Layers[0].GetEntryState() != 0 ||
+			controller.Layers[0].States[0].Blend.size() != 2 || controller.Layers[0].States[0].Blend[0].ClipName != "Down" ||
+			controller.Layers[0].States[0].BlendParameter != "Speed" || controller.GetMachine(0) != &controller.Layers[0] ||
+			controller.GetMachine(-1) != &controller || controller.GetMachine(1) != nullptr)
+		{
+			return fail("a controller's layer and blend state as read (the blend sorted by threshold)");
 		}
 		const std::string written = controller.ToText();
 		AnimatorController again;

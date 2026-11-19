@@ -45,6 +45,7 @@ Entities:
       Fields:
         Camera: {Entity: 1001}
         Body: {Entity: 1101}
+        BodyGun: {Entity: 1104}
         ViewModel: {Entity: 1102}
         ViewModelGun: {Entity: 1103}
   - ID: 1101
@@ -57,6 +58,16 @@ Entities:
     Model:
       File: Assets/Models/QuaterniusCharacters/Soldier_Player.gltf
     Animator: {Controller: Assets/Animators/Player.manim}
+  - ID: 1104
+    Name: Rifle
+    Parent: 1101
+    Transform:
+      Translation: [-0.03, 0.0663, 0.0014]
+      Rotation: [90, -25.54, 90]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
+    BoneAttachment: {Bone: hand_r}
   - ID: 1102
     Name: ViewModel
     Parent: 0
