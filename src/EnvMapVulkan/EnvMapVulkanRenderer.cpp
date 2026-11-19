@@ -231,6 +231,14 @@ struct SubmittedModel
 	bool HiddenInMainView = false; // ModelComponent's: out of the main view's passes (CullMainView), in all others
 };
 static std::vector<SubmittedModel> s_SubmittedModels;
+// The view models (ModelComponent::ViewModel, Shooter E2) while the game camera shows the main view (SetViewModelView): apart
+// from s_SubmittedModels, so no other pass sees them (shadows, rays, probes, the water's reflection, render textures); the
+// G-buffer prepass and the scene pass draw them last, with the view models' camera (Include/FrameCamera.glslh). Their meshes'
+// previous transforms are in s_PreviousDrawTransforms too, among the others'
+static std::vector<SubmittedModel> s_SubmittedViewModels;
+static bool s_ViewModelViewActive = false;         // SetViewModelView: the game camera shows the main view
+static float s_ViewModelFieldOfView = 55.0f;       // degrees, vertical
+static constexpr float ViewModelDepthScale = 0.1f; // their depth, of what it would be: in front of everything but what nearly touches the near plane (Include/SSAO.glslh: ViewModelDepthMax)
 // For the motion vectors: where every mesh of the submitted models was drawn in the previous frame (GetMeshTransform then),
 // one matrix per mesh in the order of s_SubmittedModels. The G-buffer prepass reads them per draw (see EnvMapVulkanGBuffer).
 static std::vector<glm::mat4> s_PreviousDrawTransforms;
@@ -857,13 +865,34 @@ static void UpdateFrameUniforms()
 	s_PreviousViewProjection = viewProjection;
 	s_PreviousDrawnViewProjection = drawnViewProjection;
 	s_PreviousJitter = jitter;
+	// The view models' (Shooter E2): the same view and jitter, their own field of view, the depth pressed towards the eye
+	// (clip z scaled: every depth times ViewModelDepthScale, so they are in front of everything but what nearly touches the
+	// near plane). A perspective camera only (the projection's w row): with an orthographic one they are drawn as it draws
+	static glm::mat4 s_PreviousViewModelViewProjection(1.0f);
+	glm::mat4 viewModelProjection = camera.GetProjectionMatrix();
+	if (viewModelProjection[3][3] == 0.0f && viewModelProjection[1][1] != 0.0f)
+	{
+		const float halfAngle = glm::radians(glm::clamp(s_ViewModelFieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView)) * 0.5f;
+		const float scale = 1.0f / (std::abs(viewModelProjection[1][1]) * std::tan(halfAngle));
+		viewModelProjection[0][0] *= scale;
+		viewModelProjection[1][1] *= scale;
+		for (int column = 0; column < 4; column++)
+		{
+			viewModelProjection[column][2] *= ViewModelDepthScale;
+		}
+	}
+	const glm::mat4 viewModelViewProjection = jitterOffset * viewModelProjection * camera.GetViewMatrix();
+	const glm::mat4 previousViewModelViewProjection = s_HasPreviousViewProjection ? s_PreviousViewModelViewProjection : viewModelViewProjection;
+	s_PreviousViewModelViewProjection = viewModelViewProjection;
 	s_HasPreviousViewProjection = true;
 	// Then where the camera is (the foliage's impostor cards turn to it in the vertex stage: Include/MeshInstance.glslh)
 	struct CameraBlock
 	{
 		glm::mat4 ViewProjection, PreviousViewProjection;
 		glm::vec4 Position;
-	} cameraBlock = { cameraMatrices[0], cameraMatrices[1], glm::vec4(camera.GetPosition(), 1.0f) };
+		glm::mat4 ViewModelViewProjection, PreviousViewModelViewProjection;
+	} cameraBlock = { cameraMatrices[0], cameraMatrices[1], glm::vec4(camera.GetPosition(), 1.0f), viewModelViewProjection,
+		previousViewModelViewProjection };
 	void* ubPtr = shader->MapUniformBuffer(0, frameSet);
 	memcpy(ubPtr, &cameraBlock, sizeof(cameraBlock));
 	shader->UnmapUniformBuffer(0, frameSet);
@@ -1548,13 +1577,22 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 
 /**** BEGIN to be removed from VulkanRenderer ****/
 void EnvMapVulkanRenderer::SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials,
-	const std::vector<glm::mat4>& previousMeshTransforms, bool hiddenInMainView)
+	const std::vector<glm::mat4>& previousMeshTransforms, bool hiddenInMainView, bool viewModel)
 {
-	// Temporary code - populate selected mesh
-	// std::vector<Submesh> submeshes = mesh->GetMeshes();
-	// s_SelectedSubmesh = &submeshes.at(0);
-
-	s_SubmittedModels.push_back({ model, transform, materials, (uint32_t)s_PreviousDrawTransforms.size(), hiddenInMainView });
+	// A view model in the game's view: drawn only by the main view's passes, with its own camera. Outside the game's view it
+	// is any model. Hidden, it isn't drawn at all, nor its shadow (it has none of its own: Edit shows none at the spawn)
+	if (viewModel && hiddenInMainView)
+	{
+		return;
+	}
+	if (viewModel && s_ViewModelViewActive)
+	{
+		s_SubmittedViewModels.push_back({ model, transform, materials, (uint32_t)s_PreviousDrawTransforms.size(), false });
+	}
+	else
+	{
+		s_SubmittedModels.push_back({ model, transform, materials, (uint32_t)s_PreviousDrawTransforms.size(), hiddenInMainView });
+	}
 	H2M::RefH2M<H2M::ModelH2M> modelRef = model;
 	const auto& meshes = modelRef->GetMeshes();
 	for (size_t s = 0; s < meshes.size(); s++)
@@ -2320,7 +2358,7 @@ static void DrawFoliageMainView(VkCommandBuffer commandBuffer, EnvMapVulkanRende
 }
 
 void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
-	MeshPass pass, uint32_t firstDraw)
+	MeshPass pass, uint32_t firstDraw, bool viewModel)
 {
 	// A model whose meshes are all outside the camera's frustum binds nothing (see CullMainView): in the main view's passes
 	const bool mainView = pass == MeshPass::Scene || pass == MeshPass::GBuffer;
@@ -2451,6 +2489,10 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		// glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
 		glm::mat4 meshTransform = EnvMapVulkanSceneData::GetMeshTransform(model, mesh, transform);
+		if (viewModel)
+		{
+			meshTransform[0][3] = 1.0f; // the view models' camera (the mark in Include/FrameCamera.glslh: 0 in every affine transform)
+		}
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &meshTransform);
 		// A terrain's chunk: its level of detail for its distance from the camera (see EnvMapVulkanTerrain::ChooseChunk)
 		EnvMapVulkanTerrain::ChunkDraw chunk;
@@ -3918,6 +3960,10 @@ void EnvMapVulkanRenderer::GeometryPass()
 			{
 				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::GBuffer, submitted.FirstDraw);
 			}
+			for (const SubmittedModel& submitted : s_SubmittedViewModels)
+			{
+				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::GBuffer, submitted.FirstDraw, true);
+			}
 			DrawFoliageMainView(drawCommandBuffer, MeshPass::GBuffer); // last: it binds the instance buffer where the previous transforms were
 			s_GBuffer.EndPass(drawCommandBuffer);
 		}
@@ -4022,6 +4068,11 @@ void EnvMapVulkanRenderer::GeometryPass()
 				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::Scene, submitted.FirstDraw);
 			}
 			DrawFoliageMainView(drawCommandBuffer, MeshPass::Scene);
+			// The view models last (Shooter E2): their own camera, in front of everything
+			for (const SubmittedModel& submitted : s_SubmittedViewModels)
+			{
+				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::Scene, submitted.FirstDraw, true);
+			}
 		}
 		// The trails' marks on the opaque surfaces (the water and the glass, next, see them)
 		if (EnvMapVulkanTrails::HasPoints())
@@ -4038,6 +4089,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 		CollectGlassDraws(s_Data.SceneData.SceneCamera.Camera.GetPosition(), nullptr, s_GlassDraws);
 
 		s_SubmittedModels.clear();
+		s_SubmittedViewModels.clear();
 		s_PreviousDrawTransforms.clear();
 
 		// The water: it looks into the opaque scene drawn so far. The render pass ends, its color and depth are copied
@@ -5133,7 +5185,13 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		UpdateObjectUniforms(model, previousState.BoneTransforms);
 		const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> meshMaterials = EnvMapVulkanSceneData::GetMeshMaterials(*s_Scene, entity);
 		const ModelComponent* modelComponent = s_Scene->TryGet<ModelComponent>(entity);
-		SubmitModelTemp(model, worldTransform, meshMaterials, previousState.MeshTransforms, modelComponent && modelComponent->HiddenInMainView);
+		const bool viewModel = modelComponent && modelComponent->ViewModel;
+		SubmitModelTemp(model, worldTransform, meshMaterials, previousState.MeshTransforms, modelComponent && modelComponent->HiddenInMainView, viewModel);
+		if (viewModel && s_ViewModelViewActive)
+		{
+			modelStates[entity] = std::move(state); // its motion for the next frame; the probes don't capture it
+			continue;
+		}
 
 		// The model, where its meshes are, its pose and which materials they have (the materials' values: below)
 		probeSceneVersion = HashBytes(probeSceneVersion, &state.Model, sizeof(state.Model));
@@ -5701,6 +5759,12 @@ void EnvMapVulkanRenderer::SetGameTime(bool running, float timeScale)
 {
 	s_GameRunning = running;
 	s_GameTimeScale = timeScale;
+}
+
+void EnvMapVulkanRenderer::SetViewModelView(bool active, float fieldOfView)
+{
+	s_ViewModelViewActive = active;
+	s_ViewModelFieldOfView = fieldOfView;
 }
 
 QualityGPU EnvMapVulkanRenderer::GetQualityGPU()

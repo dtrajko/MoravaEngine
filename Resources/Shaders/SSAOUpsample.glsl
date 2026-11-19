@@ -22,9 +22,9 @@ void main()
 		return;
 	}
 	float sceneDepth = texelFetch(u_SceneDepth, pixel, 0).r;
-	if (sceneDepth >= 1.0)
+	if (sceneDepth >= 1.0 || sceneDepth < ViewModelDepthMax)
 	{
-		imageStore(o_AO, pixel, vec4(1.0)); // the sky
+		imageStore(o_AO, pixel, vec4(1.0)); // the sky, or a view model (Include/SSAO.glslh)
 		return;
 	}
 	float depth = LinearDepth(sceneDepth);

@@ -778,6 +778,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       they never cut into a wall the player stands against. They are lit by the same lights and probes. They cast no
       shadows (the body does).</li>
     <li>Kept out of TAA's smearing (they move with the camera) and out of the ray-traced passes.</li>
+    <li><b>Built in Phase 1.3</b> (its box below): the model's <i>View Model</i>, the camera's <i>View Model Field of View</i>.</li>
   </ul>
   <h3>E3 Bone attachments, E4 Hitboxes</h3>
   <ul>
@@ -1143,6 +1144,56 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><b>Checked:</b> the test copy's driver, 28 of 28 in editor Play (moving at 3.00 m/s, the body in WalkFast; against
         the wall and looking up in third person, the body shown); the clip seen in the engine from the side in third person.
         0 validation messages.</li>
+    </ul>
+  </div>
+  <div class="box ok"><b>As built: 1.3 the soldier's uniform and the view model, E2 (2026-11-18)</b>
+    <ul>
+      <li><b>The uniform</b> (the user's reference, 2026-11-18: combat pants in a desert three-color camouflage, a belt,
+        ankle boots), by <code>Tools/CharacterPoses/make_uniform.py</code> (Blender without its window, <code>--scheme</code>,
+        <code>--preview</code>: the rest pose and the walk, sprint, crouch and rifle aim, front and side, and close-ups). Real
+        shapes, not paint: the body's own vertices (their UVs and bone weights kept, so every clip plays on it) smoothed, the
+        hollows filled from outside (the cloth spans the buttocks, the crotch, the belly and the spine) and pushed out by the
+        clothes' fit (the shirt 1.3 cm, the trousers 1.2 cm, 1.6 over the thighs: the user found 2.3 to 3.1 too thick), and the
+        legs and the sleeves drawn in 8 % toward their axis (the base body's limbs are bulky: the user, 2026-11-19); the knee
+        pads (raised, three grooves) and the calves' pockets raised from the cloth; the hems wider over the boots. Meshes of their own, weighted
+        as the body under them: large bellows cargo pockets on the thighs' outsides (23 cm high, 2 cm out, a flap over the
+        top; their UVs are the cloth's under them, so the camouflage runs over them); the belt at the hips' top (1.07 to
+        1.11 m: the user found the first one around the buttocks), 2.8 mm off the cloth (half of before, the user),
+        its buckle and six loops; a cuff round each hem; the boots, each the convex hull of the foot and ankle remeshed and
+        rounded (a toe box and a sole with a lip, no toes; plain materials for the upper, the sole and the laces), the bare
+        feet inside removed. The paint follows the same regions: the camouflage (sand, tan blobs, thin red-brown streaks
+        running sideways, a 3D noise so it runs across the UVs' seams), plain panels at the crotch, the back and the knees,
+        the seams, zips and grooves; above the waist a plain olive shirt, sleeves too (the user: the camouflage below the waist only), gloves,
+        a balaclava over the whole head and neck, shaped as a knit hood (the ears pressed flat and the head smoothed, the nape
+        and behind the ears filled; ribs and a seam up the back in its paint: the user found the first one read as a painted
+        head) with a slot for the eyes, tucked under the shirt's collar (a narrow ring mesh: the user found a taller one odd). The glTF seams' split vertices are welded by place while shaping (no
+        cracks) and get normals per place (no hard edges). <code>Soldier_Player.gltf</code> (.bin, 23,800 triangles: the body
+        16,100 with the belt, cuffs and collar, the boots 6,100, the pockets 1,600) and <code>T_Soldier_Player_Color/Normal/Roughness.png</code>;
+        Greybox's <i>Body</i> wears it. A scheme is a set of colors: the guards (Phase 5) get theirs.</li>
+      <li><b>E2 in the engine:</b> a model's <i>View Model</i> (Inspector, <code>ViewModel: true</code>) and the camera's
+        <i>View Model Field of View</i> (55 degrees). While Play or the player shows the game camera, view models are kept apart
+        from the frame's other models, so the shadows, the rays, the probes, the water's reflection and the render textures don't
+        see them; the G-buffer prepass and the scene pass draw them last with a second camera in the frame's Camera block: the
+        same view and TAA jitter, their own field of view, the depth times 0.1 (in front of everything past the first 6 % beyond
+        the near plane). A mesh is marked by its pushed transform's bottom-row element (always 0 in an affine transform), so the
+        shared vertex stages pick the camera without a push constant of their own. Lit by the same lights, shadows and probes at
+        their real place. Their motion vectors come from their own camera: under TAA they stay sharp while the view turns. The
+        ambient occlusion leaves them out (their pressed depth would darken the wall around them): the far plane for them in its
+        depth, no occlusion on them. In Edit they are drawn as any model; hidden, not at all (no shadow at the spawn).</li>
+      <li><b>The view model:</b> <code>make_uniform.py</code> also writes <code>Soldier_Player_Arms.gltf</code>, the dressed body
+        cut to what the arms' bones move (4,558 triangles, the same rig and maps); <i>ViewModel</i> in Greybox (with
+        <code>Assets/Animators/ViewModel.manim</code>: the rifle aim pose, <code>Rifle_Aim_Neutral</code>) holds the placeholder
+        rifle, its child where the aim pose holds it. <code>Player</code> (<i>ViewModel</i>, <i>ViewModelGun</i>) places it each
+        frame with the aim pose's right eye at the camera, 11 cm to the right and 9 cm down (<i>ViewModelOffset</i>): the gun low
+        and right of the crosshair. Shown in first person once the camera is at the eyes, hidden in third person, while a switch
+        glides and with the fly camera (F2).</li>
+      <li><b>Limits:</b> the view model is still: no sway, bob, recoil or the weapons' own clips (Phase 2), and no gun on the
+        hand's bone yet (E3). Particles drawn later (a muzzle flash, Phase 2) are hidden behind it where they overlap it. The
+        clothes bend with the bones, they don't hang or flap as cloth does.</li>
+      <li><b>Checked:</b> the test copy's driver, 31 of 31 in editor Play and in the player (the view model shown in first
+        person, hidden in third person, shown again back in first person); first person walking into the Barracks' wall: the
+        rifle and the hand stay whole in front of it, no dark ring on the wall; the same with TAA while turning: sharp. 0
+        validation messages; GCC clean.</li>
     </ul>
   </div>
   <h3>Phase 2: weapons</h3>

@@ -249,6 +249,10 @@ namespace EnvMapVulkanSceneSerializer
 			{
 				out << YAML::Key << "HiddenInMainView" << YAML::Value << true;
 			}
+			if (model->ViewModel)
+			{
+				out << YAML::Key << "ViewModel" << YAML::Value << true;
+			}
 			out << YAML::EndMap;
 		}
 		if (const MeshPartComponent* part = scene.TryGet<MeshPartComponent>(entity))
@@ -349,6 +353,10 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "FieldOfView" << YAML::Value << camera->FieldOfView;
 			out << YAML::Key << "NearClip" << YAML::Value << camera->NearClip;
 			out << YAML::Key << "FarClip" << YAML::Value << camera->FarClip;
+			if (camera->ViewModelFieldOfView != CameraComponent().ViewModelFieldOfView)
+			{
+				out << YAML::Key << "ViewModelFieldOfView" << YAML::Value << camera->ViewModelFieldOfView;
+			}
 			if (!camera->Target.empty())
 			{
 				AssetReference::Write(out, "Target", camera->Target);
@@ -859,6 +867,7 @@ namespace EnvMapVulkanSceneSerializer
 			ModelComponent& model = scene.Add<ModelComponent>(entity);
 			model.FilePath = AssetReference::Read(modelNode, "File");
 			model.HiddenInMainView = modelNode["HiddenInMainView"].as<bool>(false);
+			model.ViewModel = modelNode["ViewModel"].as<bool>(false);
 		}
 		if (YAML::Node partNode = node["MeshPart"])
 		{
@@ -1103,6 +1112,7 @@ namespace EnvMapVulkanSceneSerializer
 			Read(cameraNode, "FieldOfView", camera.FieldOfView); // scenes saved before the camera had a lens: 45
 			Read(cameraNode, "NearClip", camera.NearClip);
 			Read(cameraNode, "FarClip", camera.FarClip);
+			Read(cameraNode, "ViewModelFieldOfView", camera.ViewModelFieldOfView);
 			camera.Target = AssetReference::Read(cameraNode, "Target");
 			Read(cameraNode, "DrawEvery", camera.DrawEvery);
 			camera.DrawEvery = std::max(camera.DrawEvery, 1u);

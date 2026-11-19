@@ -10,7 +10,8 @@ namespace Outpost
     /// fast walk, sprint, walk quietly, crouch, jump, fall damage); each frame the body (PlayerBody: the Body child's model
     /// and animator) shows it, the camera goes to the eyes (lower when crouched, eased) or over the shoulder (PlayerView),
     /// and the steps are heard. SwitchView (V) changes the view, SwapShoulder (X) the shoulder; both are kept in the
-    /// settings. In first person the body is hidden from the camera, its shadow stays.
+    /// settings. In first person the body is hidden from the camera, its shadow stays, and the view model (the arms and the
+    /// placeholder gun, models marked View Model: E2) is shown at the eyes instead.
     ///
     /// F2 (DebugFly) hands the view to the debug fly camera (the Camera entity's FlyCamera) and back: the player stands
     /// still meanwhile.
@@ -22,6 +23,20 @@ namespace Outpost
 
         /// <summary>The body: a child at the feet with the model and its animator (Player.manim).</summary>
         public Entity? Body;
+
+        /// <summary>
+        /// First person's view model (Inspector: Model, View Model): the arms (ViewModel.manim), placed at the eyes each frame,
+        /// and the gun they hold, its child. Shown only in first person.
+        /// </summary>
+        public Entity? ViewModel;
+        public Entity? ViewModelGun;
+
+        /// <summary>
+        /// Where the view model's eye is in its model (the aim pose's right eye, by the sight line) and how far it is moved from
+        /// the camera in the camera's space (meters: right, up, forward), so the gun sits low and to the right of the crosshair.
+        /// </summary>
+        public Vector3 ViewModelEye = new Vector3(-0.118f, 1.574f, 0.115f);
+        public Vector3 ViewModelOffset = new Vector3(0.11f, -0.09f, 0.0f);
 
         /// <summary>Third person: meters behind the shoulder, and to the side of the eyes.</summary>
         public float ThirdPersonDistance = 2.5f;
@@ -56,6 +71,7 @@ namespace Outpost
         LocalPlayerInput input = null!;
         PlayerBody? body;
         PlayerView view = null!;
+        Model? viewModelArms, viewModelGun;
         float eyeOffset;          // the eyes below EyeHeight now (eased towards the crouch's)
         float stepDistance;       // meters walked since the last step's sound
         int lastVariant;
@@ -104,6 +120,7 @@ namespace Outpost
         public float BodyHeading => body?.Heading ?? 0.0f;
         public bool BodyHidden => body?.HiddenInMainView ?? false;
         public Vector3 CameraPosition => view.Position;
+        public bool ViewModelShown => viewModelArms != null && !viewModelArms.HiddenInMainView;
 
         const string ThirdPersonSetting = "ThirdPerson", LeftShoulderSetting = "LeftShoulder";
 
@@ -124,6 +141,8 @@ namespace Outpost
                 body = new PlayerBody(Body, new PlayerBodySettings());
             else
                 Log.Warn($"{Name}: no Body, the player has no model (and no shadow)");
+            viewModelArms = ViewModel?.GetComponent<Model>();
+            viewModelGun = ViewModelGun?.GetComponent<Model>();
             view = new PlayerView(new PlayerViewSettings { Distance = ThirdPersonDistance, ShoulderOffset = ShoulderOffset },
                 Settings.GetBool(ThirdPersonSetting) ? ViewMode.ThirdPerson : ViewMode.FirstPerson, Settings.GetBool(LeftShoulderSetting));
 
@@ -152,6 +171,7 @@ namespace Outpost
                 body?.Update(dt, Vector3.Zero, motor.IsGrounded, motor.IsCrouched, false, false, lastCommand.Yaw);
                 if (body != null)
                     body.HiddenInMainView = false; // the fly camera sees the player standing there
+                ShowViewModel(false);
                 return;
             }
             if (Input.WasPressed("SwitchView"))
@@ -179,6 +199,11 @@ namespace Outpost
                 Camera.Translation = cameraPosition;
                 Camera.EulerAngles = new Vector3(pitch, yaw, 0.0f);
             }
+            // The view model in first person, once the camera is at the eyes (not while a switch glides)
+            bool firstPerson = view.Mode == ViewMode.FirstPerson && Vector3.DistanceSquared(cameraPosition, eyes) < 0.0001f;
+            ShowViewModel(firstPerson);
+            if (firstPerson)
+                PlaceViewModel(cameraPosition, yaw, pitch);
 
             // The steps: one each stride walked on the ground, louder sprinting, quieter walking, none crouched
             Vector3 feet = WorldPosition;
@@ -196,6 +221,30 @@ namespace Outpost
                 stepDistance = 0.0f;
                 PlayFootstep(motor.IsWalking ? WalkVolume : motor.IsSprinting ? SprintVolume : MoveVolume);
             }
+        }
+
+        // The view model's model faces +Z (the camera looks along -Z): turned half round, then by the look. Its eye at the camera,
+        // moved by the offset in the camera's space (the model's X is the camera's left, its Z the camera's forward)
+        void PlaceViewModel(Vector3 cameraPosition, float yaw, float pitch)
+        {
+            if (ViewModel == null)
+                return;
+            Quaternion rotation = Quaternion.CreateFromYawPitchRoll((yaw + 180.0f) * MathF.PI / 180.0f, pitch * MathF.PI / 180.0f, 0.0f);
+            Vector3 offset = new Vector3(-ViewModelOffset.X, ViewModelOffset.Y, ViewModelOffset.Z);
+            ViewModel.Rotation = rotation;
+            ViewModel.Translation = cameraPosition + Vector3.Transform(offset - ViewModelEye, rotation);
+        }
+
+        void ShowViewModel(bool shown)
+        {
+            Show(viewModelArms, shown);
+            Show(viewModelGun, shown);
+        }
+
+        static void Show(Model? model, bool shown)
+        {
+            if (model != null && model.HiddenInMainView == shown)
+                model.HiddenInMainView = !shown;
         }
 
         void OnLanded(float speed, float damage)

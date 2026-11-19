@@ -18,5 +18,6 @@ void main()
 		return;
 	}
 	ivec2 fullPixel = FullPixel(pixel, textureSize(u_SceneDepth, 0));
-	imageStore(o_Depth, pixel, vec4(LinearDepth(texelFetch(u_SceneDepth, fullPixel, 0).r)));
+	float depth = texelFetch(u_SceneDepth, fullPixel, 0).r;
+	imageStore(o_Depth, pixel, vec4(LinearDepth(depth < ViewModelDepthMax ? 1.0 : depth))); // a view model: as far as the sky
 }

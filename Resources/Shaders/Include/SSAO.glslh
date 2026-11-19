@@ -19,6 +19,11 @@ layout (push_constant) uniform SSAOPush
 	ivec4 Counts;    // offset 112: x = slices, y = steps per side, z = depth mip levels, w = the pass's own value
 } u_SSAO;
 
+// The view models (the first-person arms and gun, Shooter E2) are drawn with their depth pressed towards the eye: under this
+// (EnvMapVulkanRenderer's ViewModelDepthScale). They neither are occluded nor occlude: their real place is not that depth
+// (the step 1 pass writes the far plane for them, the last one gives them no occlusion)
+const float ViewModelDepthMax = 0.1;
+
 // The depth buffer's value as the distance along the camera's view direction (positive in front of the camera)
 float LinearDepth(float depth)
 {

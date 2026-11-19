@@ -1360,6 +1360,14 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 			ImGui::SetTooltip("Not drawn in the game's camera and this viewport: a first-person player's own body.\n"
 				"Its shadow stays, and the water's reflection, render textures and rays still see it");
 		}
+		ImGui::Checkbox("View Model", &modelComponent->ViewModel);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("A first-person view model: the arms and the gun. While the game camera shows the game, drawn\n"
+				"with the camera's View Model Field of View and in front of everything, so it never cuts into a wall.\n"
+				"Lit as the rest; no shadow of its own, and the rays, reflections, probes and render textures don't\n"
+				"see it. In Edit it is drawn as any model. With Hidden In Main View it isn't drawn at all (nor a shadow)");
+		}
 	}
 
 	// The selected part's place in the model (the viewport gizmo moves it too)
@@ -2013,6 +2021,16 @@ void OnImGuiRenderInspector()
 			{
 				ImGui::SetTooltip("Nothing nearer than Near or farther than Far is drawn. Near very small and Far very far make\n"
 					"distant surfaces flicker into each other (the depth buffer's precision).");
+			}
+			if (camera.Target.empty())
+			{
+				ImGui::SliderFloat("View Model Field of View", &camera.ViewModelFieldOfView, CameraComponent::MinFieldOfView,
+					CameraComponent::MaxFieldOfView, "%.0f deg", ImGuiSliderFlags_AlwaysClamp);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("The field of view of the view models (a model's View Model: the first-person arms and\n"
+						"gun) while this camera shows the game. Their own, so a wide view doesn't stretch them.");
+				}
 			}
 			RenderTargetControls(camera);
 			ImGui::Spacing();

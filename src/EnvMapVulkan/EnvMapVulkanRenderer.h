@@ -61,9 +61,10 @@ public:
 
 	// materials: the Material Library material of each mesh (same order as the model's meshes)
 	// previousMeshTransforms: where each mesh of the model was drawn in the previous frame, for the motion vectors (empty: where
-	// it's drawn now). hiddenInMainView: not in the main view's passes (ModelComponent::HiddenInMainView)
+	// it's drawn now). hiddenInMainView: not in the main view's passes (ModelComponent::HiddenInMainView). viewModel: a view
+	// model (ModelComponent::ViewModel): while SetViewModelView is active only in the main view, with the view models' camera
 	static void SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials,
-		const std::vector<glm::mat4>& previousMeshTransforms = {}, bool hiddenInMainView = false); // to be removed from VulkanRendererH2M
+		const std::vector<glm::mat4>& previousMeshTransforms = {}, bool hiddenInMainView = false, bool viewModel = false); // to be removed from VulkanRendererH2M
 	static void OnResize(uint32_t width, uint32_t height);                                                 // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportWidth();                                                                    // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportHeight();                                                                   // to be removed from VulkanRendererH2M
@@ -74,7 +75,8 @@ public:
 	// GBuffer: the prepass shaders
 	enum class MeshPass { Scene, WaterReflection, TextureView, GBuffer };
 	static void RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
-		MeshPass pass, uint32_t firstDraw = 0); // firstDraw: the model's first mesh among the frame's meshes (previous transforms, culling)
+		MeshPass pass, uint32_t firstDraw = 0, bool viewModel = false); // firstDraw: the model's first mesh among the frame's meshes
+	// (previous transforms, culling); viewModel: drawn with the view models' camera (the main view's passes only)
 
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 
@@ -97,6 +99,9 @@ public:
 	// time scale (0 while it is paused). Not running (the editor's Edit, the start): only the selected emitters emit, on
 	// real time
 	static void SetGameTime(bool running, float timeScale);
+	// The view models (ModelComponent::ViewModel, Shooter E2): active while the main view is the game camera's (Play, the
+	// player), with that camera's View Model Field Of View (degrees). Inactive (Edit, Simulate) they are drawn as any model
+	static void SetViewModelView(bool active, float fieldOfView);
 	// What Auto picks for this GPU (QualityTier.h)
 	static QualityGPU GetQualityGPU();
 

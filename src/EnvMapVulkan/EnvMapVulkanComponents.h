@@ -106,6 +106,12 @@ struct ModelComponent
 	// Not drawn in the main view (the game's camera, the editor's viewport): the first-person player's own body. Everything
 	// else still sees it: its shadow, the water's reflection, the render textures' cameras, the rays and the probes
 	bool HiddenInMainView = false;
+	// A first-person view model (Shooter E2: the arms and the gun): while the game camera shows the main view, drawn with the
+	// camera's View Model Field Of View and its depth pressed close to the eye, so it never cuts into a wall the player stands
+	// against. Lit as the rest (lights, shadows, probes), but nothing else sees it: no shadow of its own, not in the rays,
+	// the water's reflection, the render textures or the probes. Outside the game's view (Edit) it is drawn as any model.
+	// Hidden In Main View too, it isn't drawn at all (nor a shadow)
+	bool ViewModel = false;
 };
 
 // A part of a model: one of its meshes. Its TransformComponent is the part's place in the model (relative to the model
@@ -307,6 +313,10 @@ struct CameraComponent
 	// flicker into each other (the depth buffer's precision)
 	float NearClip = 0.01f;
 	float FarClip = 1000.0f;
+
+	// The view models' (ModelComponent::ViewModel) field of view, in degrees, while this camera shows the game: the arms and
+	// the gun keep their shape whatever the scene's field of view (a wide one would stretch them)
+	float ViewModelFieldOfView = 55.0f;
 
 	// A render texture (7.5, a .mrtex file: absolute here, relative to the project in the scene file) the camera draws into
 	// instead of the screen: a mirror, a monitor, a minimap. Empty: the screen. A camera with a target never shows the
