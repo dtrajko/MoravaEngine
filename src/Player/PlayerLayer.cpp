@@ -508,6 +508,9 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	{
 		EnvMapVulkanSceneData::PlaceGameCamera(m_Camera, m_Scene, cameraEntity);
 	}
+	// The view models (Shooter E2) with that camera's View Model Field of View
+	const CameraComponent* lens = cameraEntity != NoEntity ? m_Scene.TryGet<CameraComponent>(cameraEntity) : nullptr;
+	EnvMapVulkanRenderer::SetViewModelView(lens != nullptr, lens ? lens->ViewModelFieldOfView : CameraComponent().ViewModelFieldOfView);
 	UpdateDebugOverlay(window);
 }
 

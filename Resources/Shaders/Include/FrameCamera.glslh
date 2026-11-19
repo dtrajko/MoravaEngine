@@ -8,6 +8,23 @@ layout (std140, set = 0, binding = 0) uniform Camera
 	mat4 u_ViewProjectionMatrix;
 	mat4 u_PreviousViewProjectionMatrix; // the previous frame's, for the motion vectors (Include/MeshVertexMotion.glslh)
 	vec4 u_CameraWorldPosition;          // xyz: where the camera is (the foliage's impostor cards face it: Include/MeshInstance.glslh)
+	// The view models' (the first-person arms and gun, Shooter E2): the same camera with their own field of view and the depth
+	// pressed close to the eye (in front of every wall). Only the main view's passes write them (the others never draw a view model)
+	mat4 u_ViewModelViewProjectionMatrix;
+	mat4 u_PreviousViewModelViewProjectionMatrix;
 };
+
+// A mesh's transform pushed with its bottom row's first element (u_Transform[0][3]) at 1 is a view model's: that element of
+// an affine transform is always 0, so the mark costs no push constant of its own. MeshTransform takes it out again
+bool IsViewModel(mat4 transform)
+{
+	return transform[0][3] > 0.5;
+}
+
+mat4 MeshTransform(mat4 transform)
+{
+	transform[0][3] = 0.0;
+	return transform;
+}
 
 #endif

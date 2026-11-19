@@ -19,12 +19,6 @@ layout (push_constant) uniform Transform
 	mat4 u_Transform;
 };
 
-#ifdef MESH_VERTEX_INSTANCED
-#define MESH_TRANSFORM a_InstanceTransform
-#else
-#define MESH_TRANSFORM u_Transform
-#endif
-
 layout (location = 0) out VertexOutput Output;
 #ifdef MESH_VERTEX_INSTANCED
 // The copy's cross-fade and debug tint (Include/MeshInstance.glslh): the instanced prepass dithers by the fade
@@ -36,24 +30,35 @@ invariant gl_Position;
 
 void main()
 {
-	Output.WorldPosition = vec3(MESH_TRANSFORM * vec4(a_Position, 1.0));
-	Output.Normal = mat3(MESH_TRANSFORM) * a_Normal;
+	// The view models' camera for a view model's mesh (Include/FrameCamera.glslh; the foliage's copies never are)
+#ifdef MESH_VERTEX_INSTANCED
+	mat4 meshTransform = a_InstanceTransform;
+	mat4 viewProjection = u_ViewProjectionMatrix;
+	mat4 previousViewProjection = u_PreviousViewProjectionMatrix;
+#else
+	mat4 meshTransform = MeshTransform(u_Transform);
+	bool viewModel = IsViewModel(u_Transform);
+	mat4 viewProjection = viewModel ? u_ViewModelViewProjectionMatrix : u_ViewProjectionMatrix;
+	mat4 previousViewProjection = viewModel ? u_PreviousViewModelViewProjectionMatrix : u_PreviousViewProjectionMatrix;
+#endif
+	Output.WorldPosition = vec3(meshTransform * vec4(a_Position, 1.0));
+	Output.Normal = mat3(meshTransform) * a_Normal;
 #ifdef MESH_VERTEX_INSTANCED
 	Output.TexCoord = InstanceTexCoord(a_TexCoord); // an impostor's card: its view's part of the atlases
 #else
 	Output.TexCoord = a_TexCoord;
 #endif
-	Output.WorldNormals = mat3(MESH_TRANSFORM) * mat3(a_Tangent, a_Binormal, a_Normal);
-	Output.WorldTransform = mat3(MESH_TRANSFORM);
+	Output.WorldNormals = mat3(meshTransform) * mat3(a_Tangent, a_Binormal, a_Normal);
+	Output.WorldTransform = mat3(meshTransform);
 	Output.Binormal = a_Binormal;
 
-	gl_Position = u_ViewProjectionMatrix * MESH_TRANSFORM * vec4(a_Position, 1.0);
+	gl_Position = viewProjection * meshTransform * vec4(a_Position, 1.0);
 
 #ifdef MESH_VERTEX_INSTANCED
 	v_InstanceData = vec2(InstanceFade(), InstanceTint());
 #endif
 #ifdef MESH_VERTEX_MOTION
 	v_ClipPosition = gl_Position;
-	v_PreviousClipPosition = u_PreviousViewProjectionMatrix * a_PreviousTransform * vec4(a_Position, 1.0);
+	v_PreviousClipPosition = previousViewProjection * MeshTransform(a_PreviousTransform) * vec4(a_Position, 1.0);
 #endif
 }

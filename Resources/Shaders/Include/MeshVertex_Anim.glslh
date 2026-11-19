@@ -45,17 +45,21 @@ void main()
 		boneTransform += u_BoneTransforms[indices.w] * a_BoneWeights.w;
 	}
 
-	mat4 skinnedTransform = u_Transform * boneTransform;
+	// The view models' camera for a view model's mesh (Include/FrameCamera.glslh)
+	mat4 meshTransform = MeshTransform(u_Transform);
+	bool viewModel = IsViewModel(u_Transform);
+	mat4 viewProjection = viewModel ? u_ViewModelViewProjectionMatrix : u_ViewProjectionMatrix;
+	mat4 skinnedTransform = meshTransform * boneTransform;
 
 	Output.WorldPosition = vec3(skinnedTransform * vec4(a_Position, 1.0));
 	Output.Normal = mat3(skinnedTransform) * a_Normal;
 	Output.TexCoord = a_TexCoord;
 	// The tangent frame moves with the bones too (the normal map would be lit wrong on moving parts otherwise)
 	Output.WorldNormals = mat3(skinnedTransform) * mat3(a_Tangent, a_Binormal, a_Normal);
-	Output.WorldTransform = mat3(u_Transform);
+	Output.WorldTransform = mat3(meshTransform);
 	Output.Binormal = mat3(boneTransform) * a_Binormal;
 
-	gl_Position = u_ViewProjectionMatrix * skinnedTransform * vec4(a_Position, 1.0);
+	gl_Position = viewProjection * skinnedTransform * vec4(a_Position, 1.0);
 
 #ifdef MESH_VERTEX_MOTION
 	mat4 previousBoneTransform = mat4(1.0);
@@ -68,6 +72,7 @@ void main()
 		previousBoneTransform += u_PreviousBoneTransforms[indices.w] * a_BoneWeights.w;
 	}
 	v_ClipPosition = gl_Position;
-	v_PreviousClipPosition = u_PreviousViewProjectionMatrix * a_PreviousTransform * previousBoneTransform * vec4(a_Position, 1.0);
+	v_PreviousClipPosition = (viewModel ? u_PreviousViewModelViewProjectionMatrix : u_PreviousViewProjectionMatrix) * MeshTransform(a_PreviousTransform) *
+		previousBoneTransform * vec4(a_Position, 1.0);
 #endif
 }

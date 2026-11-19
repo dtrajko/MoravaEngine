@@ -45,6 +45,8 @@ Entities:
       Fields:
         Camera: {Entity: 1001}
         Body: {Entity: 1101}
+        ViewModel: {Entity: 1102}
+        ViewModelGun: {Entity: 1103}
   - ID: 1101
     Name: Body
     Parent: 1100
@@ -53,8 +55,31 @@ Entities:
       Rotation: [0, 180, 0]
       Scale: [1, 1, 1]
     Model:
-      File: Assets/Models/QuaterniusCharacters/Superhero_Male_FullBody.gltf
+      File: Assets/Models/QuaterniusCharacters/Soldier_Player.gltf
     Animator: {Controller: Assets/Animators/Player.manim}
+  - ID: 1102
+    Name: ViewModel
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 16]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Soldier_Player_Arms.gltf
+      HiddenInMainView: true
+      ViewModel: true
+    Animator: {Controller: Assets/Animators/ViewModel.manim}
+  - ID: 1103
+    Name: ViewModel Rifle
+    Parent: 1102
+    Transform:
+      Translation: [-0.0964, 1.3928, 0.0988]
+      Rotation: [0, -90, 0]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
+      HiddenInMainView: true
+      ViewModel: true
   - ID: 1002
     Name: Environment
     Parent: 0

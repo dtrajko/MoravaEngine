@@ -140,6 +140,15 @@ bool RefusedWhilePlaying(const char* what)
 // The editor's view when Play started: back at Stop (6.3)
 static EnvMapVulkanSceneSerializer::EditorView s_ViewBeforePlay;
 
+// The view models (Shooter E2) are drawn as such while Play shows the primary game camera, with its View Model Field of
+// View; in Edit and Simulate (the editor's view) as any model
+static void UpdateViewModelView()
+{
+	const EnvMapVulkanEntityID cameraEntity = s_PlayState == PlayState::Play ? FindPrimaryCamera(s_Scene) : NoEntity;
+	const CameraComponent* lens = cameraEntity != NoEntity ? s_Scene.TryGet<CameraComponent>(cameraEntity) : nullptr;
+	EnvMapVulkanRenderer::SetViewModelView(lens != nullptr, lens ? lens->ViewModelFieldOfView : CameraComponent().ViewModelFieldOfView);
+}
+
 // The view of the primary game camera, with its lens: the game's view (none: the editor's view stays)
 static void PlaceGameCamera(H2M::CameraH2M* camera)
 {
@@ -444,10 +453,12 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 	{
 		StopPlay();
 		EnvMapVulkanRenderer::SetGameTime(false, 1.0f);
+		UpdateViewModelView();
 		return;
 	}
 	// The particles' clock: the game's while it runs (Play or Simulate; still while paused), else the editor's preview
 	EnvMapVulkanRenderer::SetGameTime(IsPlaying(), s_Paused ? 0.0f : s_GameLoop.GetTimeScale());
+	UpdateViewModelView();
 	if (!IsPlaying())
 	{
 		if (!s_EditAnimation.IsRunning())
