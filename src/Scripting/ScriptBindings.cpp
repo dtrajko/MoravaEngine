@@ -1425,10 +1425,10 @@ static int32_t AnimatorGetParameter(uint64_t entity, const char16_t* name, int l
 	return ToScriptResult(animation->GetParameter(entity, ToUtf8(name, length), (AnimatorParameterType)type, *out));
 }
 
-static int32_t AnimatorPlay(uint64_t entity, const char16_t* state, int length, float fade)
+static int32_t AnimatorPlay(uint64_t entity, const char16_t* state, int length, const char16_t* layer, int layerLength, float fade)
 {
 	SceneAnimation* animation = GetAnimation();
-	return animation ? ToScriptResult(animation->Play(entity, ToUtf8(state, length), std::max(fade, 0.0f))) : 0;
+	return animation ? ToScriptResult(animation->Play(entity, ToUtf8(state, length), std::max(fade, 0.0f), ToUtf8(layer, layerLength))) : 0;
 }
 
 static int32_t AnimatorGetInfo(uint64_t entity, ScriptAnimatorInfo* out)
@@ -1446,7 +1446,7 @@ static int32_t AnimatorGetInfo(uint64_t entity, ScriptAnimatorInfo* out)
 	return 1;
 }
 
-static int32_t AnimatorGetState(uint64_t entity, char16_t* buffer, int capacity)
+static int32_t AnimatorGetState(uint64_t entity, const char16_t* layer, int layerLength, char16_t* buffer, int capacity)
 {
 	SceneAnimation* animation = GetAnimation();
 	SceneAnimation::Info info;
@@ -1454,7 +1454,25 @@ static int32_t AnimatorGetState(uint64_t entity, char16_t* buffer, int capacity)
 	{
 		return -2;
 	}
-	return CopyString(info.State, buffer, capacity);
+	const std::string name = ToUtf8(layer, layerLength);
+	if (name.empty())
+	{
+		return CopyString(info.State, buffer, capacity);
+	}
+	for (const SceneAnimation::LayerInfo& layerInfo : info.Layers)
+	{
+		if (layerInfo.Name == name)
+		{
+			return CopyString(layerInfo.State, buffer, capacity);
+		}
+	}
+	return -3;
+}
+
+static int32_t AnimatorGetBoneTransform(uint64_t entity, const char16_t* bone, int length, glm::mat4* out)
+{
+	SceneAnimation* animation = GetAnimation();
+	return animation && animation->GetNodeTransform(entity, ToUtf8(bone, length), *out) ? 1 : 0;
 }
 
 // ---- Game UI (7.1)
@@ -2154,6 +2172,7 @@ namespace ScriptBindings
 		api.Animator_Play = AnimatorPlay;
 		api.Animator_GetInfo = AnimatorGetInfo;
 		api.Animator_GetState = AnimatorGetState;
+	api.Animator_GetBoneTransform = AnimatorGetBoneTransform;
 		api.UIRect_Get = UIRectGet;
 		api.UIRect_Set = UIRectSet;
 		api.UIText_GetText = UITextGetText;

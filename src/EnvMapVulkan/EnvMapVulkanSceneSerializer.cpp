@@ -504,6 +504,12 @@ namespace EnvMapVulkanSceneSerializer
 			AssetReference::Write(out, "Controller", animator->Controller);
 			out << YAML::EndMap;
 		}
+		if (const BoneAttachmentComponent* attachment = scene.TryGet<BoneAttachmentComponent>(entity))
+		{
+			out << YAML::Key << "BoneAttachment" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "Bone" << YAML::Value << attachment->Bone;
+			out << YAML::EndMap;
+		}
 		if (const PrefabComponent* prefab = scene.TryGet<PrefabComponent>(entity))
 		{
 			out << YAML::Key << "Prefab" << YAML::Value << YAML::Flow << YAML::BeginMap;
@@ -1278,6 +1284,10 @@ namespace EnvMapVulkanSceneSerializer
 		if (YAML::Node animatorNode = node["Animator"]; animatorNode && animatorNode.IsMap())
 		{
 			scene.Add<AnimatorComponent>(entity).Controller = AssetReference::Read(animatorNode, "Controller");
+		}
+		if (YAML::Node attachmentNode = node["BoneAttachment"]; attachmentNode && attachmentNode.IsMap())
+		{
+			scene.Add<BoneAttachmentComponent>(entity).Bone = attachmentNode["Bone"].as<std::string>("");
 		}
 		if (YAML::Node prefabNode = node["Prefab"]; prefabNode && prefabNode.IsMap())
 		{

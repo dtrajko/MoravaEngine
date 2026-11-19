@@ -17,7 +17,7 @@
 #include <system_error>
 
 
-int AnimatorController::FindState(const std::string& name) const
+int AnimatorStateMachine::FindState(const std::string& name) const
 {
 	for (size_t i = 0; i < States.size(); i++)
 	{
@@ -27,6 +27,38 @@ int AnimatorController::FindState(const std::string& name) const
 		}
 	}
 	return -1;
+}
+
+int AnimatorStateMachine::GetEntryState() const
+{
+	const int entry = FindState(Entry);
+	return entry >= 0 ? entry : (States.empty() ? -1 : 0);
+}
+
+int AnimatorController::FindLayer(const std::string& name) const
+{
+	for (size_t i = 0; i < Layers.size(); i++)
+	{
+		if (Layers[i].Name == name)
+		{
+			return (int)i;
+		}
+	}
+	return -1;
+}
+
+const AnimatorStateMachine* AnimatorController::GetMachine(int layer) const
+{
+	if (layer < 0)
+	{
+		return this;
+	}
+	return layer < (int)Layers.size() ? &Layers[layer] : nullptr;
+}
+
+AnimatorStateMachine* AnimatorController::GetMachine(int layer)
+{
+	return const_cast<AnimatorStateMachine*>(static_cast<const AnimatorController*>(this)->GetMachine(layer));
 }
 
 int AnimatorController::FindParameter(const std::string& name) const
@@ -41,15 +73,14 @@ int AnimatorController::FindParameter(const std::string& name) const
 	return -1;
 }
 
-int AnimatorController::GetEntryState() const
-{
-	const int entry = FindState(Entry);
-	return entry >= 0 ? entry : (States.empty() ? -1 : 0);
-}
-
 void AnimatorController::SortEvents(AnimatorState& state)
 {
 	std::stable_sort(state.Events.begin(), state.Events.end(), [](const AnimatorEvent& a, const AnimatorEvent& b) { return a.Time < b.Time; });
+}
+
+void AnimatorController::SortBlend(AnimatorState& state)
+{
+	std::stable_sort(state.Blend.begin(), state.Blend.end(), [](const AnimatorBlendClip& a, const AnimatorBlendClip& b) { return a.Threshold < b.Threshold; });
 }
 
 void AnimatorController::GetPassedEvents(const AnimatorState& state, float from, float to, std::vector<size_t>& events)
@@ -125,6 +156,99 @@ const char* AnimatorController::GetConditionTestName(AnimatorConditionTest test)
 	return "Greater";
 }
 
+// A state machine's states and transitions (the base's, or a layer's), as keys of the map being written
+static void WriteMachine(YAML::Emitter& out, const AnimatorStateMachine& machine, const AnimatorController& controller)
+{
+	out << YAML::Key << "States" << YAML::Value << YAML::BeginSeq;
+	for (const AnimatorState& state : machine.States)
+	{
+		out << YAML::BeginMap;
+		out << YAML::Key << "Name" << YAML::Value << state.Name;
+		if (state.Blend.empty())
+		{
+			out << YAML::Key << "Clip" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			AssetReference::Write(out, "File", state.ClipFile);
+			out << YAML::Key << "Name" << YAML::Value << state.ClipName;
+			out << YAML::EndMap;
+		}
+		else
+		{
+			out << YAML::Key << "BlendParameter" << YAML::Value << state.BlendParameter;
+			out << YAML::Key << "Blend" << YAML::Value << YAML::BeginSeq;
+			for (const AnimatorBlendClip& clip : state.Blend)
+			{
+				out << YAML::Flow << YAML::BeginMap;
+				AssetReference::Write(out, "File", clip.ClipFile);
+				out << YAML::Key << "Name" << YAML::Value << clip.ClipName;
+				out << YAML::Key << "Threshold" << YAML::Value << clip.Threshold;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+		}
+		out << YAML::Key << "Speed" << YAML::Value << state.Speed;
+		if (!state.SpeedParameter.empty())
+		{
+			out << YAML::Key << "SpeedParameter" << YAML::Value << state.SpeedParameter;
+		}
+		out << YAML::Key << "Loop" << YAML::Value << state.Loop;
+		out << YAML::Key << "InPlace" << YAML::Value << state.InPlace;
+		if (!state.Events.empty())
+		{
+			out << YAML::Key << "Events" << YAML::Value << YAML::BeginSeq;
+			for (const AnimatorEvent& event : state.Events)
+			{
+				out << YAML::Flow << YAML::BeginMap;
+				out << YAML::Key << "Name" << YAML::Value << event.Name;
+				out << YAML::Key << "Time" << YAML::Value << event.Time;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+		}
+		out << YAML::EndMap;
+	}
+	out << YAML::EndSeq;
+
+	out << YAML::Key << "Transitions" << YAML::Value << YAML::BeginSeq;
+	for (const AnimatorTransition& transition : machine.Transitions)
+	{
+		out << YAML::BeginMap;
+		if (transition.FromAny)
+		{
+			out << YAML::Key << "FromAny" << YAML::Value << true;
+		}
+		else
+		{
+			out << YAML::Key << "From" << YAML::Value << transition.From;
+		}
+		out << YAML::Key << "To" << YAML::Value << transition.To;
+		out << YAML::Key << "Fade" << YAML::Value << transition.Fade;
+		if (transition.HasExitTime)
+		{
+			out << YAML::Key << "ExitTime" << YAML::Value << transition.ExitTime;
+		}
+		out << YAML::Key << "Conditions" << YAML::Value << YAML::BeginSeq;
+		for (const AnimatorCondition& condition : transition.Conditions)
+		{
+			out << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "Parameter" << YAML::Value << condition.Parameter;
+			const int parameter = controller.FindParameter(condition.Parameter);
+			const AnimatorParameterType type = parameter >= 0 ? controller.Parameters[parameter].Type : AnimatorParameterType::Float;
+			if (type != AnimatorParameterType::Trigger)
+			{
+				out << YAML::Key << "Test" << YAML::Value << AnimatorController::GetConditionTestName(condition.Test);
+			}
+			if (type == AnimatorParameterType::Float)
+			{
+				out << YAML::Key << "Value" << YAML::Value << condition.Value;
+			}
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+	}
+	out << YAML::EndSeq;
+}
+
 std::string AnimatorController::ToText() const
 {
 	YAML::Emitter out;
@@ -151,77 +275,27 @@ std::string AnimatorController::ToText() const
 	}
 	out << YAML::EndSeq;
 
-	out << YAML::Key << "States" << YAML::Value << YAML::BeginSeq;
-	for (const AnimatorState& state : States)
-	{
-		out << YAML::BeginMap;
-		out << YAML::Key << "Name" << YAML::Value << state.Name;
-		out << YAML::Key << "Clip" << YAML::Value << YAML::Flow << YAML::BeginMap;
-		AssetReference::Write(out, "File", state.ClipFile);
-		out << YAML::Key << "Name" << YAML::Value << state.ClipName;
-		out << YAML::EndMap;
-		out << YAML::Key << "Speed" << YAML::Value << state.Speed;
-		if (!state.SpeedParameter.empty())
-		{
-			out << YAML::Key << "SpeedParameter" << YAML::Value << state.SpeedParameter;
-		}
-		out << YAML::Key << "Loop" << YAML::Value << state.Loop;
-		out << YAML::Key << "InPlace" << YAML::Value << state.InPlace;
-		if (!state.Events.empty())
-		{
-			out << YAML::Key << "Events" << YAML::Value << YAML::BeginSeq;
-			for (const AnimatorEvent& event : state.Events)
-			{
-				out << YAML::Flow << YAML::BeginMap;
-				out << YAML::Key << "Name" << YAML::Value << event.Name;
-				out << YAML::Key << "Time" << YAML::Value << event.Time;
-				out << YAML::EndMap;
-			}
-			out << YAML::EndSeq;
-		}
-		out << YAML::EndMap;
-	}
-	out << YAML::EndSeq;
+	WriteMachine(out, *this, *this);
 
-	out << YAML::Key << "Transitions" << YAML::Value << YAML::BeginSeq;
-	for (const AnimatorTransition& transition : Transitions)
+	if (!Layers.empty())
 	{
-		out << YAML::BeginMap;
-		if (transition.FromAny)
+		out << YAML::Key << "Layers" << YAML::Value << YAML::BeginSeq;
+		for (const AnimatorLayer& layer : Layers)
 		{
-			out << YAML::Key << "FromAny" << YAML::Value << true;
-		}
-		else
-		{
-			out << YAML::Key << "From" << YAML::Value << transition.From;
-		}
-		out << YAML::Key << "To" << YAML::Value << transition.To;
-		out << YAML::Key << "Fade" << YAML::Value << transition.Fade;
-		if (transition.HasExitTime)
-		{
-			out << YAML::Key << "ExitTime" << YAML::Value << transition.ExitTime;
-		}
-		out << YAML::Key << "Conditions" << YAML::Value << YAML::BeginSeq;
-		for (const AnimatorCondition& condition : transition.Conditions)
-		{
-			out << YAML::Flow << YAML::BeginMap;
-			out << YAML::Key << "Parameter" << YAML::Value << condition.Parameter;
-			const int parameter = FindParameter(condition.Parameter);
-			const AnimatorParameterType type = parameter >= 0 ? Parameters[parameter].Type : AnimatorParameterType::Float;
-			if (type != AnimatorParameterType::Trigger)
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << YAML::Value << layer.Name;
+			out << YAML::Key << "Mask" << YAML::Value << YAML::Flow << layer.Mask;
+			out << YAML::Key << "Weight" << YAML::Value << layer.Weight;
+			if (!layer.WeightParameter.empty())
 			{
-				out << YAML::Key << "Test" << YAML::Value << GetConditionTestName(condition.Test);
+				out << YAML::Key << "WeightParameter" << YAML::Value << layer.WeightParameter;
 			}
-			if (type == AnimatorParameterType::Float)
-			{
-				out << YAML::Key << "Value" << YAML::Value << condition.Value;
-			}
+			out << YAML::Key << "Entry" << YAML::Value << layer.Entry;
+			WriteMachine(out, layer, *this);
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
-		out << YAML::EndMap;
 	}
-	out << YAML::EndSeq;
 
 	out << YAML::EndMap;
 	out << YAML::EndMap;
@@ -253,6 +327,119 @@ static bool FindConditionTest(const std::string& name, AnimatorConditionTest& te
 		}
 	}
 	return false;
+}
+
+// A state machine's states and transitions (the base's, or a layer's: named in the warnings) from the map that has them
+static void ReadMachine(const YAML::Node& node, const AnimatorController& controller, AnimatorStateMachine& machine,
+	const std::string& filepath, const std::string& layer)
+{
+	const std::string where = layer.empty() ? std::string() : " (layer '" + layer + "')";
+	if (const YAML::Node states = node["States"]; states && states.IsSequence())
+	{
+		for (const YAML::Node& stateNode : states)
+		{
+			AnimatorState state;
+			state.Name = stateNode["Name"].as<std::string>("");
+			if (state.Name.empty() || machine.FindState(state.Name) >= 0)
+			{
+				Log::GetLogger()->warn("Animator '{0}'{1}: a state without a name, or a second '{2}', is left out", filepath, where, state.Name);
+				continue;
+			}
+			if (const YAML::Node clip = stateNode["Clip"]; clip && clip.IsMap())
+			{
+				state.ClipFile = AssetReference::Read(clip, "File");
+				state.ClipName = clip["Name"].as<std::string>("");
+			}
+			if (const YAML::Node blend = stateNode["Blend"]; blend && blend.IsSequence())
+			{
+				for (const YAML::Node& clipNode : blend)
+				{
+					AnimatorBlendClip clip;
+					clip.ClipFile = AssetReference::Read(clipNode, "File");
+					clip.ClipName = clipNode["Name"].as<std::string>("");
+					clip.Threshold = clipNode["Threshold"].as<float>(0.0f);
+					state.Blend.push_back(std::move(clip));
+				}
+				AnimatorController::SortBlend(state);
+				state.BlendParameter = stateNode["BlendParameter"].as<std::string>("");
+				const int parameter = controller.FindParameter(state.BlendParameter);
+				if (parameter < 0 || controller.Parameters[parameter].Type != AnimatorParameterType::Float)
+				{
+					Log::GetLogger()->warn("Animator '{0}'{1}: the blend state '{2}' is blended by '{3}', which isn't a Float parameter: it shows its first clip",
+						filepath, where, state.Name, state.BlendParameter);
+				}
+			}
+			state.Speed = stateNode["Speed"].as<float>(state.Speed);
+			state.SpeedParameter = stateNode["SpeedParameter"].as<std::string>("");
+			state.Loop = stateNode["Loop"].as<bool>(state.Loop);
+			state.InPlace = stateNode["InPlace"].as<bool>(state.InPlace);
+			if (const YAML::Node events = stateNode["Events"]; events && events.IsSequence())
+			{
+				for (const YAML::Node& eventNode : events)
+				{
+					AnimatorEvent event;
+					event.Name = eventNode["Name"].as<std::string>("");
+					event.Time = std::clamp(eventNode["Time"].as<float>(0.0f), 0.0f, 1.0f);
+					if (event.Name.empty())
+					{
+						Log::GetLogger()->warn("Animator '{0}'{1}: an event of state '{2}' has no name: left out", filepath, where, state.Name);
+						continue;
+					}
+					state.Events.push_back(std::move(event));
+				}
+				AnimatorController::SortEvents(state);
+			}
+			machine.States.push_back(std::move(state));
+		}
+	}
+	if (const YAML::Node transitions = node["Transitions"]; transitions && transitions.IsSequence())
+	{
+		for (const YAML::Node& transitionNode : transitions)
+		{
+			AnimatorTransition transition;
+			transition.FromAny = transitionNode["FromAny"].as<bool>(false);
+			transition.From = transitionNode["From"].as<std::string>("");
+			transition.To = transitionNode["To"].as<std::string>("");
+			transition.Fade = std::max(transitionNode["Fade"].as<float>(transition.Fade), 0.0f);
+			if (const YAML::Node exitTime = transitionNode["ExitTime"])
+			{
+				transition.HasExitTime = true;
+				transition.ExitTime = std::max(exitTime.as<float>(1.0f), 0.0f);
+			}
+			if (const YAML::Node conditions = transitionNode["Conditions"]; conditions && conditions.IsSequence())
+			{
+				for (const YAML::Node& conditionNode : conditions)
+				{
+					AnimatorCondition condition;
+					condition.Parameter = conditionNode["Parameter"].as<std::string>("");
+					const std::string test = conditionNode["Test"].as<std::string>("");
+					const int parameter = controller.FindParameter(condition.Parameter);
+					if (parameter < 0)
+					{
+						Log::GetLogger()->warn("Animator '{0}'{1}: a condition of the transition to '{2}' tests '{3}', which isn't a parameter: left out",
+							filepath, where, transition.To, condition.Parameter);
+						continue;
+					}
+					const AnimatorParameterType type = controller.Parameters[parameter].Type;
+					condition.Test = type == AnimatorParameterType::Bool ? AnimatorConditionTest::True : AnimatorConditionTest::Greater;
+					if (!test.empty() && !FindConditionTest(test, condition.Test))
+					{
+						Log::GetLogger()->warn("Animator '{0}'{1}: a condition on '{2}' has the test '{3}' (Greater, Less, True or False)",
+							filepath, where, condition.Parameter, test);
+					}
+					condition.Value = conditionNode["Value"].as<float>(0.0f);
+					transition.Conditions.push_back(std::move(condition));
+				}
+			}
+			if (machine.FindState(transition.To) < 0 || (!transition.FromAny && machine.FindState(transition.From) < 0))
+			{
+				Log::GetLogger()->warn("Animator '{0}'{1}: the transition from '{2}' to '{3}' names a state it doesn't have: left out",
+					filepath, where, transition.FromAny ? std::string("Any State") : transition.From, transition.To);
+				continue;
+			}
+			machine.Transitions.push_back(std::move(transition));
+		}
+	}
 }
 
 bool AnimatorController::FromText(const std::string& text, const std::string& filepath, AnimatorController& controller, std::string& error)
@@ -306,91 +493,30 @@ bool AnimatorController::FromText(const std::string& text, const std::string& fi
 				result.Parameters.push_back(std::move(parameter));
 			}
 		}
-		if (const YAML::Node states = animator["States"]; states && states.IsSequence())
+		ReadMachine(animator, result, result, filepath, std::string());
+		if (const YAML::Node layers = animator["Layers"]; layers && layers.IsSequence())
 		{
-			for (const YAML::Node& node : states)
+			for (const YAML::Node& node : layers)
 			{
-				AnimatorState state;
-				state.Name = node["Name"].as<std::string>("");
-				if (state.Name.empty() || result.FindState(state.Name) >= 0)
+				AnimatorLayer layer;
+				layer.Name = node["Name"].as<std::string>("");
+				if (layer.Name.empty() || result.FindLayer(layer.Name) >= 0)
 				{
-					Log::GetLogger()->warn("Animator '{0}': a state without a name, or a second '{1}', is left out", filepath, state.Name);
+					Log::GetLogger()->warn("Animator '{0}': a layer without a name, or a second '{1}', is left out", filepath, layer.Name);
 					continue;
 				}
-				if (const YAML::Node clip = node["Clip"]; clip && clip.IsMap())
+				if (const YAML::Node mask = node["Mask"]; mask && mask.IsSequence())
 				{
-					state.ClipFile = AssetReference::Read(clip, "File");
-					state.ClipName = clip["Name"].as<std::string>("");
-				}
-				state.Speed = node["Speed"].as<float>(state.Speed);
-				state.SpeedParameter = node["SpeedParameter"].as<std::string>("");
-				state.Loop = node["Loop"].as<bool>(state.Loop);
-				state.InPlace = node["InPlace"].as<bool>(state.InPlace);
-				if (const YAML::Node events = node["Events"]; events && events.IsSequence())
-				{
-					for (const YAML::Node& eventNode : events)
+					for (const YAML::Node& name : mask)
 					{
-						AnimatorEvent event;
-						event.Name = eventNode["Name"].as<std::string>("");
-						event.Time = std::clamp(eventNode["Time"].as<float>(0.0f), 0.0f, 1.0f);
-						if (event.Name.empty())
-						{
-							Log::GetLogger()->warn("Animator '{0}': an event of state '{1}' has no name: left out", filepath, state.Name);
-							continue;
-						}
-						state.Events.push_back(std::move(event));
-					}
-					SortEvents(state);
-				}
-				result.States.push_back(std::move(state));
-			}
-		}
-		if (const YAML::Node transitions = animator["Transitions"]; transitions && transitions.IsSequence())
-		{
-			for (const YAML::Node& node : transitions)
-			{
-				AnimatorTransition transition;
-				transition.FromAny = node["FromAny"].as<bool>(false);
-				transition.From = node["From"].as<std::string>("");
-				transition.To = node["To"].as<std::string>("");
-				transition.Fade = std::max(node["Fade"].as<float>(transition.Fade), 0.0f);
-				if (const YAML::Node exitTime = node["ExitTime"])
-				{
-					transition.HasExitTime = true;
-					transition.ExitTime = std::max(exitTime.as<float>(1.0f), 0.0f);
-				}
-				if (const YAML::Node conditions = node["Conditions"]; conditions && conditions.IsSequence())
-				{
-					for (const YAML::Node& conditionNode : conditions)
-					{
-						AnimatorCondition condition;
-						condition.Parameter = conditionNode["Parameter"].as<std::string>("");
-						const std::string test = conditionNode["Test"].as<std::string>("");
-						const int parameter = result.FindParameter(condition.Parameter);
-						if (parameter < 0)
-						{
-							Log::GetLogger()->warn("Animator '{0}': a condition of the transition to '{1}' tests '{2}', which isn't a parameter: left out",
-								filepath, transition.To, condition.Parameter);
-							continue;
-						}
-						const AnimatorParameterType type = result.Parameters[parameter].Type;
-						condition.Test = type == AnimatorParameterType::Bool ? AnimatorConditionTest::True : AnimatorConditionTest::Greater;
-						if (!test.empty() && !FindConditionTest(test, condition.Test))
-						{
-							Log::GetLogger()->warn("Animator '{0}': a condition on '{1}' has the test '{2}' (Greater, Less, True or False)",
-								filepath, condition.Parameter, test);
-						}
-						condition.Value = conditionNode["Value"].as<float>(0.0f);
-						transition.Conditions.push_back(std::move(condition));
+						layer.Mask.push_back(name.as<std::string>(""));
 					}
 				}
-				if (result.FindState(transition.To) < 0 || (!transition.FromAny && result.FindState(transition.From) < 0))
-				{
-					Log::GetLogger()->warn("Animator '{0}': the transition from '{1}' to '{2}' names a state it doesn't have: left out",
-						filepath, transition.FromAny ? std::string("Any State") : transition.From, transition.To);
-					continue;
-				}
-				result.Transitions.push_back(std::move(transition));
+				layer.Weight = std::clamp(node["Weight"].as<float>(1.0f), 0.0f, 1.0f);
+				layer.WeightParameter = node["WeightParameter"].as<std::string>("");
+				layer.Entry = node["Entry"].as<std::string>("");
+				ReadMachine(node, result, layer, filepath, layer.Name);
+				result.Layers.push_back(std::move(layer));
 			}
 		}
 	}

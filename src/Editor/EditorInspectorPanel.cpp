@@ -1790,6 +1790,7 @@ void OnImGuiRenderInspector()
 	}
 	ImGui::Separator();
 	PrefabControls(entity); // an instance's root, or a part of one
+	BoneAttachmentControls(entity); // a child of a model with bones
 
 	switch (kind)
 	{

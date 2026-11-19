@@ -214,6 +214,8 @@ SceneAudio* GetGameAudio();
 ScriptRuntime* GetGameScripts();
 // The running game's animators, for the Inspector and the Animator panel (nullptr: no game; Simulate has them too)
 SceneAnimation* GetGameAnimation();
+// The animators posing the models now: the game's, else the editor's preview of the entry states (nullptr: none yet)
+SceneAnimation* GetShownAnimation();
 
 // Hot reload (EditorScriptReload.cpp): each frame, after Play and Stop, a newer build of the project's scripts is loaded
 // (while the game doesn't run). RequestScriptReload: load the scripts again now (the Project panel's Reload)
@@ -656,6 +658,9 @@ void TextureFileControls(std::string& texture, const char* noneText, const char*
 // The Inspector's Animator section (EditorInspectorAnimator.cpp, 6.4): the model's controller, and while the game runs
 // its state, crossfade and parameters
 void AnimatorControls(EnvMapVulkanEntityID entity);
+// The Inspector's Bone Attachment section (EditorInspectorAnimator.cpp, 6.4): an entity whose parent has a model with
+// bones follows one of them
+void BoneAttachmentControls(EnvMapVulkanEntityID entity);
 
 // ---- The game UI (EditorUI.cpp, 7.1)
 

@@ -16,6 +16,7 @@
 
 #include "imgui.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <filesystem>
 #include <string>
@@ -122,6 +123,11 @@ static void LiveControls(EnvMapVulkanEntityID entity, SceneAnimation& game)
 		snprintf(overlay, sizeof(overlay), "%.0f%%", info.FadeProgress * 100.0f);
 		ImGui::ProgressBar(info.FadeProgress, ImVec2(-1.0f, 0.0f), overlay);
 	}
+	for (const SceneAnimation::LayerInfo& layer : info.Layers)
+	{
+		ImGui::Text("%s: %s%s%s  (weight %.2f)", layer.Name.c_str(), layer.InTransition && !layer.PreviousState.empty() ? layer.PreviousState.c_str() : "",
+			layer.InTransition ? " -> " : "", layer.State.c_str(), layer.Weight);
+	}
 	ImGui::TextDisabled("%llu transition(s) taken", (unsigned long long)info.Transitions);
 	if (info.Events > 0)
 	{
@@ -170,6 +176,131 @@ static void LiveControls(EnvMapVulkanEntityID entity, SceneAnimation& game)
 	{
 		ImGui::SetTooltip("The parameters as the game has them now: set here as a script would (the script may set them again)");
 	}
+}
+
+// The bone's place in the parent's space now: as the game or the editor's preview poses the parent, else its bind pose
+static glm::mat4 GetBoneTransformNow(EnvMapVulkanEntityID parent, const std::string& bone)
+{
+	glm::mat4 world;
+	SceneAnimation* animation = GetShownAnimation();
+	const bool found = animation ? animation->GetNodeTransform(parent, bone, world) : SceneAnimation::GetBindNodeTransform(s_Scene, parent, bone, world);
+	return found ? glm::inverse(s_Scene.GetWorldTransform(parent)) * world : glm::mat4(1.0f);
+}
+
+void BoneAttachmentControls(EnvMapVulkanEntityID entity)
+{
+	const EnvMapVulkanEntityID parent = s_Scene.GetParent(entity);
+	const ModelComponent* model = parent != NoEntity ? s_Scene.TryGet<ModelComponent>(parent) : nullptr;
+	const AnimationSkeleton* skeleton = model && model->Model ? model->Model->GetSkeleton() : nullptr;
+	BoneAttachmentComponent* attachment = s_Scene.TryGet<BoneAttachmentComponent>(entity);
+	if (!skeleton && !attachment)
+	{
+		return; // only a child of a model with bones follows one
+	}
+
+	// Attached, detached or moved to another bone: the entity stays where it is in the world (its offset changes)
+	auto attach = [&](const std::string* bone)
+	{
+		const glm::mat4 world = s_Scene.GetWorldTransform(entity);
+		if (!bone)
+		{
+			s_Scene.Remove<BoneAttachmentComponent>(entity);
+		}
+		else
+		{
+			BoneAttachmentComponent& component = s_Scene.Has<BoneAttachmentComponent>(entity) ? s_Scene.Get<BoneAttachmentComponent>(entity)
+				: s_Scene.Add<BoneAttachmentComponent>(entity);
+			component.Bone = *bone;
+			component.BoneTransform = parent != NoEntity ? GetBoneTransformNow(parent, *bone) : glm::mat4(1.0f);
+		}
+		s_Scene.SetWorldTransform(entity, world);
+	};
+
+	ImGui::PushID("BoneAttachment");
+	bool attached = attachment != nullptr;
+	ImGui::BeginDisabled(IsPlaying());
+	if (ImGui::Checkbox("Bone Attachment", &attached))
+	{
+		std::string first;
+		if (attached && skeleton)
+		{
+			// The right hand when the rig has one (a gun), else the first bone the skin is bound to
+			for (const AnimationSkeleton::Node& node : skeleton->GetNodes())
+			{
+				if (first.empty() && node.Bone >= 0)
+				{
+					first = node.Name;
+				}
+				if (node.Name == "hand_r")
+				{
+					first = node.Name;
+					break;
+				}
+			}
+		}
+		attach(attached ? &first : nullptr);
+		attachment = s_Scene.TryGet<BoneAttachmentComponent>(entity);
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip(IsPlaying() ? "Attached and detached while the game doesn't run" :
+			"The entity follows a bone of its parent's model as its Animator moves it (a gun in a hand):\n"
+			"its Transform is then an offset in the bone's space. It stays where it is when attached");
+	}
+	if (!attachment)
+	{
+		ImGui::PopID();
+		return;
+	}
+	if (!skeleton)
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.3f, 1.0f), "Its parent has no model with bones: it is placed as any child");
+		ImGui::PopID();
+		return;
+	}
+
+	ImGui::BeginDisabled(IsPlaying());
+	const bool found = skeleton->FindNode(attachment->Bone) >= 0;
+	ImGui::SetNextItemWidth(-90.0f);
+	if (ImGui::BeginCombo("Bone", attachment->Bone.empty() ? "(none)" : attachment->Bone.c_str(), ImGuiComboFlags_HeightLarge))
+	{
+		for (const AnimationSkeleton::Node& node : skeleton->GetNodes())
+		{
+			// Indented by its depth: the rig's tree
+			int depth = 0;
+			for (int parentNode = node.Parent; parentNode >= 0; parentNode = skeleton->GetNodes()[parentNode].Parent)
+			{
+				depth++;
+			}
+			const std::string label = std::string(std::min(depth, 20) * 2, ' ') + node.Name;
+			if (ImGui::Selectable(label.c_str(), node.Name == attachment->Bone))
+			{
+				attach(&node.Name);
+			}
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The node of the parent's model it follows (the rig's tree): the entity keeps its place when changed");
+	}
+	if (!found)
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.3f, 1.0f), "The parent's model has no node '%s'", attachment->Bone.c_str());
+	}
+	if (ImGui::Button("Snap to Bone"))
+	{
+		TransformComponent& transform = s_Scene.Get<TransformComponent>(entity);
+		transform.Translation = glm::vec3(0.0f);
+		transform.Rotation = glm::vec3(0.0f);
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("No offset: the entity's origin at the bone, turned as the bone is (its scale stays)");
+	}
+	ImGui::PopID();
 }
 
 void AnimatorControls(EnvMapVulkanEntityID entity)
@@ -224,7 +355,7 @@ void AnimatorControls(EnvMapVulkanEntityID entity)
 	}
 	else
 	{
-		ImGui::TextDisabled("In Play and Simulate it poses the model; here the model plays its own clip (Animation)");
+		ImGui::TextDisabled("Here it shows its entry states (the base's and the layers'); in Play the scripts set its parameters");
 	}
 	ImGui::PopID();
 }

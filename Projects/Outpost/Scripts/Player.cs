@@ -10,8 +10,9 @@ namespace Outpost
     /// fast walk, sprint, walk quietly, crouch, jump, fall damage); each frame the body (PlayerBody: the Body child's model
     /// and animator) shows it, the camera goes to the eyes (lower when crouched, eased) or over the shoulder (PlayerView),
     /// and the steps are heard. SwitchView (V) changes the view, SwapShoulder (X) the shoulder; both are kept in the
-    /// settings. In first person the body is hidden from the camera, its shadow stays, and the view model (the arms and the
-    /// placeholder gun, models marked View Model: E2) is shown at the eyes instead.
+    /// settings. In first person the body (and the rifle in its hand) is hidden from the camera, its shadow stays, and the
+    /// view model (the arms and the placeholder gun, models marked View Model: E2) is shown at the eyes instead. In third
+    /// person the body holds the rifle in its hand and aims where the camera looks (Phase 2.1: E3, E5).
     ///
     /// F2 (DebugFly) hands the view to the debug fly camera (the Camera entity's FlyCamera) and back: the player stands
     /// still meanwhile.
@@ -23,6 +24,9 @@ namespace Outpost
 
         /// <summary>The body: a child at the feet with the model and its animator (Player.manim).</summary>
         public Entity? Body;
+
+        /// <summary>The rifle in the body's right hand: the body's child on its hand_r bone (Inspector: Bone Attachment).</summary>
+        public Entity? BodyGun;
 
         /// <summary>
         /// First person's view model (Inspector: Model, View Model): the arms (ViewModel.manim), placed at the eyes each frame,
@@ -100,7 +104,6 @@ namespace Outpost
             set
             {
                 view.Mode = value;
-                body?.FaceLook();
                 Settings.SetBool(ThirdPersonSetting, value == ViewMode.ThirdPerson);
             }
         }
@@ -118,6 +121,7 @@ namespace Outpost
         /// <summary>The body's state (Player.manim's), its heading, and where the camera is: for what shows them (a test).</summary>
         public string BodyState => body?.State ?? "";
         public float BodyHeading => body?.Heading ?? 0.0f;
+        public float BodyMoveAngle => body?.MoveAngle ?? 0.0f;
         public bool BodyHidden => body?.HiddenInMainView ?? false;
         public Vector3 CameraPosition => view.Position;
         public bool ViewModelShown => viewModelArms != null && !viewModelArms.HiddenInMainView;
@@ -138,7 +142,7 @@ namespace Outpost
             motor.Landed += OnLanded;
 
             if (Body != null)
-                body = new PlayerBody(Body, new PlayerBodySettings());
+                body = new PlayerBody(Body, new PlayerBodySettings(), BodyGun);
             else
                 Log.Warn($"{Name}: no Body, the player has no model (and no shadow)");
             viewModelArms = ViewModel?.GetComponent<Model>();
@@ -168,7 +172,7 @@ namespace Outpost
                 fly.IsActive = !fly.IsActive;
             if (Flying)
             {
-                body?.Update(dt, Vector3.Zero, motor.IsGrounded, motor.IsCrouched, false, false, lastCommand.Yaw);
+                body?.Update(dt, Vector3.Zero, motor.IsGrounded, motor.IsCrouched, false, false, lastCommand.Yaw, lastCommand.Pitch);
                 if (body != null)
                     body.HiddenInMainView = false; // the fly camera sees the player standing there
                 ShowViewModel(false);
@@ -185,7 +189,7 @@ namespace Outpost
             float pitch = CommandSource != null ? lastCommand.Pitch : input.Pitch;
 
             // The body shows what the motor does (the same in both views)
-            body?.Update(dt, motor.Velocity, motor.IsGrounded, motor.IsCrouched, motor.IsWalking, motor.IsSprinting, yaw);
+            body?.Update(dt, motor.Velocity, motor.IsGrounded, motor.IsCrouched, motor.IsWalking, motor.IsSprinting, yaw, pitch);
 
             // The eyes: down with the capsule when crouched, eased so the view doesn't jump; the camera there or over the shoulder
             float crouchDrop = character.StandingHeight - character.Height;

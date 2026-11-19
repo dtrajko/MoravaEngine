@@ -562,6 +562,15 @@ SceneAnimation* GetGameAnimation()
 	return IsPlaying() ? &s_GameSystems.GetAnimation() : nullptr;
 }
 
+SceneAnimation* GetShownAnimation()
+{
+	if (SceneAnimation* game = GetGameAnimation())
+	{
+		return game;
+	}
+	return s_EditAnimation.IsRunning() ? &s_EditAnimation : nullptr;
+}
+
 ScriptRuntime* GetGameScripts()
 {
 	return s_PlayState == PlayState::Play ? &s_GameSystems.GetScripts() : nullptr;

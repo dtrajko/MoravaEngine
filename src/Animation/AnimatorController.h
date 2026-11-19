@@ -42,6 +42,14 @@ struct AnimatorEvent
 	float Time = 0.0f;
 };
 
+// One clip of a blend state, and the parameter's value where it alone shows
+struct AnimatorBlendClip
+{
+	std::string ClipFile; // as a state's (empty: the animated model's own file)
+	std::string ClipName;
+	float Threshold = 0.0f;
+};
+
 struct AnimatorState
 {
 	std::string Name;
@@ -49,6 +57,12 @@ struct AnimatorState
 	// and its name there (empty: its first clip)
 	std::string ClipFile;
 	std::string ClipName;
+	// A blend state (Blend not empty: Clip isn't used): its clips blended by a Float parameter, between the two whose
+	// thresholds it lies between (below the first or above the last: that one alone). Sorted by threshold. The clips play in
+	// step, each at the same fraction of its length (a walk's feet meet the ground together): the state's length is theirs
+	// weighted as they show. An aim (up, ahead, down by the look's pitch), a walk by its direction
+	std::vector<AnimatorBlendClip> Blend;
+	std::string BlendParameter;
 	float Speed = 1.0f;          // 2: twice as fast; negative plays backwards
 	std::string SpeedParameter;  // a Float parameter the speed is multiplied by (empty: none)
 	bool Loop = true;            // else held on its last frame
@@ -69,23 +83,46 @@ struct AnimatorTransition
 	std::vector<AnimatorCondition> Conditions;
 };
 
-struct AnimatorController
+// States and the transitions between them: the controller's own (its base layer) and each layer's
+struct AnimatorStateMachine
+{
+	std::string Entry; // the state it starts in (empty or unknown: the first)
+	std::vector<AnimatorState> States;
+	std::vector<AnimatorTransition> Transitions;
+
+	int FindState(const std::string& name) const;
+	int GetEntryState() const; // -1: no states
+};
+
+// A layer over the base (and the layers before it): its own state machine, whose pose takes over the nodes of its mask by
+// its weight. An upper body that aims while the legs walk: the mask from the spine up, the weight 1
+struct AnimatorLayer : AnimatorStateMachine
+{
+	std::string Name;
+	// The nodes it moves: each named node with every node under it (empty: all of them)
+	std::vector<std::string> Mask;
+	float Weight = 1.0f;          // 0 to 1
+	std::string WeightParameter;  // a Float parameter the weight is multiplied by (empty: none): a layer faded in and out
+};
+
+// The controller is its base layer (all nodes, weight 1), the parameters every layer reads, and the layers over it in order
+struct AnimatorController : AnimatorStateMachine
 {
 	static constexpr int Version = 1;
 	static constexpr const char* FileExtension = ".manim";
 
-	std::string Entry; // the state the animator starts in (empty or unknown: the first)
 	std::vector<AnimatorParameter> Parameters;
-	std::vector<AnimatorState> States;
-	std::vector<AnimatorTransition> Transitions;
+	std::vector<AnimatorLayer> Layers;
 
 	// Changes with every edit (MarkChanged): a running animator takes the edited controller then
 	uint64_t Revision = 1;
 	void MarkChanged() { Revision++; }
 
-	int FindState(const std::string& name) const;
 	int FindParameter(const std::string& name) const;
-	int GetEntryState() const; // -1: no states
+	int FindLayer(const std::string& name) const; // -1: none (the base has no name)
+	// The base (layer -1) or a layer's state machine; nullptr when there is no such layer
+	const AnimatorStateMachine* GetMachine(int layer) const;
+	AnimatorStateMachine* GetMachine(int layer);
 
 	// The file as text, and back. Load: false with the reason in error when it isn't a controller file
 	std::string ToText() const;
@@ -95,6 +132,8 @@ struct AnimatorController
 
 	// The state's events in time order (after one was added or its time edited)
 	static void SortEvents(AnimatorState& state);
+	// A blend state's clips in threshold order (after one was added or its threshold edited)
+	static void SortBlend(AnimatorState& state);
 	// The state's events a frame passed, from one normalized time of its clip to another (backwards: to below from), in the
 	// order passed: [from, to), the clip's end included when not looped; a looped state's in each loop passed (a frame
 	// longer than a loop: each event once)

@@ -16,7 +16,7 @@ Animation Library 2, Low Poly Animated Guns; Kenney's Blaster Kit (not used: toy
 
 Our own: the scripts' textures and sounds, the level builder's models (`Tools/LevelBuilder`), the greybox materials, the
 rifle clips (`Assets/Models/SoldierAnimations/Soldier_Rifles.glb`, made by `Tools/CharacterPoses/make_rifle_poses.py`)
-and the player's fast walk (`Assets/Models/SoldierAnimations/Soldier_Locomotion.glb`, made by
+and the player's fast walks forward, back and to the sides (`Assets/Models/SoldierAnimations/Soldier_Locomotion.glb`, made by
 `Tools/CharacterPoses/make_fast_walk.py`), both on the animation library's rig; the files carry the library's
 mannequin, CC0. The soldier's uniform (`Soldier_Player.gltf`, `Soldier_Player_Arms.gltf` with their `.bin` files and the
 `T_Soldier_Player_*` maps in `Assets/Models/QuaterniusCharacters`, made by `Tools/CharacterPoses/make_uniform.py`) is

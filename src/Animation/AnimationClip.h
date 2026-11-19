@@ -69,6 +69,12 @@ public:
 	void GetBindPose(AnimationPose& pose) const;
 	// The skinning shaders' matrices for the pose: the inverse root transform * the bone's world in the file * its offset
 	void ComputeBoneTransforms(const AnimationPose& pose, std::vector<glm::mat4>& boneTransforms) const;
+	// Where a node is in the model's space for the pose (the space its entity's transform places: a rigged mesh is drawn
+	// with the model transform * the root transform * the bone matrices, so the inverse root cancels): what a bone
+	// attachment follows. An empty pose: the bind pose
+	glm::mat4 GetNodeTransform(const AnimationPose& pose, int node) const;
+	// Each node's mark: 1 when it is one of the named nodes or under one (an animator layer's mask; no names: all of them)
+	void GetMask(const std::vector<std::string>& names, std::vector<uint8_t>& mask) const;
 
 private:
 	std::vector<Node> m_Nodes;
@@ -130,6 +136,9 @@ namespace AnimationSampling
 
 	// from towards to by weight (0: from, 1: to), into out (may be from or to)
 	void BlendPoses(const AnimationPose& from, const AnimationPose& to, float weight, const AnimationSkeleton& skeleton, AnimationPose& out);
+	// The same over the nodes the mask marks (AnimationSkeleton::GetMask) that to animates; the others stay as pose has
+	// them. pose is from and out: an animator layer over the layers under it
+	void BlendPosesMasked(AnimationPose& pose, const AnimationPose& to, float weight, const std::vector<uint8_t>& mask, const AnimationSkeleton& skeleton);
 
 	// The time a clip shows: wrapped into it when looped, else held at its ends
 	float GetClipTime(float time, float duration, bool loop);

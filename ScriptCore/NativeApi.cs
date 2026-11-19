@@ -76,9 +76,10 @@ namespace Morava
 
         public delegate* unmanaged<ulong, char*, int, int, float, int> Animator_SetParameter;
         public delegate* unmanaged<ulong, char*, int, int, float*, int> Animator_GetParameter;
-        public delegate* unmanaged<ulong, char*, int, float, int> Animator_Play;
+        public delegate* unmanaged<ulong, char*, int, char*, int, float, int> Animator_Play;
         public delegate* unmanaged<ulong, NativeAnimatorInfo*, int> Animator_GetInfo;
-        public delegate* unmanaged<ulong, char*, int, int> Animator_GetState;
+        public delegate* unmanaged<ulong, char*, int, char*, int, int> Animator_GetState;
+        public delegate* unmanaged<ulong, char*, int, Matrix4x4*, int> Animator_GetBoneTransform;
 
         public delegate* unmanaged<ulong, NativeUIRect*, int> UIRect_Get;
         public delegate* unmanaged<ulong, NativeUIRect*, int> UIRect_Set;

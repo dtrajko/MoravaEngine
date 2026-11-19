@@ -665,6 +665,10 @@ glm::mat4 EnvMapVulkanScene::GetWorldTransform(EnvMapVulkanEntityID id) const
 	for (EnvMapVulkanEntityID current = id; current != NoEntity && Exists(current); current = GetParent(current))
 	{
 		world = Get<TransformComponent>(current).GetMatrix() * world;
+		if (const BoneAttachmentComponent* attachment = m_Registry.try_get<BoneAttachmentComponent>(Handle(current)))
+		{
+			world = attachment->BoneTransform * world; // in its bone's space, the bone in the parent's
+		}
 	}
 	return world;
 }
@@ -677,6 +681,10 @@ void EnvMapVulkanScene::SetWorldTransform(EnvMapVulkanEntityID id, const glm::ma
 	}
 	EnvMapVulkanEntityID parent = GetParent(id);
 	glm::mat4 local = parent != NoEntity ? glm::inverse(GetWorldTransform(parent)) * world : world;
+	if (const BoneAttachmentComponent* attachment = TryGet<BoneAttachmentComponent>(id))
+	{
+		local = glm::inverse(attachment->BoneTransform) * local; // the offset in its bone's space
+	}
 	Get<TransformComponent>(id).SetMatrix(local);
 }
 

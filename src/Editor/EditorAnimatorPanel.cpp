@@ -1,5 +1,6 @@
 // The Animator panel (View > Animator, docs/engine/Game_Engine_Runtime_Guide.html, 6.4): an animator controller's
-// parameters, states and transitions. It shows the selected entity's controller (or one opened from the Content Browser,
+// parameters, and the states and transitions of its base or of one of its layers (the Layer combo; a layer's mask and
+// weight with it). It shows the selected entity's controller (or one opened from the Content Browser,
 // or with Open...), edited in place: the controller is the one the running game plays (AnimatorControllerLibrary), so a
 // changed fade or speed shows at once, and an animator keeps its state through an edit by its name. Save writes the
 // .manim file; Revert reads it again. While the game runs, the state the selected entity's animator is in is marked, with
@@ -40,6 +41,7 @@ bool s_ShowAnimatorPanel = false;
 static std::string s_File;                              // the controller shown (absolute)
 static std::map<std::string, std::string> s_SavedTexts; // each controller's file as last read or written: changes are a difference
 static EnvMapVulkanEntityID s_FollowedEntity = NoEntity; // the selected entity the panel last took its controller from
+static int s_Layer = -1;                                 // the layer shown (-1: the base)
 
 static const ImVec4 s_PlayingColor(0.45f, 0.9f, 0.45f, 1.0f);
 
@@ -56,6 +58,10 @@ static bool IsControllerFile(const std::string& path)
 
 void OpenAnimatorController(const std::string& path)
 {
+	if (NormalizePath(path) != s_File)
+	{
+		s_Layer = -1; // another controller: its base first
+	}
 	s_File = NormalizePath(path);
 	if (std::shared_ptr<AnimatorController> controller = AnimatorControllerLibrary::Get(s_File))
 	{
@@ -110,7 +116,7 @@ std::string CreateAnimatorController(const H2M::RefH2M<H2M::ModelH2M>& model, co
 
 // ---- Edits that keep the names consistent: a state or parameter renamed or deleted, everything naming it follows
 
-static void RenameState(AnimatorController& controller, size_t index, const std::string& name)
+static void RenameState(AnimatorStateMachine& controller, size_t index, const std::string& name)
 {
 	const std::string old = controller.States[index].Name;
 	controller.States[index].Name = name;
@@ -125,7 +131,7 @@ static void RenameState(AnimatorController& controller, size_t index, const std:
 	}
 }
 
-static void DeleteState(AnimatorController& controller, size_t index)
+static void DeleteState(AnimatorStateMachine& controller, size_t index)
 {
 	const std::string name = controller.States[index].Name;
 	controller.States.erase(controller.States.begin() + index);
@@ -139,20 +145,39 @@ static void DeleteState(AnimatorController& controller, size_t index)
 	}
 }
 
+// The base and every layer's state machine
+static std::vector<AnimatorStateMachine*> GetMachines(AnimatorController& controller)
+{
+	std::vector<AnimatorStateMachine*> machines = { &controller };
+	for (AnimatorLayer& layer : controller.Layers)
+	{
+		machines.push_back(&layer);
+	}
+	return machines;
+}
+
 static void RenameParameter(AnimatorController& controller, size_t index, const std::string& name)
 {
 	const std::string old = controller.Parameters[index].Name;
 	controller.Parameters[index].Name = name;
-	for (AnimatorTransition& transition : controller.Transitions)
+	for (AnimatorStateMachine* machine : GetMachines(controller))
 	{
-		for (AnimatorCondition& condition : transition.Conditions)
+		for (AnimatorTransition& transition : machine->Transitions)
 		{
-			if (condition.Parameter == old) condition.Parameter = name;
+			for (AnimatorCondition& condition : transition.Conditions)
+			{
+				if (condition.Parameter == old) condition.Parameter = name;
+			}
+		}
+		for (AnimatorState& state : machine->States)
+		{
+			if (state.SpeedParameter == old) state.SpeedParameter = name;
+			if (state.BlendParameter == old) state.BlendParameter = name;
 		}
 	}
-	for (AnimatorState& state : controller.States)
+	for (AnimatorLayer& layer : controller.Layers)
 	{
-		if (state.SpeedParameter == old) state.SpeedParameter = name;
+		if (layer.WeightParameter == old) layer.WeightParameter = name;
 	}
 }
 
@@ -160,14 +185,22 @@ static void DeleteParameter(AnimatorController& controller, size_t index)
 {
 	const std::string name = controller.Parameters[index].Name;
 	controller.Parameters.erase(controller.Parameters.begin() + index);
-	for (AnimatorTransition& transition : controller.Transitions)
+	for (AnimatorStateMachine* machine : GetMachines(controller))
 	{
-		transition.Conditions.erase(std::remove_if(transition.Conditions.begin(), transition.Conditions.end(),
-			[&](const AnimatorCondition& condition) { return condition.Parameter == name; }), transition.Conditions.end());
+		for (AnimatorTransition& transition : machine->Transitions)
+		{
+			transition.Conditions.erase(std::remove_if(transition.Conditions.begin(), transition.Conditions.end(),
+				[&](const AnimatorCondition& condition) { return condition.Parameter == name; }), transition.Conditions.end());
+		}
+		for (AnimatorState& state : machine->States)
+		{
+			if (state.SpeedParameter == name) state.SpeedParameter.clear();
+			if (state.BlendParameter == name) state.BlendParameter.clear();
+		}
 	}
-	for (AnimatorState& state : controller.States)
+	for (AnimatorLayer& layer : controller.Layers)
 	{
-		if (state.SpeedParameter == name) state.SpeedParameter.clear();
+		if (layer.WeightParameter == name) layer.WeightParameter.clear();
 	}
 }
 
@@ -238,11 +271,14 @@ static bool ParameterControls(AnimatorController& controller, const SceneAnimati
 		{
 			parameter.Type = (AnimatorParameterType)type;
 			parameter.Default = 0.0f;
-			for (AnimatorTransition& transition : controller.Transitions)
+			for (AnimatorStateMachine* machine : GetMachines(controller))
 			{
-				for (AnimatorCondition& condition : transition.Conditions)
+				for (AnimatorTransition& transition : machine->Transitions)
 				{
-					FitConditionTest(controller, condition);
+					for (AnimatorCondition& condition : transition.Conditions)
+					{
+						FitConditionTest(controller, condition);
+					}
 				}
 			}
 			changed = true;
@@ -311,10 +347,10 @@ static bool ParameterControls(AnimatorController& controller, const SceneAnimati
 }
 
 // The clip names of a state's file: the model's own clips (model: the animated entity's, when known), or another file's
-static std::vector<std::string> GetClipNames(const AnimatorState& state, const H2M::RefH2M<H2M::ModelH2M>& model)
+static std::vector<std::string> GetClipNames(const std::string& clipFile, const H2M::RefH2M<H2M::ModelH2M>& model)
 {
 	std::vector<std::string> names;
-	if (state.ClipFile.empty())
+	if (clipFile.empty())
 	{
 		if (model)
 		{
@@ -323,15 +359,16 @@ static std::vector<std::string> GetClipNames(const AnimatorState& state, const H
 	}
 	else
 	{
-		for (const AnimationClip& clip : *AnimationClipLibrary::Load(state.ClipFile)) names.push_back(clip.GetName());
+		for (const AnimationClip& clip : *AnimationClipLibrary::Load(clipFile)) names.push_back(clip.GetName());
 	}
 	return names;
 }
 
-static bool ClipControls(AnimatorState& state, const H2M::RefH2M<H2M::ModelH2M>& model)
+// A clip: its model file and its name there (a state's, or one of a blend state's)
+static bool ClipControls(std::string& clipFile, std::string& clipName, const H2M::RefH2M<H2M::ModelH2M>& model)
 {
 	bool changed = false;
-	const std::string shown = state.ClipFile.empty() ? std::string("(the model's own file)") : ProjectPaths::ToStored(state.ClipFile);
+	const std::string shown = clipFile.empty() ? std::string("(the model's own file)") : ProjectPaths::ToStored(clipFile);
 	char buffer[512] = {};
 	snprintf(buffer, sizeof(buffer), "%s", shown.c_str());
 	ImGui::SetNextItemWidth(-110.0f);
@@ -345,8 +382,8 @@ static bool ClipControls(AnimatorState& state, const H2M::RefH2M<H2M::ModelH2M>&
 			const std::string path = std::filesystem::u8path(Util::to_str((const wchar_t*)payload->Data)).lexically_normal().generic_u8string();
 			if (EnvMapVulkanSceneLoader::IsModelFile(path))
 			{
-				state.ClipFile = ProjectPaths::Normalize(path);
-				state.ClipName.clear();
+				clipFile = ProjectPaths::Normalize(path);
+				clipName.clear();
 				changed = true;
 			}
 			else
@@ -367,17 +404,17 @@ static bool ClipControls(AnimatorState& state, const H2M::RefH2M<H2M::ModelH2M>&
 		const std::string file = FileDialogs::OpenFile({ { "Model with animations", "fbx,gltf,glb,dae,md5mesh,x" } }, GetAssetFolderForDialog());
 		if (!file.empty())
 		{
-			state.ClipFile = ProjectPaths::Normalize(std::filesystem::u8path(file).lexically_normal().generic_u8string());
-			state.ClipName.clear();
+			clipFile = ProjectPaths::Normalize(std::filesystem::u8path(file).lexically_normal().generic_u8string());
+			clipName.clear();
 			changed = true;
 		}
 	}
 	ImGui::SameLine();
-	ImGui::BeginDisabled(state.ClipFile.empty());
+	ImGui::BeginDisabled(clipFile.empty());
 	if (ImGui::Button("Own##OwnClip"))
 	{
-		state.ClipFile.clear();
-		state.ClipName.clear();
+		clipFile.clear();
+		clipName.clear();
 		changed = true;
 	}
 	ImGui::EndDisabled();
@@ -386,21 +423,21 @@ static bool ClipControls(AnimatorState& state, const H2M::RefH2M<H2M::ModelH2M>&
 		ImGui::SetTooltip("A clip of the animated model's own file");
 	}
 
-	const std::vector<std::string> names = GetClipNames(state, model);
+	const std::vector<std::string> names = GetClipNames(clipFile, model);
 	ImGui::SetNextItemWidth(-110.0f);
-	const std::string current = state.ClipName.empty() ? std::string("(its first clip)") : state.ClipName;
+	const std::string current = clipName.empty() ? std::string("(its first clip)") : clipName;
 	if (ImGui::BeginCombo("Clip", current.c_str()))
 	{
-		if (ImGui::Selectable("(its first clip)", state.ClipName.empty()))
+		if (ImGui::Selectable("(its first clip)", clipName.empty()))
 		{
-			state.ClipName.clear();
+			clipName.clear();
 			changed = true;
 		}
 		for (const std::string& name : names)
 		{
-			if (ImGui::Selectable(name.c_str(), name == state.ClipName))
+			if (ImGui::Selectable(name.c_str(), name == clipName))
 			{
-				state.ClipName = name;
+				clipName = name;
 				changed = true;
 			}
 		}
@@ -408,13 +445,13 @@ static bool ClipControls(AnimatorState& state, const H2M::RefH2M<H2M::ModelH2M>&
 	}
 	if (names.empty())
 	{
-		ImGui::TextDisabled(state.ClipFile.empty() && !model ? "Select the animated entity to see its model's clips" : "The file has no clips");
+		ImGui::TextDisabled(clipFile.empty() && !model ? "Select the animated entity to see its model's clips" : "The file has no clips");
 	}
 	return changed;
 }
 
 // A state's events: a name and a time in its clip each (0 its start, 1 its end), put in time order once a time is edited
-static bool EventControls(AnimatorState& state, const SceneAnimation::Info* live)
+static bool EventControls(AnimatorState& state, const SceneAnimation::LayerInfo* live)
 {
 	bool changed = false;
 	bool sort = false;
@@ -481,7 +518,125 @@ static bool EventControls(AnimatorState& state, const SceneAnimation::Info* live
 	return changed;
 }
 
-static bool StateControls(AnimatorController& controller, const H2M::RefH2M<H2M::ModelH2M>& model, const SceneAnimation::Info* live)
+// A Float parameter of the controller, or nothing (none: "(nothing)" shown)
+static bool FloatParameterCombo(const char* label, const AnimatorController& controller, std::string& parameter, const char* none)
+{
+	bool changed = false;
+	if (ImGui::BeginCombo(label, parameter.empty() ? none : parameter.c_str()))
+	{
+		if (ImGui::Selectable(none, parameter.empty()))
+		{
+			parameter.clear();
+			changed = true;
+		}
+		for (const AnimatorParameter& candidate : controller.Parameters)
+		{
+			if (candidate.Type == AnimatorParameterType::Float && ImGui::Selectable(candidate.Name.c_str(), candidate.Name == parameter))
+			{
+				parameter = candidate.Name;
+				changed = true;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	return changed;
+}
+
+// A state's clip, or a blend state's clips with their thresholds and the parameter blending them
+static bool StateClipControls(const AnimatorController& controller, AnimatorState& state, const H2M::RefH2M<H2M::ModelH2M>& model)
+{
+	bool changed = false;
+	bool blend = !state.Blend.empty();
+	if (ImGui::Checkbox("Blend", &blend))
+	{
+		if (blend)
+		{
+			// Its clip becomes the blend's first, blended by the first Float parameter
+			state.Blend.push_back({ state.ClipFile, state.ClipName, 0.0f });
+			for (const AnimatorParameter& parameter : controller.Parameters)
+			{
+				if (parameter.Type == AnimatorParameterType::Float)
+				{
+					state.BlendParameter = parameter.Name;
+					break;
+				}
+			}
+		}
+		else
+		{
+			// The blend's first clip becomes its clip
+			state.ClipFile = state.Blend.front().ClipFile;
+			state.ClipName = state.Blend.front().ClipName;
+			state.Blend.clear();
+			state.BlendParameter.clear();
+		}
+		changed = true;
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Clips blended by a Float parameter: between the two whose thresholds it lies between (an aim\n"
+			"up, ahead and down by the look's pitch; a walk by its direction). They play in step, each at the same\n"
+			"fraction of its length");
+	}
+	if (!blend)
+	{
+		return ClipControls(state.ClipFile, state.ClipName, model) || changed;
+	}
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(130.0f);
+	changed |= FloatParameterCombo("By", controller, state.BlendParameter, "(no parameter)");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The Float parameter whose value picks the clips (the scripts set it: Animator.SetFloat)");
+	}
+	if (state.BlendParameter.empty())
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.3f, 1.0f), "No parameter: it shows its first clip");
+	}
+	bool sort = false;
+	int deleted = -1;
+	for (size_t c = 0; c < state.Blend.size(); c++)
+	{
+		AnimatorBlendClip& clip = state.Blend[c];
+		ImGui::PushID((int)c);
+		ImGui::SetNextItemWidth(80.0f);
+		changed |= ImGui::DragFloat("##Threshold", &clip.Threshold, 0.1f, -10000.0f, 10000.0f, "%.2f");
+		sort |= ImGui::IsItemDeactivatedAfterEdit();
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The parameter's value where this clip alone shows");
+		}
+		ImGui::SameLine();
+		if (ImGui::SmallButton("x"))
+		{
+			deleted = (int)c;
+		}
+		ImGui::Indent();
+		changed |= ClipControls(clip.ClipFile, clip.ClipName, model);
+		ImGui::Unindent();
+		ImGui::PopID();
+	}
+	if (deleted >= 0 && state.Blend.size() > 1)
+	{
+		state.Blend.erase(state.Blend.begin() + deleted);
+		changed = true;
+	}
+	if (ImGui::SmallButton("Add Clip"))
+	{
+		AnimatorBlendClip clip = state.Blend.back();
+		clip.Threshold += 1.0f;
+		state.Blend.push_back(clip);
+		changed = true;
+	}
+	if (sort)
+	{
+		AnimatorController::SortBlend(state);
+	}
+	return changed;
+}
+
+static bool StateControls(AnimatorController& parameters, AnimatorStateMachine& controller, const H2M::RefH2M<H2M::ModelH2M>& model,
+	const SceneAnimation::LayerInfo* live)
 {
 	bool changed = false;
 	int deleted = -1;
@@ -517,7 +672,7 @@ static bool StateControls(AnimatorController& controller, const H2M::RefH2M<H2M:
 			{
 				ImGui::SetTooltip("The state the animator starts in");
 			}
-			changed |= ClipControls(state, model);
+			changed |= StateClipControls(parameters, state, model);
 			ImGui::SetNextItemWidth(80.0f);
 			changed |= ImGui::DragFloat("Speed", &state.Speed, 0.01f, -10.0f, 10.0f, "%.3f");
 			if (ImGui::IsItemHovered())
@@ -526,23 +681,7 @@ static bool StateControls(AnimatorController& controller, const H2M::RefH2M<H2M:
 			}
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(110.0f);
-			if (ImGui::BeginCombo("Times", state.SpeedParameter.empty() ? "(nothing)" : state.SpeedParameter.c_str()))
-			{
-				if (ImGui::Selectable("(nothing)", state.SpeedParameter.empty()))
-				{
-					state.SpeedParameter.clear();
-					changed = true;
-				}
-				for (const AnimatorParameter& parameter : controller.Parameters)
-				{
-					if (parameter.Type == AnimatorParameterType::Float && ImGui::Selectable(parameter.Name.c_str(), parameter.Name == state.SpeedParameter))
-					{
-						state.SpeedParameter = parameter.Name;
-						changed = true;
-					}
-				}
-				ImGui::EndCombo();
-			}
+			changed |= FloatParameterCombo("Times", parameters, state.SpeedParameter, "(nothing)");
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("The speed is multiplied by this Float parameter: a walk set to the character's speed keeps its feet\n"
@@ -673,7 +812,7 @@ static bool ConditionControls(AnimatorController& controller, AnimatorTransition
 	return changed;
 }
 
-static bool StateCombo(const char* label, const AnimatorController& controller, std::string& state, bool* any)
+static bool StateCombo(const char* label, const AnimatorStateMachine& controller, std::string& state, bool* any)
 {
 	bool changed = false;
 	const std::string shown = any && *any ? std::string("Any State") : state;
@@ -699,7 +838,7 @@ static bool StateCombo(const char* label, const AnimatorController& controller, 
 	return changed;
 }
 
-static bool TransitionControls(AnimatorController& controller, const SceneAnimation::Info* live)
+static bool TransitionControls(AnimatorController& parameters, AnimatorStateMachine& controller, const SceneAnimation::LayerInfo* live)
 {
 	bool changed = false;
 	int deleted = -1;
@@ -746,7 +885,7 @@ static bool TransitionControls(AnimatorController& controller, const SceneAnimat
 				}
 			}
 			ImGui::TextDisabled("When:");
-			changed |= ConditionControls(controller, transition);
+			changed |= ConditionControls(parameters, transition);
 			if (transition.Conditions.empty() && !transition.HasExitTime)
 			{
 				ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.3f, 1.0f), "No condition and no exit time: taken at once");
@@ -779,6 +918,135 @@ static bool TransitionControls(AnimatorController& controller, const SceneAnimat
 		ImGui::SetTooltip("Each frame the first transition that may be taken is: those from Any State first, then the current\n"
 			"state's, in this order");
 	}
+	return changed;
+}
+
+// The layer shown (the base or a layer, added and deleted here) and a layer's mask and weight
+static bool LayerControls(AnimatorController& controller, const H2M::RefH2M<H2M::ModelH2M>& model, const SceneAnimation::Info* live)
+{
+	bool changed = false;
+	auto layerName = [&](int layer) { return layer < 0 ? std::string("Base") : controller.Layers[layer].Name; };
+	ImGui::SetNextItemWidth(160.0f);
+	if (ImGui::BeginCombo("Layer", layerName(s_Layer).c_str()))
+	{
+		for (int layer = -1; layer < (int)controller.Layers.size(); layer++)
+		{
+			std::string label = layerName(layer);
+			if (live && layer >= 0 && layer < (int)live->Layers.size())
+			{
+				label += "  < " + live->Layers[layer].State;
+			}
+			if (ImGui::Selectable(label.c_str(), layer == s_Layer))
+			{
+				s_Layer = layer;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The base poses every node; each layer over it has its own states and transitions, and takes over\n"
+			"the nodes of its mask by its weight (an upper body that aims while the legs walk). The parameters are\n"
+			"all layers'");
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Add Layer"))
+	{
+		AnimatorLayer layer;
+		layer.Name = UniqueName("Layer", [&](const std::string& name) { return controller.FindLayer(name) >= 0; });
+		controller.Layers.push_back(layer);
+		s_Layer = (int)controller.Layers.size() - 1;
+		changed = true;
+	}
+	if (s_Layer < 0 || s_Layer >= (int)controller.Layers.size())
+	{
+		return changed;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Delete Layer"))
+	{
+		controller.Layers.erase(controller.Layers.begin() + s_Layer);
+		s_Layer = -1;
+		return true;
+	}
+
+	AnimatorLayer& layer = controller.Layers[s_Layer];
+	ImGui::PushID("Layer");
+	std::string edited;
+	ImGui::SetNextItemWidth(-110.0f);
+	if (NameField("Name", layer.Name, edited) && !edited.empty() && controller.FindLayer(edited) < 0)
+	{
+		layer.Name = edited;
+		changed = true;
+	}
+	// The mask: node names, each with what is under it (the model's nodes, when the animated entity is selected)
+	std::string mask;
+	for (const std::string& node : layer.Mask)
+	{
+		mask += (mask.empty() ? "" : ", ") + node;
+	}
+	char buffer[512] = {};
+	snprintf(buffer, sizeof(buffer), "%s", mask.c_str());
+	ImGui::SetNextItemWidth(-110.0f);
+	if (ImGui::InputTextWithHint("Mask", "(all nodes)", buffer, sizeof(buffer), ImGuiInputTextFlags_EnterReturnsTrue) ||
+		ImGui::IsItemDeactivatedAfterEdit())
+	{
+		std::vector<std::string> nodes;
+		std::string current;
+		for (const char* c = buffer;; c++)
+		{
+			if (*c == ',' || *c == '\0')
+			{
+				const size_t first = current.find_first_not_of(" \t"), last = current.find_last_not_of(" \t");
+				if (first != std::string::npos)
+				{
+					nodes.push_back(current.substr(first, last - first + 1));
+				}
+				current.clear();
+				if (*c == '\0') break;
+			}
+			else
+			{
+				current += *c;
+			}
+		}
+		if (nodes != layer.Mask)
+		{
+			layer.Mask = nodes;
+			changed = true;
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The nodes it moves, separated by commas: each with every node under it (spine_01: the upper body).\n"
+			"Empty: all of them");
+	}
+	const AnimationSkeleton* skeleton = model ? model->GetSkeleton() : nullptr;
+	for (const std::string& node : layer.Mask)
+	{
+		if (skeleton && skeleton->FindNode(node) < 0)
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.3f, 1.0f), "The model has no node '%s'", node.c_str());
+		}
+	}
+	ImGui::SetNextItemWidth(120.0f);
+	changed |= ImGui::SliderFloat("Weight", &layer.Weight, 0.0f, 1.0f, "%.2f");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How much it takes over its nodes: 1 all of them, 0 none");
+	}
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(130.0f);
+	changed |= FloatParameterCombo("Times##Weight", controller, layer.WeightParameter, "(nothing)");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The weight is multiplied by this Float parameter (0 to 1): a layer the scripts fade in and out");
+	}
+	if (live && s_Layer < (int)live->Layers.size())
+	{
+		ImGui::TextColored(s_PlayingColor, "Weight now %.2f", live->Layers[s_Layer].Weight);
+	}
+	ImGui::PopID();
 	return changed;
 }
 
@@ -912,13 +1180,21 @@ void OnImGuiRenderAnimatorPanel()
 	{
 		changed |= ParameterControls(*controller, live);
 	}
+	changed |= LayerControls(*controller, model, live);
+	if (s_Layer >= (int)controller->Layers.size())
+	{
+		s_Layer = -1;
+	}
+	AnimatorStateMachine& machine = *controller->GetMachine(s_Layer);
+	const SceneAnimation::LayerInfo* layerLive = !live ? nullptr : s_Layer < 0 ? static_cast<const SceneAnimation::LayerInfo*>(live) :
+		s_Layer < (int)live->Layers.size() ? &live->Layers[s_Layer] : nullptr;
 	if (ImGui::CollapsingHeader("States", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		changed |= StateControls(*controller, model, live);
+		changed |= StateControls(*controller, machine, model, layerLive);
 	}
 	if (ImGui::CollapsingHeader("Transitions", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		changed |= TransitionControls(*controller, live);
+		changed |= TransitionControls(*controller, machine, layerLive);
 	}
 	if (changed)
 	{
