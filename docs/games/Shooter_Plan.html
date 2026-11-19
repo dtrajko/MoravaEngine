@@ -1034,7 +1034,9 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     model's arms are cut from the player's model and should already wear the sleeves and gloves. The uniform is painted
     into the base body's color map by script (trousers, a long-sleeved shirt, boots, gloves; the head covered by a cap or
     balaclava, so the bald head and the face stay out of sight); the helmet and the vest go on bones in Phase 2 with E3,
-    the same step that puts the gun in the body's hands. The guards (Phase 5) wear the same uniform in other colors.</p>
+    the same step that puts the gun in the body's hands. The guards (Phase 5) wear the same uniform in other colors:
+    the same mesh as the player's, only their textures differ (the user, 2026-11-19: a change to the one mesh is the
+    player's and the guards'; <code>make_uniform.py</code>'s schemes are sets of colors over the same tailored mesh).</p>
   <div class="box ok"><b>As built: 1.1 movement, crouching (E7) and commands (2026-11-17)</b>
     <ul>
       <li><b>E7 in the engine:</b> <code>ScenePhysics::SetCharacterHeight</code> gives a running character's capsule another
@@ -1237,8 +1239,27 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         (from <code>spine_01</code> up) aims the rifle by <i>AimPitch</i> (the rifle clips' up, ahead and down poses) and
         lowers it to the ready while sprinting or jogging. <code>PlayerBody</code> faces the look; Greybox's body has the
         rifle on its right hand (<i>Rifle</i>, the Player's <i>BodyGun</i>), hidden with the body in first person. Its
-        offset in <code>hand_r</code>'s space (-0.03, 0.066, 0.001) was taken from the view model's rifle in the aim pose,
-        and matches what the rifle poses' script prints.</li>
+        offset in <code>hand_r</code>'s space (-0.028, 0.107, -0.024) was taken from the view model's rifle in the aim
+        pose, and matches what the rifle poses' script prints.</li>
+      <li><b>The hands on the rifle</b> (the user, 2026-11-19: the left fingers hung open, the right hand hung down under
+        the grip, and asked for it level along the rifle with the index finger on the trigger): <code>make_rifle_poses.py</code>
+        closes each finger from open along the library's fist until its tip reaches what it holds, a glove's thickness out.
+        The left hand's round the handguard, whose cross-section is measured on the rifle's mesh. The right hand lies level
+        along the rifle (turned so its line from the wrist to the index knuckle runs to the muzzle), the knuckles at the
+        grip's front top, 3.5 cm behind the trigger; its other fingers and thumb close round the grip (an ellipse of its
+        measured width and depth, from 6 cm below its middle to 2 cm above, the player's thicker fingers' margin out), its
+        two outer joints and tip none of them inside; the index finger's last joint nearest the trigger (3.2 cm), the
+        finger lying in the guard. Then (the user: the pinky inside the grip, the wrist inside the chest, the left wrist
+        wrung, the right upper arm flared): the right hand turned out about its knuckle, level still, just as far as keeps
+        its wrist 3.5 cm out of the chest (7.5 degrees aiming; the chest is <code>Soldier_Player.gltf</code>'s body posed as
+        the engine poses it: each bone where the library's is, turned by the rests' difference); the right elbow aimed
+        mostly down, the upper arm in against the chest (it may come 3 cm inside the shoulder's line); the left hand along
+        its forearm, the wrist straight, turned toward the handguard by up to 70 degrees, half of it the forearm's roll about
+        its own length (a rig without twist bones shows a whole turn at the wrist). The previews show the dressed body, not
+        the library's mannequin. The same for the sniper rifle. The view model's gloved hands were drawn
+        white: re-imported to cut the arms, the body's material came back as a copy named
+        <code>MI_Soldier_Player.001</code> (the pockets share it), which the export didn't match to its maps; it matches
+        names without Blender's copy suffix now.</li>
       <li><b>Limits</b>: crouched, the body faces the look too and plays the library's forward crouch walk, so the feet
         slide when it moves sideways or back crouched (crouched walks every way: with the guards' animations, Phase 5).
         The upper body takes the rifle pose's spine, so a crouch's forward lean and the walk's chest sway are the rifle
@@ -1268,7 +1289,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   </ul>
   <h3>Phase 5: the guards</h3>
   <ul>
-    <li>The guard prefab: model, animator with layers (E5), gun in hand (E3), hitboxes (E4).</li>
+    <li>The guard prefab: model (the player's mesh, <code>Soldier_Player</code>'s, in the guards' textures: one mesh for
+      both, the user, 2026-11-19), animator with layers (E5), gun in hand (E3), hitboxes (E4).</li>
     <li><code>GuardBrain</code>: the states, sight, hearing, aim, cover, groups, the alarm; debug views.</li>
     <li>Difficulty settings; the budget with 25 guards.</li>
     <li>Nav Link ends and patrol routes placed in the viewport (handles to drag, points to click), instead of the

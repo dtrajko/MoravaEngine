@@ -1307,15 +1307,18 @@
  "materials": [
   {
    "doubleSided": true,
-   "name": "MI_Soldier_Player.001",
+   "name": "MI_Soldier_Player",
+   "normalTexture": {
+    "index": 2
+   },
    "pbrMetallicRoughness": {
-    "baseColorFactor": [
-     0.800000011920929,
-     0.800000011920929,
-     0.800000011920929,
-     1
-    ],
-    "metallicFactor": 0
+    "baseColorTexture": {
+     "index": 0
+    },
+    "metallicFactor": 0,
+    "metallicRoughnessTexture": {
+     "index": 1
+    }
    }
   }
  ],
@@ -1580,6 +1583,37 @@
   {
    "byteLength": 280724,
    "uri": "Soldier_Player_Arms.bin"
+  }
+ ],
+ "images": [
+  {
+   "mimeType": "image/png",
+   "name": "T_Soldier_Player_Color",
+   "uri": "T_Soldier_Player_Color.png"
+  },
+  {
+   "mimeType": "image/png",
+   "name": "T_Soldier_Player_Roughness",
+   "uri": "T_Soldier_Player_Roughness.png"
+  },
+  {
+   "mimeType": "image/png",
+   "name": "T_Soldier_Player_Normal",
+   "uri": "T_Soldier_Player_Normal.png"
+  }
+ ],
+ "textures": [
+  {
+   "sampler": 0,
+   "source": 0
+  },
+  {
+   "sampler": 0,
+   "source": 1
+  },
+  {
+   "sampler": 0,
+   "source": 2
   }
  ],
  "samplers": [

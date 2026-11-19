@@ -916,7 +916,9 @@ def export_with_materials(path, source_gltf):
         return len(out["textures"]) - 1
 
     for i, material in enumerate(out.get("materials", [])):
-        source = sources.get(material["name"])
+        # By its name, or without the suffix Blender gives a copy (a material the importer split: "MI_Soldier_Player.001")
+        name = material["name"]
+        source = sources.get(name) or sources.get(name.rsplit(".", 1)[0] if name[-4:-3] == "." and name[-3:].isdigit() else name)
         if source is None:
             for key in ("normalTexture", "occlusionTexture", "emissiveTexture"):
                 material.pop(key, None)
