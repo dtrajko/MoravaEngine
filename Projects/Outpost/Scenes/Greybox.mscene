@@ -62,8 +62,8 @@ Entities:
     Name: Rifle
     Parent: 1101
     Transform:
-      Translation: [-0.0276, 0.1065, -0.0236]
-      Rotation: [91.93, -14.33, 82.26]
+      Translation: [-0.024, 0.1035, -0.0244]
+      Rotation: [90, -14.45, 90]
       Scale: [0.0017, 0.0017, 0.0017]
     Model:
       File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
@@ -84,7 +84,7 @@ Entities:
     Name: ViewModel Rifle
     Parent: 1102
     Transform:
-      Translation: [-0.0964, 1.3928, 0.0988]
+      Translation: [-0.0964, 1.3478, 0.1638]
       Rotation: [0, -90, 0]
       Scale: [0.0017, 0.0017, 0.0017]
     Model:
