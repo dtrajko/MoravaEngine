@@ -20,4 +20,6 @@ and the player's fast walks forward, back and to the sides (`Assets/Models/Soldi
 `Tools/CharacterPoses/make_fast_walk.py`), both on the animation library's rig; the files carry the library's
 mannequin, CC0. The soldier's uniform (`Soldier_Player.gltf`, `Soldier_Player_Arms.gltf` with their `.bin` files and the
 `T_Soldier_Player_*` maps in `Assets/Models/QuaterniusCharacters`, made by `Tools/CharacterPoses/make_uniform.py`) is
-shaped from the base character's mesh and painted over its maps, CC0.
+shaped from the base character's mesh and painted over its maps, CC0. The training dummies' uniform (`Soldier_Training.gltf` and `T_Soldier_Training_Color.png`, the same script's Training
+colors) shares the player's mesh and its normal and roughness maps. The weapon sounds (`Assets/Audio/Rifle_*.wav`) are
+synthesized by `Tools/Audio/GenerateWeaponSounds.py`, no recordings.

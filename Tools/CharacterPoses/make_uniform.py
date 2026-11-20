@@ -51,6 +51,13 @@ SCHEMES = {
         "loops": (178, 156, 120), "boots": (154, 118, 82), "soles": (88, 72, 54), "laces": (104, 80, 56),
         "gloves": (100, 90, 70), "balaclava": (64, 64, 50),
     },
+    # The greybox's training dummies (Phase 2.2): grey camouflage, an orange-red shirt that stands out as a target
+    "Training": {
+        "camo": {"base": (150, 150, 146), "blob": (112, 112, 108), "streak": (70, 70, 68)},
+        "panel": (120, 120, 116), "shirt": (176, 72, 40), "belt": (60, 60, 58), "buckle": (72, 72, 68),
+        "loops": (120, 120, 116), "boots": (58, 56, 52), "soles": (36, 34, 32), "laces": (48, 46, 44),
+        "gloves": (58, 56, 52), "balaclava": (52, 52, 50),
+    },
 }
 
 # The parts, in the rest pose's meters (x to the left, -y forward, z up, the ground at z 0)
@@ -987,9 +994,53 @@ def main():
     output = os.path.join(FOLDER, f"Soldier_{scheme_name}.gltf")
     soldier = export_with_materials(output, gltf)
 
-    write_arms(output, soldier, scheme_name)
+    if scheme_name == "Player":
+        write_arms(output, soldier, scheme_name)  # only the player has a first-person view
+    else:
+        share_player_mesh(output)
     if preview:
         render_preview(output, preview)
+
+
+def share_player_mesh(path):
+    """The other schemes (the guards, the dummies) share the player's mesh (the user, 2026-11-19): they differ only by
+    their maps. When the scheme's mesh data came out the same as the player's, its glTF points at Soldier_Player.bin and its
+    own copy is removed; if not (the player's isn't made yet, or the shapes changed since), it keeps its own"""
+    own = os.path.splitext(path)[0] + ".bin"
+    player = os.path.join(FOLDER, "Soldier_Player.bin")
+    if not os.path.exists(player):
+        print(f"No {player} yet: {os.path.basename(own)} kept (make the Player scheme, then this one again)")
+        return
+    with open(own, "rb") as a, open(player, "rb") as b:
+        same = a.read() == b.read()
+    if not same:
+        print(f"{os.path.basename(own)} differs from Soldier_Player.bin: kept (make the Player scheme again, then this one)")
+        return
+    with open(path, encoding="utf-8") as f:
+        gltf = json.load(f)
+    for buffer in gltf["buffers"]:
+        if buffer.get("uri") == os.path.basename(own):
+            buffer["uri"] = "Soldier_Player.bin"
+    # The maps that come from the shapes, not the colors (the normals, the roughness), are the player's too when the same
+    scheme = os.path.basename(path)[len("Soldier_"):-len(".gltf")]
+    shared = []
+    for kind in ("Normal", "Roughness"):
+        mine = os.path.join(FOLDER, f"T_Soldier_{scheme}_{kind}.png")
+        theirs = os.path.join(FOLDER, f"T_Soldier_Player_{kind}.png")
+        if os.path.exists(mine) and os.path.exists(theirs):
+            with open(mine, "rb") as a, open(theirs, "rb") as b:
+                if a.read() != b.read():
+                    continue
+            for image in gltf.get("images", []):
+                if image.get("uri") == os.path.basename(mine):
+                    image["uri"] = os.path.basename(theirs)
+            os.remove(mine)
+            shared.append(kind)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(gltf, f, indent=2)
+    os.remove(own)
+    print(f"{os.path.basename(path)} shares Soldier_Player.bin (the same mesh) and the player's maps: "
+          f"{', '.join(shared) or 'none'}; its own copies removed")
 
 
 def write_arms(body_path, body_gltf, scheme_name):

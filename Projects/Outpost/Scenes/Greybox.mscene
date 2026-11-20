@@ -84,13 +84,14 @@ Entities:
     Name: ViewModel Rifle
     Parent: 1102
     Transform:
-      Translation: [-0.0912, 1.3503, 0.1966]
-      Rotation: [0, -90, 0]
+      Translation: [-0.024, 0.1035, -0.0244]
+      Rotation: [90, -14.45, 90]
       Scale: [0.0017, 0.0017, 0.0017]
     Model:
       File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
       HiddenInMainView: true
       ViewModel: true
+    BoneAttachment: {Bone: hand_r}
   - ID: 1002
     Name: Environment
     Parent: 0
@@ -139,6 +140,1081 @@ Entities:
       EdgeMaxError: 1.3
       DetailSampleDistance: 6
       DetailSampleMaxError: 1
+  - ID: 1300
+    Name: Dummy_1
+    Parent: 0
+    Transform:
+      Translation: [10, 0, 7]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Outpost.Dummy
+      Fields:
+        Body: {Entity: 1301}
+  - ID: 1301
+    Name: Dummy_1 Body
+    Parent: 1300
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Soldier_Training.gltf
+    Animator: {Controller: Assets/Animators/Dummy.manim}
+  - ID: 1302
+    Name: Hitbox_Head
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: Head}
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0.1, 0.02]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.12
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Head}
+        DamageScale: {Float: 1}
+  - ID: 1303
+    Name: Hitbox_Torso
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: spine_02}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.19, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.17
+      HalfHeight: 0.12
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Torso}
+        DamageScale: {Float: 1}
+  - ID: 1304
+    Name: Hitbox_Pelvis
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: pelvis}
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0.05, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.17
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Pelvis}
+        DamageScale: {Float: 0.9}
+  - ID: 1305
+    Name: Hitbox_ThighL
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: thigh_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.215, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.085
+      HalfHeight: 0.13
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1306
+    Name: Hitbox_ThighR
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: thigh_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.215, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.085
+      HalfHeight: 0.13
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1307
+    Name: Hitbox_CalfL
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: calf_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.23, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.065
+      HalfHeight: 0.165
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1308
+    Name: Hitbox_CalfR
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: calf_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.23, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.065
+      HalfHeight: 0.165
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1309
+    Name: Hitbox_UpperArmL
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: upperarm_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.125, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.06
+      HalfHeight: 0.065
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1310
+    Name: Hitbox_UpperArmR
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: upperarm_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.125, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.06
+      HalfHeight: 0.065
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1311
+    Name: Hitbox_LowerArmL
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: lowerarm_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.12, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.05
+      HalfHeight: 0.07
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1312
+    Name: Hitbox_LowerArmR
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: lowerarm_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.12, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.05
+      HalfHeight: 0.07
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1300}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1320
+    Name: Dummy_2
+    Parent: 0
+    Transform:
+      Translation: [13, 0, 9]
+      Rotation: [0, -15, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Outpost.Dummy
+      Fields:
+        Body: {Entity: 1321}
+  - ID: 1321
+    Name: Dummy_2 Body
+    Parent: 1320
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Soldier_Training.gltf
+    Animator: {Controller: Assets/Animators/Dummy.manim}
+  - ID: 1322
+    Name: Hitbox_Head
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: Head}
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0.1, 0.02]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.12
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Head}
+        DamageScale: {Float: 1}
+  - ID: 1323
+    Name: Hitbox_Torso
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: spine_02}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.19, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.17
+      HalfHeight: 0.12
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Torso}
+        DamageScale: {Float: 1}
+  - ID: 1324
+    Name: Hitbox_Pelvis
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: pelvis}
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0.05, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.17
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Pelvis}
+        DamageScale: {Float: 0.9}
+  - ID: 1325
+    Name: Hitbox_ThighL
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: thigh_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.215, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.085
+      HalfHeight: 0.13
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1326
+    Name: Hitbox_ThighR
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: thigh_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.215, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.085
+      HalfHeight: 0.13
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1327
+    Name: Hitbox_CalfL
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: calf_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.23, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.065
+      HalfHeight: 0.165
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1328
+    Name: Hitbox_CalfR
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: calf_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.23, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.065
+      HalfHeight: 0.165
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1329
+    Name: Hitbox_UpperArmL
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: upperarm_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.125, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.06
+      HalfHeight: 0.065
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1330
+    Name: Hitbox_UpperArmR
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: upperarm_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.125, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.06
+      HalfHeight: 0.065
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1331
+    Name: Hitbox_LowerArmL
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: lowerarm_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.12, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.05
+      HalfHeight: 0.07
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1332
+    Name: Hitbox_LowerArmR
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: lowerarm_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.12, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.05
+      HalfHeight: 0.07
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1320}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1340
+    Name: Dummy_3
+    Parent: 0
+    Transform:
+      Translation: [16, 0, 6.5]
+      Rotation: [0, -25, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Outpost.Dummy
+      Fields:
+        Body: {Entity: 1341}
+  - ID: 1341
+    Name: Dummy_3 Body
+    Parent: 1340
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Soldier_Training.gltf
+    Animator: {Controller: Assets/Animators/Dummy.manim}
+  - ID: 1342
+    Name: Hitbox_Head
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: Head}
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0.1, 0.02]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.12
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Head}
+        DamageScale: {Float: 1}
+  - ID: 1343
+    Name: Hitbox_Torso
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: spine_02}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.19, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.17
+      HalfHeight: 0.12
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Torso}
+        DamageScale: {Float: 1}
+  - ID: 1344
+    Name: Hitbox_Pelvis
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: pelvis}
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0.05, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.17
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Pelvis}
+        DamageScale: {Float: 0.9}
+  - ID: 1345
+    Name: Hitbox_ThighL
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: thigh_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.215, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.085
+      HalfHeight: 0.13
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1346
+    Name: Hitbox_ThighR
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: thigh_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.215, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.085
+      HalfHeight: 0.13
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1347
+    Name: Hitbox_CalfL
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: calf_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.23, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.065
+      HalfHeight: 0.165
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1348
+    Name: Hitbox_CalfR
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: calf_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.23, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.065
+      HalfHeight: 0.165
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Leg}
+        DamageScale: {Float: 0.75}
+  - ID: 1349
+    Name: Hitbox_UpperArmL
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: upperarm_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.125, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.06
+      HalfHeight: 0.065
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1350
+    Name: Hitbox_UpperArmR
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: upperarm_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.125, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.06
+      HalfHeight: 0.065
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1351
+    Name: Hitbox_LowerArmL
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: lowerarm_l}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.12, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.05
+      HalfHeight: 0.07
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1352
+    Name: Hitbox_LowerArmR
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    BoneAttachment: {Bone: lowerarm_r}
+    Collider:
+      Shape: Capsule
+      Offset: [0, 0.12, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.05
+      HalfHeight: 0.07
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+    Script:
+      Class: Outpost.Hitbox
+      Fields:
+        Owner: {Entity: 1340}
+        Zone: {String: Arm}
+        DamageScale: {Float: 0.75}
+  - ID: 1400
+    Name: HUD
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Outpost.Hud
+      Fields:
+        Player: {Entity: 1100}
+        CrosshairTop: {Entity: 1401}
+        CrosshairBottom: {Entity: 1402}
+        CrosshairLeft: {Entity: 1403}
+        CrosshairRight: {Entity: 1404}
+        Ammo: {Entity: 1405}
+        FireMode: {Entity: 1406}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
+  - ID: 1401
+    Name: Crosshair Top
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -12], Size: [2, 14], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.85]}
+  - ID: 1402
+    Name: Crosshair Bottom
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 12], Size: [2, 14], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.85]}
+  - ID: 1403
+    Name: Crosshair Left
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-12, 0], Size: [14, 2], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.85]}
+  - ID: 1404
+    Name: Crosshair Right
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [12, 0], Size: [14, 2], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.85]}
+  - ID: 1405
+    Name: Ammo
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 1], AnchorMax: [1, 1], Pivot: [1, 1], Position: [-48, -40], Size: [480, 64], Visible: true}
+    UIText:
+      Text: 30  /  120
+      Font: ""
+      Size: 46
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1406
+    Name: Fire Mode
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 1], AnchorMax: [1, 1], Pivot: [1, 1], Position: [-48, -104], Size: [480, 40], Visible: true}
+    UIText:
+      Text: AUTO
+      Font: ""
+      Size: 26
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
   - ID: 60000
     Name: Level_Greybox
     Parent: 0

@@ -29,6 +29,12 @@ namespace Outpost
         /// <summary>Sprinting: faster forward, louder steps (Shift). Walking quietly or crouching takes over from it.</summary>
         public bool Sprint;
 
+        /// <summary>Fire is held (the automatic rifle fires on), and was pressed since the last step (a semi-automatic shot).</summary>
+        public bool Fire, FirePressed;
+
+        /// <summary>Reload was pressed; FireMode was pressed (the rifle: automatic or semi-automatic).</summary>
+        public bool Reload, FireMode;
+
         /// <summary>The horizontal direction the yaw faces (length 1).</summary>
         public Vector3 Forward
         {
@@ -62,6 +68,8 @@ namespace Outpost
 
         float yaw, pitch;
         bool crouchToggled;
+        float kickUp;      // degrees the shots' kicks raised the look, not yet taken back
+        float sinceKick;   // seconds since the last kick
 
         public LocalPlayerInput(float yaw, float pitch)
         {
@@ -108,7 +116,34 @@ namespace Outpost
                 Crouch = crouchHeld || crouchToggled,
                 Walk = Input.IsHeld("Walk") || lightPush,
                 Sprint = Input.IsHeld("Sprint"),
+                Fire = Input.IsHeld("Fire"),
+                FirePressed = Input.WasPressed("Fire"),
+                Reload = Input.WasPressed("Reload"),
+                FireMode = Input.WasPressed("FireMode"),
             };
+        }
+
+        /// <summary>
+        /// A shot's kick to the look (degrees: up, and to the left positive), from the fixed step. The climb it added is taken
+        /// back in RecoverKick (the sideways part stays: the player corrects it).
+        /// </summary>
+        public void Kick(float up, float left)
+        {
+            pitch = Math.Clamp(pitch - up, -89.0f, 89.0f); // pitch positive looks down
+            yaw = ((yaw + left) % 360.0f + 360.0f) % 360.0f;
+            kickUp += up;
+            sinceKick = 0.0f;
+        }
+
+        /// <summary>Each frame: the kick's climb taken back at rate degrees a second, once delay seconds passed without one.</summary>
+        public void RecoverKick(float dt, float rate, float delay)
+        {
+            sinceKick += dt;
+            if (sinceKick < delay || kickUp <= 0.0f)
+                return;
+            float back = MathF.Min(kickUp, rate * dt);
+            kickUp -= back;
+            pitch = Math.Clamp(pitch + back, -89.0f, 89.0f);
         }
     }
 }

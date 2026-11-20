@@ -12,7 +12,9 @@ namespace Outpost
     /// and the steps are heard. SwitchView (V) changes the view, SwapShoulder (X) the shoulder; both are kept in the
     /// settings. In first person the body (and the rifle in its hand) is hidden from the camera, its shadow stays, and the
     /// view model (the arms and the placeholder gun, models marked View Model: E2) is shown at the eyes instead. In third
-    /// person the body holds the rifle in its hand and aims where the camera looks (Phase 2.1: E3, E5).
+    /// person the body holds the rifle in its hand and aims where the camera looks (Phase 2.1: E3, E5). The weapon
+    /// (PlayerWeapon, its numbers from Assets/Weapons/&lt;WeaponName&gt;.weapon.json) fires, reloads and switches its fire
+    /// mode in the fixed step from the same commands; its shots kick the look, and are heard and seen here (Phase 2.2).
     ///
     /// F2 (DebugFly) hands the view to the debug fly camera (the Camera entity's FlyCamera) and back: the player stands
     /// still meanwhile.
@@ -74,6 +76,15 @@ namespace Outpost
         public string JumpSound = "Assets/Audio/JumpTakeoff.wav";
         public string LandSound = "Assets/Audio/Land.wav";
 
+        /// <summary>
+        /// The weapon in the hands (Phase 2.2: the rifle; 2.4 adds switching): its data file's name
+        /// (Assets/Weapons/&lt;name&gt;.weapon.json), and the shots' volume. When its reload's sounds come, seconds into it
+        /// (the magazine out, a new one in: the reload clip's moments).
+        /// </summary>
+        public string WeaponName = "Rifle";
+        public float ShotVolume = 0.8f;
+        public float MagazineOutAt = 0.35f, MagazineInAt = 1.55f;
+
         CharacterController character = null!;
         PlayerMotor motor = null!;
         LocalPlayerInput input = null!;
@@ -86,8 +97,24 @@ namespace Outpost
         Vector3 lastFeet;
         PlayerCommand lastCommand;
         readonly Random random = new Random(7);
+        PlayerWeapon? weapon;
+        Animator? viewModelAnimator;
+        Vector3 lastEyes, lastCamera; // the last frame's: where the shots of the next fixed steps aim from
+        int reloadSounds;             // the reload's sounds played so far (the magazine out, in)
 
         bool Flying => Camera is FlyCamera fly && fly.IsActive;
+
+        /// <summary>The weapon in the hands (null: its data file couldn't be read).</summary>
+        public PlayerWeapon? Weapon => weapon;
+
+        /// <summary>The debug fly camera has the view (F2): the player stands still, the HUD is hidden.</summary>
+        public bool IsFlying => Flying;
+
+        /// <summary>The last shot (a test reads it).</summary>
+        public ShotResult LastShot { get; private set; }
+
+        /// <summary>Where the muzzle is now (the body's rifle, in both views: the same rules), the eyes if there is none.</summary>
+        public Vector3 MuzzlePosition => BodyGun != null && weapon != null ? Vector3.Transform(weapon.Data.Muzzle, BodyGun.WorldTransform) : lastEyes;
 
         /// <summary>
         /// Commands from elsewhere instead of the input (a bot, a test driver; later a remote player): called each fixed step
@@ -124,6 +151,7 @@ namespace Outpost
 
         /// <summary>The body's state (Player.manim's), its heading, and where the camera is: for what shows them (a test).</summary>
         public string BodyState => body?.State ?? "";
+        public string BodyUpperState => body?.UpperState ?? "";
         public float BodyHeading => body?.Heading ?? 0.0f;
         public float BodyMoveAngle => body?.MoveAngle ?? 0.0f;
         public bool BodyHidden => body?.HiddenInMainView ?? false;
@@ -151,6 +179,18 @@ namespace Outpost
                 Log.Warn($"{Name}: no Body, the player has no model (and no shadow)");
             viewModelArms = ViewModel?.GetComponent<Model>();
             viewModelGun = ViewModelGun?.GetComponent<Model>();
+            viewModelAnimator = ViewModel?.GetComponent<Animator>();
+
+            WeaponData? data = WeaponData.Load(WeaponName);
+            if (data != null)
+            {
+                weapon = new PlayerWeapon(data, this);
+                weapon.Fired += OnFired;
+                weapon.DryFired += () => PlaySound(data.EmptySound, 0.6f);
+                weapon.FireModeChanged += mode => { PlaySound(data.FireModeSound, 0.5f); Log.Info($"{Name}: {data.Name} {mode}"); };
+                weapon.ReloadStarted += () => { reloadSounds = 0; body?.Reloading(true); viewModelAnimator?.Play("Reload", 0.1f); };
+                weapon.ReloadFinished += () => { body?.Reloading(false); viewModelAnimator?.Play("Aim", 0.15f); };
+            }
             view = new PlayerView(new PlayerViewSettings { Distance = ThirdPersonDistance, ShoulderOffset = ShoulderOffset },
                 Settings.GetBool(ThirdPersonSetting) ? ViewMode.ThirdPerson : ViewMode.FirstPerson, Settings.GetBool(LeftShoulderSetting));
 
@@ -159,6 +199,7 @@ namespace Outpost
             input = new LocalPlayerInput(angles.Y, angles.X) { Sensitivity = Sensitivity };
             Input.CursorLocked = true;
             lastFeet = WorldPosition;
+            lastEyes = lastCamera = WorldPosition + new Vector3(0.0f, EyeHeight, 0.0f);
             Log.Info($"{Name}: the player, {character.StandingHeight:0.00} m tall ({CrouchHeight:0.00} m crouched), {view.Mode}; V the view, X the shoulder, F2 the fly camera");
         }
 
@@ -168,6 +209,28 @@ namespace Outpost
                 Flying ? new PlayerCommand { Yaw = input.Yaw, Pitch = input.Pitch } : input.Sample();
             motor.Step(command, dt);
             lastCommand = command;
+            if (weapon != null)
+            {
+                Vector3 velocity = motor.Velocity;
+                weapon.Step(command, new AimContext
+                {
+                    Camera = lastCamera, Eyes = lastEyes, Muzzle = MuzzlePosition,
+                    Speed = new Vector2(velocity.X, velocity.Z).Length(),
+                    Grounded = motor.IsGrounded, Crouched = motor.IsCrouched, Sprinting = motor.IsSprinting,
+                }, dt);
+            }
+        }
+
+        void OnFired(ShotResult shot)
+        {
+            LastShot = shot;
+            WeaponData data = weapon!.Data;
+            if (data.ShotVariants > 0 && !string.IsNullOrEmpty(data.ShotSound))
+                Audio.PlayOneShot(string.Format(data.ShotSound, random.Next(1, data.ShotVariants + 1)), shot.From, ShotVolume,
+                    AudioBus.Effects, 0.97f + 0.06f * (float)random.NextDouble());
+            if (CommandSource == null)
+                input.Kick(shot.KickUp, shot.KickLeft); // the local player's look (a bot's or a test's commands bring their own)
+            viewModelAnimator?.Play("Shoot", 0.02f);
         }
 
         protected override void OnUpdate(float dt)
@@ -188,7 +251,12 @@ namespace Outpost
                 LeftShoulder = !LeftShoulder;
 
             if (CommandSource == null)
+            {
                 input.UpdateLook(dt);
+                if (weapon != null)
+                    input.RecoverKick(dt, weapon.Data.RecoilRecovery, weapon.Data.RecoilRecoveryDelay);
+            }
+            ReloadSounds();
             float yaw = CommandSource != null ? lastCommand.Yaw : input.Yaw;
             float pitch = CommandSource != null ? lastCommand.Pitch : input.Pitch;
 
@@ -200,6 +268,8 @@ namespace Outpost
             eyeOffset += (crouchDrop - eyeOffset) * MathF.Min(1.0f, 14.0f * dt);
             Vector3 eyes = WorldPosition + new Vector3(0.0f, EyeHeight - eyeOffset, 0.0f);
             Vector3 cameraPosition = view.Update(dt, eyes, yaw, pitch, this);
+            lastEyes = eyes;
+            lastCamera = cameraPosition;
             if (body != null)
                 body.HiddenInMainView = view.HidesBody;
             if (Camera != null)
@@ -285,6 +355,24 @@ namespace Outpost
                 variant = variant % FootstepVariants + 1; // not the same twice in a row
             lastVariant = variant;
             Audio.PlayOneShot(string.Format(FootstepSound, variant), WorldPosition, volume, AudioBus.Effects, 0.95f + 0.1f * (float)random.NextDouble());
+        }
+
+        // The reload's sounds at their moments in the clip: the magazine out, then a new one in
+        void ReloadSounds()
+        {
+            if (weapon == null || !weapon.IsReloading)
+                return;
+            float seconds = weapon.ReloadProgress * weapon.Data.ReloadSeconds;
+            if (reloadSounds == 0 && seconds >= MagazineOutAt)
+            {
+                PlaySound(weapon.Data.MagazineOutSound, 0.6f);
+                reloadSounds = 1;
+            }
+            if (reloadSounds == 1 && seconds >= MagazineInAt)
+            {
+                PlaySound(weapon.Data.MagazineInSound, 0.7f);
+                reloadSounds = 2;
+            }
         }
 
         void PlaySound(string clip, float volume)

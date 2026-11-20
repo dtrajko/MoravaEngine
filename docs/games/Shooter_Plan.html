@@ -1308,6 +1308,55 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         messages; GCC clean on the changed files.</li>
     </ul>
   </div>
+  <div class="box ok"><b>As built: 2.2 the rifle fires (2026-11-20)</b>
+    <p>The user's choices: the sounds our own synthesized ones, a crosshair and the ammo now as the start of Phase 3's HUD,
+    and soldiers as the dummies.</p>
+    <ul>
+      <li><b>Weapons as data</b>: <code>Assets/Weapons/Rifle.weapon.json</code> (read by <code>WeaponData.Load</code>
+        through <code>Assets.ReadText</code>, so a built game reads it from its pack): the muzzle in the gun model's space,
+        the fire modes (Auto, Semi), 600 rounds a minute, 25 damage (a head times 4), 300 m, 30 rounds and 120 in the
+        reserve, a 2.2 s reload (the reload clip's length), the spread (0.25 degrees still, up to 1.6 moving at 3 m/s,
+        times 0.7 crouched, 4 in the air, 0.35 more each shot up to 3.5, back at 5 a second after 0.15 s without one), the
+        kick (0.55 degrees up, up to 0.25 to a side, the climb taken back at 6 a second after 0.12 s) and the sounds.</li>
+      <li><b>The commands</b>: <code>PlayerCommand</code> carries Fire (held and pressed), Reload and FireMode. The rules
+        run in the fixed step (<code>PlayerWeapon</code>): the rate, the modes (Semi fires once a press), the magazine and
+        the reserve, an empty magazine's click and then the reload, no shots while sprinting (the rifle lowered) or
+        reloading. Each shot's random numbers (the spread, the kick's side) come from its number and the owner's id, the
+        same on every machine. The kick turns only the local player's look (a bot's or a test's look is its own).</li>
+      <li><b>The hit test</b> (the plan's, the same in both views): a ray from the view through the crosshair, with the
+        spread, from level with the eyes (so in third person nothing between the camera and the player is hit), finds the
+        aim point; a ray from the eyes to the muzzle that the gun isn't through a wall; a ray from the muzzle (the body's
+        rifle, on its hand's bone in both views) to the aim point finds what is hit. Damage goes through
+        <code>Damage.Apply</code> (<code>DamageInfo</code> has a Zone now).</li>
+      <li><b>Hitboxes</b>: a body's parts are child entities with a collider and a Kinematic Rigid Body on its bones
+        (Bone Attachment, E3), so they follow the animation and a fallen body is hit where it lies; a <code>Hitbox</code>
+        script names the owner, the zone and a damage scale (the head: the weapon's multiplier). The guards (Phase 5) get
+        the same. They block the player as the bodies do; the navmesh doesn't see them.</li>
+      <li><b>The dummies</b>: three soldiers in the greybox's yard in front of the warehouse's wall (Dummy_1 to 3, out of the
+        test's routes), in the training uniform (<code>make_uniform.py</code>'s Training colors: grey camouflage, an
+        orange-red shirt; <code>Soldier_Training.gltf</code> shares the player's mesh and its normal and roughness maps, as
+        the guards will: the script now points other schemes at them), 11 hitboxes each (head, torso, pelvis, thighs,
+        calves, upper arms, forearms; the limbs 0.75, the pelvis 0.9). <code>Dummy.cs</code>: 100 health, a flinch at a hit
+        (the library's Hit_Head or Hit_Chest), Death01 when it is gone, up again after 4 s (a crossfade back to the idle:
+        the library has no getting-up clip).</li>
+      <li><b>The clips</b>: the body's UpperBody layer plays the reload (Rifle_Reload), then aims again; the first person's
+        arms (ViewModel.manim) play the shot's kick (Rifle_Shoot) and the reload, their rifle now on the right hand's bone
+        (E3), so it moves with the hands. The third person's body doesn't play the kick (its clip is the level aim's: it
+        would snap the aim; a kick for every pitch comes with the effects or later).</li>
+      <li><b>The sounds</b> (<code>Tools/Audio/GenerateWeaponSounds.py</code>, synthesized): three shots (a crack, the
+        muzzle's blast, a low thump, the action's click, an outdoor tail with two slap echoes, tape-like saturation), the
+        empty click, the magazine out and in (at 0.35 and 1.55 s into the reload: the clip's moments), the selector.</li>
+      <li><b>The HUD</b> (<code>Hud.cs</code> on a canvas, the start of Phase 3's): four crosshair bars whose gap is where
+        the spread's cone meets the screen, the ammo (the magazine and the reserve; RELOADING) and the fire mode at the
+        bottom right; hidden while the debug fly camera has the view. The text uses the engine's font until Phase 3 picks a
+        CC0 one (the racing game's is OFL). The canvas's y runs down.</li>
+      <li><b>Checked</b>: the test copy 46/46 (the 34 before, then 7 m from Dummy_2: a torso shot 25, a head shot 100 and
+        the dummy down, Semi one shot while held, 1 s of Auto 9 to 10 shots with the spread grown to 3.3 degrees, the reload
+        with the body's upper layer in it, the reserve, the dummy up again, a third-person shot aimed from the camera that
+        leaves the muzzle and hits the torso); captures in both views; no validation messages. The sounds are not yet
+        listened to by the user.</li>
+    </ul>
+  </div>
   <h3>Phase 3: health, pickups and the HUD</h3>
   <ul>
     <li>Health and armor, health packs, vests, ammo boxes; death and restart.</li>
