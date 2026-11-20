@@ -1,0 +1,39 @@
+{
+  "_": "The assault rifle (docs/games/Shooter_Plan.html, Phase 2.2). Read by WeaponData.Load; meters, seconds, degrees.",
+  "Name": "Rifle",
+  "Model": "Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx",
+  "Muzzle": [381.7, 57.8, 0.0],
+  "FireModes": ["Auto", "Semi"],
+  "RoundsPerMinute": 600,
+  "Damage": 25,
+  "HeadMultiplier": 4.0,
+  "Range": 300,
+  "Magazine": 30,
+  "Reserve": 120,
+  "ReloadSeconds": 2.2,
+  "Spread": {
+    "Still": 0.25,
+    "Moving": 1.6,
+    "MovingSpeed": 3.0,
+    "Crouched": 0.7,
+    "Air": 4.0,
+    "PerShot": 0.35,
+    "Max": 3.5,
+    "Recovery": 5.0,
+    "RecoveryDelay": 0.15
+  },
+  "Recoil": {
+    "Pitch": 0.55,
+    "Yaw": 0.25,
+    "Recovery": 6.0,
+    "RecoveryDelay": 0.12
+  },
+  "Sounds": {
+    "Shot": "Assets/Audio/Rifle_Shot_{0}.wav",
+    "ShotVariants": 3,
+    "Empty": "Assets/Audio/Rifle_Empty.wav",
+    "MagazineOut": "Assets/Audio/Rifle_MagOut.wav",
+    "MagazineIn": "Assets/Audio/Rifle_MagIn.wav",
+    "FireMode": "Assets/Audio/Rifle_FireMode.wav"
+  }
+}

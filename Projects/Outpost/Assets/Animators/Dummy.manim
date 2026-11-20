@@ -1,0 +1,27 @@
+# A training dummy (Shooter plan, Phase 2.2): standing, flinching at a hit (the head's or the chest's), falling when its
+# health is gone. Dummy.cs picks the state (Animator.Play), so there are no transitions.
+Animator:
+  Version: 1
+  Entry: Idle
+  States:
+    - Name: Idle
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Idle_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: HitChest
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Hit_Chest}
+      Speed: 1
+      Loop: false
+      InPlace: true
+    - Name: HitHead
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Hit_Head}
+      Speed: 1
+      Loop: false
+      InPlace: true
+    - Name: Death
+      Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Death01}
+      Speed: 1
+      Loop: false
+      InPlace: true
+  Transitions: []

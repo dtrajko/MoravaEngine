@@ -117,6 +117,17 @@ namespace Outpost
             return meters / seconds;
         }
 
+        /// <summary>The state the upper body (the UpperBody layer) plays: Aim, Ready, Reload.</summary>
+        public string UpperState => animator?.GetLayerState("UpperBody") ?? "";
+
+        /// <summary>The weapon's reload started (true) or finished: the upper body plays it, then aims again (or the ready while sprinting).</summary>
+        public void Reloading(bool on)
+        {
+            if (animator == null)
+                return;
+            animator.Play(on ? "Reload" : sprinting ? "Ready" : "Aim", on ? 0.15f : 0.2f, "UpperBody");
+        }
+
         /// <summary>The motor jumped (from the fixed step): the body leaves the ground at once.</summary>
         public void OnJumped() => jumped = true;
 
