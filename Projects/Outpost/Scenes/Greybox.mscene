@@ -84,7 +84,7 @@ Entities:
     Name: ViewModel Rifle
     Parent: 1102
     Transform:
-      Translation: [-0.0964, 1.3478, 0.1638]
+      Translation: [-0.0912, 1.3503, 0.1966]
       Rotation: [0, -90, 0]
       Scale: [0.0017, 0.0017, 0.0017]
     Model:

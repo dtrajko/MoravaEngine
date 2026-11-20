@@ -337,7 +337,7 @@ Entities:
     Name: Rifle In Hands
     Parent: 0
     Transform:
-      Translation: [-5.0964, 1.3478, -2.8362]
+      Translation: [-5.0912, 1.3503, -2.8034]
       Rotation: [0, -90, 0]
       Scale: [0.0017, 0.0017, 0.0017]
     Model:
@@ -346,7 +346,7 @@ Entities:
     Name: Sniper Rifle In Hands
     Parent: 0
     Transform:
-      Translation: [2.9036, 1.3716, -2.7767]
+      Translation: [2.9088, 1.3741, -2.7439]
       Rotation: [0, -90, 0]
       Scale: [0.0017, 0.0017, 0.0017]
     Model:

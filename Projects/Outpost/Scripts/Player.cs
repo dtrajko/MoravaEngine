@@ -38,10 +38,10 @@ namespace Outpost
         /// <summary>
         /// Where the view model's eye is in its model (the aim pose's right eye, by the sight line) and how far it is moved from
         /// the camera in the camera's space (meters: right, up, forward), so the gun sits low and to the right of the crosshair.
-        /// The aim pose holds the gun 6.5 cm forward and 4.5 cm lower than the sight line at the eye (the face off the gun in
+        /// The aim pose holds the gun 6.5 cm forward and 5.5 cm lower than the sight line at the eye (the face off the gun in
         /// third person): the eye here moves with the gun, so the first-person view keeps its picture.
         /// </summary>
-        public Vector3 ViewModelEye = new Vector3(-0.118f, 1.529f, 0.180f);
+        public Vector3 ViewModelEye = new Vector3(-0.1128f, 1.5315f, 0.2128f);
         public Vector3 ViewModelOffset = new Vector3(0.11f, -0.09f, 0.0f);
 
         /// <summary>Third person: meters behind the shoulder, and to the side of the eyes.</summary>

@@ -104,7 +104,7 @@ LEFT_PALM_TILT = 35.0   # degrees the left palm faces from straight up toward th
 # Each elbow's target from the middle of its arm: this far out to the side and down (meters). The right one mostly down:
 # the upper arm in against the chest, not flared out (the user, 2026-11-19); while the right hand works the bolt or
 # reloads, as the left one
-ELBOW_TARGET = {"r": (0.3, 0.8), "l": (0.6, 0.6)}
+ELBOW_TARGET = {"r": (0.45, 0.65), "l": (0.6, 0.6)}
 # At the low ready (the muzzle down) the left elbow more down than out: the palm under the handguard brings the hand
 # low, and with (0.6, 0.6) the sniper's elbow came level with it while breathing
 LOW_READY_ELBOW_L = (0.6, 0.8)
@@ -900,16 +900,39 @@ CHEST_TWIST = -30.0  # degrees (negative: the right shoulder further back)
 # Measured on the dressed body's head: 3.2 cm at the closest in the level aim. A neck leant back, a head tilted less, the
 # gun moved right didn't help: the gun follows the eye, and the chin is beside the receiver's top
 GUN_FORWARD = 0.065
-EYE_ABOVE = 0.045
+EYE_ABOVE = 0.055
 FACE_CLEARANCE = 0.03       # less than this between the face and the gun in any frame of a clip aiming: the bake fails
 FACE_KICK_CLEARANCE = 0.01  # the same while the gun kicks back (a shot: for two frames)
 
 
+TWIST_BONES = SPINE  # the turn spread over the whole spine (on two bones it corkscrewed the chest)
+
+
 def twist_chest(pose):
-    turn = Matrix.Rotation(math.radians(CHEST_TWIST / 2.0), 4, "Y")
-    pose["spine_02"] = pose["spine_02"] @ turn
-    pose["spine_03"] = pose["spine_03"] @ turn
-    pose["neck_01"] = pose["neck_01"] @ Matrix.Rotation(math.radians(-CHEST_TWIST), 4, "Y")
+    twist = CHEST_TWIST
+    turn = Matrix.Rotation(math.radians(twist / len(TWIST_BONES)), 4, "Y")
+    for name in TWIST_BONES:
+        pose[name] = pose[name] @ turn
+    pose["neck_01"] = pose["neck_01"] @ Matrix.Rotation(math.radians(-twist), 4, "Y")
+
+
+IDLE = {}  # Idle_Loop's first frame (main): the relaxed standing pose
+
+
+# The aim poses' back and shoulders (the user, 2026-11-20: unnaturally bent, not a person's back and shoulders): the
+# base clip is the library's pistol stance, whose arms reach straight out, so its collarbones shrugged the shoulders up
+# and forward and its spine rounded the back; with the chest twisted 30 degrees on the forward-facing hips the right
+# shoulder made a hump on the back. The collarbones, the spine, the neck and the head are the relaxed standing pose's
+# (Idle_Loop) instead, the chest's turn spread over the three spine bones (TWIST_BONES): a straight back, level
+# shoulders, the head up; the right elbow a little out and forward (ELBOW_TARGET), not folded back along the side
+POSTURE_BONES = ["clavicle_l", "clavicle_r"] + SPINE + ["neck_01", "Head"]
+
+
+def aim_posture(pose):
+    """The aim's back and shoulders: the pistol stance's collarbones, spine, neck and head replaced by the relaxed
+    standing pose's"""
+    for name in POSTURE_BONES:
+        pose[name] = IDLE[name].copy()
 
 
 def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
@@ -923,6 +946,7 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
         pose = dict(base_frames[min(f, len(base_frames) - 1)])
         pose.update(finger_pose)
         if not clip.low_ready:
+            aim_posture(pose)
             bend = Matrix.Rotation(math.radians(-clip.aim_pitch * 1.13 / 3.0), 4, "X")  # +x leans forward; 1.13: the bones' axes are twisted, so the gun turned 40 of 45 degrees
             for name in SPINE:
                 pose[name] = pose[name] @ bend
@@ -943,6 +967,7 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
         # Level at the neutral aim, then turned with the chest's bend
         neutral_pose = dict(base_frames[0])
         neutral_pose.update(finger_pose)
+        aim_posture(neutral_pose)
         twist_chest(neutral_pose)
         neutral_pose["Head"] = neutral_pose["Head"] @ head_bend
         rig.set_pose(neutral_pose)
@@ -1163,6 +1188,9 @@ def render_preview(folder, rig, clip, poses, gun_mesh_frame):
         "side": ((-2.5, -0.2, 1.25), (math.radians(90), 0, math.radians(-90))),
         "front": ((-0.05, -2.5, 1.25), (math.radians(90), 0, 0)),
         "top": ((-0.05, -0.2, 3.5), (0, 0, 0)),
+        # The back and the shoulders: from behind, and from behind at the right (the third-person camera's side)
+        "back": ((-0.05, 2.5, 1.25), (math.radians(90), 0, math.radians(180))),
+        "back_right": ((-1.8, 1.8, 1.45), (math.radians(85), 0, math.radians(-135))),
     }
     for view, (location, rotation) in views.items():
         camera.location = location
@@ -1230,6 +1258,7 @@ def main():
     bones = armature.data.bones
     rig.left_rest = (bones["lowerarm_l"].matrix_local.to_3x3().inverted() @ bones["hand_l"].matrix_local.to_3x3()).normalized()
     rig.chest = Chest(rig)
+    IDLE.update(bases["Idle_Loop"][0])
     # Where the right index finger's knuckle is on the hand (its bone's space), for the hand on the grip
     rig.set_pose(bases["Idle_Loop"][0])
     rig.update()
