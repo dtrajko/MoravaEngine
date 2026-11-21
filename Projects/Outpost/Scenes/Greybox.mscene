@@ -46,8 +46,12 @@ Entities:
         Camera: {Entity: 1001}
         Body: {Entity: 1101}
         BodyGun: {Entity: 1104}
+        BodyPistol: {Entity: 1105}
+        BodyKnife: {Entity: 1106}
         ViewModel: {Entity: 1102}
         ViewModelGun: {Entity: 1103}
+        ViewModelPistol: {Entity: 1107}
+        ViewModelKnife: {Entity: 1108}
         Effects: {Entity: 1500}
   - ID: 1101
     Name: Body
@@ -92,6 +96,54 @@ Entities:
       File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
       HiddenInMainView: true
       ViewModel: true
+    BoneAttachment: {Bone: hand_r}
+  - ID: 1105
+    Name: Pistol
+    Parent: 1101
+    Transform:
+      Translation: [-0.0407, 0.1111, 0.017]
+      Rotation: [90, -14.45, 90]
+      Scale: [0.00125, 0.00125, 0.00125]
+    Model:
+      File: Assets/Models/QuaterniusGuns/Pistol_1.fbx
+      Visible: false
+    BoneAttachment: {Bone: hand_r}
+  - ID: 1106
+    Name: Knife
+    Parent: 1101
+    Transform:
+      Translation: [-0.024, 0.0954, 0.0019]
+      Rotation: [90, -14.45, 90]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/OutpostWeapons/Knife.glb
+      Visible: false
+    BoneAttachment: {Bone: hand_r}
+  - ID: 1107
+    Name: ViewModel Pistol
+    Parent: 1102
+    Transform:
+      Translation: [-0.0407, 0.1111, 0.017]
+      Rotation: [90, -14.45, 90]
+      Scale: [0.00125, 0.00125, 0.00125]
+    Model:
+      File: Assets/Models/QuaterniusGuns/Pistol_1.fbx
+      HiddenInMainView: true
+      ViewModel: true
+      Visible: false
+    BoneAttachment: {Bone: hand_r}
+  - ID: 1108
+    Name: ViewModel Knife
+    Parent: 1102
+    Transform:
+      Translation: [-0.024, 0.0954, 0.0019]
+      Rotation: [90, -14.45, 90]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/OutpostWeapons/Knife.glb
+      HiddenInMainView: true
+      ViewModel: true
+      Visible: false
     BoneAttachment: {Bone: hand_r}
   - ID: 1002
     Name: Environment

@@ -639,6 +639,30 @@ static int32_t ModelSetHiddenInMainView(uint64_t entity, int32_t hidden)
 	return 1;
 }
 
+static int32_t ModelGetVisible(uint64_t entity, int32_t* visible)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	const ModelComponent* model = scene ? scene->TryGet<ModelComponent>(entity) : nullptr;
+	if (!model || !visible)
+	{
+		return 0;
+	}
+	*visible = model->Visible ? 1 : 0;
+	return 1;
+}
+
+static int32_t ModelSetVisible(uint64_t entity, int32_t visible)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	ModelComponent* model = scene ? scene->TryGet<ModelComponent>(entity) : nullptr;
+	if (!model)
+	{
+		return 0;
+	}
+	model->Visible = visible != 0;
+	return 1;
+}
+
 // ---- Vehicle
 
 static int32_t VehicleSetInput(uint64_t entity, const ScriptVehicleInput* input)
@@ -1522,6 +1546,7 @@ static int32_t CameraGetSettings(uint64_t entity, ScriptCameraSettings* out)
 	out->FarClip = camera->FarClip;
 	out->Enabled = camera->Enabled ? 1 : 0;
 	out->DrawEvery = camera->DrawEvery;
+	out->ViewModelFieldOfView = camera->ViewModelFieldOfView;
 	return 1;
 }
 
@@ -1544,6 +1569,7 @@ static int32_t CameraSetSettings(uint64_t entity, const ScriptCameraSettings* va
 	camera->FarClip = std::max(value->FarClip, camera->NearClip * 2.0f);
 	camera->Enabled = value->Enabled != 0;
 	camera->DrawEvery = std::clamp(value->DrawEvery, 1u, 120u); // as the Inspector allows
+	camera->ViewModelFieldOfView = glm::clamp(value->ViewModelFieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView);
 	return 1;
 }
 
@@ -2449,6 +2475,8 @@ namespace ScriptBindings
 		api.Character_SetHeight = CharacterSetHeight;
 		api.Model_GetHiddenInMainView = ModelGetHiddenInMainView;
 		api.Model_SetHiddenInMainView = ModelSetHiddenInMainView;
+		api.Model_GetVisible = ModelGetVisible;
+		api.Model_SetVisible = ModelSetVisible;
 		api.ParticleEmitter_EmitBurst = ParticleEmitterEmitBurst;
 		api.Light_GetSettings = LightGetSettings;
 		api.Light_SetSettings = LightSetSettings;

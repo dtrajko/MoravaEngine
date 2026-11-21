@@ -1,4 +1,4 @@
-"""Generates the shooter's weapon sounds (docs/games/Shooter_Plan.html, Phases 2.2 and 2.3), all synthesized here, no samples:
+"""Generates the shooter's weapon sounds (docs/games/Shooter_Plan.html, Phases 2.2, 2.3 and 2.4), all synthesized here, no samples:
 
     Rifle_Shot_1.wav .. _3.wav  the assault rifle's shot: a sharp crack, the muzzle's blast, a low thump, the action's
                                 click and an outdoor tail (two slap echoes off buildings), a touch of tape saturation;
@@ -12,6 +12,17 @@
     Impact_Dirt_1.wav, _2       a bullet into the ground: a soft thud and earth scattering
     Impact_Flesh_1.wav, _2      a bullet into a body: a dull, wet-less thump (the training targets, the guards)
     HitMarker.wav               the hit marker's tick: a short, bright click the player hears on a hit
+    Pistol_Shot_1.wav .. _3.wav the pistol's shot (Phase 2.4): a crack and a smaller, brighter blast than the rifle's,
+                                little thump, the slide's clack, a shorter tail
+    Pistol_Empty.wav            the trigger on an empty magazine: one light click
+    Pistol_MagOut.wav           the magazine released: the button's click, the magazine dropping free
+    Pistol_MagIn.wav            a new magazine slapped home, then the slide let go: a sharp forward snap
+    Knife_Swing_1.wav, _2       the knife cutting the air: a quick whoosh rising and falling in pitch
+    Knife_Hit_Flesh.wav         the knife into a body: a dull, short thump with the cloth's tear
+    Knife_Hit_Hard.wav          the knife on concrete or metal: a scrape and a light clink
+    Draw_Rifle.wav              the rifle brought up: the sling's rustle, a light rattle of the parts
+    Draw_Pistol.wav             the pistol out of its holster: a short leather rub and a click
+    Draw_Knife.wav              the knife out of its sheath: a quick metallic "shing"
 
 Usage: python GenerateWeaponSounds.py [output folder]     (needs numpy; the default is the shooter's Assets/Audio)
 
@@ -223,6 +234,110 @@ def hit_marker():
     return fade_out(normalize(mix(0.07, (0.0, click(rng, 4400.0, 0.012, 9.0), 1.0), (0.004, click(rng, 6100.0, 0.008, 9.0), 0.5)), 0.5), 0.01)
 
 
+def pistol_shot(variant):
+    rng = np.random.default_rng(400 + variant)
+    length = 0.9
+    crack = biquad(noise(rng, 0.004), "high", 3200.0) * decay(samples(0.004), 0.0009)
+    blast_n = noise(rng, 0.14)
+    bright = biquad(blast_n, "low", 6500.0 + 600.0 * variant) * decay(len(blast_n), 0.010)
+    dark = biquad(blast_n, "low", 1400.0 + 150.0 * variant) * decay(len(blast_n), 0.030)
+    t = t_of(0.12)
+    freq = 70.0 + 110.0 * np.exp(-t / 0.015)
+    thump = np.sin(2 * np.pi * np.cumsum(freq) / RATE) * decay(len(t), 0.025, attack=0.001)
+    slide = mix(0.05, (0.0, click(rng, 2900.0 + 250.0 * variant, 0.012, 4.0), 1.0),
+                (0.028, click(rng, 2200.0, 0.014, 3.5), 0.8))  # back and forward
+    tail_n = noise(rng, 0.8)
+    tail = biquad(tail_n, "low", 1800.0) * decay(len(tail_n), 0.17, attack=0.015)
+    body = mix(0.2, (0.0, crack, 0.9), (0.0, bright, 1.0), (0.0, dark, 0.75), (0.0, thump, 0.45), (0.008, slide, 0.3))
+    echo = biquad(body, "low", 2600.0)
+    first, second = 0.10 + 0.02 * variant, 0.21 + 0.025 * variant
+    out = mix(length, (0.0, body, 1.0), (0.02, tail, 0.18), (first, echo, 0.17), (second, echo, 0.08))
+    return fade_out(normalize(saturate(normalize(out, 1.0), 1.6), 0.85), 0.04)
+
+
+def pistol_empty():
+    rng = np.random.default_rng(411)
+    return normalize(mix(0.08, (0.0, click(rng, 3300.0, 0.008, 7.0), 1.0)), 0.5)
+
+
+def pistol_mag_out():
+    rng = np.random.default_rng(412)
+    out = mix(0.3, (0.0, click(rng, 2800.0, 0.010, 6.0), 1.0), (0.02, scrape(rng, 0.07, 1200.0, 4500.0), 0.4))
+    return normalize(out, 0.55)
+
+
+def pistol_mag_in():
+    rng = np.random.default_rng(413)
+    slap = mix(0.03, (0.0, click(rng, 1900.0, 0.025, 3.0), 1.0), (0.0, click(rng, 3300.0, 0.015, 4.0), 0.5))
+    thud = biquad(noise(rng, 0.04), "low", 350.0) * decay(samples(0.04), 0.01)
+    snap = mix(0.05, (0.0, click(rng, 3600.0, 0.010, 5.0), 1.0), (0.004, click(rng, 2400.0, 0.02, 3.0), 0.9),
+               (0.0, biquad(noise(rng, 0.03), "low", 700.0) * decay(samples(0.03), 0.008), 0.6))
+    out = mix(0.55, (0.0, scrape(rng, 0.06, 900.0, 3500.0), 0.35), (0.06, slap, 1.0), (0.06, thud, 0.7), (0.38, snap, 1.0))
+    return normalize(out, 0.7)
+
+
+def knife_swing(variant):
+    """Air past a blade: noise through a band whose middle rises and falls over the swing (filtered in 10 ms pieces)"""
+    rng = np.random.default_rng(420 + variant)
+    seconds = 0.26 + 0.04 * variant
+    n = noise(rng, seconds)
+    out = np.zeros(len(n))
+    chunk = samples(0.01)
+    for i in range(0, len(n), chunk):
+        u = i / len(n)
+        center = 500.0 + 2600.0 * math.sin(math.pi * min(1.0, u * 1.15)) ** 1.5
+        piece = biquad(n[i:i + chunk], "band", center, 1.3)
+        out[i:i + len(piece)] = piece
+    env = np.sin(np.linspace(0.0, math.pi, len(n))) ** 2.2
+    return fade_out(normalize(out * env, 0.6), 0.02)
+
+
+def knife_hit_flesh():
+    rng = np.random.default_rng(430)
+    t = t_of(0.1)
+    freq = 90.0 + 70.0 * np.exp(-t / 0.012)
+    body = np.sin(2 * np.pi * np.cumsum(freq) / RATE) * decay(len(t), 0.022, attack=0.001)
+    tear = scrape(rng, 0.09, 1500.0, 5000.0) * decay(samples(0.09), 0.03)
+    out = mix(0.14, (0.0, body, 1.0), (0.004, tear, 0.45))
+    return fade_out(normalize(out, 0.75), 0.02)
+
+
+def knife_hit_hard():
+    rng = np.random.default_rng(431)
+    t = t_of(0.25)
+    ring = np.zeros(len(t))
+    for f, g, tau in ((3100.0, 1.0, 0.05), (4700.0, 0.5, 0.03)):
+        ring += g * np.sin(2 * np.pi * f * t) * decay(len(t), tau)
+    out = mix(0.28, (0.0, click(rng, 2600.0, 0.01, 3.0), 1.0), (0.0, ring, 0.3), (0.006, scrape(rng, 0.1, 2000.0, 7000.0), 0.4))
+    return fade_out(normalize(out, 0.7), 0.03)
+
+
+def draw_rifle():
+    rng = np.random.default_rng(440)
+    n = samples(0.25)
+    rustle = biquad(biquad(noise(rng, 0.25), "high", 400.0), "low", 3000.0) * np.sin(np.linspace(0, math.pi, n)) ** 1.5
+    rattle = [(0.12 + 0.03 * k, click(rng, 2400.0 + 300.0 * k, 0.008, 5.0), 0.5 - 0.1 * k) for k in range(3)]
+    return normalize(mix(0.35, (0.0, rustle, 0.5), *rattle), 0.45)
+
+
+def draw_pistol():
+    rng = np.random.default_rng(441)
+    n = samples(0.14)
+    rub = biquad(biquad(noise(rng, 0.14), "high", 250.0), "low", 1800.0) * np.sin(np.linspace(0, math.pi, n))
+    return normalize(mix(0.25, (0.0, rub, 0.6), (0.15, click(rng, 2700.0, 0.01, 5.0), 1.0)), 0.45)
+
+
+def draw_knife():
+    rng = np.random.default_rng(442)
+    t = t_of(0.3)
+    shing = np.zeros(len(t))
+    for f, g in ((3800.0, 1.0), (5200.0, 0.6), (7100.0, 0.3)):
+        shing += g * np.sin(2 * np.pi * f * t)
+    env = np.minimum(1.0, t / 0.12) * np.exp(-np.maximum(0.0, t - 0.12) / 0.05)  # rising along the sheath, then gone
+    slide = scrape(rng, 0.14, 2500.0, 8000.0)
+    return fade_out(normalize(mix(0.3, (0.0, slide, 0.6), (0.0, shing * env * 0.25, 1.0)), 0.45), 0.02)
+
+
 def main():
     root = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
     folder = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "Projects", "Outpost", "Assets", "Audio")
@@ -240,6 +355,18 @@ def main():
         save(folder, f"Impact_Dirt_{variant}.wav", impact_dirt(variant))
         save(folder, f"Impact_Flesh_{variant}.wav", impact_flesh(variant))
     save(folder, "HitMarker.wav", hit_marker())
+    for variant in (1, 2, 3):
+        save(folder, f"Pistol_Shot_{variant}.wav", pistol_shot(variant))
+    save(folder, "Pistol_Empty.wav", pistol_empty())
+    save(folder, "Pistol_MagOut.wav", pistol_mag_out())
+    save(folder, "Pistol_MagIn.wav", pistol_mag_in())
+    for variant in (1, 2):
+        save(folder, f"Knife_Swing_{variant}.wav", knife_swing(variant))
+    save(folder, "Knife_Hit_Flesh.wav", knife_hit_flesh())
+    save(folder, "Knife_Hit_Hard.wav", knife_hit_hard())
+    save(folder, "Draw_Rifle.wav", draw_rifle())
+    save(folder, "Draw_Pistol.wav", draw_pistol())
+    save(folder, "Draw_Knife.wav", draw_knife())
 
 
 if __name__ == "__main__":

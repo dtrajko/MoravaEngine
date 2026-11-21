@@ -10,6 +10,9 @@ window, read what its log says, and compile files with GCC as the Linux CI build
 | `Capture-Window.ps1` | Saves a running window as a PNG (all of it, or a part enlarged) | PowerShell |
 | `gcc-check.sh` | Compiles source files with GCC for errors only | WSL (Ubuntu with `g++`) |
 | `Sync-RacingTest.ps1` | Brings the Racing test copy (`D:\Workspace\Temp\RacingTest`) up to date with `Projects/Racing`, with the test driver on | PowerShell |
+| `Sync-OutpostTest.ps1` | Brings the Outpost test copy (`D:\Workspace\Temp\OutpostPlayerTest`) up to date with `Projects/Outpost`, its Greybox with the test driver | PowerShell |
+| `Capture-OnLog.ps1` | Captures a window each time a line matching a pattern appears in the log (a test driver's photo moments) | PowerShell |
+| `Make-ContactSheet.ps1` | Puts images side by side in one PNG (a clip's preview frames, a series of captures), cropped and scaled | PowerShell |
 
 ## Before you start
 
@@ -160,6 +163,47 @@ D:\Workspace\Temp\RacingTest\Build\win-x64\RacingTest.exe --exit-after 20 --debu
 ```
 
 A shipped game logs to `%LOCALAPPDATA%\Morava Games\RacingTest\Player.log`, not to the console.
+
+## Sync-OutpostTest.ps1
+
+The shooter is tested on a copy with its own project name (OutpostPlayerTest: its own settings) whose Greybox scene has
+two more entities: a low slab the crouch test walks under, and `PlayerTest`, a C# test driver
+(`<copy>\Scripts\PlayerTest.cs`, only in the copy) that drives the player through a timed list of commands and logs
+`PlayerTest PASS`/`FAIL` lines. The script mirrors the project's Assets, Settings and Levels into the copy, copies the
+game's scripts beside `PlayerTest.cs`, and writes the game's Greybox with the two entities added. Then build the copy's
+scripts and run it in the editor's Play:
+
+```powershell
+.\Tools\Testing\Sync-OutpostTest.ps1
+dotnet build D:\Workspace\Temp\OutpostPlayerTest\Scripts\Outpost.csproj -p:MoravaScriptCoreDir=D:\Workspace\MoravaEngine\build\Debug\
+.\Tools\Testing\Run-Engine.ps1 -Editor -Play -Maximize -Project D:\Workspace\Temp\OutpostPlayerTest\Outpost.mproject -Seconds 116 -DebugOverlay
+```
+
+Without `-p:MoravaScriptCoreDir` the scripts build against the last ScriptCore copied into the project, and the editor
+runs an old one. The driver stops the game's time for its photos (`Time.TimeScale` 0 for a second or three): `-Seconds`
+counts them.
+
+## Capture-OnLog.ps1
+
+Watches a log as the engine writes it and captures the window (`Capture-Window.ps1`) each time a line matches a pattern,
+after a short delay: a test driver logs `PlayerTest: photo ...` and holds the game still while it is taken. Start it in
+the background just before the run:
+
+```powershell
+$job = Start-Job { & D:\Workspace\MoravaEngine\Tools\Testing\Capture-OnLog.ps1 -Name MoravaEngine -Pattern "PlayerTest: photo" -Prefix shot }
+.\Tools\Testing\Run-Engine.ps1 -Editor -Play -Maximize -Project ... -Seconds 116
+Receive-Job $job -Wait    # Output\shot_1.png, shot_2.png, ... with the lines they were taken for
+```
+
+## Make-ContactSheet.ps1
+
+Puts images in a grid in one PNG, in name order: `-Pattern` (a wildcard path), `-Columns`, `-Crop x,y,width,height` (of
+each image, e.g. the viewport of a window capture), `-Scale`, `-Labels` (the file names under them). For a clip's
+preview frames from the Blender scripts, or a series of captures, to look at as one picture.
+
+```powershell
+.\Tools\Testing\Make-ContactSheet.ps1 -Pattern "D:\Workspace\Temp\OutpostPoses\getup\Get_Up_side_*.png" -Columns 9 -Scale 0.5 -Out Output\getup.png
+```
 
 ## gcc-check.sh
 

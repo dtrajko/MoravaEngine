@@ -103,6 +103,7 @@ struct ClipboardEntity
 	std::string ModelPath;
 	bool ModelHiddenInMainView = false;
 	bool ModelViewModel = false;
+	bool ModelVisible = true;
 	std::vector<Part> Parts;
 	PointLightComponent PointLight;
 	SpotLightComponent SpotLight;
@@ -189,6 +190,7 @@ static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity)
 			copy.ModelPath = s_Scene.Get<ModelComponent>(entity).FilePath;
 			copy.ModelHiddenInMainView = s_Scene.Get<ModelComponent>(entity).HiddenInMainView;
 			copy.ModelViewModel = s_Scene.Get<ModelComponent>(entity).ViewModel;
+			copy.ModelVisible = s_Scene.Get<ModelComponent>(entity).Visible;
 			const H2M::RefH2M<H2M::ModelH2M> model = GetModel(s_Scene, entity);
 			for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
 			{
@@ -207,6 +209,7 @@ static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity)
 			copy.ModelPath = s_Scene.Get<ModelComponent>(model).FilePath;
 			copy.ModelHiddenInMainView = s_Scene.Get<ModelComponent>(model).HiddenInMainView;
 			copy.ModelViewModel = s_Scene.Get<ModelComponent>(model).ViewModel;
+			copy.ModelVisible = s_Scene.Get<ModelComponent>(model).Visible;
 			copy.Local = s_Scene.Get<TransformComponent>(model);
 			copy.World = s_Scene.GetWorldTransform(model);
 			copy.Source = model; // pasted after the model
@@ -341,6 +344,7 @@ static EnvMapVulkanEntityID PasteModel(const ClipboardEntity& copy, EnvMapVulkan
 	modelComponent.FilePath = copy.ModelPath;
 	modelComponent.HiddenInMainView = copy.ModelHiddenInMainView;
 	modelComponent.ViewModel = copy.ModelViewModel;
+	modelComponent.Visible = copy.ModelVisible;
 	modelComponent.Model = model;
 	for (const ClipboardEntity::Part& part : copy.Parts)
 	{

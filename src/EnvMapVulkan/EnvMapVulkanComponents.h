@@ -113,6 +113,9 @@ struct ModelComponent
 	// the water's reflection, the render textures or the probes. Outside the game's view (Edit) it is drawn as any model.
 	// Hidden In Main View too, it isn't drawn at all (nor a shadow)
 	bool ViewModel = false;
+	// Drawn at all (Shooter Phase 2.4: a weapon put away). Off, nothing sees it: not the main view, no shadow, not the
+	// rays, the probes, the water's reflection or the render textures. Its entity, its transform and its animation stay
+	bool Visible = true;
 };
 
 // A part of a model: one of its meshes. Its TransformComponent is the part's place in the model (relative to the model

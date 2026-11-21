@@ -158,6 +158,8 @@ struct ScriptCameraSettings
 	// A render texture camera's (7.5.4)
 	int32_t Enabled = 1;
 	uint32_t DrawEvery = 1;
+	// The view models' field of view (Shooter Phase 2.4: aiming down the sights narrows it too)
+	float ViewModelFieldOfView = 55.0f;
 };
 
 // A UIRectComponent as a script reads and writes it (UIRect's properties)
@@ -527,6 +529,9 @@ struct ScriptNativeApi
 	// entity has no model
 	int32_t (*Model_GetHiddenInMainView)(uint64_t entity, int32_t* hidden);
 	int32_t (*Model_SetHiddenInMainView)(uint64_t entity, int32_t hidden);
+	// Shooter Phase 2.4: ModelComponent::Visible (off: not drawn at all, a weapon put away). 0: the entity has no model
+	int32_t (*Model_GetVisible)(uint64_t entity, int32_t* visible);
+	int32_t (*Model_SetVisible)(uint64_t entity, int32_t visible);
 
 	// Shooter Phase 2.3. Particles from a place: as ParticleEmitter_Emit, from the burst's place and direction (0: the entity
 	// has no ParticleEmitterComponent)

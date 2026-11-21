@@ -56,7 +56,16 @@ namespace Outpost
         public bool IsCrouched { get; private set; }
         public bool IsGrounded => character.IsGrounded;
         public bool IsWalking { get; private set; }
+
+        /// <summary>Sprinting (Shift, forward): the weapon lowered, no shots.</summary>
         public bool IsSprinting { get; private set; }
+        public bool IsWeaponLowered => IsSprinting;
+
+        /// <summary>
+        /// Aiming down the sights (Phase 2.4, set by the player each step): the moving speeds times this, and no sprint
+        /// (1: not aiming).
+        /// </summary>
+        public float AimSpeedScale { get; set; } = 1.0f;
 
         /// <summary>How it really moves (after the last step), meters per second in the world.</summary>
         public Vector3 Velocity => character.Velocity;
@@ -102,11 +111,13 @@ namespace Outpost
 
             // Along the ground: towards the wanted velocity, quickly on the ground and a little in the air
             IsWalking = command.Walk && !IsCrouched;
-            // Sprinting: forward only (not sideways or back), not while walking quietly or crouched
-            IsSprinting = command.Sprint && !IsWalking && !IsCrouched && command.Move.Y > 0.5f;
+            // Sprinting: forward only (the user, 2026-11-21: back and to the side looked bad), not while walking quietly,
+            // crouched or aiming down the sights
+            IsSprinting = command.Sprint && !IsWalking && !IsCrouched && command.Move.Y > 0.5f && AimSpeedScale >= 1.0f;
             float speed = IsCrouched ? settings.CrouchSpeed : IsWalking ? settings.WalkSpeed : IsSprinting ? settings.SprintSpeed : settings.MoveSpeed;
             if (!IsCrouched && !IsSprinting)
                 speed *= SideScale(command.Move, settings.SideSpeedScale); // (crouched: the library's walk, forward only, no side clips yet)
+            speed *= AimSpeedScale;
             Vector3 wanted = (command.Forward * command.Move.Y + command.Right * command.Move.X) * speed;
             Vector2 horizontal = new Vector2(velocity.X, velocity.Z);
             horizontal = MoveTowards(horizontal, new Vector2(wanted.X, wanted.Z), (grounded ? settings.GroundAcceleration : settings.AirAcceleration) * dt);

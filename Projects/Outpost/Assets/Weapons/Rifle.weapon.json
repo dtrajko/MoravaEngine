@@ -1,7 +1,10 @@
 {
-  "_": "The assault rifle (docs/games/Shooter_Plan.html, Phase 2.2). Read by WeaponData.Load; meters, seconds, degrees.",
+  "_": "The assault rifle (docs/games/Shooter_Plan.html, Phases 2.2 and 2.4). Read by WeaponData.Load; meters, seconds, degrees.",
   "Name": "Rifle",
   "Model": "Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx",
+  "Slot": 1,
+  "DrawSeconds": 0.45,
+  "HolsterSeconds": 0.3,
   "Muzzle": [381.7, 57.8, 0.0],
   "FireModes": ["Auto", "Semi"],
   "RoundsPerMinute": 600,
@@ -11,6 +14,7 @@
   "Magazine": 30,
   "Reserve": 120,
   "ReloadSeconds": 2.2,
+  "ReloadSounds": { "MagazineOut": 0.35, "MagazineIn": 1.55 },
   "Spread": {
     "Still": 0.25,
     "Moving": 1.6,
@@ -28,12 +32,30 @@
     "Recovery": 6.0,
     "RecoveryDelay": 0.12
   },
+  "AimDownSights": {
+    "FieldOfView": 50,
+    "ViewModelFieldOfView": 50,
+    "Seconds": 0.2,
+    "SpreadScale": 0.35,
+    "SpeedScale": 0.6,
+    "Distance": 1.3
+  },
+  "States": {
+    "BodyAim": "Aim", "BodyReady": "Ready", "BodyReload": "Reload",
+    "ViewAim": "Aim", "ViewFire": "Shoot", "ViewReload": "Reload"
+  },
+  "ViewModel": {
+    "Eye": [-0.1128, 1.5315, 0.2128],
+    "Offset": [0.11, -0.09, 0.0],
+    "AimEye": [-0.0912, 1.512, 0.1031]
+  },
   "Sounds": {
     "Shot": "Assets/Audio/Rifle_Shot_{0}.wav",
     "ShotVariants": 3,
     "Empty": "Assets/Audio/Rifle_Empty.wav",
     "MagazineOut": "Assets/Audio/Rifle_MagOut.wav",
     "MagazineIn": "Assets/Audio/Rifle_MagIn.wav",
-    "FireMode": "Assets/Audio/Rifle_FireMode.wav"
+    "FireMode": "Assets/Audio/Rifle_FireMode.wav",
+    "Draw": "Assets/Audio/Draw_Rifle.wav"
   }
 }

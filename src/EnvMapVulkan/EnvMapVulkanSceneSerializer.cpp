@@ -253,6 +253,10 @@ namespace EnvMapVulkanSceneSerializer
 			{
 				out << YAML::Key << "ViewModel" << YAML::Value << true;
 			}
+			if (!model->Visible)
+			{
+				out << YAML::Key << "Visible" << YAML::Value << false;
+			}
 			out << YAML::EndMap;
 		}
 		if (const MeshPartComponent* part = scene.TryGet<MeshPartComponent>(entity))
@@ -890,6 +894,7 @@ namespace EnvMapVulkanSceneSerializer
 			model.FilePath = AssetReference::Read(modelNode, "File");
 			model.HiddenInMainView = modelNode["HiddenInMainView"].as<bool>(false);
 			model.ViewModel = modelNode["ViewModel"].as<bool>(false);
+			model.Visible = modelNode["Visible"].as<bool>(true);
 		}
 		if (YAML::Node partNode = node["MeshPart"])
 		{
