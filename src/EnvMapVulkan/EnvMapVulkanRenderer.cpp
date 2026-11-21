@@ -5203,6 +5203,10 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	stages.Next("Part transforms");
 	for (EnvMapVulkanEntityID entity : EnvMapVulkanSceneData::GetModels(*s_Scene))
 	{
+		if (const ModelComponent* hidden = s_Scene->TryGet<ModelComponent>(entity); hidden && !hidden->Visible)
+		{
+			continue; // not drawn in any pass (ModelComponent::Visible off): not submitted, not in the probes' versions
+		}
 		H2M::RefH2M<H2M::ModelH2M> model = EnvMapVulkanSceneData::GetModel(*s_Scene, entity);
 		if (model->IsSkinned())
 		{

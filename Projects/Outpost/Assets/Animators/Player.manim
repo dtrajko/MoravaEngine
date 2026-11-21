@@ -6,7 +6,9 @@
 # (degrees, right positive), the walking quietly too (slower). Run, the library's jog, only shows between the fast walk
 # and the sprint.
 # UpperBody: from the spine up, the rifle aimed where the camera looks (Tools/CharacterPoses/make_rifle_poses.py's poses
-# blended by AimPitch, the look's pitch in degrees, down positive), lowered to the ready while sprinting.
+# blended by AimPitch, the look's pitch in degrees, down positive), lowered to the ready while sprinting. Phase 2.4: the
+# pistol's the same (its own states: PistolAim, PistolReady, PistolReload) and the knife's (KnifeIdle, KnifeSlash): the
+# weapon in the hands picks them (Player.cs plays them when it comes out).
 Animator:
   Version: 1
   Entry: Idle
@@ -93,6 +95,38 @@ Animator:
           Speed: 1
           Loop: false
           InPlace: true
+        # Phase 2.4: the pistol in both hands at arm's length, and the knife
+        - Name: PistolAim
+          BlendParameter: AimPitch
+          Blend:
+            - {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Aim_Up, Threshold: -45}
+            - {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Aim_Neutral, Threshold: 0}
+            - {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Aim_Down, Threshold: 45}
+          Speed: 1
+          Loop: true
+          InPlace: true
+        - Name: PistolReady
+          Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Idle_Loop}
+          Speed: 1
+          Loop: true
+          InPlace: true
+        - Name: PistolReload
+          Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Reload}
+          Speed: 1
+          Loop: false
+          InPlace: true
+        - Name: KnifeIdle
+          Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Knife_Idle_Loop}
+          Speed: 1
+          Loop: true
+          InPlace: true
+        - Name: KnifeSlash
+          Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Knife_Slash}
+          Speed: 1
+          Loop: false
+          InPlace: true
       Transitions:
         - {From: Aim, To: Ready, Fade: 0.25, Conditions: [{Parameter: Sprinting, Test: True}]}
         - {From: Ready, To: Aim, Fade: 0.2, Conditions: [{Parameter: Sprinting, Test: False}]}
+        - {From: PistolAim, To: PistolReady, Fade: 0.2, Conditions: [{Parameter: Sprinting, Test: True}]}
+        - {From: PistolReady, To: PistolAim, Fade: 0.15, Conditions: [{Parameter: Sprinting, Test: False}]}

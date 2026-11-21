@@ -561,6 +561,12 @@ namespace Morava
 
         /// <summary>A camera with a Target draws every this many frames, 1 to 120 (1: every frame).</summary>
         public int DrawEvery { get => (int)Settings.DrawEvery; set { var s = Settings; s.DrawEvery = (uint)Math.Clamp(value, 1, 120); Settings = s; } }
+
+        /// <summary>
+        /// Degrees the view models (Model.ViewModel: the first person's arms and gun) span from bottom to top while this camera
+        /// shows the game, 10 to 120: aiming down the sights narrows it with the view's.
+        /// </summary>
+        public float ViewModelFieldOfView { get => Settings.ViewModelFieldOfView; set { var s = Settings; s.ViewModelFieldOfView = value; Settings = s; } }
     }
 
     /// <summary>
@@ -875,6 +881,24 @@ namespace Morava
             set
             {
                 if (Interop.Game->Model_SetHiddenInMainView(Entity.Id, value ? 1 : 0) == 0) throw Missing("model");
+            }
+        }
+
+        /// <summary>
+        /// Drawn at all (a weapon put away: false). Off, nothing sees it: not the main view, no shadow, not the rays, the
+        /// probes, the water's reflection or the render textures. Its entity, transform and animation stay.
+        /// </summary>
+        public bool Visible
+        {
+            get
+            {
+                int visible;
+                if (Interop.Game->Model_GetVisible(Entity.Id, &visible) == 0) throw Missing("model");
+                return visible != 0;
+            }
+            set
+            {
+                if (Interop.Game->Model_SetVisible(Entity.Id, value ? 1 : 0) == 0) throw Missing("model");
             }
         }
     }

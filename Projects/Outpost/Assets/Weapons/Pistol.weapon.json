@@ -1,0 +1,60 @@
+{
+  "_": "The pistol (docs/games/Shooter_Plan.html, Phase 2.4): fast to draw, the fallback. Read by WeaponData.Load; meters, seconds, degrees.",
+  "Name": "Pistol",
+  "Model": "Assets/Models/QuaterniusGuns/Pistol_1.fbx",
+  "Slot": 3,
+  "DrawSeconds": 0.25,
+  "HolsterSeconds": 0.2,
+  "Muzzle": [147.0, 57.0, 0.0],
+  "FireModes": ["Semi"],
+  "RoundsPerMinute": 400,
+  "Damage": 20,
+  "HeadMultiplier": 4.0,
+  "Range": 120,
+  "Magazine": 12,
+  "Reserve": 48,
+  "ReloadSeconds": 1.8,
+  "ReloadSounds": { "MagazineOut": 0.3, "MagazineIn": 1.2 },
+  "Spread": {
+    "Still": 0.35,
+    "Moving": 1.4,
+    "MovingSpeed": 3.0,
+    "Crouched": 0.75,
+    "Air": 3.5,
+    "PerShot": 0.6,
+    "Max": 3.0,
+    "Recovery": 6.0,
+    "RecoveryDelay": 0.12
+  },
+  "Recoil": {
+    "Pitch": 1.1,
+    "Yaw": 0.35,
+    "Recovery": 8.0,
+    "RecoveryDelay": 0.1
+  },
+  "AimDownSights": {
+    "FieldOfView": 58,
+    "ViewModelFieldOfView": 62,
+    "Seconds": 0.15,
+    "SpreadScale": 0.5,
+    "SpeedScale": 0.75,
+    "Distance": 1.6
+  },
+  "States": {
+    "BodyAim": "PistolAim", "BodyReady": "PistolReady", "BodyReload": "PistolReload",
+    "ViewAim": "PistolAim", "ViewFire": "PistolShoot", "ViewReload": "PistolReload"
+  },
+  "ViewModel": {
+    "Eye": [-0.0863, 1.46, 0.20],
+    "Offset": [0.10, -0.07, 0.0],
+    "AimEye": [-0.0596, 1.4593, 0.10]
+  },
+  "Sounds": {
+    "Shot": "Assets/Audio/Pistol_Shot_{0}.wav",
+    "ShotVariants": 3,
+    "Empty": "Assets/Audio/Pistol_Empty.wav",
+    "MagazineOut": "Assets/Audio/Pistol_MagOut.wav",
+    "MagazineIn": "Assets/Audio/Pistol_MagIn.wav",
+    "Draw": "Assets/Audio/Draw_Pistol.wav"
+  }
+}

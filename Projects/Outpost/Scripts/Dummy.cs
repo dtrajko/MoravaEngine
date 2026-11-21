@@ -7,7 +7,9 @@ namespace Outpost
     /// A training dummy (docs/games/Shooter_Plan.html, Phase 2.2): a soldier in the training uniform (Soldier_Training, the
     /// guards' mesh) to shoot in the greybox. Its Body child has the model and Dummy.manim; the hitboxes (Hitbox scripts on
     /// the body's bones, Owner this) take the hits. A hit plays a flinch (the head's or the chest's); out of health it falls
-    /// (Death01) and, after LieSeconds, stands up again with its health back.
+    /// (Death01) and, after LieSeconds, gets up (Phase 2.4: our own Get_Up, Tools/CharacterPoses/make_get_up.py, from where
+    /// Death01 leaves it lying to Idle's stance: before, a cross-fade to Idle swung a leg through the floor), its health
+    /// back once it stands.
     /// </summary>
     public class Dummy : Entity, IDamageable
     {
@@ -15,9 +17,15 @@ namespace Outpost
         public float MaxHealth = 100.0f;
         public float LieSeconds = 4.0f;
 
-        /// <summary>Health points now; 0 while it lies.</summary>
+        /// <summary>Seconds the get-up takes (the Get_Up clip's length): down until it has stood up.</summary>
+        public float GetUpSeconds = 2.55f;
+
+        /// <summary>Health points now; 0 while it lies and gets up.</summary>
         public float Health { get; private set; }
-        public bool IsDown => down > 0.0f;
+        public bool IsDown => down > 0.0f || gettingUp > 0.0f;
+
+        /// <summary>It is getting up (after lying, before it stands).</summary>
+        public bool IsGettingUp => gettingUp > 0.0f;
 
         /// <summary>Hits and falls since the start (a test reads them).</summary>
         public int Hits { get; private set; }
@@ -27,6 +35,7 @@ namespace Outpost
         Animator? animator;
         float flinch;   // seconds of the flinch left
         float down;     // seconds lying left
+        float gettingUp; // seconds of the get-up left
 
         protected override void OnCreate()
         {
@@ -65,8 +74,19 @@ namespace Outpost
                 if (down <= 0.0f)
                 {
                     down = 0.0f;
+                    gettingUp = GetUpSeconds;
+                    animator?.Play("GetUp", 0.0f); // it starts where Death01 ends
+                }
+                return;
+            }
+            if (gettingUp > 0.0f)
+            {
+                gettingUp -= dt;
+                if (gettingUp <= 0.0f)
+                {
+                    gettingUp = 0.0f;
                     Health = MaxHealth;
-                    animator?.Play("Idle", 0.8f); // up again
+                    animator?.Play("Idle", 0.2f); // Get_Up ends in Idle's first pose
                 }
                 return;
             }

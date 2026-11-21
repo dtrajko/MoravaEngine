@@ -96,6 +96,8 @@ header.hero { padding-block: 18px 26px; display: grid; gap: 14px; }
 .meta { font-size: 0.86rem; color: var(--muted); max-width: 48rem; }
 nav.toc ol { columns: 2 18rem; column-gap: 32px; padding-left: 0; list-style: none; } /* no automatic numbers: each entry names its phase */
 nav.toc li { break-inside: avoid; }
+nav.toc li.sub { padding-left: 1.2rem; }
+nav.toc li.sub2 { padding-left: 2.4rem; font-size: 0.95em; }
 
 /* diagrams */
 figure { margin: 10px 0 22px; }
@@ -155,7 +157,34 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><a href="#content">Content: models, animations, sounds</a></li>
       <li><a href="#multiplayer">Keeping multiplayer possible</a></li>
       <li><a href="#engine">The engine work (E1–E11)</a></li>
+      <li class="sub"><a href="#e1-1">E1.1 the library and the bake</a></li>
+      <li class="sub"><a href="#e1-2">E1.2 the Nav Mesh, Bake, .mnav and the debug view</a></li>
+      <li class="sub"><a href="#e1-3">E1.3 the queries, C#'s Navigation and the two-click path</a></li>
+      <li class="sub"><a href="#e1-4">E1.4 the Nav Agent, the crowd and the character</a></li>
+      <li class="sub"><a href="#e1-5">E1.5 areas, links, Not Walkable, packs and the player</a></li>
       <li><a href="#phases">The phases</a></li>
+      <li class="sub"><a href="#phase-0">Phase 0: the project, and the content check</a></li>
+      <li class="sub2"><a href="#phase-0-1">0.1 the project</a></li>
+      <li class="sub2"><a href="#phase-0-2">0.2 the content check</a></li>
+      <li class="sub2"><a href="#phase-0-3">0.3 the level builder, version 1</a></li>
+      <li class="sub"><a href="#phase-1">Phase 1: the player in both views</a></li>
+      <li class="sub2"><a href="#phase-1-1">1.1 movement, crouching (E7) and commands</a></li>
+      <li class="sub2"><a href="#phase-1-2">1.2 the body, its animator, the third-person camera and V</a></li>
+      <li class="sub2"><a href="#phase-fast-walk">The fast walk (after 1.2)</a></li>
+      <li class="sub2"><a href="#phase-1-3">1.3 the soldier's uniform and the view model, E2</a></li>
+      <li class="sub"><a href="#phase-2">Phase 2: weapons</a></li>
+      <li class="sub2"><a href="#phase-2-1">2.1 the gun in the hands, the upper body aiming, walking every way (E3, E5)</a></li>
+      <li class="sub2"><a href="#phase-2-2">2.2 the rifle fires</a></li>
+      <li class="sub2"><a href="#phase-2-3">2.3 the effects</a></li>
+      <li class="sub2"><a href="#phase-2-4">2.4 the pistol and the knife, switching, aiming down the sights</a></li>
+      <li class="sub"><a href="#phase-3">Phase 3: health, pickups and the HUD</a></li>
+      <li class="sub"><a href="#phase-4">Phase 4: navigation (E1)</a></li>
+      <li class="sub"><a href="#phase-5">Phase 5: the guards</a></li>
+      <li class="sub"><a href="#phase-6">Phase 6: the base</a></li>
+      <li class="sub"><a href="#phase-7">Phase 7: the mission</a></li>
+      <li class="sub"><a href="#phase-8">Phase 8: feel and sound</a></li>
+      <li class="sub"><a href="#phase-9">Phase 9: the budget and the game build</a></li>
+      <li class="sub"><a href="#phase-10">Phase 10: a second mission</a></li>
       <li><a href="#later">Later</a></li>
       <li><a href="#verify">How each phase is checked</a></li>
     </ol>
@@ -587,7 +616,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         section in the engine guide</td><td>A shipped test build</td></tr>
     </table>
   </div>
-  <div class="box ok"><b>As built: E1.1 the library and the bake (2026-11-16)</b>
+  <div class="box ok" id="e1-1"><b>As built: E1.1 the library and the bake (2026-11-16)</b>
     <ul>
       <li><b>Recast and Detour 1.6.0</b> (zlib), a submodule at <code>vendor/cross-platform/recastnavigation</code>, without
         its demo, tests and examples; 64-bit polygon references (<code>DT_POLYREF64</code>: many tiles of many polygons).
@@ -608,7 +637,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><code>Tools/Testing/gcc-check.sh</code> knows Recast's and Detour's headers.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: E1.2 the Nav Mesh, Bake, .mnav and the debug view (2026-11-16)</b>
+  <div class="box ok" id="e1-2"><b>As built: E1.2 the Nav Mesh, Bake, .mnav and the debug view (2026-11-16)</b>
     <ul>
       <li><b>What is baked:</b> <code>ScenePhysics::GetStaticGeometry</code>, by the rules <code>Start</code> makes static
         bodies by: the terrains' height fields, and the colliders without a Rigid Body or with a Static one (not triggers,
@@ -645,7 +674,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         60000s) and <code>Greybox.mnav</code>.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: E1.3 the queries, C#'s Navigation and the two-click path (2026-11-16)</b>
+  <div class="box ok" id="e1-3"><b>As built: E1.3 the queries, C#'s Navigation and the two-click path (2026-11-16)</b>
     <ul>
       <li><b>The queries</b> (<code>NavMesh</code>): <code>FindPath</code>, <code>Raycast</code> and
         <code>NearestPoint</code> from E1.1, and now <code>RandomPointAround</code> (Detour's random point in a polygon
@@ -680,7 +709,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         Crouch keep theirs.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: E1.4 the Nav Agent, the crowd and the character (2026-11-16)</b>
+  <div class="box ok" id="e1-4"><b>As built: E1.4 the Nav Agent, the crowd and the character (2026-11-16)</b>
     <ul>
       <li><b>The Nav Agent</b> (<code>NavAgentComponent</code>, saved as <code>NavAgent:</code>): the Inspector's
         <i>Nav Agent</i> beside <i>Character</i> (it needs one: the character's capsule is the agent's size), with Speed
@@ -727,7 +756,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         five characters in Debug. Outpost's greybox (no agents) still passes E1.3's 16 checks.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: E1.5 areas, links, Not Walkable, packs and the player (2026-11-16)</b>
+  <div class="box ok" id="e1-5"><b>As built: E1.5 areas, links, Not Walkable, packs and the player (2026-11-16)</b>
     <ul>
       <li><b>Nav Area</b> (<code>NavAreaComponent</code>, saved as <code>NavArea:</code>; Add &gt; Nav Area): a box (Half Extents
         around the entity, turned and scaled with it). <i>Door</i> and <i>Costly</i> polygons get an area id of their own
@@ -851,7 +880,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 
 <section id="phases">
   <h2>The phases</h2>
-  <h3>Phase 0: the project, and the content check</h3>
+  <h3 id="phase-0">Phase 0: the project, and the content check</h3>
   <ul>
     <li><code>Projects/Outpost</code> with its input actions, a greybox test scene, and the license notes.</li>
     <li>The candidate CC0 character, gun and animation packs: imported, checked for license, skeleton, animations (the
@@ -860,7 +889,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   </ul>
   <p>The order (2026-11-15, the user's choice): Phase 0, then navigation (E1) as its own engine phase, then Phases 1 and
   2. Phase 0 is three steps: 0.1 the project, 0.2 the content check, 0.3 the level builder.</p>
-  <div class="box ok"><b>As built: 0.1 the project (2026-11-15)</b>
+  <div class="box ok" id="phase-0-1"><b>As built: 0.1 the project (2026-11-15)</b>
     <ul>
       <li><code>Projects/Outpost/Outpost.mproject</code>: start scene <code>Scenes/Greybox.mscene</code>, a window (not
         fullscreen while it is built), Medium by default.</li>
@@ -877,7 +906,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         0.2.</li>
     </ul>
     Checked: the editor's Play and the player (Debug), no validation messages, no script errors; 180 fps (VSync).</div>
-  <div class="box note"><b>0.2 the content check: go (2026-11-15); the third-person rifle answered 2026-11-16</b>
+  <div class="box note" id="phase-0-2"><b>0.2 the content check: go (2026-11-15); the third-person rifle answered 2026-11-16</b>
     Downloaded into the project's <code>Library/ContentCheck</code> (ignored by Git), read with a script (clips, bones,
     triangles) and rendered in Blender. All are CC0 by their license files and pages.
     <div class="table-wrap"><table>
@@ -989,7 +1018,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         E3 are unchanged.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: 0.3 the level builder, version 1 (2026-11-16)</b>
+  <div class="box ok" id="phase-0-3"><b>As built: 0.3 the level builder, version 1 (2026-11-16)</b>
     <ul>
       <li><b><code>Tools/LevelBuilder/build_level.py</code></b> (Blender without its window; its README describes the
         data) reads <code>Projects/Outpost/Levels/Greybox.level.json</code>: buildings as boxes with floors, a slab per
@@ -1019,7 +1048,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         drawn ones (the engine has no model that only collides).</li>
     </ul>
   </div>
-  <h3>Phase 1: the player in both views</h3>
+  <h3 id="phase-1">Phase 1: the player in both views</h3>
   <ul>
     <li>First-person movement: walk, run, walk quietly, jump, fall damage, footsteps; crouch (E7).</li>
     <li>The body model and animator; the third-person camera (from Sample's, over the shoulder, with collision); the V
@@ -1037,7 +1066,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     the same step that puts the gun in the body's hands. The guards (Phase 5) wear the same uniform in other colors:
     the same mesh as the player's, only their textures differ (the user, 2026-11-19: a change to the one mesh is the
     player's and the guards'; <code>make_uniform.py</code>'s schemes are sets of colors over the same tailored mesh).</p>
-  <div class="box ok"><b>As built: 1.1 movement, crouching (E7) and commands (2026-11-17)</b>
+  <div class="box ok" id="phase-1-1"><b>As built: 1.1 movement, crouching (E7) and commands (2026-11-17)</b>
     <ul>
       <li><b>E7 in the engine:</b> <code>ScenePhysics::SetCharacterHeight</code> gives a running character's capsule another
         height with its bottom kept (the shape's offset moves by half the change, so what it stands on stays the same):
@@ -1079,7 +1108,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         clean.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: 1.2 the body, its animator, the third-person camera and V (2026-11-17)</b>
+  <div class="box ok" id="phase-1-2"><b>As built: 1.2 the body, its animator, the third-person camera and V (2026-11-17)</b>
     <ul>
       <li><b>In the engine:</b> a model can be <b>Hidden In Main View</b> (<code>ModelComponent::HiddenInMainView</code>, the
         Inspector's checkbox, <code>HiddenInMainView: true</code> in the scene, copy and paste, C#
@@ -1113,7 +1142,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         pulled in front of the Barracks' wall (0.78 m from the eyes); back in first person. 0 validation messages.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: the fast walk (2026-11-18, after 1.2)</b>
+  <div class="box ok" id="phase-fast-walk"><b>As built: the fast walk (2026-11-18, after 1.2)</b>
     <ul>
       <li><b>The user's finding:</b> WASD (4.5 m/s) played the library's jog at 1.5 times its pace: the body ran in jumps, as on a
         planet with half the Earth's gravity. The library has no fast walk, and no gait looks like a walk at 4.5 m/s (a
@@ -1153,7 +1182,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         0 validation messages.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: 1.3 the soldier's uniform and the view model, E2 (2026-11-18)</b>
+  <div class="box ok" id="phase-1-3"><b>As built: 1.3 the soldier's uniform and the view model, E2 (2026-11-18)</b>
     <ul>
       <li><b>The uniform</b> (the user's reference, 2026-11-18: combat pants in a desert three-color camouflage, a belt,
         ankle boots), by <code>Tools/CharacterPoses/make_uniform.py</code> (Blender without its window, <code>--scheme</code>,
@@ -1203,7 +1232,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         validation messages; GCC clean.</li>
     </ul>
   </div>
-  <h3>Phase 2: weapons</h3>
+  <h3 id="phase-2">Phase 2: weapons</h3>
   <ul>
     <li>Weapon data files; the rifle (semi and automatic), the sniper rifle, the pistol, the knife; switching, reloading,
       ammo.</li>
@@ -1219,7 +1248,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     needs; <b>2.2</b> the rifle fires: the weapon data files, the hit test, damage, recoil and spread, ammo and reloading,
     its sounds, dummies to shoot; <b>2.3</b> the effects: lights in C# (E8), decals (E6), the muzzle flash, tracers, impacts;
     <b>2.4</b> the pistol and the knife, switching, aiming down the sights; <b>2.5</b> the sniper rifle and its scope (E10).</p>
-  <div class="box ok"><b>As built: 2.1 the gun in the hands, the upper body aiming, walking every way (E3, E5; 2026-11-19)</b>
+  <div class="box ok" id="phase-2-1"><b>As built: 2.1 the gun in the hands, the upper body aiming, walking every way (E3, E5; 2026-11-19)</b>
     <ul>
       <li><b>E5 in the engine</b> (the runtime guide's 6.4 box): animator layers (their own states and transitions, a mask
         of nodes with what is under them, a weight times a parameter) over the base, and blend states (clips blended by a
@@ -1308,7 +1337,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         messages; GCC clean on the changed files.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: 2.2 the rifle fires (2026-11-20)</b>
+  <div class="box ok" id="phase-2-2"><b>As built: 2.2 the rifle fires (2026-11-20)</b>
     <p>The user's choices: the sounds our own synthesized ones, a crosshair and the ammo now as the start of Phase 3's HUD,
     and soldiers as the dummies.</p>
     <ul>
@@ -1360,7 +1389,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         While the game holds the mouse the viewport keeps the focus now; Escape and Shift+F1 still give it back.</li>
     </ul>
   </div>
-  <div class="box ok"><b>As built: 2.3 the effects (2026-11-20)</b>
+  <div class="box ok" id="phase-2-3"><b>As built: 2.3 the effects (2026-11-20)</b>
     <p>The user's choices: a soldier hit shows a small stylized dark-red puff (no marks on the body or the walls), and a
     tracer on every third shot.</p>
     <ul>
@@ -1397,7 +1426,78 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         flash light has no shadow (a light behind a wall can show through it near the muzzle).</li>
     </ul>
   </div>
-  <h3>Phase 3: health, pickups and the HUD</h3>
+  <div class="box ok" id="phase-2-4"><b>As built: 2.4 the pistol and the knife, switching, aiming down the sights (2026-11-21)</b>
+    <p>With it two of the user's requests from 2.3's review: Shift faster every way (tried, then cut), and the dummy
+    getting up without a leg through the floor.</p>
+    <ul>
+      <li><b>Shift every way, tried and cut</b> (the user, 2026-11-21): a run back and a quick side step-together were
+        made (make_fast_walk.py) and tuned with the user, then cut: they looked bad. Shift sprints forward only, as before;
+        back and to the side it walks.</li>
+      <li><b>The dummy's get-up</b>: Death01 now plays without In Place (the body falls back as the clip has it, the feet
+        where it stood), then <code>Tools/CharacterPoses/make_get_up.py</code>'s Get_Up (2.55 s): the arms swept in from
+        overhead, the knees drawn up, sitting up on the hands behind, forward over the feet into a squat (the left hand on
+        the left knee), standing into Idle. The hips, the feet and the hands follow keyed paths and the limbs are placed by
+        IK on them; every frame of the skinned mannequin is checked against the floor (none lower than Death01's lying
+        pose itself, whose back sinks 3.2 cm). The dummy is down until it stands.</li>
+      <li><b>The engine</b>: <code>Model.Visible</code> (off: not drawn anywhere, no shadow, not in the rays or the probes;
+        the Inspector's Visible, saved when off): the weapons not in the hands. <code>Camera.ViewModelFieldOfView</code> in
+        C# (the sights narrow the view model's view too).</li>
+      <li><b>The weapons as data</b> (<code>Assets/Weapons/*.weapon.json</code>): a kind (Gun, Melee), a slot, the
+        seconds to put away and take out, the animator states each is held with (the body's upper layer, the arms'), where
+        the first person's view model goes (its eye at the hip and on the sight line), aiming down the sights (the view's
+        and the view model's fields of view, the time, the spread's and the speed's scale, the third person's distance),
+        the knife's strike, the reload sounds' moments, a draw sound. <code>Pistol.weapon.json</code> (the plan's table:
+        semi-automatic, 20 damage, x4 to the head, 12 and 48) and <code>Knife.weapon.json</code> (50 damage, from behind a
+        takedown).</li>
+      <li><b>Switching</b> (<code>PlayerArsenal</code>): 1 to 4 a slot, the wheel and the gamepad's bumpers step through
+        the weapons, Q the last one; the weapon out is put away (0.2 to 0.3 s: a reload stops), the next taken out (0.25
+        s the pistol, 0.45 the rifle), nothing firing meanwhile; the first person's arms drop and tilt away and come back.
+        Each weapon keeps its magazine and reserve. Its models on the body's hand and the view model's are the only ones
+        visible.</li>
+      <li><b>Aiming down the sights</b> (Aim held): the view narrows (the rifle to 50 degrees, the pistol to 58), the first
+        person's eye goes onto the sight line (the rifle's over its receiver, the pistol's rear sight), the crosshair goes,
+        the spread narrows (x0.35, x0.5), the walk slows (x0.6, x0.75), no sprint (Aim wins over Shift); third person, the
+        camera comes in behind the shoulder (1.3 m, 1.6 m).</li>
+      <li><b>The poses</b> (<code>make_rifle_poses.py --set sidearms</code> writes <code>Soldier_Sidearms.glb</code>):
+        the pistol in both hands at arm's length, its rear sight 31 cm in front of the right eye on its line, held in a
+        thumbs-forward grip (the user's two photographs): the right hand high, the backstrap in the web between the thumb
+        and the index finger, the index finger straight along the frame over the trigger guard, the right thumb forward
+        along the frame's left side just under the slide; the left palm on the grip's left side over the right fingertips,
+        the wrist canted so its fingers wrap round the front under the trigger guard, its thumb forward below and ahead of
+        the right one, the thumbs 2.5 cm apart. The thumbs' aims are searched (the bones a glove out of the gun, then the
+        skin itself), and the hands' skin is checked against the pistol's mesh (a part in it moves the hand out the
+        shortest way, or a finger closes less; a palm may press 2.5 mm, a finger 1.5); the level aim settles the hold,
+        which every pistol clip then keeps (the engine holds the pistol on the hand at one offset), its wrists locked
+        (the elbows where the level aim has them). The chest turned a little (8 degrees, a square stance); aim up and
+        down, a shot (9 degrees of rise), a reload (the magazine from the belt, pushed up into the grip), the ready (the
+        aim lowered 35 degrees). The knife (our own model,
+        <code>Tools/Models/make_knife.py</code>: 30 cm, its handle at a pistol grip's slant) held as a pistol grip is,
+        blade forward and up, the left fist low in a guard; the slash: back by the right shoulder, across the chest to the
+        left, back, the chest turning with it. The scene's weapons on <code>hand_r</code> take the script's offsets.</li>
+      <li><b>The knife's strike</b>: the blade arrives 0.2 s in; a sphere (20 cm) swept 1.5 m from the eyes along the
+        look; from within 60 degrees of a target's back a takedown (1000). A small puff of the surface (no hole), its own
+        sounds, the hit marker.</li>
+      <li><b>Our own sounds</b> (<code>GenerateWeaponSounds.py</code>): the pistol's shots, empty click, magazine out and
+        in (the slide let go), the knife's swings and strikes (into a body, onto something hard), taking each weapon out.
+        The HUD names the weapon before its fire mode; the knife has no ammo and no bars.</li>
+      <li><b>Checked</b>: the test copy 76/76 in editor Play (the 60 before, the dummy standing again, Shift back and to the side not sprinting, forward-right
+        sprinting, and a shot walking back; 3 takes the pistol (the rifle going away, then the pistol's models and
+        states), two pistol shots to the head down Dummy_3, down the sights while walking forward with Shift held (2.25
+        m/s, no sprint, 58 degrees, a smaller spread), the reload (12/46); the knife from the front of Dummy_1 (50) and
+        from behind (a takedown), Q back to the pistol, the wheel round to the knife and the rifle; third person down the
+        sights). Frames captured with time stopped: the get-up from the side, the shuffle, the rifle and the pistol at the
+        hip and down the sights, the knife in first person and its slash from the side, the pistol in third person. No
+        validation messages. New test tools: <code>Sync-OutpostTest.ps1</code>, <code>Capture-OnLog.ps1</code>,
+        <code>Make-ContactSheet.ps1</code>.</li>
+      <li><b>Limits</b>: the pistol's hold is checked clean in the level aim; aimed up or down and at the ready the check
+        measures some skin in the grip (up to 14 mm at the heel of the right palm) though the hand holds it as in the level
+        aim: the measure (the pistol's parts overlap and aren't all closed) or the skin's bending there, still to be found;
+        holstered weapons are hidden, not on the body (a holster and a sheath are content for later);
+        the knife has no idle while moving of its own (the run's arms are the upper layer's); the pistol aimed up and down
+        bends the back as the rifle's poses do; a strike can't miss its sphere's first hit (a wall in front stops it).</li>
+    </ul>
+  </div>
+  <h3 id="phase-3">Phase 3: health, pickups and the HUD</h3>
   <ul>
     <li>Health and armor, health packs, vests, ammo boxes; death and restart.</li>
     <li>The HUD: crosshair (it spreads with the weapon's spread), health, armor, ammo, the weapon, a hit marker, the
@@ -1408,13 +1508,13 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <code>DrawEvery</code> and UI images showing them exist. Which floors it shows (the player's, or the others
       faded) is decided then.</li>
   </ul>
-  <h3>Phase 4: navigation (E1)</h3>
+  <h3 id="phase-4">Phase 4: navigation (E1)</h3>
   <ul>
     <li>Recast/Detour in the engine, baking, the debug view, the C# API, agents; on the greybox level across floors.</li>
     <li>If E1 was built ahead as its own engine phase (<a href="#engine">the note in E1</a>), this phase is only the bake
       and the door links for the shooter's levels.</li>
   </ul>
-  <h3>Phase 5: the guards</h3>
+  <h3 id="phase-5">Phase 5: the guards</h3>
   <ul>
     <li>The guard prefab: model (the player's mesh, <code>Soldier_Player</code>'s, in the guards' textures: one mesh for
       both, the user, 2026-11-19), animator with layers (E5), gun in hand (E3), hitboxes (E4).</li>
@@ -1424,7 +1524,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       numeric End field and the scripts' entity fields: when the guards need routes, not earlier (the user,
       2026-11-16).</li>
   </ul>
-  <h3>Phase 6: the base</h3>
+  <h3 id="phase-6">Phase 6: the base</h3>
   <ul>
     <li>The level builder in full; the base's buildings, floors, basement and yard; first in greybox, played and
       changed, then dressed with materials, props, lights and probes.</li>
@@ -1432,21 +1532,21 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>Shadow optimization (E11), before the base is dressed with its lights.</li>
     <li>The lights and drawing budget (<a href="#risks">risks</a>): chunking, shadowed lights, occlusion if needed.</li>
   </ul>
-  <h3>Phase 7: the mission</h3>
+  <h3 id="phase-7">Phase 7: the mission</h3>
   <ul>
     <li>Objectives, triggers, the alarm, checkpoints and saves, the briefing and debriefing, the rating, the main
       menu.</li>
   </ul>
-  <h3>Phase 8: feel and sound</h3>
+  <h3 id="phase-8">Phase 8: feel and sound</h3>
   <ul>
     <li>Sounds by our scripts and CC0; music; sound occlusion and reverb (E9) if there's time; camera shake, hit feedback,
       death effects; tuning with the test player and by playing.</li>
   </ul>
-  <h3>Phase 9: the budget and the game build</h3>
+  <h3 id="phase-9">Phase 9: the budget and the game build</h3>
   <ul>
     <li>Medium at 120 fps in the heaviest firefight; the game built and run as the player would.</li>
   </ul>
-  <h3>Phase 10: a second mission</h3>
+  <h3 id="phase-10">Phase 10: a second mission</h3>
   <ul>
     <li>A second level from the same builder (a night version of the base, or a new area), to prove the tools make levels
       quickly.</li>

@@ -35,6 +35,16 @@ namespace Outpost
         /// <summary>Reload was pressed; FireMode was pressed (the rifle: automatic or semi-automatic).</summary>
         public bool Reload, FireMode;
 
+        /// <summary>Aim is held: down the sights (Phase 2.4).</summary>
+        public bool Aim;
+
+        /// <summary>
+        /// Switching weapons (Phase 2.4): a slot's key was pressed (1 to 4; 0 none), the weapons were stepped through
+        /// (+1 next, -1 previous: the wheel, the bumpers; 0 none), back to the one held before (Q).
+        /// </summary>
+        public int WeaponSlot, WeaponCycle;
+        public bool LastWeapon;
+
         /// <summary>The horizontal direction the yaw faces (length 1).</summary>
         public Vector3 Forward
         {
@@ -70,6 +80,7 @@ namespace Outpost
         bool crouchToggled;
         float kickUp;      // degrees the shots' kicks raised the look, not yet taken back
         float sinceKick;   // seconds since the last kick
+        float wheel;       // the wheel's notches since the last step (read each frame: a step may come after several)
 
         public LocalPlayerInput(float yaw, float pitch)
         {
@@ -83,6 +94,8 @@ namespace Outpost
         /// <summary>Each frame (OnUpdate): the look. The mouse only while it is the game's (a free cursor works the editor).</summary>
         public void UpdateLook(float dt)
         {
+            if (Input.MouseCaptured)
+                wheel += Input.GetValue("WeaponScroll");
             InputAction look = Input.GetAction("Look");
             if (!Input.MouseCaptured && !look.FromGamepad)
                 return;
@@ -107,6 +120,15 @@ namespace Outpost
             bool lightPush = moveAction.FromGamepad && move.LengthSquared() > 0.0f && move.LengthSquared() < 0.55f * 0.55f;
             if (lightPush)
                 move /= 0.55f; // the quiet walk's full speed at the edge of the light push
+            int slot = 0;
+            for (int key = 1; key <= 4 && slot == 0; key++)
+                if (Input.WasPressed($"Weapon{key}"))
+                    slot = key;
+            // The wheel down (negative notches) takes the next weapon, up the previous one
+            int cycle = Input.WasPressed("NextWeapon") ? 1 : Input.WasPressed("PreviousWeapon") ? -1 : 0;
+            if (cycle == 0 && MathF.Abs(wheel) >= 0.5f)
+                cycle = wheel < 0.0f ? 1 : -1;
+            wheel = 0.0f;
             return new PlayerCommand
             {
                 Move = move,
@@ -120,6 +142,10 @@ namespace Outpost
                 FirePressed = Input.WasPressed("Fire"),
                 Reload = Input.WasPressed("Reload"),
                 FireMode = Input.WasPressed("FireMode"),
+                Aim = Input.IsHeld("Aim"),
+                WeaponSlot = slot,
+                WeaponCycle = cycle,
+                LastWeapon = Input.WasPressed("LastWeapon"),
             };
         }
 

@@ -9,7 +9,9 @@ namespace Outpost
     /// canvas entity: the crosshair, four bars round the middle of the screen that open with the weapon's spread (the gap is
     /// where the spread's cone meets the screen), and the ammo (the magazine and the reserve) with the fire mode. The text
     /// uses the engine's font until the HUD gets its own (Phase 3). Phase 2.3: the hit marker, four short diagonal bars
-    /// round the crosshair while a shot that hit fades (red when it downed its target).
+    /// round the crosshair while a shot that hit fades (red when it downed its target). Phase 2.4: the weapon's name before
+    /// its fire mode; the knife has no ammo and no spread (no bars); down the sights in first person the bars go (the
+    /// sights are the aim).
     /// </summary>
     public class Hud : Entity
     {
@@ -54,8 +56,13 @@ namespace Outpost
             PlayerWeapon? weapon = player?.Weapon;
             bool shown = weapon != null && player != null && !player.IsFlying;
             SetVisible(shown);
-            if (!shown || weapon == null)
+            if (!shown || weapon == null || player == null)
                 return;
+            // The bars: not for the knife, nor down the sights in first person
+            bool bars = !weapon.IsMelee && !(player.View == ViewMode.FirstPerson && player.AimBlend > 0.5f);
+            foreach (UIRect? rect in new[] { top, bottom, left, right })
+                if (rect != null && rect.Visible != bars)
+                    rect.Visible = bars;
 
             // The spread's cone where it meets the screen: tan(spread) over tan(half the field of view), of half the height
             float fov = camera?.FieldOfView ?? 70.0f;
@@ -69,13 +76,14 @@ namespace Outpost
 
             if (ammo != null)
             {
-                string text = weapon.IsReloading ? $"RELOADING  {weapon.Reserve}" : $"{weapon.Ammo}  /  {weapon.Reserve}";
+                string text = weapon.IsMelee ? "" : weapon.IsReloading ? $"RELOADING  {weapon.Reserve}" : $"{weapon.Ammo}  /  {weapon.Reserve}";
                 if (ammo.Text != text)
                     ammo.Text = text;
             }
             if (fireMode != null)
             {
-                string text = weapon.FireMode.ToUpperInvariant();
+                string name = weapon.Data.Name.ToUpperInvariant();
+                string text = weapon.IsMelee ? name : $"{name}   {weapon.FireMode.ToUpperInvariant()}";
                 if (fireMode.Text != text)
                     fireMode.Text = text;
             }

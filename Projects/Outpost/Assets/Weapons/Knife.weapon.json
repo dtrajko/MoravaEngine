@@ -1,0 +1,33 @@
+{
+  "_": "The knife (docs/games/Shooter_Plan.html, Phase 2.4): silent, a slash; from behind a takedown. Read by WeaponData.Load; meters, seconds, degrees.",
+  "Name": "Knife",
+  "Kind": "Melee",
+  "Model": "Assets/Models/OutpostWeapons/Knife.glb",
+  "Slot": 4,
+  "DrawSeconds": 0.3,
+  "HolsterSeconds": 0.2,
+  "Melee": {
+    "Damage": 50,
+    "BehindDamage": 1000,
+    "BehindAngle": 60,
+    "Range": 1.5,
+    "Radius": 0.2,
+    "Seconds": 0.55,
+    "HitAt": 0.2
+  },
+  "States": {
+    "BodyAim": "KnifeIdle", "BodyReady": "KnifeIdle", "BodyAttack": "KnifeSlash",
+    "ViewAim": "KnifeIdle", "ViewAttack": "KnifeSlash"
+  },
+  "ViewModel": {
+    "Eye": [-0.0654, 1.345, 0.10],
+    "Offset": [-0.06, -0.02, 0.0]
+  },
+  "Sounds": {
+    "Swing": "Assets/Audio/Knife_Swing_{0}.wav",
+    "SwingVariants": 2,
+    "HitFlesh": "Assets/Audio/Knife_Hit_Flesh.wav",
+    "HitHard": "Assets/Audio/Knife_Hit_Hard.wav",
+    "Draw": "Assets/Audio/Draw_Knife.wav"
+  }
+}
