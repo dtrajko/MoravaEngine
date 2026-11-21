@@ -48,6 +48,7 @@ Entities:
         BodyGun: {Entity: 1104}
         ViewModel: {Entity: 1102}
         ViewModelGun: {Entity: 1103}
+        Effects: {Entity: 1500}
   - ID: 1101
     Name: Body
     Parent: 1100
@@ -1144,6 +1145,10 @@ Entities:
         CrosshairRight: {Entity: 1404}
         Ammo: {Entity: 1405}
         FireMode: {Entity: 1406}
+        HitTopLeft: {Entity: 1407}
+        HitTopRight: {Entity: 1408}
+        HitBottomLeft: {Entity: 1409}
+        HitBottomRight: {Entity: 1410}
     UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
   - ID: 1401
     Name: Crosshair Top
@@ -1215,6 +1220,42 @@ Entities:
       VerticalAlign: Middle
       Wrap: false
       LineSpacing: 1
+  - ID: 1407
+    Name: Hit Top Left
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [2.5, 11], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.95]}
+  - ID: 1408
+    Name: Hit Top Right
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [2.5, 11], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.95]}
+  - ID: 1409
+    Name: Hit Bottom Left
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [2.5, 11], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.95]}
+  - ID: 1410
+    Name: Hit Bottom Right
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [2.5, 11], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.95]}
   - ID: 60000
     Name: Level_Greybox
     Parent: 0
@@ -1267,6 +1308,7 @@ Entities:
   - ID: 60004
     Name: Level_Greybox_Catwalk_Roofs
     Parent: 60000
+    Tags: [Metal]
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -1281,6 +1323,7 @@ Entities:
   - ID: 60005
     Name: Level_Greybox_Ground
     Parent: 60000
+    Tags: [Dirt]
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -1320,3 +1363,297 @@ Entities:
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
+  - ID: 1500
+    Name: Weapon Effects
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Outpost.WeaponEffects
+      Fields:
+        MuzzleFlash: {Entity: 1501}
+        MuzzleFlashView: {Entity: 1502}
+        MuzzleSmoke: {Entity: 1503}
+        Tracers: {Entity: 1504}
+        ImpactDust: {Entity: 1505}
+        ImpactChips: {Entity: 1506}
+        ImpactSparks: {Entity: 1507}
+        ImpactDirt: {Entity: 1508}
+        ImpactClods: {Entity: 1509}
+        ImpactBlood: {Entity: 1510}
+  - ID: 1501
+    Name: Muzzle Flash
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 64
+      Lifetime: [0.04, 0.06]
+      Speed: [1, 3]
+      ConeAngle: 8
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, 0, 0]
+      Drag: 0
+      Size: [0.16, 0.28]
+      ColorStart: [5, 4, 2.4, 1]
+      ColorEnd: [3, 1.6, 0.5, 0]
+      SpinSpeed: 0
+      Texture: Assets/Textures/Effects/MuzzleFlash.png
+      Blend: Additive
+      Lit: false
+      SoftDistance: 0
+  - ID: 1502
+    Name: Muzzle Flash View
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 64
+      Lifetime: [0.04, 0.06]
+      Speed: [1, 3]
+      ConeAngle: 8
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, 0, 0]
+      Drag: 0
+      Size: [0.1, 0.18]
+      ColorStart: [5, 4, 2.4, 1]
+      ColorEnd: [3, 1.6, 0.5, 0]
+      SpinSpeed: 0
+      Texture: Assets/Textures/Effects/MuzzleFlash.png
+      Blend: Additive
+      Lit: false
+      SoftDistance: 0
+      ViewModel: true
+  - ID: 1503
+    Name: Muzzle Smoke
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 128
+      Lifetime: [0.6, 1.2]
+      Speed: [0.3, 0.9]
+      ConeAngle: 25
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, 0.25, 0]
+      Drag: 2.5
+      Size: [0.05, 0.45]
+      ColorStart: [0.75, 0.75, 0.75, 0.22]
+      ColorEnd: [0.8, 0.8, 0.8, 0]
+      SpinSpeed: 40
+      Texture: ""
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0.1
+  - ID: 1504
+    Name: Tracers
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 64
+      Lifetime: [0.3, 0.3]
+      Speed: [400, 400]
+      ConeAngle: 0
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, 0, 0]
+      Drag: 0
+      Size: [0.03, 0.03]
+      ColorStart: [10, 6.5, 2.4, 1]
+      ColorEnd: [8, 4, 1.2, 1]
+      SpinSpeed: 0
+      Texture: ""
+      Blend: Additive
+      Lit: false
+      SoftDistance: 0
+      Stretch: 0.012
+  - ID: 1505
+    Name: Impact Dust
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 256
+      Lifetime: [0.6, 1.3]
+      Speed: [0.4, 1.8]
+      ConeAngle: 35
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, -0.4, 0]
+      Drag: 3
+      Size: [0.05, 0.45]
+      ColorStart: [0.72, 0.68, 0.6, 0.55]
+      ColorEnd: [0.75, 0.72, 0.66, 0]
+      SpinSpeed: 60
+      Texture: ""
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0.08
+  - ID: 1506
+    Name: Impact Chips
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 256
+      Lifetime: [0.35, 0.7]
+      Speed: [2, 5]
+      ConeAngle: 50
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, -9.81, 0]
+      Drag: 0.5
+      Size: [0.014, 0.01]
+      ColorStart: [0.35, 0.33, 0.3, 1]
+      ColorEnd: [0.35, 0.33, 0.3, 1]
+      SpinSpeed: 0
+      Texture: ""
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0
+      Stretch: 0.006
+  - ID: 1507
+    Name: Impact Sparks
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 256
+      Lifetime: [0.12, 0.3]
+      Speed: [3, 9]
+      ConeAngle: 55
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, -9.81, 0]
+      Drag: 1
+      Size: [0.012, 0.006]
+      ColorStart: [8, 4.5, 1.5, 1]
+      ColorEnd: [3, 0.8, 0.1, 0]
+      SpinSpeed: 0
+      Texture: ""
+      Blend: Additive
+      Lit: false
+      SoftDistance: 0
+      Stretch: 0.02
+  - ID: 1508
+    Name: Impact Dirt
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 256
+      Lifetime: [0.5, 1.1]
+      Speed: [0.5, 2]
+      ConeAngle: 30
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, -1.5, 0]
+      Drag: 2.5
+      Size: [0.06, 0.4]
+      ColorStart: [0.45, 0.38, 0.28, 0.65]
+      ColorEnd: [0.5, 0.44, 0.35, 0]
+      SpinSpeed: 60
+      Texture: ""
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0.08
+  - ID: 1509
+    Name: Impact Clods
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 256
+      Lifetime: [0.4, 0.8]
+      Speed: [1.5, 4]
+      ConeAngle: 35
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, -9.81, 0]
+      Drag: 0.5
+      Size: [0.02, 0.016]
+      ColorStart: [0.3, 0.24, 0.17, 1]
+      ColorEnd: [0.3, 0.24, 0.17, 1]
+      SpinSpeed: 0
+      Texture: ""
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0
+  - ID: 1510
+    Name: Impact Blood
+    Parent: 1500
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 64
+      Lifetime: [0.15, 0.35]
+      Speed: [0.4, 1.4]
+      ConeAngle: 30
+      StartRadius: 0
+      InheritVelocity: 0
+      Acceleration: [0, -2, 0]
+      Drag: 4
+      Size: [0.05, 0.22]
+      ColorStart: [0.32, 0.03, 0.03, 0.8]
+      ColorEnd: [0.25, 0.02, 0.02, 0]
+      SpinSpeed: 60
+      Texture: ""
+      Blend: Alpha
+      Lit: true
+      SoftDistance: 0

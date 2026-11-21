@@ -24,13 +24,15 @@ struct Emitter
 	vec4 AxisCone;          // xyz: the direction particles start in (the entity's up, world); w: the cosine of the cone's half angle
 	vec4 VelocityInherit;   // xyz: its own velocity; w: the share of it a particle gets
 	vec4 SpeedLife;         // x, y: the speed range (m/s); z, w: the lifetime range (seconds)
-	vec4 SpinRadius;        // x: the spin's limit (radians a second, either way); y: the start radius (meters)
+	vec4 SpinRadius;        // x: the spin's limit (radians a second, either way); y: the start radius (meters); z: the slot its
+	                        // particles belong to (its own; a script's placed burst's entry: its emitter's); w: the stretch (seconds)
 	uvec4 Slice;            // x: its first particle in the pool; y: how many it has; z: where the ring's next one goes; w: started this frame
 };
 
 const uint EmitterLit = 1u;
 const uint EmitterAdditive = 2u;
 const uint EmitterTextured = 4u;
+const uint EmitterViewModel = 8u; // drawn with the view models' camera (the first person's arms and gun)
 
 uint EmitterFlags(Emitter emitter)
 {

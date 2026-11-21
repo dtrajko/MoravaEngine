@@ -21,5 +21,7 @@ and the player's fast walks forward, back and to the sides (`Assets/Models/Soldi
 mannequin, CC0. The soldier's uniform (`Soldier_Player.gltf`, `Soldier_Player_Arms.gltf` with their `.bin` files and the
 `T_Soldier_Player_*` maps in `Assets/Models/QuaterniusCharacters`, made by `Tools/CharacterPoses/make_uniform.py`) is
 shaped from the base character's mesh and painted over its maps, CC0. The training dummies' uniform (`Soldier_Training.gltf` and `T_Soldier_Training_Color.png`, the same script's Training
-colors) shares the player's mesh and its normal and roughness maps. The weapon sounds (`Assets/Audio/Rifle_*.wav`) are
-synthesized by `Tools/Audio/GenerateWeaponSounds.py`, no recordings.
+colors) shares the player's mesh and its normal and roughness maps. The weapon sounds (`Assets/Audio/Rifle_*.wav`), the
+bullets' hits (`Impact_*.wav`) and the hit marker's tick (`HitMarker.wav`) are synthesized by
+`Tools/Audio/GenerateWeaponSounds.py`, no recordings. The weapon effects' textures (`Assets/Textures/Effects`: the muzzle
+flash, the bullet holes) are made by `Tools/Textures/GenerateWeaponEffectTextures.py`, no images.

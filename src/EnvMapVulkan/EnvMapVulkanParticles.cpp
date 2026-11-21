@@ -55,7 +55,7 @@ namespace EnvMapVulkanParticles
 	};
 	static_assert(sizeof(GPUEmitter) == 176, "layout mismatch with Emitter in Include/Particles.glslh");
 
-	constexpr uint32_t FlagLit = 1, FlagAdditive = 2, FlagTextured = 4;
+	constexpr uint32_t FlagLit = 1, FlagAdditive = 2, FlagTextured = 4, FlagViewModel = 8;
 
 	// The push constants of ParticleUpdate.glsl, ParticleSpawn.glsl and Particles.glsl
 	struct UpdatePush
@@ -105,8 +105,7 @@ namespace EnvMapVulkanParticles
 		float Pending = 0.0f;          // a part of a particle owed from the last frames (rates don't come in whole numbers)
 		glm::vec3 PreviousPosition = glm::vec3(0.0f);
 		bool HasPrevious = false;
-		std::deque<std::pair<double, uint32_t>> Started; // when particles started (the particles' clock) and how many: the count alive
-		float MaxLifetime = 0.0f;
+		std::deque<std::pair<double, uint32_t>> Started; // when particles started end at the latest (the particles' clock), and how many: the count alive
 		bool ClearPending = false;     // a script's Clear: the slice zeroed in the next Record
 		// This frame's
 		uint32_t Spawn = 0;
@@ -152,7 +151,8 @@ namespace EnvMapVulkanParticles
 		std::vector<Slot> Slots;
 		std::unordered_map<EnvMapVulkanEntityID, uint32_t> SlotOf;
 		uint32_t Capacity = 0;
-		std::vector<GPUEmitter> FrameEmitters;
+		std::vector<GPUEmitter> FrameEmitters;  // the slots' (in their order), then this frame's placed bursts
+		std::vector<std::pair<uint32_t, uint32_t>> BurstSpawns; // a placed burst's entry in FrameEmitters, and how many it starts
 		float DeltaTime = 0.0f; // this frame's, on the particles' clock
 		double Clock = 0.0;
 		uint32_t Seed = 1;
@@ -589,6 +589,7 @@ namespace EnvMapVulkanParticles
 
 		const std::unordered_set<EnvMapVulkanEntityID> selected(selection.begin(), selection.end());
 		s.FrameEmitters.resize(s.Slots.size());
+		s.BurstSpawns.clear();
 		for (uint32_t i = 0; i < (uint32_t)s.Slots.size(); i++)
 		{
 			Slot& slot = s.Slots[i];
@@ -630,14 +631,21 @@ namespace EnvMapVulkanParticles
 			if (spawn > 0)
 			{
 				s.FrameStats.Started += spawn;
-				slot.Started.emplace_back(s.Clock, spawn);
+				slot.Started.emplace_back(s.Clock + std::max(p.LifetimeMin, p.LifetimeMax), spawn);
 			}
-			// The count alive: those started within the longest lifetime (an upper bound), at most the slice
-			slot.MaxLifetime = std::max(p.LifetimeMin, p.LifetimeMax);
-			while (!slot.Started.empty() && slot.Started.front().first < s.Clock - slot.MaxLifetime)
+			// A script's bursts from places of their own (they start below, as entries of their own)
+			for (const ParticleBurst& burst : component.PlacedBursts)
 			{
-				slot.Started.pop_front();
+				const uint32_t count = std::min(burst.Count, slot.Count);
+				if (count > 0)
+				{
+					s.FrameStats.Started += count;
+					slot.Started.emplace_back(s.Clock + (burst.Lifetime > 0.0f ? burst.Lifetime : std::max(p.LifetimeMin, p.LifetimeMax)), count);
+				}
 			}
+			// The count alive: those started that may not have ended yet (an upper bound), at most the slice
+			slot.Started.erase(std::remove_if(slot.Started.begin(), slot.Started.end(),
+				[](const std::pair<double, uint32_t>& started) { return started.first < s.Clock; }), slot.Started.end());
 			uint32_t alive = 0;
 			for (const auto& started : slot.Started)
 			{
@@ -648,7 +656,7 @@ namespace EnvMapVulkanParticles
 			GPUEmitter& gpu = s.FrameEmitters[i];
 			const ParticleEmitterSettings::BlendMode blend = p.Blend;
 			uint32_t flags = (p.Lit ? FlagLit : 0) | (blend == ParticleEmitterSettings::BlendMode::Additive ? FlagAdditive : 0) |
-				(p.Texture.empty() ? 0 : FlagTextured);
+				(p.Texture.empty() ? 0 : FlagTextured) | (p.ViewModel ? FlagViewModel : 0);
 			gpu.ColorStart = p.ColorStart;
 			gpu.ColorEnd = p.ColorEnd;
 			gpu.AccelerationDrag = glm::vec4(p.Acceleration, std::max(p.Drag, 0.0f));
@@ -658,11 +666,42 @@ namespace EnvMapVulkanParticles
 			gpu.AxisCone = glm::vec4(axis, std::cos(glm::radians(glm::clamp(p.ConeAngle, 0.0f, 180.0f))));
 			gpu.VelocityInherit = glm::vec4(dt > 0.0f ? (position - previous) / dt : glm::vec3(0.0f), p.InheritVelocity);
 			gpu.SpeedLife = glm::vec4(p.SpeedMin, std::max(p.SpeedMax, p.SpeedMin), std::max(p.LifetimeMin, 0.001f), std::max(p.LifetimeMax, p.LifetimeMin));
-			gpu.SpinRadius = glm::vec4(glm::radians(std::max(p.SpinSpeed, 0.0f)), std::max(p.StartRadius, 0.0f), 0.0f, 0.0f);
+			gpu.SpinRadius = glm::vec4(glm::radians(std::max(p.SpinSpeed, 0.0f)), std::max(p.StartRadius, 0.0f), (float)i, std::max(p.Stretch, 0.0f));
 			gpu.Slice = glm::uvec4(slot.First, slot.Count, slot.Head, spawn);
 
 			slot.Head = (slot.Head + spawn) % std::max(slot.Count, 1u);
 			slot.Spawn = spawn;
+
+			// The placed bursts: each an entry after the slots' with the emitter's settings and its own place, direction,
+			// speed and lifetime, starting particles in the slot's ring. They belong to the slot (SpinRadius.z: its draw, its
+			// acceleration and drag)
+			const GPUEmitter own = gpu; // (a reference into FrameEmitters, which grows below)
+			for (const ParticleBurst& burst : component.PlacedBursts)
+			{
+				const uint32_t count = std::min(burst.Count, slot.Count);
+				if (count == 0)
+				{
+					continue;
+				}
+				GPUEmitter placed = own;
+				placed.Position = glm::vec4(burst.Position, 0.0f);
+				placed.PreviousPosition = placed.Position;
+				placed.AxisCone = glm::vec4(burst.Direction, own.AxisCone.w);
+				placed.VelocityInherit = glm::vec4(0.0f);
+				if (burst.Speed > 0.0f)
+				{
+					placed.SpeedLife.x = placed.SpeedLife.y = burst.Speed;
+				}
+				if (burst.Lifetime > 0.0f)
+				{
+					placed.SpeedLife.z = placed.SpeedLife.w = burst.Lifetime;
+				}
+				placed.Slice = glm::uvec4(slot.First, slot.Count, slot.Head, count);
+				slot.Head = (slot.Head + count) % std::max(slot.Count, 1u);
+				s.BurstSpawns.emplace_back((uint32_t)s.FrameEmitters.size(), count);
+				s.FrameEmitters.push_back(placed);
+			}
+			component.PlacedBursts.clear();
 			slot.Position = position;
 			slot.Texture = p.Texture;
 			slot.Additive = blend == ParticleEmitterSettings::BlendMode::Additive;
@@ -861,6 +900,23 @@ namespace EnvMapVulkanParticles
 			push.Seed = s.Seed ^ (i * 2654435761u);
 			vkCmdPushConstants(commandBuffer, s.SpawnPipeline->GetVulkanPipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(push), &push);
 			vkCmdDispatch(commandBuffer, (s.Slots[i].Spawn + 63) / 64, 1, 1);
+		}
+		// The placed bursts (each its own entry; their particles go to their slots' rings, past the slots' own new ones)
+		for (const auto& [entry, count] : s.BurstSpawns)
+		{
+			if (!spawned)
+			{
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, s.SpawnPipeline->GetVulkanPipeline());
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, s.SpawnPipeline->GetVulkanPipelineLayout(), 0, 1,
+					s.SpawnSets[frameSlot].DescriptorSets.data(), 0, nullptr);
+				spawned = true;
+			}
+			SpawnPush push;
+			push.DeltaTime = 0.0f; // started now (where the script put them), not spread over the frame
+			push.Emitter = entry;
+			push.Seed = s.Seed ^ (entry * 2654435761u) ^ 0x9E3779B9u;
+			vkCmdPushConstants(commandBuffer, s.SpawnPipeline->GetVulkanPipelineLayout(), VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(push), &push);
+			vkCmdDispatch(commandBuffer, (count + 63) / 64, 1, 1);
 		}
 		// The light of the lit emitters' particles: the old ones' and the new ones' (after both)
 		if (lit)

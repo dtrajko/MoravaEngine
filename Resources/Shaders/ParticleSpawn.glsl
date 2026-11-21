@@ -75,7 +75,7 @@ void main()
 	Particle particle;
 	particle.PositionAge = vec4(position + velocity * age, age);
 	particle.VelocityLife = vec4(velocity, life);
-	particle.Extra = vec4(turn + spin * age, spin, ParticleRandom(seed), float(u_Spawn.Emitter));
+	particle.Extra = vec4(turn + spin * age, spin, ParticleRandom(seed), emitter.SpinRadius.z); // the slot it belongs to (a placed burst's own entry is another)
 	particle.Light = vec4(1.0); // a lit one's: the next light pass (this frame, after this)
 	u_Particles[index] = particle;
 }

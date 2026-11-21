@@ -195,6 +195,8 @@ void GameSystems::Start(bool keepClock)
 
 	if (m_Scene)
 	{
+		m_Scene->GetEffects().Clear(); // a game starts without the last one's flashes and decals
+
 		// The controllers the game can read (in the log: "why doesn't my gamepad work?"), once per game
 		if (m_Input && !keepClock)
 		{
@@ -461,6 +463,8 @@ void GameSystems::Update(float frameTime, float unscaledFrameTime, float alpha)
 	{
 		return;
 	}
+	// The flash lights and spawned decals: older by the game's time (still while it is paused)
+	m_Scene->GetEffects().Update(frameTime);
 	if (!m_Input)
 	{
 		m_Animation.Update(frameTime); // Simulate: the animators in their entry states, as nothing sets their parameters

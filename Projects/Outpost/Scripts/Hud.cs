@@ -8,13 +8,19 @@ namespace Outpost
     /// The HUD (docs/games/Shooter_Plan.html: Phase 2.2 starts it with what shooting needs, Phase 3 adds the rest), on the
     /// canvas entity: the crosshair, four bars round the middle of the screen that open with the weapon's spread (the gap is
     /// where the spread's cone meets the screen), and the ammo (the magazine and the reserve) with the fire mode. The text
-    /// uses the engine's font until the HUD gets its own (Phase 3).
+    /// uses the engine's font until the HUD gets its own (Phase 3). Phase 2.3: the hit marker, four short diagonal bars
+    /// round the crosshair while a shot that hit fades (red when it downed its target).
     /// </summary>
     public class Hud : Entity
     {
         public Entity? Player;
         public Entity? CrosshairTop, CrosshairBottom, CrosshairLeft, CrosshairRight;
         public Entity? Ammo, FireMode;
+        public Entity? HitTopLeft, HitTopRight, HitBottomLeft, HitBottomRight;
+
+        /// <summary>The hit marker's bars: pixels from the middle to their middles, and their colors (a hit, a kill).</summary>
+        public float HitMarkerGap = 13.0f;
+        public Vector4 HitColor = new Vector4(1.0f, 1.0f, 1.0f, 0.95f), KillColor = new Vector4(1.0f, 0.25f, 0.2f, 1.0f);
 
         /// <summary>Pixels (of the canvas's 1080 high) the crosshair's bars keep from the middle at the least, and their length.</summary>
         public float MinGap = 5.0f, BarLength = 14.0f;
@@ -22,6 +28,8 @@ namespace Outpost
         Player? player;
         UIRect? top, bottom, left, right;
         UIText? ammo, fireMode;
+        UIRect?[] hitRects = Array.Empty<UIRect?>();
+        UIImage?[] hitImages = Array.Empty<UIImage?>();
         Morava.Camera? camera;
 
         protected override void OnCreate()
@@ -36,6 +44,9 @@ namespace Outpost
             ammo = Ammo?.GetComponent<UIText>();
             fireMode = FireMode?.GetComponent<UIText>();
             camera = player?.Camera?.GetComponent<Morava.Camera>();
+            Entity?[] hits = { HitTopLeft, HitTopRight, HitBottomLeft, HitBottomRight };
+            hitRects = Array.ConvertAll(hits, e => e?.GetComponent<UIRect>());
+            hitImages = Array.ConvertAll(hits, e => e?.GetComponent<UIImage>());
         }
 
         protected override void OnUpdate(float dt)
@@ -68,6 +79,33 @@ namespace Outpost
                 if (fireMode.Text != text)
                     fireMode.Text = text;
             }
+            UpdateHitMarker();
+        }
+
+        // The four bars on the diagonals (the canvas's y down: top left is -x, -y), turned 45 degrees along them, faded out
+        void UpdateHitMarker()
+        {
+            float shown = player != null ? Math.Clamp(player.HitMarker, 0.0f, 1.0f) : 0.0f;
+            Vector4 color = player != null && player.KillMarker ? KillColor : HitColor;
+            float d = HitMarkerGap * 0.7071f * (1.0f + 0.25f * (1.0f - shown)); // opening a little as it fades
+            Vector2[] places = { new(-d, -d), new(d, -d), new(-d, d), new(d, d) };
+            float[] turns = { -45.0f, 45.0f, 45.0f, -45.0f }; // a tall bar turned clockwise: leaning right
+            for (int i = 0; i < hitRects.Length; i++)
+            {
+                UIRect? rect = hitRects[i];
+                if (rect == null)
+                    continue;
+                bool visible = shown > 0.0f;
+                if (rect.Visible != visible)
+                    rect.Visible = visible;
+                if (!visible)
+                    continue;
+                Place(rect, places[i]);
+                if (rect.Rotation != turns[i])
+                    rect.Rotation = turns[i];
+                if (hitImages[i] is UIImage image)
+                    image.Color = new Vector4(color.X, color.Y, color.Z, color.W * MathF.Min(1.0f, shown * 1.5f));
+            }
         }
 
         static void Place(UIRect? rect, Vector2 position)
@@ -82,6 +120,10 @@ namespace Outpost
             foreach (UIRect? rect in parts)
                 if (rect != null && rect.Visible != visible)
                     rect.Visible = visible;
+            if (!visible)
+                foreach (UIRect? rect in hitRects)
+                    if (rect != null && rect.Visible)
+                        rect.Visible = false;
         }
 
         UIRect?[]? parts;

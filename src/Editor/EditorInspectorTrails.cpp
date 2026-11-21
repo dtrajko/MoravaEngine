@@ -84,3 +84,41 @@ void TrailControls(EnvMapVulkanEntityID entity)
 
 	ImGui::PopID();
 }
+
+void DecalControls(EnvMapVulkanEntityID entity)
+{
+	ImGui::Separator();
+	ImGui::PushID("Decal");
+
+	bool hasDecal = s_Scene.Has<DecalComponent>(entity);
+	if (ImGui::Checkbox("Decal", &hasDecal))
+	{
+		if (hasDecal)
+		{
+			s_Scene.Add<DecalComponent>(entity);
+		}
+		else
+		{
+			s_Scene.Remove<DecalComponent>(entity);
+		}
+	}
+	Tooltip("A texture projected onto the surfaces inside the entity's box (a unit cube scaled by its transform), along its\n"
+		"-Y (point the entity's up out of the wall): stains, posters, scorch marks. It darkens the lit surface as the trails\n"
+		"do. Surfaces turned away from its up fade out. Scripts reach it with GetComponent<Decal>() (Color); bullet holes\n"
+		"are spawned without entities (Decals.Spawn).");
+	DecalComponent* decal = s_Scene.TryGet<DecalComponent>(entity);
+	if (!decal)
+	{
+		ImGui::PopID();
+		return;
+	}
+	DecalSettings& p = decal->Settings;
+	ImGui::ColorEdit4("Color", &p.Color.x, ImGuiColorEditFlags_Float);
+	Tooltip("Times the texture's color, and how much it covers (alpha). Black at alpha 1: black; white or alpha 0: nothing");
+	TextureFileControls(p.Texture, "(none: a soft round spot)", "The decal's look: its color times Color, its alpha the shape.\n"
+		"Drop an image from the Content Browser here, or choose one with ...");
+	const glm::vec3 scale = s_Scene.Get<TransformComponent>(entity).Scale;
+	ImGui::TextDisabled("Box %.2f x %.2f x %.2f m (the transform's scale)", scale.x, scale.y, scale.z);
+
+	ImGui::PopID();
+}

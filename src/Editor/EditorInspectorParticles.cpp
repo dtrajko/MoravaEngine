@@ -194,6 +194,12 @@ void ParticleControls(EnvMapVulkanEntityID entity)
 	ImGui::SetNextItemWidth(120.0f);
 	ImGui::DragFloat("Soft Distance", &p.SoftDistance, 0.01f, 0.0f, 10.0f, "%.2f m");
 	Tooltip("Meters over which it fades where it meets a surface: no hard edge where smoke crosses the road (0: hard)");
+	ImGui::DragFloat("Stretch", &p.Stretch, 0.001f, 0.0f, 1.0f, p.Stretch > 0.0f ? "%.3f s" : "none");
+	Tooltip("Seconds of its motion a particle is drawn along: a streak from where it was that long ago to where it is,\n"
+		"its size across (tracers, sparks). 0: a square facing the camera");
+	ImGui::Checkbox("View Model", &p.ViewModel);
+	Tooltip("Drawn as the first person's arms and gun are: with the view models' field of view, in front of every wall\n"
+		"(a muzzle flash at the first-person gun). Without the game's camera, as any emitter");
 
 	ImGui::PopID();
 }

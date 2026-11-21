@@ -184,6 +184,15 @@ namespace Morava
 
         public delegate* unmanaged<ulong, int*, int> Model_GetHiddenInMainView;
         public delegate* unmanaged<ulong, int, int> Model_SetHiddenInMainView;
+
+        public delegate* unmanaged<ulong, int, NativeParticleBurst*, int> ParticleEmitter_EmitBurst;
+        public delegate* unmanaged<ulong, int, NativeLightSettings*, int> Light_GetSettings;
+        public delegate* unmanaged<ulong, int, NativeLightSettings*, int> Light_SetSettings;
+        public delegate* unmanaged<Vector3*, Vector3*, float, float, float, int> Lights_Flash;
+        public delegate* unmanaged<ulong, Vector4*, int> Decal_GetColor;
+        public delegate* unmanaged<ulong, Vector4*, int> Decal_SetColor;
+        public delegate* unmanaged<char*, int, Matrix4x4*, Vector4*, float, int> Decals_Spawn;
+        public delegate* unmanaged<void> Decals_Clear;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -263,6 +272,26 @@ namespace Morava
         public float SpeedMin, SpeedMax;
         public float SizeStart, SizeEnd;
         public Vector4 ColorStart, ColorEnd;
+    }
+
+    // ScriptParticleBurst
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeParticleBurst
+    {
+        public Vector3 Position;
+        public Vector3 Direction;
+        public float Speed, Lifetime;
+    }
+
+    // ScriptLightSettings
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeLightSettings
+    {
+        public int Enabled;
+        public Vector3 Color;
+        public float Intensity, Range;
+        public float InnerAngle, OuterAngle;
+        public int CastShadows;
     }
 
     [StructLayout(LayoutKind.Sequential)]

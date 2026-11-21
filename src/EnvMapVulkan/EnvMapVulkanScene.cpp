@@ -461,6 +461,7 @@ void EnvMapVulkanScene::Clear()
 	m_Registry.clear();
 	m_Entities.clear();
 	m_Roots.clear();
+	m_Effects.Clear();
 }
 
 void EnvMapVulkanScene::CopyFrom(const EnvMapVulkanScene& other)

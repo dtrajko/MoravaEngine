@@ -328,6 +328,22 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "Blend" << YAML::Value << ParticleEmitterSettings::GetBlendName(p.Blend);
 			out << YAML::Key << "Lit" << YAML::Value << p.Lit;
 			out << YAML::Key << "SoftDistance" << YAML::Value << p.SoftDistance;
+			if (p.Stretch > 0.0f)
+			{
+				out << YAML::Key << "Stretch" << YAML::Value << p.Stretch;
+			}
+			if (p.ViewModel)
+			{
+				out << YAML::Key << "ViewModel" << YAML::Value << p.ViewModel;
+			}
+			out << YAML::EndMap;
+		}
+		if (const DecalComponent* decal = scene.TryGet<DecalComponent>(entity))
+		{
+			// Its box is the entity's transform
+			out << YAML::Key << "Decal" << YAML::Value << YAML::BeginMap;
+			AssetReference::Write(out, "Texture", decal->Settings.Texture);
+			WriteVec4(out, "Color", decal->Settings.Color);
 			out << YAML::EndMap;
 		}
 		if (const TrailComponent* trail = scene.TryGet<TrailComponent>(entity))
@@ -1095,7 +1111,15 @@ namespace EnvMapVulkanSceneSerializer
 			}
 			Read(emitterNode, "Lit", p.Lit);
 			Read(emitterNode, "SoftDistance", p.SoftDistance);
+			Read(emitterNode, "Stretch", p.Stretch);
+			Read(emitterNode, "ViewModel", p.ViewModel);
 			p.MaxParticles = std::min(p.MaxParticles, ParticleEmitterSettings::MaxParticlesLimit);
+		}
+		if (YAML::Node decalNode = node["Decal"]; decalNode && decalNode.IsMap())
+		{
+			DecalSettings& p = scene.Add<DecalComponent>(entity).Settings;
+			p.Texture = AssetReference::Read(decalNode, "Texture");
+			ReadVec4(decalNode["Color"], p.Color);
 		}
 		if (YAML::Node trailNode = node["Trail"]; trailNode && trailNode.IsMap())
 		{

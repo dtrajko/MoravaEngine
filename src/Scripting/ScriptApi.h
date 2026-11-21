@@ -122,6 +122,25 @@ struct ScriptParticleSettings
 	float ColorEnd[4] = { 0.8f, 0.8f, 0.8f, 0.0f };
 };
 
+// A burst of particles from a place a script gives (ParticleEmitter.Emit with a ParticleBurst; Shooter Phase 2.3): from
+// Position, within the emitter's cone around Direction (world). Speed, Lifetime: in place of the emitter's ranges (0: its own)
+struct ScriptParticleBurst
+{
+	float Position[3] = { 0.0f, 0.0f, 0.0f };
+	float Direction[3] = { 0.0f, 1.0f, 0.0f };
+	float Speed = 0.0f, Lifetime = 0.0f;
+};
+
+// A PointLightComponent's or SpotLightComponent's settings as a script reads and writes them (Shooter E8)
+struct ScriptLightSettings
+{
+	int32_t Enabled = 1;
+	float Color[3] = { 1.0f, 1.0f, 1.0f };
+	float Intensity = 3.0f, Range = 10.0f;
+	float InnerAngle = 20.0f, OuterAngle = 30.0f; // a spot light's
+	int32_t CastShadows = 0;
+};
+
 // A TrailComponent's settings as a script reads and writes them (Trail's properties; World/Trails.h)
 struct ScriptTrailSettings
 {
@@ -227,7 +246,7 @@ struct ScriptFieldReport
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
 enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5,
 	Animator = 6, UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14, Trail = 15,
-	NavAgent = 16, NavArea = 17, NavLink = 18, Model = 19 };
+	NavAgent = 16, NavArea = 17, NavLink = 18, Model = 19, PointLight = 20, SpotLight = 21, Decal = 22 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -508,6 +527,22 @@ struct ScriptNativeApi
 	// entity has no model
 	int32_t (*Model_GetHiddenInMainView)(uint64_t entity, int32_t* hidden);
 	int32_t (*Model_SetHiddenInMainView)(uint64_t entity, int32_t hidden);
+
+	// Shooter Phase 2.3. Particles from a place: as ParticleEmitter_Emit, from the burst's place and direction (0: the entity
+	// has no ParticleEmitterComponent)
+	int32_t (*ParticleEmitter_EmitBurst)(uint64_t entity, int32_t count, const ScriptParticleBurst* burst);
+	// Lights (E8): kind 0 the entity's PointLightComponent, 1 its SpotLightComponent (0: it has none). Flash: a short point
+	// light (World/Effects.h: FlashLight), fading out over its seconds (0: no running game)
+	int32_t (*Light_GetSettings)(uint64_t entity, int32_t kind, ScriptLightSettings* out);
+	int32_t (*Light_SetSettings)(uint64_t entity, int32_t kind, const ScriptLightSettings* value);
+	int32_t (*Lights_Flash)(const glm::vec3* position, const glm::vec3* color, float intensity, float range, float seconds);
+	// Decals (E6): a DecalComponent's color (0: the entity has none); Spawn: a decal of the scene's pool (World/Effects.h:
+	// SpawnedDecal; texture: an asset path, empty a soft spot; transform: its box), 0 without a running game; Clear: the
+	// pool's go
+	int32_t (*Decal_GetColor)(uint64_t entity, glm::vec4* out);
+	int32_t (*Decal_SetColor)(uint64_t entity, const glm::vec4* value);
+	int32_t (*Decals_Spawn)(const char16_t* texture, int length, const glm::mat4* transform, const glm::vec4* color, float lifetime);
+	void (*Decals_Clear)();
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

@@ -1600,6 +1600,16 @@ Build:
       overlap (a copy of the frame's descriptors each frame, made without waiting: each frame slot has its own).</li>
     <li><b>Not in yet:</b> the water's reflection, render textures, the probes' capture; point and spot lights, tinted
       glass's shadows and the probes' light on lit particles; motion vectors; a sort of the particles within an emitter.</li>
+    <li><b>Added for the shooter</b> (2026-11-20, its Phase 2.3: the muzzle flash, tracers, impacts):
+      <b>bursts from a place</b>: <code>Emit(count, ParticleBurst)</code> starts particles at a position and around a
+      direction of the script's, with their own speed and lifetime when given, so one emitter serves every shot and every
+      hit (each burst is an entry of its own in the frame's emitter buffer, spawning into the emitter's ring; the particles
+      keep the emitter's index, <code>SpinRadius.z</code>, for their draw, acceleration and light); <b>Stretch</b> (seconds):
+      a particle drawn as a streak from where it was that long ago (not before it started) to where it is, its size across
+      (tracers, sparks; soft across and at its ends without a texture); <b>View Model</b>: drawn with the view models'
+      camera (their field of view, the depth pressed toward the eye: Shooter E2), so a first-person muzzle flash stays at
+      the arms' gun and in front of it, with no soft fade. Both in the Inspector and the scene file
+      (<code>Stretch</code>, <code>ViewModel</code>, written only when set).</li>
   </ul></div>
 
   <h3 id="trails">12.2 Trails</h3>
@@ -1859,6 +1869,44 @@ Build:
     <li><b>Cutout from glTF:</b> a material whose glTF <code>alphaMode</code> is MASK is imported as a Cutout surface with the file's <code>alphaCutoff</code> (<code>ModelMaterialData::AlphaMask</code>, in the cooked .mmesh since cooker version 2: older cooked files are cooked again): leaf cards, fences.</li>
     <li><b>Impostors</b> (Phase 8.4, 2026-11-13): far from the camera, a species with an impostor (the species' <b>Impostor</b> model and <b>Impostor Distance</b>; the foliage's <b>Impostor Fade</b>) is drawn as a card turned to face the camera about the copy's vertical axis, showing the model as seen from the nearest of 16 directions. <code>Tools/TrackBuilder/bake_impostors.py</code> (plain Python with numpy) bakes them: for each model, 16 level views rendered orthographically (4 x 4 samples a pixel) into a 4 x 4 atlas of colors with alpha (sRGB) and one of normals (in the card's tangent space), and <code>&lt;model&gt;_Impostor.glb</code> beside the model: one square card (alpha MASK: a Cutout material) with view 0's part of the atlases. The 4 x 4 layout is the engine's convention. The shaders do the work per card (<code>Include/MeshInstance.glslh</code>): a card's instance is its copy's own transform, marked in the transform's bottom row (an affine transform's is 0, 0, 0, 1: its first three elements carry the fade, the debug tint and the card mark); the vertex stage turns it to the camera (the camera's position is now in the frame's camera block, <code>u_CameraWorldPosition</code>) and moves the texture coordinates to the view nearest to the camera's direction in the copy's space. So a species' cards are one draw, and the CPU copies whole cells: each frame <code>CullMainView</code> writes the main view's instances (a host-visible buffer of their own: models near, cards far) and goes copy by copy only in the cells that straddle the fade. Between Impostor Distance and Impostor Distance + Impostor Fade a copy is drawn both ways with complementary 4 x 4 ordered dithers (the instanced prepass discards; the scene pass's EQUAL depth test shades only what was kept), smoothed by TAA. The shadow maps keep drawing the models from the static buffer (a far copy's shadow is its model's). Debug: Renderer Stats' <b>Foliage LOD</b> (by distance, models only, impostors only) and <b>Show Impostors</b> (the cards magenta); the stats line counts models, cards and the copies cross-fading. Measured at the circuit's start line, Release player at Medium (RelWithDebInfo, the test copy): 1,803 copies as cards, the triangles 628,000 to 208,000, the GPU 2.99 to 2.87 ms, the frame rate the same (157 fps; the frame is the CPU's): with these low-poly trees the cards are about even; they pay for forests farther out. A first version drew a card mesh per view (72 draws more per pass) and turned the cards on the CPU: 0.7 ms of CPU more, 142 fps.</li>
     <li><b>Not yet in:</b> the water's reflection, render textures and the probes' capture don't draw the copies, and ray tracing doesn't see them (no acceleration structure instances): the racing circuit has no water, probes or ray tracing. Glass materials on a species aren't drawn.</li>
+  </ul></div>
+
+  <h3 id="decals">12.4 Decals and short lights</h3>
+  <p>Asked for by the shooter (docs/games/Shooter_Plan.html, E6 and E8, its Phase 2.3): bullet holes, and lights that a
+    script switches, changes and flashes.</p>
+  <div class="box note"><b>As built (2026-11-20, branch <code>outpost-2.3-effects</code>)</b>
+  <ul>
+    <li><b>A Decal component</b> (<code>DecalComponent</code>, its settings in <code>src/World/Effects.h</code>): a box, the
+      entity's transform scaling a unit cube, whose texture is projected along the entity's -Y onto the opaque surfaces
+      inside it. Texture (none: a soft round spot) and Color (alpha: how much it covers). The Inspector's Decal (on an
+      empty entity), the scene file's <code>Decal:</code>, copy and paste, C#: <code>GetComponent&lt;Decal&gt;()</code>
+      (Color).</li>
+    <li><b>Spawned decals</b> (bullet holes) aren't entities: <code>Decals.Spawn(texture, position, normal, size, depth,
+      angle, color, lifetime)</code> (or with a transform) puts one in the scene's pool (<code>SceneEffects</code>, kept with
+      the running scene, not saved, not copied: Play starts without any). 512 at once: past that the oldest fade out over
+      half a second; a lifetime fades one at its end. <code>Decals.Clear()</code>.</li>
+    <li><b>Drawn</b> (<code>src/EnvMapVulkan/EnvMapVulkanDecals.h/.cpp</code>, <code>Decals.glsl</code>) after the scene's
+      render pass and before the particles, in a render pass of their own (the scene's color, its depth read-only): all
+      decals of the frame in one buffer of the frame in flight, one instanced draw of boxes per texture. Each pixel of a
+      box's back faces (decided in the vertex stage from the camera: right also with the camera inside a box; no depth
+      test) reads the scene's depth back to the world; inside the box, the texture is <b>multiplied into the lit color</b>,
+      as the trails are: a decal darkens what is under it and keeps its light (white or alpha 0: nothing). Surfaces turned
+      more than 70 degrees from the box's up fade out (no smear down a wall's side), the box's ends too; the sky and the
+      first person's view models (their pressed depth) get none; the distance haze fades it.</li>
+    <li><b>Lights in C#</b>: <code>GetComponent&lt;PointLight&gt;()</code> and <code>GetComponent&lt;SpotLight&gt;()</code>:
+      Enabled, Color, Intensity, Range, CastShadows (and a spot's InnerAngle, OuterAngle), from the next frame on.
+      <code>Lights.Flash(position, color, intensity, range, seconds)</code>: a point light without shadows that fades out
+      (with the square of the time left), up to 8 at once (a new one replaces the one nearest its end), added after the
+      scene's own (16 point lights in all). They age with the game's time. The probes' version leaves them out, so a muzzle
+      flash doesn't send the probes to capture again.</li>
+    <li><b>Debug:</b> the debug overlay's Decals row (drawn, placed, spawned), the GPU profiler's Decals pass.</li>
+    <li><b>Checked</b> in the shooter's test copy (the editor's Play and the player): the holes on the warehouse's wall,
+      the flash's light on the wall and the hands, a frozen frame (time scale 0) holding the flash, the tracer, the chips
+      and the dust; the GCC check, no validation messages.</li>
+    <li><b>Not in yet:</b> the water's reflection, render textures and the probes' capture; decals that brighten (paint on
+      a dark wall: a blended mode comes with the levels' posters if they need it); characters aren't spared (a decal is drawn
+      on whatever is inside its box: keep spawned ones thin); the editor draws no outline of a decal's box (its transform's
+      scale is its size).</li>
   </ul></div>
 </section>
 

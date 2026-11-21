@@ -58,6 +58,7 @@ struct DebugOverlayFrame
 	std::string FrameRateLimit;      // "off", "144", "60 (on battery)", "off (VSync holds it)" (empty: not shown)
 	std::string Particles;           // "about 1200 alive, 4 emitters (2 emitting)" (empty: none in the scene)
 	std::string Trails;              // "3200 points, 4 trails (2 emitting)" (empty: none in the scene)
+	std::string Decals;              // "120 drawn (2 placed, 118 spawned)" (empty: none)
 	uint32_t FramesInFlight = 0;     // 2: the CPU records the next frame while the GPU draws the last; 1: it waits (0: not shown)
 	std::string Antialiasing;        // the main view's mode, cost and share of the frame: "SMAA, 0.24 ms  1.1 %", "Off" (empty: not shown)
 	bool GpuValid = false;           // the GPU's timestamps are measured

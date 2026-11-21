@@ -149,6 +149,10 @@ namespace
 		{
 			AddRow(rows, "Trails", frame.Trails);
 		}
+		if (!frame.Decals.empty())
+		{
+			AddRow(rows, "Decals", frame.Decals);
+		}
 
 		// The passes that cost most
 		if (frame.GpuValid && !frame.Passes.empty())

@@ -13,6 +13,7 @@
 
 #include "Scripting/ScriptField.h"
 
+#include "World/Effects.h"
 #include "World/Foliage.h"
 #include "World/Particles.h"
 #include "World/Trails.h"
@@ -279,9 +280,18 @@ struct ParticleEmitterComponent
 {
 	ParticleEmitterSettings Settings;
 
-	// Runtime: not saved. Particles a script asked for at once (C#: Emit), and its Clear (the alive ones go)
+	// Runtime: not saved. Particles a script asked for at once (C#: Emit), from the emitter or from places of their own,
+	// and its Clear (the alive ones go)
 	uint32_t Burst = 0;
+	std::vector<ParticleBurst> PlacedBursts;
 	bool ClearRequested = false;
+};
+
+// A decal (World/Effects.h; Shooter E6): its texture projected along the entity's -Y onto the opaque surfaces inside its box,
+// a unit cube scaled by the entity's transform (a bullet hole 0.1 x 0.05 x 0.1, a poster 1 x 0.2 x 1.5)
+struct DecalComponent
+{
+	DecalSettings Settings;
 };
 
 // Marks the entity leaves behind as it moves: skid marks (World/Trails.h; docs/engine/Game_Engine_Runtime_Guide.html, 12.2).
@@ -779,6 +789,6 @@ struct ComponentList
 // The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
-	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, NavMeshComponent, NavAreaComponent, NavLinkComponent, ParticleEmitterComponent, TrailComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
+	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, TerrainComponent, FoliageComponent, NavMeshComponent, NavAreaComponent, NavLinkComponent, ParticleEmitterComponent, DecalComponent, TrailComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, NavAgentComponent, VehicleComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, AnimatorComponent,
 	BoneAttachmentComponent, PrefabComponent, UICanvasComponent, UIRectComponent, UITextComponent, UIImageComponent, UIButtonComponent, UISliderComponent, UIDropdownComponent>;
