@@ -12,7 +12,7 @@ namespace Morava
         // The engine's numbers for the kinds (ScriptComponent in src/Scripting/ScriptApi.h)
         internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5, Animator = 6,
             UIRect = 7, UIText = 8, UIImage = 9, UIButton = 10, UISlider = 11, UIDropdown = 12, Vehicle = 13, ParticleEmitter = 14, Trail = 15,
-            NavAgent = 16, NavArea = 17, NavLink = 18, Model = 19 }
+            NavAgent = 16, NavArea = 17, NavLink = 18, Model = 19, PointLight = 20, SpotLight = 21, Decal = 22 }
 
         internal static Kind KindOf(Type type)
         {
@@ -36,6 +36,9 @@ namespace Morava
             if (type == typeof(NavArea)) return Kind.NavArea;
             if (type == typeof(NavLink)) return Kind.NavLink;
             if (type == typeof(Model)) return Kind.Model;
+            if (type == typeof(PointLight)) return Kind.PointLight;
+            if (type == typeof(SpotLight)) return Kind.SpotLight;
+            if (type == typeof(Decal)) return Kind.Decal;
             throw new ArgumentException($"{type.Name} is not a component of the engine");
         }
 
@@ -728,10 +731,129 @@ namespace Morava
             if (Interop.Game->ParticleEmitter_Emit(Entity.Id, count) == 0) throw Missing("particle emitter");
         }
 
+        /// <summary>
+        /// Starts this many particles at once (in the next frame) from a place of the script's: from burst.Position, within the
+        /// emitter's cone around burst.Direction (world), at burst.Speed for burst.Lifetime seconds when those are above 0 (else
+        /// the emitter's ranges). One emitter serves every shot: a muzzle's flash, a hit's sparks, a tracer.
+        /// </summary>
+        public void Emit(int count, ParticleBurst burst)
+        {
+            NativeParticleBurst native = new NativeParticleBurst
+            {
+                Position = burst.Position, Direction = burst.Direction, Speed = burst.Speed, Lifetime = burst.Lifetime,
+            };
+            if (Interop.Game->ParticleEmitter_EmitBurst(Entity.Id, count, &native) == 0) throw Missing("particle emitter");
+        }
+
         /// <summary>The particles alive go (a restart).</summary>
         public void Clear()
         {
             if (Interop.Game->ParticleEmitter_Clear(Entity.Id) == 0) throw Missing("particle emitter");
+        }
+    }
+
+    /// <summary>Where a burst of particles starts (ParticleEmitter.Emit(int, ParticleBurst)).</summary>
+    public struct ParticleBurst
+    {
+        /// <summary>Where they start (world).</summary>
+        public Vector3 Position;
+        /// <summary>The middle of the cone they start in (world; the emitter's Cone Angle around it).</summary>
+        public Vector3 Direction;
+        /// <summary>Meters a second (0: the emitter's speed range).</summary>
+        public float Speed;
+        /// <summary>Seconds they live (0: the emitter's lifetime range).</summary>
+        public float Lifetime;
+
+        /// <summary>A burst from position around direction; speed and lifetime 0: the emitter's own.</summary>
+        public ParticleBurst(Vector3 position, Vector3 direction, float speed = 0.0f, float lifetime = 0.0f)
+        {
+            Position = position;
+            Direction = direction;
+            Speed = speed;
+            Lifetime = lifetime;
+        }
+    }
+
+    /// <summary>
+    /// What PointLight and SpotLight share (the Inspector's lights; Shooter E8). A change shows from the next frame on. The
+    /// intensity is the engine's artistic unit: a point light's 3 lights a surface 1.5 m away about fully.
+    /// </summary>
+    public abstract unsafe class Light : Component
+    {
+        private protected abstract int LightKind { get; }
+
+        string What => LightKind == 0 ? "point light" : "spot light";
+
+        NativeLightSettings Settings
+        {
+            get
+            {
+                NativeLightSettings settings;
+                if (Interop.Game->Light_GetSettings(Entity.Id, LightKind, &settings) == 0) throw Missing(What);
+                return settings;
+            }
+            set
+            {
+                if (Interop.Game->Light_SetSettings(Entity.Id, LightKind, &value) == 0) throw Missing(What);
+            }
+        }
+
+        /// <summary>On or off (a lamp switched, a light shot out).</summary>
+        public bool Enabled { get => Settings.Enabled != 0; set { var s = Settings; s.Enabled = value ? 1 : 0; Settings = s; } }
+
+        /// <summary>Its color (red, green, blue: 1 is full).</summary>
+        public Vector3 Color { get => Settings.Color; set { var s = Settings; s.Color = value; Settings = s; } }
+
+        /// <summary>How bright.</summary>
+        public float Intensity { get => Settings.Intensity; set { var s = Settings; s.Intensity = value; Settings = s; } }
+
+        /// <summary>Meters: the light reaches exactly nothing here.</summary>
+        public float Range { get => Settings.Range; set { var s = Settings; s.Range = value; Settings = s; } }
+
+        /// <summary>Casts shadows (a few lights at once can: the others light without them).</summary>
+        public bool CastShadows { get => Settings.CastShadows != 0; set { var s = Settings; s.CastShadows = value ? 1 : 0; Settings = s; } }
+
+        private protected float InnerAngleValue { get => Settings.InnerAngle; set { var s = Settings; s.InnerAngle = value; Settings = s; } }
+        private protected float OuterAngleValue { get => Settings.OuterAngle; set { var s = Settings; s.OuterAngle = value; Settings = s; } }
+    }
+
+    /// <summary>A light shining every way from the entity (the Inspector's Point Light).</summary>
+    public sealed class PointLight : Light
+    {
+        private protected override int LightKind => 0;
+    }
+
+    /// <summary>A light shining in a cone along the entity's -Y (the Inspector's Spot Light).</summary>
+    public sealed class SpotLight : Light
+    {
+        private protected override int LightKind => 1;
+
+        /// <summary>The cone's half angle in degrees within which it shines fully.</summary>
+        public float InnerAngle { get => InnerAngleValue; set => InnerAngleValue = value; }
+
+        /// <summary>The cone's half angle in degrees where it fades to nothing (under 90).</summary>
+        public float OuterAngle { get => OuterAngleValue; set => OuterAngleValue = value; }
+    }
+
+    /// <summary>
+    /// A decal placed in the scene (the Inspector's Decal; Shooter E6): its texture projected along the entity's -Y onto the
+    /// surfaces inside its box. Bullet holes and such are spawned without entities: <see cref="Decals"/>.Spawn.
+    /// </summary>
+    public sealed unsafe class Decal : Component
+    {
+        /// <summary>Times the texture's color, and how much it covers (w).</summary>
+        public Vector4 Color
+        {
+            get
+            {
+                Vector4 color;
+                if (Interop.Game->Decal_GetColor(Entity.Id, &color) == 0) throw Missing("decal");
+                return color;
+            }
+            set
+            {
+                if (Interop.Game->Decal_SetColor(Entity.Id, &value) == 0) throw Missing("decal");
+            }
         }
     }
 

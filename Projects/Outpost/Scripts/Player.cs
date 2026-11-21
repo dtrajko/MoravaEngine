@@ -14,7 +14,8 @@ namespace Outpost
     /// view model (the arms and the placeholder gun, models marked View Model: E2) is shown at the eyes instead. In third
     /// person the body holds the rifle in its hand and aims where the camera looks (Phase 2.1: E3, E5). The weapon
     /// (PlayerWeapon, its numbers from Assets/Weapons/&lt;WeaponName&gt;.weapon.json) fires, reloads and switches its fire
-    /// mode in the fixed step from the same commands; its shots kick the look, and are heard and seen here (Phase 2.2).
+    /// mode in the fixed step from the same commands; its shots kick the look, and are heard here (Phase 2.2) and seen
+    /// through Effects (WeaponEffects, Phase 2.3: the flash, the tracers, the hits), with a hit marker on the crosshair.
     ///
     /// F2 (DebugFly) hands the view to the debug fly camera (the Camera entity's FlyCamera) and back: the player stands
     /// still meanwhile.
@@ -85,6 +86,15 @@ namespace Outpost
         public float ShotVolume = 0.8f;
         public float MagazineOutAt = 0.35f, MagazineInAt = 1.55f;
 
+        /// <summary>
+        /// What the shots look like (Phase 2.3): the entity with the WeaponEffects script and its emitters. The hit marker's
+        /// sound, its volume, and how long the marker shows (seconds; a kill's a little longer).
+        /// </summary>
+        public Entity? Effects;
+        public string HitMarkerSound = "Assets/Audio/HitMarker.wav";
+        public float HitMarkerVolume = 0.5f;
+        public float HitMarkerSeconds = 0.18f, KillMarkerSeconds = 0.35f;
+
         CharacterController character = null!;
         PlayerMotor motor = null!;
         LocalPlayerInput input = null!;
@@ -101,6 +111,9 @@ namespace Outpost
         Animator? viewModelAnimator;
         Vector3 lastEyes, lastCamera; // the last frame's: where the shots of the next fixed steps aim from
         int reloadSounds;             // the reload's sounds played so far (the magazine out, in)
+        WeaponEffects? effects;
+        readonly System.Collections.Generic.List<ShotResult> shotsToShow = new(); // fired in fixed steps, shown in the frame
+        float hitMarker;              // seconds the hit marker still shows
 
         bool Flying => Camera is FlyCamera fly && fly.IsActive;
 
@@ -112,6 +125,10 @@ namespace Outpost
 
         /// <summary>The last shot (a test reads it).</summary>
         public ShotResult LastShot { get; private set; }
+
+        /// <summary>The hit marker on the crosshair: how much it still shows (1 at a hit, 0 gone), and whether the hit downed its target.</summary>
+        public float HitMarker => KillMarker ? hitMarker / KillMarkerSeconds : hitMarker / HitMarkerSeconds;
+        public bool KillMarker { get; private set; }
 
         /// <summary>Where the muzzle is now (the body's rifle, in both views: the same rules), the eyes if there is none.</summary>
         public Vector3 MuzzlePosition => BodyGun != null && weapon != null ? Vector3.Transform(weapon.Data.Muzzle, BodyGun.WorldTransform) : lastEyes;
@@ -180,6 +197,9 @@ namespace Outpost
             viewModelArms = ViewModel?.GetComponent<Model>();
             viewModelGun = ViewModelGun?.GetComponent<Model>();
             viewModelAnimator = ViewModel?.GetComponent<Animator>();
+            effects = Effects as WeaponEffects;
+            if (Effects != null && effects == null)
+                Log.Warn($"{Name}: Effects has no WeaponEffects script: the shots show nothing");
 
             WeaponData? data = WeaponData.Load(WeaponName);
             if (data != null)
@@ -231,6 +251,40 @@ namespace Outpost
             if (CommandSource == null)
                 input.Kick(shot.KickUp, shot.KickLeft); // the local player's look (a bot's or a test's commands bring their own)
             viewModelAnimator?.Play("Shoot", 0.02f);
+            shotsToShow.Add(shot); // its flash and its hit: in the frame, where the view model is then
+            if (shot.Dealt)
+            {
+                bool kill = shot.Target is Dummy dummy && dummy.IsDown;
+                KillMarker = kill || (KillMarker && hitMarker > 0.0f);
+                hitMarker = KillMarker ? KillMarkerSeconds : HitMarkerSeconds;
+                PlaySound(HitMarkerSound, HitMarkerVolume * (kill ? 1.3f : 1.0f));
+            }
+        }
+
+        // The shots fired since the last frame: their flashes at the muzzle (in first person the view model's, placed this
+        // frame), their tracers and hits
+        void ShowShots(bool firstPerson)
+        {
+            if (shotsToShow.Count == 0)
+                return;
+            if (effects != null && weapon != null)
+            {
+                Vector3 muzzle = MuzzlePosition;
+                Vector3 direction = BodyGun != null ? GunForward(BodyGun) : shotsToShow[^1].Direction;
+                Vector3 viewMuzzle = ViewModelGun != null ? Vector3.Transform(weapon.Data.Muzzle, ViewModelGun.WorldTransform) : muzzle;
+                Vector3 viewDirection = ViewModelGun != null ? GunForward(ViewModelGun) : direction;
+                foreach (ShotResult shot in shotsToShow)
+                    effects.Shot(shot, muzzle, direction, firstPerson, viewMuzzle, viewDirection);
+            }
+            shotsToShow.Clear();
+        }
+
+        // A gun model's barrel points along its own +X
+        static Vector3 GunForward(Entity gun)
+        {
+            Matrix4x4 m = gun.WorldTransform;
+            Vector3 x = new Vector3(m.M11, m.M12, m.M13);
+            return x.LengthSquared() > 1e-10f ? Vector3.Normalize(x) : Vector3.UnitZ;
         }
 
         protected override void OnUpdate(float dt)
@@ -243,6 +297,7 @@ namespace Outpost
                 if (body != null)
                     body.HiddenInMainView = false; // the fly camera sees the player standing there
                 ShowViewModel(false);
+                ShowShots(false);
                 return;
             }
             if (Input.WasPressed("SwitchView"))
@@ -282,6 +337,8 @@ namespace Outpost
             ShowViewModel(firstPerson);
             if (firstPerson)
                 PlaceViewModel(cameraPosition, yaw, pitch);
+            ShowShots(firstPerson);
+            hitMarker = MathF.Max(0.0f, hitMarker - dt);
 
             // The steps: one each stride walked on the ground, louder sprinting, quieter walking, none crouched
             Vector3 feet = WorldPosition;

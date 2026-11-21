@@ -1,5 +1,7 @@
 // Particles, drawn (SceneEnvMapVulkan, see EnvMapVulkanParticles): one square per particle of an emitter's slice, facing
 // the camera, sized and colored by the particle's age, turned by its spin. A dead particle's square is put outside the view.
+// A stretched emitter's particles are streaks along their motion (tracers, sparks); a view model emitter's are drawn with
+// the view models' camera (the first person's muzzle flash: their field of view, their depth pressed toward the eye).
 // The fragment stage: the emitter's texture (its alpha the shape), or a soft round puff without one; times the light the
 // particle gets (lit emitters: ParticleLight.glsl lights each particle once a frame, at its center: a big puff covers many
 // pixels, often on top of each other), or as it is; faded where it meets the scene's surfaces (the soft distance) and by
@@ -52,17 +54,41 @@ void main()
 	float t = clamp(particle.PositionAge.w / particle.VelocityLife.w, 0.0, 1.0);
 	float size = mix(emitter.SizeSoftFlags.x, emitter.SizeSoftFlags.y, t);
 	vec2 corner = Corners[gl_VertexIndex];
-	float c = cos(particle.Extra.x), s = sin(particle.Extra.x);
-	vec2 turned = vec2(corner.x * c - corner.y * s, corner.x * s + corner.y * c);
-	vec3 position = particle.PositionAge.xyz + (turned.x * u_Draw.CameraRight.xyz + turned.y * u_Draw.CameraUp.xyz) * (0.5 * size);
+	vec3 center = particle.PositionAge.xyz;
+	vec3 position;
+	float stretch = emitter.SpinRadius.w;
+	vec3 velocity = particle.VelocityLife.xyz;
+	float streak = stretch * length(velocity);
+	if (stretch > 0.0 && streak > 1e-4)
+	{
+		// A streak from where it was Stretch seconds ago (not before it started) to where it is, its size across; the
+		// square's y along it (a cap of half the size at each end), x across it as the camera sees it. No spin
+		vec3 along = velocity / length(velocity);
+		float trail = min(streak, length(velocity) * particle.PositionAge.w);
+		vec3 tail = center - along * trail;
+		vec3 toCamera = normalize(u_CameraWorldPosition.xyz - center);
+		vec3 across = cross(along, toCamera);
+		across = length(across) > 1e-4 ? normalize(across) : u_Draw.CameraRight.xyz;
+		vec3 end = corner.y > 0.0 ? center + along * (0.5 * size) : tail - along * (0.5 * size);
+		position = end + across * (corner.x * 0.5 * size);
+	}
+	else
+	{
+		float c = cos(particle.Extra.x), s = sin(particle.Extra.x);
+		vec2 turned = vec2(corner.x * c - corner.y * s, corner.x * s + corner.y * c);
+		position = center + (turned.x * u_Draw.CameraRight.xyz + turned.y * u_Draw.CameraUp.xyz) * (0.5 * size);
+	}
+	uint flags = EmitterFlags(emitter);
+	bool viewModel = (flags & EmitterViewModel) != 0u;
 
 	v_Corner = corner;
 	v_Color = mix(emitter.ColorStart, emitter.ColorEnd, t);
 	v_WorldPosition = position;
 	v_ViewDistance = dot(position - u_CameraWorldPosition.xyz, u_Draw.CameraForward.xyz);
-	v_SoftFlags = vec4(emitter.SizeSoftFlags.z, emitter.SizeSoftFlags.w, particle.Extra.z, 0.0);
+	// The view models' depth is pressed toward the eye: no soft fade against the scene's (it would compare unlike depths)
+	v_SoftFlags = vec4(viewModel ? 0.0 : emitter.SizeSoftFlags.z, emitter.SizeSoftFlags.w, particle.Extra.z, stretch > 0.0 && streak > 1e-4 ? 1.0 : 0.0);
 	v_Light = particle.Light.rgb;
-	gl_Position = u_ViewProjectionMatrix * vec4(position, 1.0);
+	gl_Position = (viewModel ? u_ViewModelViewProjectionMatrix : u_ViewProjectionMatrix) * vec4(position, 1.0);
 }
 
 // ---------------------------------------------------------------------------------------------------
@@ -114,8 +140,9 @@ void main()
 	}
 	else
 	{
-		// A soft round puff: full in the middle, fading smoothly to nothing at the edge
-		float r2 = dot(v_Corner, v_Corner);
+		// A soft round puff: full in the middle, fading smoothly to nothing at the edge (a streak: soft across it and at its
+		// ends, full along it)
+		float r2 = v_SoftFlags.w > 0.5 ? v_Corner.x * v_Corner.x + pow(abs(v_Corner.y), 8.0) : dot(v_Corner, v_Corner);
 		float puff = clamp(1.0 - r2, 0.0, 1.0);
 		color.a *= puff * puff;
 	}

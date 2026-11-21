@@ -304,6 +304,9 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::NavArea:           return scene->Has<NavAreaComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::NavLink:           return scene->Has<NavLinkComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Model:             return scene->Has<ModelComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::PointLight:        return scene->Has<PointLightComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::SpotLight:         return scene->Has<SpotLightComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::Decal:             return scene->Has<DecalComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -1105,8 +1108,184 @@ static int32_t ParticleEmitterClear(uint64_t entity)
 		return 0;
 	}
 	emitter->Burst = 0;
+	emitter->PlacedBursts.clear();
 	emitter->ClearRequested = true;
 	return 1;
+}
+
+// Particles from a place of the script's (Shooter Phase 2.3: a muzzle's, a hit's)
+static int32_t ParticleEmitterEmitBurst(uint64_t entity, int32_t count, const ScriptParticleBurst* burst)
+{
+	ParticleEmitterComponent* emitter = GetParticleEmitter(entity);
+	if (!emitter || !burst)
+	{
+		return 0;
+	}
+	if (count <= 0)
+	{
+		return 1;
+	}
+	ParticleBurst placed;
+	placed.Count = (uint32_t)count;
+	placed.Position = glm::vec3(burst->Position[0], burst->Position[1], burst->Position[2]);
+	const glm::vec3 direction(burst->Direction[0], burst->Direction[1], burst->Direction[2]);
+	placed.Direction = glm::length(direction) > 1e-6f ? glm::normalize(direction) : glm::vec3(0.0f, 1.0f, 0.0f);
+	placed.Speed = std::max(burst->Speed, 0.0f);
+	placed.Lifetime = std::max(burst->Lifetime, 0.0f);
+	// A runaway script doesn't grow the list without end: the renderer takes it each frame
+	if (emitter->PlacedBursts.size() < 256)
+	{
+		emitter->PlacedBursts.push_back(placed);
+	}
+	return 1;
+}
+
+// ---- Lights (Shooter E8)
+
+static int32_t LightGetSettings(uint64_t entity, int32_t kind, ScriptLightSettings* out)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	if (!scene || !out)
+	{
+		return 0;
+	}
+	auto color = [out](const glm::vec3& c) { out->Color[0] = c.r; out->Color[1] = c.g; out->Color[2] = c.b; };
+	if (kind == 0)
+	{
+		const PointLightComponent* light = scene->TryGet<PointLightComponent>(entity);
+		if (!light)
+		{
+			return 0;
+		}
+		out->Enabled = light->Enabled ? 1 : 0;
+		color(light->Color);
+		out->Intensity = light->Intensity;
+		out->Range = light->Range;
+		out->InnerAngle = out->OuterAngle = 0.0f;
+		out->CastShadows = light->CastShadows ? 1 : 0;
+		return 1;
+	}
+	const SpotLightComponent* light = scene->TryGet<SpotLightComponent>(entity);
+	if (kind != 1 || !light)
+	{
+		return 0;
+	}
+	out->Enabled = light->Enabled ? 1 : 0;
+	color(light->Color);
+	out->Intensity = light->Intensity;
+	out->Range = light->Range;
+	out->InnerAngle = light->InnerAngle;
+	out->OuterAngle = light->OuterAngle;
+	out->CastShadows = light->CastShadows ? 1 : 0;
+	return 1;
+}
+
+static int32_t LightSetSettings(uint64_t entity, int32_t kind, const ScriptLightSettings* value)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	if (!scene || !value)
+	{
+		return 0;
+	}
+	const glm::vec3 color = glm::max(glm::vec3(value->Color[0], value->Color[1], value->Color[2]), glm::vec3(0.0f));
+	if (kind == 0)
+	{
+		PointLightComponent* light = scene->TryGet<PointLightComponent>(entity);
+		if (!light)
+		{
+			return 0;
+		}
+		light->Enabled = value->Enabled != 0;
+		light->Color = color;
+		light->Intensity = std::max(value->Intensity, 0.0f);
+		light->Range = std::max(value->Range, 0.01f);
+		light->CastShadows = value->CastShadows != 0;
+		return 1;
+	}
+	SpotLightComponent* light = scene->TryGet<SpotLightComponent>(entity);
+	if (kind != 1 || !light)
+	{
+		return 0;
+	}
+	light->Enabled = value->Enabled != 0;
+	light->Color = color;
+	light->Intensity = std::max(value->Intensity, 0.0f);
+	light->Range = std::max(value->Range, 0.01f);
+	light->OuterAngle = std::clamp(value->OuterAngle, 0.1f, 89.0f);
+	light->InnerAngle = std::clamp(value->InnerAngle, 0.0f, light->OuterAngle);
+	light->CastShadows = value->CastShadows != 0;
+	return 1;
+}
+
+static int32_t LightsFlash(const glm::vec3* position, const glm::vec3* color, float intensity, float range, float seconds)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	if (!scene || !position || !color)
+	{
+		return 0;
+	}
+	FlashLight flash;
+	flash.Position = *position;
+	flash.Color = glm::max(*color, glm::vec3(0.0f));
+	flash.Intensity = std::max(intensity, 0.0f);
+	flash.Range = std::max(range, 0.01f);
+	flash.Seconds = std::max(seconds, 0.001f);
+	scene->GetEffects().AddFlash(flash);
+	return 1;
+}
+
+// ---- Decals (Shooter E6)
+
+static int32_t DecalGetColor(uint64_t entity, glm::vec4* out)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	const DecalComponent* decal = scene ? scene->TryGet<DecalComponent>(entity) : nullptr;
+	if (!decal || !out)
+	{
+		return 0;
+	}
+	*out = decal->Settings.Color;
+	return 1;
+}
+
+static int32_t DecalSetColor(uint64_t entity, const glm::vec4* value)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	DecalComponent* decal = scene ? scene->TryGet<DecalComponent>(entity) : nullptr;
+	if (!decal || !value)
+	{
+		return 0;
+	}
+	decal->Settings.Color = glm::max(*value, glm::vec4(0.0f));
+	return 1;
+}
+
+static int32_t DecalsSpawn(const char16_t* texture, int length, const glm::mat4* transform, const glm::vec4* color, float lifetime)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	if (!scene || !transform || !color)
+	{
+		return 0;
+	}
+	const std::string name = texture && length > 0 ? ToUtf8(texture, length) : std::string();
+	SpawnedDecal decal;
+	if (!name.empty())
+	{
+		decal.Settings.Texture = ProjectPaths::Resolve(name);
+	}
+	decal.Transform = *transform;
+	decal.Settings.Color = glm::max(*color, glm::vec4(0.0f));
+	decal.Lifetime = std::max(lifetime, 0.0f);
+	scene->GetEffects().SpawnDecal(decal);
+	return 1;
+}
+
+static void DecalsClear()
+{
+	if (EnvMapVulkanScene* scene = GetScene())
+	{
+		scene->GetEffects().Decals.clear();
+	}
 }
 
 // ---- Trails (12.2)
@@ -2270,6 +2449,14 @@ namespace ScriptBindings
 		api.Character_SetHeight = CharacterSetHeight;
 		api.Model_GetHiddenInMainView = ModelGetHiddenInMainView;
 		api.Model_SetHiddenInMainView = ModelSetHiddenInMainView;
+		api.ParticleEmitter_EmitBurst = ParticleEmitterEmitBurst;
+		api.Light_GetSettings = LightGetSettings;
+		api.Light_SetSettings = LightSetSettings;
+		api.Lights_Flash = LightsFlash;
+		api.Decal_GetColor = DecalGetColor;
+		api.Decal_SetColor = DecalSetColor;
+		api.Decals_Spawn = DecalsSpawn;
+		api.Decals_Clear = DecalsClear;
 	}
 
 	void SetContext(ScriptContext* context)

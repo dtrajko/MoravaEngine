@@ -1355,6 +1355,46 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         with the body's upper layer in it, the reserve, the dummy up again, a third-person shot aimed from the camera that
         leaves the muzzle and hits the torso); captures in both views; no validation messages. The sounds are not yet
         listened to by the user.</li>
+      <li><b>Fixed after (the user, 2026-11-20):</b> in the editor's Play a left click (the fire button) gave the mouse back:
+        ImGui, told to leave the captured mouse alone, still saw the click over no window and took the viewport's focus.
+        While the game holds the mouse the viewport keeps the focus now; Escape and Shift+F1 still give it back.</li>
+    </ul>
+  </div>
+  <div class="box ok"><b>As built: 2.3 the effects (2026-11-20)</b>
+    <p>The user's choices: a soldier hit shows a small stylized dark-red puff (no marks on the body or the walls), and a
+    tracer on every third shot.</p>
+    <ul>
+      <li><b>E8 in the engine</b> (the runtime guide's 12.4): <code>PointLight</code> and <code>SpotLight</code> in C#
+        (Enabled, Color, Intensity, Range, CastShadows, a spot's angles) and <code>Lights.Flash</code>: short point lights
+        that fade out, up to 8, after the scene's own (16 in all), without shadows; the probes don't capture again for them.</li>
+      <li><b>E6 in the engine</b> (12.4): the Decal component and <code>Decals.Spawn</code> into the scene's pool (512, the
+        oldest fade out): a box whose texture is projected along its -Y, drawn after the scene's pass from its depth and
+        normals and multiplied into the lit color (it darkens, as the trails do), fading on surfaces turned away; the sky and
+        the first person's arms get none.</li>
+      <li><b>The particles</b> (12.1): bursts from a place and direction of a script's (one emitter for every shot), streaks
+        along their motion (Stretch: tracers, sparks, chips) and View Model emitters drawn with the arms' camera (the first
+        person's flash at the arms' gun, in front of it).</li>
+      <li><b>The game</b> (<code>WeaponEffects.cs</code>, on Greybox's <i>Weapon Effects</i> with ten emitters as children,
+        the Player's <i>Effects</i>): the shots of the fixed steps shown in the frame, once the view model is placed. The
+        muzzle's flash (three flame sprites, the first person's drawn with the view model) and its light (warm, 7 m, 60 ms:
+        it lights the wall and the gloves), the smoke in third person, a tracer every third shot from 2.5 m out of the
+        muzzle to the hit (400 m/s, slower on a short shot so it lives three frames). The hit by the surface, an entity's tag
+        (Greybox's ground <i>Dirt</i>, its catwalks <i>Metal</i>, the rest concrete; a hitbox or a body that takes damage:
+        flesh): concrete's dust, chips and a 12 cm hole; metal's sparks, a spark's light and a 9 cm dent; dirt's puff, clods
+        and a dark spot; a soldier's dark-red puff. The hits' sounds from where they are.</li>
+      <li><b>The hit marker</b> (the plan's feedback): four short diagonal bars round the crosshair for 0.18 s at a hit
+        that dealt damage, red for 0.35 s when it downed the target, and a tick (<code>HitMarker.wav</code>).</li>
+      <li><b>Our own content</b>: <code>Tools/Textures/GenerateWeaponEffectTextures.py</code> (the flash's flame star, the
+        concrete's hole with its crater, cracks and soot, the metal's dent) and <code>GenerateWeaponSounds.py</code>'s
+        impacts (concrete, metal, dirt, flesh) and the tick.</li>
+      <li><b>Checked</b>: the test copy 52/52 (the 46, then the effects' counts against the shots, the ground as dirt, the
+        warehouse's wall as concrete, a dummy as flesh with the hit marker shown and gone, three shots into the wall from
+        2 m); frozen frames (time scale 0 right after a shot) captured: the first person's flash and its light on the hands
+        and the gun, a tracer, the third person's flash lighting the player and the ground, the holes, chips and dust; the
+        player too; GCC; no validation messages. Metal (the catwalks on the roofs) isn't reached by the test.</li>
+      <li><b>Limits</b>: the decals don't spare characters in their box (the holes are 10 cm deep: a soldier must stand
+        against the wall); no outline of a decal's box in the editor; the third person's body still plays no kick; the
+        flash light has no shadow (a light behind a wall can show through it near the muzzle).</li>
     </ul>
   </div>
   <h3>Phase 3: health, pickups and the HUD</h3>

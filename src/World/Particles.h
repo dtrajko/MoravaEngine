@@ -23,6 +23,11 @@
  * Alpha: blended over the scene by its alpha; Additive: added to it (fire, sparks). Lit: shaded by the sun (with its shadow)
  * and the ambient light; else its color as it is. SoftDistance: meters over which it fades out where it meets a surface (no
  * hard edge where smoke crosses the road; 0: hard).
+ *
+ * Stretch (Shooter Phase 2.3: tracers, sparks): seconds of its motion a particle is drawn along, as a streak from where it
+ * was that long ago to where it is, its size across (0: a square). ViewModel: drawn as the first person's arms and gun are
+ * (the view models' field of view, in front of every wall: a muzzle flash at the first person's gun); its particles are
+ * where the view model is in the world, as the view model's own meshes are.
  */
 struct ParticleEmitterSettings
 {
@@ -50,8 +55,21 @@ struct ParticleEmitterSettings
 	BlendMode Blend = BlendMode::Alpha;
 	bool Lit = true;
 	float SoftDistance = 0.5f;       // meters
+	float Stretch = 0.0f;            // seconds of motion drawn as a streak (0: a square)
+	bool ViewModel = false;          // drawn with the view models' camera
 
 	static constexpr uint32_t MaxParticlesLimit = 65536; // per emitter
 	static const char* GetBlendName(BlendMode mode);
 	static bool FindBlend(const std::string& name, BlendMode& mode);
+};
+
+// Particles a script started at once from a place of its own (ParticleEmitter.Emit with a ParticleBurst), for the renderer's
+// next frame: within the emitter's cone around Direction; Speed and Lifetime in place of the emitter's ranges when above 0
+struct ParticleBurst
+{
+	uint32_t Count = 0;
+	glm::vec3 Position = glm::vec3(0.0f);
+	glm::vec3 Direction = glm::vec3(0.0f, 1.0f, 0.0f);
+	float Speed = 0.0f;
+	float Lifetime = 0.0f;
 };

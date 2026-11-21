@@ -652,6 +652,8 @@ void AudioControls(EnvMapVulkanEntityID entity);
 void ParticleControls(EnvMapVulkanEntityID entity);
 // The Inspector's Trail section (EditorInspectorTrails.cpp, 12.2): the entity's Trail
 void TrailControls(EnvMapVulkanEntityID entity);
+// The Inspector's Decal section (EditorInspectorTrails.cpp, Shooter E6): the entity's Decal
+void DecalControls(EnvMapVulkanEntityID entity);
 // A texture's file (shown relative to the project): dropped from the Content Browser, chosen with ..., or cleared (noneText
 // shown then). The Particle Emitter's and the Trail's
 void TextureFileControls(std::string& texture, const char* noneText, const char* tooltip);

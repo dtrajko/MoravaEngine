@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EnvMapVulkanComponents.h"
+#include "World/Effects.h"
 
 #include "entt.hpp"
 
@@ -116,6 +117,10 @@ public:
 		return NoEntity;
 	}
 
+	// What a running game added for a short while (flash lights, spawned decals): not entities, not saved, not copied
+	SceneEffects& GetEffects() { return m_Effects; }
+	const SceneEffects& GetEffects() const { return m_Effects; }
+
 	static EnvMapVulkanEntityID NewID();
 
 	// Checks the scene's operations on a scratch scene (create, parent, world transforms, reparent, destroy); logs and
@@ -129,4 +134,5 @@ private:
 	entt::registry m_Registry;
 	std::unordered_map<EnvMapVulkanEntityID, entt::entity> m_Entities;
 	std::vector<EnvMapVulkanEntityID> m_Roots;
+	SceneEffects m_Effects;
 };

@@ -29,6 +29,7 @@
 #include "EnvMapVulkanSSAO.h"
 #include "EnvMapVulkanFoliage.h"
 #include "EnvMapVulkanParticles.h"
+#include "EnvMapVulkanDecals.h"
 #include "EnvMapVulkanTrails.h"
 #include "EnvMapVulkanDebugDrawPass.h"
 #include "EnvMapVulkanTerrain.h"
@@ -523,6 +524,7 @@ static const EnvMapVulkanRenderSettings* s_OwnerRenderSettings = nullptr; // cop
 static const EnvMapVulkanViewOptions* s_OwnerViewOptions = nullptr;       // copied into s_ViewOptions at the start of Draw
 static std::function<void(VkCommandBuffer)> s_RecordUserInterface; // the editor's windows (see SetUserInterface)
 static EnvMapVulkanSceneData::LightEntities s_LightEntities; // the entities of s_Lights' lights (see ExtractLights)
+static size_t s_FlashLightCount = 0; // the last of s_Lights.PointLights: a running game's flash lights (not the scene's)
 
 template<typename T>
 static bool Contains(const std::vector<T>& values, const T& value)
@@ -605,6 +607,21 @@ static void ApplyPartTransforms()
 static void ExtractLights()
 {
 	s_LightEntities = EnvMapVulkanSceneData::ReadLights(*s_Scene, s_Lights);
+
+	// A running game's flash lights (Lights.Flash, Shooter E8), after the scene's: they take the point lights' places the
+	// scene leaves (EnvMapVulkanLightsGPU::MaxPointLights in all), without shadows. Not entities: s_LightEntities ends before them
+	s_FlashLightCount = s_Scene->GetEffects().Flashes.size();
+	for (const FlashLight& flash : s_Scene->GetEffects().Flashes)
+	{
+		EnvMapVulkanPointLight light;
+		light.Name = "Flash";
+		light.Color = flash.Color;
+		light.Intensity = flash.CurrentIntensity();
+		light.Position = flash.Position;
+		light.Range = flash.Range;
+		light.Enabled = light.Intensity > 0.0f;
+		s_Lights.PointLights.push_back(light);
+	}
 }
 
 // The selection as the view draws it (EnvMapVulkanViewOptions::Selection)
@@ -929,6 +946,15 @@ static void UpdateFrameUniforms()
 	memcpy(ubPtr, &lights, sizeof(EnvMapVulkanLightsGPU::LightsUB));
 	shader->UnmapUniformBuffer(5, frameSet);
 
+	// The version the probes follow: the scene's lights only (a muzzle flash every tenth of a second would have them capture
+	// again and again what is gone a moment later)
+	if (s_FlashLightCount > 0)
+	{
+		EnvMapVulkanLightEnvironment sceneLights = s_Lights;
+		sceneLights.PointLights.resize(sceneLights.PointLights.size() - std::min(s_FlashLightCount, sceneLights.PointLights.size()));
+		pointShadowSlots.resize(sceneLights.PointLights.size());
+		sceneLights.Pack(lights, pointShadowSlots, spotShadowSlots);
+	}
 	const bool sunCastsShadows = s_Lights.Sun.CastShadows;
 	s_LightsVersion = HashBytes(HashBytes(HashStart, &lights, sizeof(lights)), &sunCastsShadows, sizeof(sunCastsShadows));
 }
@@ -2239,6 +2265,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	EnvMapVulkanTerrain::Shutdown();
 	EnvMapVulkanFoliage::Shutdown();
 	EnvMapVulkanParticles::Shutdown();
+	EnvMapVulkanDecals::Shutdown();
 	EnvMapVulkanTrails::Shutdown();
 	EnvMapVulkanDebugDraw::Shutdown();
 	EnvMapVulkanMaterialLibrary::Clear();
@@ -4155,6 +4182,16 @@ void EnvMapVulkanRenderer::GeometryPass()
 		s_GBuffer.MakeDepthReadable(drawCommandBuffer, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
 			VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
 
+		// The decals, multiplied into the surfaces under them (seen through the water and the glass too), under the particles
+		if (EnvMapVulkanDecals::HasDecals())
+		{
+			H2M::RefH2M<H2M::VulkanFramebufferH2M> sceneTarget = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
+			const H2M::CameraH2M& sceneCamera = s_Data.SceneData.SceneCamera.Camera;
+			EnvMapVulkanDecals::Record(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], sceneTarget->GetColorVulkanImage(),
+				sceneTarget->GetColorVulkanFormat(), s_GBuffer, width, height, sceneCamera.GetProjectionMatrix() * sceneCamera.GetViewMatrix(),
+				swapChain.GetCurrentFrameSlot());
+		}
+
 		// The particles, over everything drawn so far (the water and the glass too)
 		if (EnvMapVulkanParticles::HasEmitters())
 		{
@@ -4611,6 +4648,10 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 	{
 		frame.Particles = "about " + std::to_string(particles.Alive) + " alive, " + std::to_string(particles.Emitters) +
 			(particles.Emitters == 1 ? " emitter" : " emitters") + " (" + std::to_string(particles.Emitting) + " emitting)";
+	}
+	if (const EnvMapVulkanDecals::Stats& decals = EnvMapVulkanDecals::GetStats(); decals.Placed + decals.Spawned > 0)
+	{
+		frame.Decals = std::to_string(decals.Drawn) + " drawn (" + std::to_string(decals.Placed) + " placed, " + std::to_string(decals.Spawned) + " spawned)";
 	}
 	if (const EnvMapVulkanTrails::Stats& trails = EnvMapVulkanTrails::GetStats(); trails.Trails > 0)
 	{
@@ -5133,6 +5174,8 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	// The particles: how many each emitter starts this frame, into this frame's emitter buffer (recorded after the scene pass)
 	EnvMapVulkanParticles::Update(*s_Scene, deltaTime, s_GameRunning, s_GameRunning ? s_GameTimeScale : 1.0f, s_ViewOptions.Selection,
 		s_RenderSettings.ParticleScale, Application::Get()->GetWindow()->GetSwapChain().GetCurrentFrameSlot());
+	// The decals: the scene's and the game's, into this frame's buffer (drawn after the scene pass)
+	EnvMapVulkanDecals::Update(*s_Scene, Application::Get()->GetWindow()->GetSwapChain().GetCurrentFrameSlot());
 	// The trails: their new points, all into this frame's buffer (drawn after the opaque meshes)
 	EnvMapVulkanTrails::Update(*s_Scene, deltaTime, s_GameRunning, s_GameRunning ? s_GameTimeScale : 1.0f, s_ViewOptions.Selection,
 		Application::Get()->GetWindow()->GetSwapChain().GetCurrentFrameSlot());
@@ -5262,6 +5305,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_Glass.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_GBuffer.Resize(s_Framebuffer); // after s_Framebuffer: it shares its depth image
 		EnvMapVulkanParticles::OnViewportResized(); // its framebuffer of the scene's color and depth goes
+		EnvMapVulkanDecals::OnViewportResized();
 		s_SSAO.Resize(s_GBuffer, s_RenderSettings.AmbientOcclusion.HalfResolution); // after the G-buffer: it reads its images
 		WriteAmbientOcclusionDescriptor();
 		s_Reflections.Resize(s_GBuffer, s_RenderSettings.Reflections.HalfResolution);

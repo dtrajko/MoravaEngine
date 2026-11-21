@@ -2075,6 +2075,7 @@ void OnImGuiRenderInspector()
 		ScriptPropertiesControls(entity);
 		AudioControls(entity);
 		ParticleControls(entity);
+		DecalControls(entity);
 		TrailControls(entity);
 	}
 

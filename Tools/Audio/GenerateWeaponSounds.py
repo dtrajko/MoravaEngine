@@ -1,4 +1,4 @@
-"""Generates the shooter's weapon sounds (docs/games/Shooter_Plan.html, Phase 2.2), all synthesized here, no samples:
+"""Generates the shooter's weapon sounds (docs/games/Shooter_Plan.html, Phases 2.2 and 2.3), all synthesized here, no samples:
 
     Rifle_Shot_1.wav .. _3.wav  the assault rifle's shot: a sharp crack, the muzzle's blast, a low thump, the action's
                                 click and an outdoor tail (two slap echoes off buildings), a touch of tape saturation;
@@ -7,6 +7,11 @@
     Rifle_MagOut.wav            the magazine out: the catch's click, the magazine sliding out
     Rifle_MagIn.wav             a new magazine in: a slide, a firm clack, then the charging handle (back and forward)
     Rifle_FireMode.wav          the selector: a small detent click
+    Impact_Concrete_1.wav .. _3 a bullet into concrete: a hard snap, grit and chips falling, a dull knock
+    Impact_Metal_1.wav .. _3    a bullet into sheet metal: a clank and the plate's ring (bell-like partials, not in tune)
+    Impact_Dirt_1.wav, _2       a bullet into the ground: a soft thud and earth scattering
+    Impact_Flesh_1.wav, _2      a bullet into a body: a dull, wet-less thump (the training targets, the guards)
+    HitMarker.wav               the hit marker's tick: a short, bright click the player hears on a hit
 
 Usage: python GenerateWeaponSounds.py [output folder]     (needs numpy; the default is the shooter's Assets/Audio)
 
@@ -170,6 +175,54 @@ def rifle_fire_mode():
     return normalize(mix(0.06, (0.0, click(rng, 3200.0, 0.008, 8.0), 1.0)), 0.45)
 
 
+def impact_concrete(variant):
+    rng = np.random.default_rng(300 + variant)
+    snap = biquad(noise(rng, 0.008), "band", 3800.0 + 400.0 * variant, 1.2) * decay(samples(0.008), 0.0018)
+    knock_t = t_of(0.05)
+    knock = np.sin(2 * np.pi * (180.0 + 25.0 * variant) * knock_t) * decay(len(knock_t), 0.012, attack=0.0008)
+    grit = scrape(rng, 0.22, 1200.0, 6500.0) * decay(samples(0.22), 0.07)
+    # A few chips landing a little after
+    chips = [(0.05 + rng.uniform(0.0, 0.12), click(rng, rng.uniform(2500.0, 5000.0), 0.006, 3.0), rng.uniform(0.15, 0.35)) for _ in range(4)]
+    out = mix(0.32, (0.0, snap, 1.0), (0.0, knock, 0.5), (0.004, grit, 0.55), *chips)
+    return fade_out(normalize(saturate(out, 1.4), 0.8), 0.03)
+
+
+def impact_metal(variant):
+    rng = np.random.default_rng(310 + variant)
+    clank = biquad(noise(rng, 0.01), "high", 1500.0) * decay(samples(0.01), 0.002)
+    t = t_of(0.45)
+    ring = np.zeros(len(t))
+    base = 1650.0 + 230.0 * variant
+    for ratio, gain, tau in ((1.0, 1.0, 0.11), (1.59, 0.6, 0.08), (2.31, 0.45, 0.06), (3.17, 0.25, 0.04)):
+        ring += gain * np.sin(2 * np.pi * base * ratio * t + rng.uniform(0, 6.28)) * decay(len(t), tau, attack=0.0005)
+    out = mix(0.45, (0.0, clank, 1.0), (0.0, ring, 0.45))
+    return fade_out(normalize(out, 0.75), 0.04)
+
+
+def impact_dirt(variant):
+    rng = np.random.default_rng(320 + variant)
+    thud = biquad(noise(rng, 0.08), "low", 380.0 + 60.0 * variant) * decay(samples(0.08), 0.018)
+    scatter = biquad(biquad(noise(rng, 0.25), "high", 500.0), "low", 2400.0) * decay(samples(0.25), 0.06, attack=0.004)
+    out = mix(0.3, (0.0, thud, 1.0), (0.006, scatter, 0.45))
+    return fade_out(normalize(out, 0.7), 0.03)
+
+
+def impact_flesh(variant):
+    rng = np.random.default_rng(330 + variant)
+    t = t_of(0.12)
+    freq = 70.0 + 60.0 * np.exp(-t / 0.015) + 8.0 * variant
+    body = np.sin(2 * np.pi * np.cumsum(freq) / RATE) * decay(len(t), 0.03, attack=0.001)
+    slap = biquad(noise(rng, 0.03), "low", 900.0 + 150.0 * variant) * decay(samples(0.03), 0.007)
+    cloth = biquad(noise(rng, 0.06), "band", 2200.0, 0.8) * decay(samples(0.06), 0.012)
+    out = mix(0.16, (0.0, body, 1.0), (0.0, slap, 0.8), (0.0, cloth, 0.2))
+    return fade_out(normalize(out, 0.75), 0.02)
+
+
+def hit_marker():
+    rng = np.random.default_rng(340)
+    return fade_out(normalize(mix(0.07, (0.0, click(rng, 4400.0, 0.012, 9.0), 1.0), (0.004, click(rng, 6100.0, 0.008, 9.0), 0.5)), 0.5), 0.01)
+
+
 def main():
     root = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
     folder = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "Projects", "Outpost", "Assets", "Audio")
@@ -180,6 +233,13 @@ def main():
     save(folder, "Rifle_MagOut.wav", rifle_mag_out())
     save(folder, "Rifle_MagIn.wav", rifle_mag_in())
     save(folder, "Rifle_FireMode.wav", rifle_fire_mode())
+    for variant in (1, 2, 3):
+        save(folder, f"Impact_Concrete_{variant}.wav", impact_concrete(variant))
+        save(folder, f"Impact_Metal_{variant}.wav", impact_metal(variant))
+    for variant in (1, 2):
+        save(folder, f"Impact_Dirt_{variant}.wav", impact_dirt(variant))
+        save(folder, f"Impact_Flesh_{variant}.wav", impact_flesh(variant))
+    save(folder, "HitMarker.wav", hit_marker())
 
 
 if __name__ == "__main__":
