@@ -1,7 +1,8 @@
 # The first person's arms (Shooter plan, Phase 1.3, the view model: E2): the soldier's arms (Soldier_Player_Arms.gltf, the
 # body's rig) holding the rifle as the body's aim pose does (our own clips, Tools/CharacterPoses/make_rifle_poses.py). The
 # rifle is on the right hand's bone (E3, Phase 2.2), so it moves with the hands in the shot's kick and the reload. Player
-# plays the states (Animator.Play): there are no transitions.
+# plays the states (Animator.Play): there are no transitions. Phase 2.4: the pistol's and the knife's (the weapon out
+# picks them; its model on hand_r is shown, the others' hidden).
 Animator:
   Version: 1
   Entry: Aim
@@ -18,6 +19,31 @@ Animator:
       InPlace: true
     - Name: Reload
       Clip: {File: Assets/Models/SoldierAnimations/Soldier_Rifles.glb, Name: Rifle_Reload}
+      Speed: 1
+      Loop: false
+      InPlace: true
+    - Name: PistolAim
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Aim_Neutral}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: PistolShoot
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Shoot}
+      Speed: 1
+      Loop: false
+      InPlace: true
+    - Name: PistolReload
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Reload}
+      Speed: 1
+      Loop: false
+      InPlace: true
+    - Name: KnifeIdle
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Knife_Idle_Loop}
+      Speed: 1
+      Loop: true
+      InPlace: true
+    - Name: KnifeSlash
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Knife_Slash}
       Speed: 1
       Loop: false
       InPlace: true

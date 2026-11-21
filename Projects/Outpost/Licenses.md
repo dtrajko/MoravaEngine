@@ -25,3 +25,9 @@ colors) shares the player's mesh and its normal and roughness maps. The weapon s
 bullets' hits (`Impact_*.wav`) and the hit marker's tick (`HitMarker.wav`) are synthesized by
 `Tools/Audio/GenerateWeaponSounds.py`, no recordings. The weapon effects' textures (`Assets/Textures/Effects`: the muzzle
 flash, the bullet holes) are made by `Tools/Textures/GenerateWeaponEffectTextures.py`, no images.
+
+Phase 2.4: the knife (`Assets/Models/OutpostWeapons/Knife.glb`) is our own, made by `Tools/Models/make_knife.py`, CC0.
+The pistol and knife clips (`Soldier_Sidearms.glb`, `Tools/CharacterPoses/make_rifle_poses.py --set sidearms`), the get-up
+(`Soldier_GetUp.glb`, `Tools/CharacterPoses/make_get_up.py`)
+are our own on the animation library's rig, carrying its mannequin, CC0. The pistol's sounds (`Pistol_*.wav`), the knife's
+(`Knife_*.wav`) and taking the weapons out (`Draw_*.wav`) are synthesized by `Tools/Audio/GenerateWeaponSounds.py`.

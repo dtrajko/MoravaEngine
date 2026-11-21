@@ -49,15 +49,18 @@ namespace Outpost
     /// views (the guards see and hit the same body whichever view the player chose), and the rifle in its right hand (a
     /// child on the hand's bone: E3). It shows what the motor does: idle, walking every way (the fast walk and walking
     /// quietly: Move, blended by the move's direction), the jog (between the fast walk and the sprint), sprint, crouched
-    /// idle and walk, falling and landing, played at the rate the speed asks for. Holding the rifle it faces the look, and
-    /// its upper body (Player.manim's UpperBody layer: E5) aims where the camera looks, lowered while sprinting. Only
-    /// presentation: it never changes the movement.
+    /// idle and walk, falling and landing, played at the rate the speed asks for. Holding a weapon it faces the look, and
+    /// its upper body (Player.manim's UpperBody layer: E5) aims it where the camera looks, lowered while sprinting: the weapon in
+    /// the hands chooses the states (Phase 2.4: the rifle's, the pistol's, the knife's) and the model hidden with the body.
+    /// Only presentation: it never changes the movement.
     /// </summary>
     public sealed class PlayerBody
     {
         readonly Entity body;
         readonly Animator? animator;
-        readonly Model? model, gun;
+        readonly Model? model;
+        Model? gun;
+        string aimState = "Aim", readyState = "Ready", reloadState = "Reload"; // the weapon's (SetWeapon)
         readonly PlayerBodySettings settings;
         string state = "";
         float speed;        // horizontal, smoothed
@@ -117,15 +120,40 @@ namespace Outpost
             return meters / seconds;
         }
 
-        /// <summary>The state the upper body (the UpperBody layer) plays: Aim, Ready, Reload.</summary>
+        /// <summary>The state the upper body (the UpperBody layer) plays: Aim, Ready, Reload (the rifle's), PistolAim, KnifeIdle...</summary>
         public string UpperState => animator?.GetLayerState("UpperBody") ?? "";
+
+        /// <summary>
+        /// The weapon in the hands (Phase 2.4): its model on the hand (hidden from the main view with the body), its upper
+        /// body states (Player.manim's UpperBody: aiming, lowered while sprinting, reloading). The upper body takes its aim
+        /// (or the ready while sprinting) at once.
+        /// </summary>
+        public void SetWeapon(Entity? weapon, string aim, string ready, string reload)
+        {
+            Model? held = weapon?.GetComponent<Model>();
+            if (held != null && model != null && held.HiddenInMainView != model.HiddenInMainView)
+                held.HiddenInMainView = model.HiddenInMainView;
+            gun = held;
+            aimState = aim;
+            readyState = ready;
+            reloadState = reload;
+            animator?.Play(sprinting ? readyState : aimState, 0.2f, "UpperBody");
+        }
 
         /// <summary>The weapon's reload started (true) or finished: the upper body plays it, then aims again (or the ready while sprinting).</summary>
         public void Reloading(bool on)
         {
             if (animator == null)
                 return;
-            animator.Play(on ? "Reload" : sprinting ? "Ready" : "Aim", on ? 0.15f : 0.2f, "UpperBody");
+            animator.Play(on ? reloadState : sprinting ? readyState : aimState, on ? 0.15f : 0.2f, "UpperBody");
+        }
+
+        /// <summary>A strike (the knife's slash: the state, on the upper body), or back to holding the weapon when it ended (null).</summary>
+        public void Attack(string? state)
+        {
+            if (animator == null)
+                return;
+            animator.Play(state ?? (sprinting ? readyState : aimState), state != null ? 0.05f : 0.15f, "UpperBody");
         }
 
         /// <summary>The motor jumped (from the fixed step): the body leaves the ground at once.</summary>

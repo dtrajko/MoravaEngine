@@ -1,5 +1,7 @@
 # A training dummy (Shooter plan, Phase 2.2): standing, flinching at a hit (the head's or the chest's), falling when its
-# health is gone. Dummy.cs picks the state (Animator.Play), so there are no transitions.
+# health is gone, getting up again (Phase 2.4: Tools/CharacterPoses/make_get_up.py). Dummy.cs picks the state
+# (Animator.Play), so there are no transitions. Death and GetUp play without In Place: the body falls back as the clip
+# has it (its feet stay where it stood) and gets up from there to Idle's stance.
 Animator:
   Version: 1
   Entry: Idle
@@ -23,5 +25,10 @@ Animator:
       Clip: {File: Assets/Models/QuaterniusAnimations/UAL1_Standard.glb, Name: Death01}
       Speed: 1
       Loop: false
-      InPlace: true
+      InPlace: false
+    - Name: GetUp
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_GetUp.glb, Name: Get_Up}
+      Speed: 1
+      Loop: false
+      InPlace: false
   Transitions: []

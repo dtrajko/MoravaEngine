@@ -14,6 +14,7 @@ namespace Outpost
     /// (a streak from a little way out of the muzzle to the hit), and the hit by its surface: concrete's dust, chips and hole,
     /// metal's sparks (and a spark's light) and dent, dirt's puff and clods, a soldier's small dark-red puff (the user's choice:
     /// stylized, no marks). The holes are decals (E6, Decals.Spawn). The sounds of the hits come from where they are.
+    /// Phase 2.4: a knife's strike (Strike) shows a small puff of its surface, no hole; its sounds are the knife's.
     /// </summary>
     public class WeaponEffects : Entity
     {
@@ -115,6 +116,32 @@ namespace Outpost
 
             if (shot.Hit)
                 Impact(shot);
+        }
+
+        /// <summary>A knife's strike on something (Hit): a small puff of the surface, no hole (the knife's sounds are its own).</summary>
+        public void Strike(in ShotResult strike)
+        {
+            if (!strike.Hit)
+                return;
+            Surface surface = SurfaceOf(strike);
+            LastSurface = surface;
+            Impacts++;
+            Vector3 point = strike.Point, normal = strike.Normal;
+            switch (surface)
+            {
+                case Surface.Flesh:
+                    blood?.Emit(3, new ParticleBurst(point, normal));
+                    break;
+                case Surface.Metal:
+                    sparks?.Emit(4, new ParticleBurst(point + normal * 0.01f, normal));
+                    break;
+                case Surface.Dirt:
+                    dirt?.Emit(2, new ParticleBurst(point + normal * 0.03f, normal));
+                    break;
+                default:
+                    dust?.Emit(2, new ParticleBurst(point + normal * 0.03f, normal));
+                    break;
+            }
         }
 
         void Impact(in ShotResult shot)

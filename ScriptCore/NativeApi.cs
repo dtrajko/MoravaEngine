@@ -184,6 +184,8 @@ namespace Morava
 
         public delegate* unmanaged<ulong, int*, int> Model_GetHiddenInMainView;
         public delegate* unmanaged<ulong, int, int> Model_SetHiddenInMainView;
+        public delegate* unmanaged<ulong, int*, int> Model_GetVisible;
+        public delegate* unmanaged<ulong, int, int> Model_SetVisible;
 
         public delegate* unmanaged<ulong, int, NativeParticleBurst*, int> ParticleEmitter_EmitBurst;
         public delegate* unmanaged<ulong, int, NativeLightSettings*, int> Light_GetSettings;
@@ -321,6 +323,7 @@ namespace Morava
         public float NearClip, FarClip;
         public int Enabled;
         public uint DrawEvery;
+        public float ViewModelFieldOfView;
     }
 
     [StructLayout(LayoutKind.Sequential)]

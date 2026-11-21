@@ -1354,6 +1354,12 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 	ScaleDragScalingChildLights("Scale", selectedModel, entry.Scale);
 	if (ModelComponent* modelComponent = s_Scene.TryGet<ModelComponent>(selectedModel))
 	{
+		ImGui::Checkbox("Visible", &modelComponent->Visible);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Off: not drawn at all (no shadow, not in the rays or the probes): a weapon put away.\n"
+				"Its entity, transform and animation stay; a script can turn it on again");
+		}
 		ImGui::Checkbox("Hidden In Main View", &modelComponent->HiddenInMainView);
 		if (ImGui::IsItemHovered())
 		{
