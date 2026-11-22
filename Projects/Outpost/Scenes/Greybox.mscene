@@ -2,8 +2,8 @@ Scene:
   Version: 1
   Name: Greybox
 EditorCamera:
-  Translation: [-15.256852, 10.780652, 2.1900268]
-  Rotation: [24.499926, -100.39997, 0]
+  Translation: [-0.14194225, 1.7806671, 16.677542]
+  Rotation: [27.899921, -18.700089, 0]
   FieldOfView: 60
 RenderSettings:
   Shadows:
@@ -851,9 +851,9 @@ Entities:
     Name: ViewModel Knife
     Parent: 1102
     Transform:
-      Translation: [-0.024, 0.0954, 0.0019]
-      Rotation: [90, -14.45, 90]
-      Scale: [1, 1, 1]
+      Translation: [-0.02399981, 0.09539963, 0.0019016266]
+      Rotation: [97, -15, 110]
+      Scale: [0.99999684, 0.99999064, 0.9999979]
     Model:
       File: Assets/Models/OutpostWeapons/Knife.glb
       FileID: 12484951793233539249

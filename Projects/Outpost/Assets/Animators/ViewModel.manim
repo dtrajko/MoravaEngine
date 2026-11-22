@@ -3,7 +3,9 @@
 # rifle is on the right hand's bone (E3, Phase 2.2), so it moves with the hands in the shot's kick and the reload. Player
 # plays the states (Animator.Play): there are no transitions. Phase 2.4: the pistol's and the knife's (the weapon out
 # picks them; its model on hand_r is shown, the others' hidden). Phase 2.5: the sniper rifle's (aiming, the shot, the
-# bolt worked after it, the reload: the same clips as the body's).
+# bolt worked after it, the reload: the same clips as the body's). The pistol's are the first person's own _View clips
+# (2026-11-22, the aim and the shot): the right shoulder dropped, so down the sights the arm rises to the pistol from
+# lower in the view.
 Animator:
   Version: 1
   Entry: Aim
@@ -24,12 +26,12 @@ Animator:
       Loop: false
       InPlace: true
     - Name: PistolAim
-      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Aim_Neutral}
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Aim_Neutral_View}
       Speed: 1
       Loop: true
       InPlace: true
     - Name: PistolShoot
-      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Shoot}
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_Sidearms.glb, Name: Pistol_Shoot_View}
       Speed: 1
       Loop: false
       InPlace: true

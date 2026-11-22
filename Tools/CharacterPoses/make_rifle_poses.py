@@ -43,6 +43,7 @@
 # frame from the side and the front, the rifle in the hands (Workbench), to check the poses.
 
 import bpy
+import copy
 import math
 import os
 import sys
@@ -76,6 +77,11 @@ WEAPONS = {
         "Support": gun_point(1.75, 0.0, 0.40),      # under the handguard
         "Magazine": gun_point(1.2, 0.0, -0.15),    # the magazine's middle, for the reload
         "Bolt": None,
+        # The sights (the user, 2026-11-22: the crosshair where the rifle's sights are): the rear notch's top in its middle
+        # and the front post's tip, from the mesh; the eye aiming down the sights is on the line through them
+        "RearSight": gun_point(0.004, 0.0, 0.828),   # (2 mm over the block's top: the model has no notch cut, and
+                                                       # level with its top the post's tip hid behind it)
+        "FrontSight": gun_point(3.68, 0.0, 0.86),
         "LowReady": (30.0, 25.0, -0.01),           # the low ready: degrees the muzzle down and left about the butt, meters up
                                                    # (2 cm up: the stock 4 mm in the jaw breathing)
     },
@@ -120,6 +126,8 @@ SIDEARMS = {
     "Pistol": {
         "File": "Pistol_1.fbx", "Scale": PISTOL_SCALE, "Hold": "Pistol",
         "Eye": pistol_point(-0.10, 0.0, 0.74),     # the rear sight's notch: the sight line's start
+        "RearSight": pistol_point(-0.106, 0.0, 0.7385),  # the rear notch's top in its middle (from the mesh)
+        "FrontSight": pistol_point(1.261, 0.0, 0.754),   # the front blade's tip
         "Grip": pistol_point(-0.03, 0.0, 0.0),     # inside the grip, where the palm closes
         "GripUp": Vector((0.17, 0.0, 0.985)),      # the grip's slant (about 10 degrees)
         "Trigger": pistol_point(0.42, 0.0, 0.20),
@@ -1164,6 +1172,8 @@ PISTOL_CUP_FORWARD = Vector((0.04, 0.0, 0.008))  # meters (the gun's frame) the 
 # the relaxed standing pose's the right shoulder was 26 cm behind the eye and the arms couldn't reach a pistol held out
 # with the wrists straight): each collarbone turned forward about the vertical
 PISTOL_PROTRACT = 24.0
+PISTOL_VIEW_SHOULDER_DROP = 35.0  # degrees the first person's right collarbone turns down (the _View clips)
+PISTOL_VIEW_PROTRACT = 10.0       # and forward, more than PISTOL_PROTRACT (the arm at full stretch: room for the drop)
 # One hand (the user, 2026-11-21: the two-handed grip's hands lay open on the grip, a finger up beside the slide; "you
 # can make it hold and fire with single hand, the right one"): the right hand a fist round the grip as the rifle's and
 # the knife's (the thumb round the grip's back, checked on the pistol's surface; the index finger on the trigger), the
@@ -1225,9 +1235,22 @@ def protract(rig, w, clip):
     for side, sign in ((("r", 1.0),) if PISTOL_ONE_HAND else (("r", 1.0), ("l", -1.0))):
         pb = rig.armature.pose.bones[f"clavicle_{side}"]
         m = pb.matrix.copy()
-        turn = Quaternion(UP, math.radians(PISTOL_PROTRACT * sign))
+        extra = PISTOL_VIEW_PROTRACT if clip.shoulder_drop and side == "r" else 0.0
+        turn = Quaternion(UP, math.radians((PISTOL_PROTRACT + extra) * sign))
         pb.matrix = Matrix.Translation(m.translation) @ (turn @ m.to_quaternion()).to_matrix().to_4x4()
         rig.update()
+    if clip.shoulder_drop:
+        # The right shoulder down (the first person's clips: the arm then rises to the pistol from lower in the view):
+        # the collarbone turned about the forward axis, the way that lowers the shoulder
+        pb = rig.armature.pose.bones["clavicle_r"]
+        m = pb.matrix.copy()
+        before = rig.bone("upperarm_r").translation.z
+        for sign in (1.0, -1.0):
+            turn = Quaternion(FORWARD, math.radians(clip.shoulder_drop * sign))
+            pb.matrix = Matrix.Translation(m.translation) @ (turn @ m.to_quaternion()).to_matrix().to_4x4()
+            rig.update()
+            if rig.bone("upperarm_r").translation.z < before:
+                break
 
 
 def gun_in_front(w, rig):
@@ -1309,6 +1332,7 @@ class Clip:
         self.left_mag = None          # the one-handed reload: the left hand under the magazine (the gun's frame)
         self.left_trip = None         # [(time, "side" | "pouch" | "mag_low" | "mag")]: its trip
         self.check_elbows = True      # the elbows' rules (below the hand, outside the shoulder): not for a slash
+        self.shoulder_drop = 0.0      # degrees the right collarbone turns down (the first person's pistol clips: _View)
         # The sniper's bolt and reload (the right hand leaves the grip for the bolt): the seconds the gun is held by the
         # left hand (on the forend) and by the right (on the grip); the game shows its model on that hand's bone then
         # (Sniper.weapon.json's LeftHand). Measured: where the gun is in each hand over those frames
@@ -1367,6 +1391,16 @@ def pistol_clips(weapon):
         # back down to the side
         reload.left_mag = mag
         reload.left_trip = [(0.25, "side"), (0.6, "pouch"), (0.95, "mag_low"), (1.1, "mag"), (1.25, "mag"), (1.6, "side")]
+    # The first person's (the view model's) aim and shot: the same, the right shoulder dropped and forward (the user,
+    # 2026-11-22: down the sights the arm, cut off at the screen's edge, took its whole bottom right quarter). The pistol
+    # is where the eye puts it, as in the others (the weapon file's AimEye and SightDirection from the _View aim); the arm
+    # comes up to it from lower. Not the reload: pulled in to the chest, the elbow rose over the shoulder-hand line (the
+    # first person crossfades into the body's reload)
+    for clip in [c for c in clips if c.name in (f"{weapon}_Aim_Neutral", f"{weapon}_Shoot")]:
+        view = copy.copy(clip)
+        view.name = clip.name + "_View"
+        view.shoulder_drop = PISTOL_VIEW_SHOULDER_DROP
+        clips.append(view)
     return clips
 
 
@@ -1465,10 +1499,12 @@ def make_clips(weapon):
         # leaves and after it is back: the game switches the hand there
         # (both hands hold it a tenth of a second either side of the game's switches, 0.05 and 1.01 s: the animation's
         # frame and the fixed step's time differ by up to a frame)
-        cycle.right = [(0.0, grip), (0.1, grip), (0.22, knob), (0.36, up), (0.5, back), (0.64, up), (0.78, knob),
-                       (0.92, grip), (1.1, grip)]
+        # (the switch at 0.11 s comes after the game's 0.08 s crossfade from the shot's clip, the gun settled; at 0.05 it
+        # was inside it, 7 mm and 2 degrees off)
+        cycle.right = [(0.0, grip), (0.15, grip), (0.26, knob), (0.38, up), (0.5, back), (0.62, up), (0.74, knob),
+                       (0.88, grip), (1.1, grip)]
         cycle.left_holds = [(0.0, 1.1)]
-        cycle.right_holds = [(0.0, 0.1), (0.92, 1.1)]
+        cycle.right_holds = [(0.0, 0.15), (0.88, 1.1)]
         clips.append(cycle)
 
         # The reload: one hand always holds the gun (the game's model is on a hand's bone). The right hand opens the bolt
@@ -1478,14 +1514,15 @@ def make_clips(weapon):
         reload.left_free = True
         reload.gun_motion = [(0.0, Matrix.Identity(4)), (0.3, tilt), (2.3, tilt), (2.6, Matrix.Identity(4))]
         # (both hands hold it a tenth of a second either side of the game's switches: 0.05, 0.65, 1.85 and 2.52 s)
-        reload.right = [(0.0, grip), (0.1, grip), (0.22, knob), (0.33, up), (0.45, back), (0.55, grip), (1.95, grip),
+        # (the right hand on the grip until 0.2 s: the game's 0.1 s crossfade into the clip ends before the switch)
+        reload.right = [(0.0, grip), (0.2, grip), (0.28, knob), (0.36, up), (0.45, back), (0.55, grip), (1.95, grip),
                         (2.08, back), (2.2, up), (2.32, knob), (2.42, grip), (2.6, grip)]
         port = left_hand_on(w["Magazine"])
         reload.left = [(0.0, support), (0.75, support)]
         reload.left_world = {"from": 0.75, "pouch": 0.95, "to": 1.15, "again": (1.35, 1.52, 1.65)}
         reload.left_after = [(1.15, port), (1.3, port), (1.65, port), (1.68, port), (1.75, support)]
         reload.left_holds = [(0.0, 0.75), (1.75, 2.6)]
-        reload.right_holds = [(0.0, 0.1), (0.55, 1.95), (2.42, 2.6)]
+        reload.right_holds = [(0.0, 0.2), (0.55, 1.95), (2.42, 2.6)]
         clips.append(reload)
     return clips
 
@@ -2110,6 +2147,21 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
                 sight = (to_gltf @ gun @ Matrix.Translation(w["Eye"])).translation
                 line += f", the sight line's start at {tuple(round(v, 4) for v in sight)}"
             print(line)
+            if w.get("FrontSight") is not None and clip.name.endswith(("_Aim_Neutral", "_Aim_Neutral_View")):
+                # The sight line in the model (the first person's view model): through the rear sight and the front one;
+                # aiming down the sights the eye is on it at the right eye's depth, and the view looks along it
+                # (the weapon file's AimEye and SightDirection)
+                rear = (to_gltf @ gun @ Matrix.Translation(w["RearSight"])).translation
+                front = (to_gltf @ gun @ Matrix.Translation(w["FrontSight"])).translation
+                along = (front - rear).normalized()
+                t = (eye_in_model.z - rear.z) / along.z if abs(along.z) > 1e-6 else 0.0
+                on_line = rear + along * t
+                pitch = math.degrees(math.asin(max(-1.0, min(1.0, along.y))))
+                yaw = math.degrees(math.atan2(along.x, along.z))
+                print(f"  {clip.name}: the sights in the model: rear {tuple(round(v, 4) for v in rear)}, front "
+                      f"{tuple(round(v, 4) for v in front)}; the line {pitch:.2f} degrees up, {yaw:.2f} to the model's left "
+                      f"from the gun's forward; AimEye {tuple(round(v, 4) for v in on_line)}, SightDirection "
+                      f"{tuple(round(v, 5) for v in along)}")
             gun_frame.matrix_world = armature.matrix_world @ gun
             rig.update()
             face, deepest = rig.chest.against_gun(gun_frame.children[0])

@@ -7,9 +7,10 @@ namespace Outpost
     /// A training dummy (docs/games/Shooter_Plan.html, Phase 2.2): a soldier in the training uniform (Soldier_Training, the
     /// guards' mesh) to shoot in the greybox. Its Body child has the model and Dummy.manim; the hitboxes (Hitbox scripts on
     /// the body's bones, Owner this) take the hits. A hit plays a flinch (the head's or the chest's); out of health it falls
-    /// (Death01) and, after LieSeconds, gets up (Phase 2.4: our own Get_Up, Tools/CharacterPoses/make_get_up.py, from where
-    /// Death01 leaves it lying to Idle's stance: before, a cross-fade to Idle swung a leg through the floor), its health
-    /// back once it stands.
+    /// (Death_Back: the library's Death01, the left arm settling relaxed on the floor) and, after LieSeconds, gets up
+    /// (Phase 2.4: our own Get_Up, Tools/CharacterPoses/make_get_up.py, from where Death_Back leaves it lying to Idle's
+    /// stance: before, a cross-fade to Idle swung a leg through the floor; since 2026-11-22 up onto the elbows, then the
+    /// hands), its health back once it stands.
     /// </summary>
     public class Dummy : Entity, IDamageable
     {
@@ -75,7 +76,7 @@ namespace Outpost
                 {
                     down = 0.0f;
                     gettingUp = GetUpSeconds;
-                    animator?.Play("GetUp", 0.0f); // it starts where Death01 ends
+                    animator?.Play("GetUp", 0.0f); // it starts where Death_Back ends
                 }
                 return;
             }

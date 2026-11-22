@@ -613,9 +613,26 @@ namespace Outpost
             Quaternion rotation = Quaternion.CreateFromYawPitchRoll((yaw + 180.0f) * MathF.PI / 180.0f, pitch * MathF.PI / 180.0f, 0.0f);
             // (turned down about the model's X, the camera's side, while it is lowered)
             Quaternion tilt = Quaternion.CreateFromAxisAngle(Vector3.UnitX, LoweredTilt * lowered * MathF.PI / 180.0f);
+            // Down the sights the sight line looks along the view (the front sight's tip on the crosshair): the model turned
+            // by the little turn from the weapon's SightDirection to its forward, as far as the sights are up
+            tilt *= Quaternion.Slerp(Quaternion.Identity, SightTurn(data), ads);
             Vector3 local = new Vector3(-offset.X, offset.Y, offset.Z);
             ViewModel.Rotation = rotation * tilt;
             ViewModel.Translation = cameraPosition + Vector3.Transform(local, rotation) - Vector3.Transform(eye, rotation * tilt);
+        }
+
+        // The turn of the arms' model that brings a weapon's sight line onto the model's forward (+Z: the view's)
+        static Quaternion SightTurn(WeaponData data)
+        {
+            if (data.SightDirection.LengthSquared() < 1e-8f)
+                return Quaternion.Identity;
+            Vector3 from = Vector3.Normalize(data.SightDirection);
+            Vector3 axis = Vector3.Cross(from, Vector3.UnitZ);
+            float sine = axis.Length();
+            if (sine < 1e-6f)
+                return Quaternion.Identity;
+            float angle = MathF.Atan2(sine, Vector3.Dot(from, Vector3.UnitZ));
+            return Quaternion.CreateFromAxisAngle(axis / sine, angle);
         }
 
         void ShowViewModel(bool shown)
@@ -636,11 +653,22 @@ namespace Outpost
                 return;
             WeaponData data = weapon.Data;
             WeaponData.LeftHold? hold = null;
+            // The clip's own time when the arms play it (the pose shown: the weapon's clock runs in the fixed step, ahead of
+            // the animation by up to a frame, more after a slow one; a crossfade into the clip still mixes the last pose),
+            // else the weapon's clock
+            float ClipTime(string state, float clock)
+            {
+                if (viewModelAnimator == null || string.IsNullOrEmpty(state) || viewModelAnimator.CurrentState != state)
+                    return clock;
+                return viewModelAnimator.IsInTransition ? -1.0f : viewModelAnimator.StateTime;
+            }
             if (arsenal.IsSwitching)
                 hold = null; // (put away or taken out in the right hand)
-            else if (weapon.IsWorkingBolt && weapon.BoltSeconds >= 0.0f && data.LeftInBolt != null && data.LeftInBolt.Holds(weapon.BoltSeconds))
+            else if (weapon.IsWorkingBolt && weapon.BoltSeconds >= 0.0f && data.LeftInBolt != null &&
+                data.LeftInBolt.Holds(ClipTime(data.ViewBolt, weapon.BoltSeconds)))
                 hold = data.LeftInBolt;
-            else if (weapon.IsReloading && data.LeftInReload != null && data.LeftInReload.Holds(weapon.ReloadProgress * data.ReloadSeconds))
+            else if (weapon.IsReloading && data.LeftInReload != null &&
+                data.LeftInReload.Holds(ClipTime(data.ViewReload, weapon.ReloadProgress * data.ReloadSeconds)))
                 hold = data.LeftInReload;
             if (hold != null && hold != leftPlaced)
             {

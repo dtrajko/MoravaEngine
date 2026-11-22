@@ -10,8 +10,8 @@ namespace Outpost
     /// where the spread's cone meets the screen), and the ammo (the magazine and the reserve) with the fire mode. The text
     /// uses the engine's font until the HUD gets its own (Phase 3). Phase 2.3: the hit marker, four short diagonal bars
     /// round the crosshair while a shot that hit fades (red when it downed its target). Phase 2.4: the weapon's name before
-    /// its fire mode; the knife has no ammo and no spread (no bars); down the sights in first person the bars go (the
-    /// sights are the aim). Phase 2.5: the sniper's scope, on a canvas of its own matched to the screen's height (so the
+    /// its fire mode; the knife has no ammo and no spread (no bars); down the sights the bars stay (since 2026-11-22, the
+    /// user: they went, and the sights weren't quite where the shots go; now the front sight is on the middle). Phase 2.5: the sniper's scope, on a canvas of its own matched to the screen's height (so the
     /// lens stays round in any aspect ratio, black bars beside it): shown while the player's view is the scope's, with the
     /// darkening of its coming up; the crosshair's bars go meanwhile, and the zoom shows after the fire mode.
     /// </summary>
@@ -70,9 +70,9 @@ namespace Outpost
             UpdateScope(shown && player != null && player.ScopeShown);
             if (!shown || weapon == null || player == null)
                 return;
-            // The bars: not for the knife, nor down the sights in first person, nor through the scope
-            bool bars = !weapon.IsMelee && !(player.View == ViewMode.FirstPerson && player.AimBlend > 0.5f && !weapon.Data.HasScope) &&
-                !player.ScopeShown;
+            // The bars: not for the knife, nor through the scope (its reticle is the aim). Down the sights they stay (the
+            // user, 2026-11-22): they frame the front sight's tip, which the view model puts on the middle (SightDirection)
+            bool bars = !weapon.IsMelee && !player.ScopeShown;
             foreach (UIRect? rect in new[] { top, bottom, left, right })
                 if (rect != null && rect.Visible != bars)
                     rect.Visible = bars;

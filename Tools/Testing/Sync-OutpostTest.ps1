@@ -9,7 +9,9 @@
 # Then build its scripts and run it in the editor with Play:
 #
 #   dotnet build <copy>\Scripts\Outpost.csproj -p:MoravaScriptCoreDir=D:\Workspace\MoravaEngine\build\Debug\
-#   .\Tools\Testing\Run-Engine.ps1 -Editor -Play -Project <copy>\Outpost.mproject -Seconds 60 -DebugOverlay
+#   .\Tools\Testing\Run-Engine.ps1 -Editor -Play -Project <copy>\Outpost.mproject -Seconds 145 -DebugOverlay
+#
+# One section only (the README): $env:OUTPOST_TEST_START = "Sidearms", "Sniper" or "Sights" before the run
 param(
     [string]$Copy = "D:\Workspace\Temp\OutpostPlayerTest"
 )

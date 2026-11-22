@@ -47,7 +47,8 @@
   "ViewModel": {
     "Eye": [-0.0467, 1.5804, 0.1071],
     "Offset": [-0.03, 0.03, 0.0],
-    "AimEye": [-0.1376, 1.4612, 0.10]
+    "AimEye": [-0.1367, 1.4544, 0.1071],
+    "SightDirection": [0.0, 0.01134, 0.99994]
   },
   "Sounds": {
     "Shot": "Assets/Audio/Pistol_Shot_{0}.wav",

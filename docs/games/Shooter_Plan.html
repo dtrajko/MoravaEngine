@@ -190,6 +190,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li class="sub2"><a href="#phase-2-3">2.3 the effects</a></li>
       <li class="sub2"><a href="#phase-2-4">2.4 the pistol and the knife, switching, aiming down the sights</a></li>
       <li class="sub2"><a href="#phase-2-5">2.5 the sniper rifle and its scope (E10)</a></li>
+      <li class="sub2"><a href="#phase-sights-getup">The sights on the crosshair, the death, the get-up, the arm in first person (after 2.5)</a></li>
       <li class="sub"><a href="#phase-3">Phase 3: health, pickups and the HUD</a></li>
       <li class="sub"><a href="#phase-4">Phase 4: navigation (E1)</a></li>
       <li class="sub"><a href="#phase-5">Phase 5: the guards</a></li>
@@ -1598,6 +1599,70 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         while scoped is the body's, in the world (the view model is hidden); the left-hand model's place is set by the clip
         (a crossfade into the bolt or the reload holds the right hand's until the switch); the sniper guards with a laser
         or a glint wait for Phase 5, the long sight lines for Phase 6.</li>
+    </ul>
+  </div>
+  <div class="box ok" id="phase-sights-getup"><b>As built: the sights on the crosshair, the death, the get-up, the arm in first person (2026-11-22, after 2.5)</b>
+    <p>The user's requests after 2.5: "when I aim with the rifle, there's no crosshair", "the logical crosshair (HUD, UI)
+    should match the physical rifle sight (rifle mesh)"; the dummy's left arm lying dead; the get-up starting by lifting
+    the elbows, "extremely awkward".</p>
+    <ul>
+      <li><b>The sights</b>: down the sights the view model was placed by an eye on a line parallel to the barrel, but a
+        rifle's sight line climbs from the rear sight to the front one (the rifle's 0.5 degrees, the pistol's 0.65): the
+        front sight's tip showed off the middle, where the shots go (the rifle's 1.2 degrees under it). The rear and the
+        front sight are points in <code>make_rifle_poses.py</code> (from the meshes: the rifle's rear block's top and its
+        front post's tip, the pistol's notch and blade); the aim bake prints the eye on the line through them and the line's
+        direction in the arms' model, which the weapon files take (<code>AimEye</code>, the new <code>SightDirection</code>);
+        <code>Player.PlaceViewModel</code> turns the view model by the little turn from that direction to the view's as
+        the sights come up. The rifle's model has no notch cut in its rear sight: the line goes 2 mm over the block's top
+        (level with it, the post hid behind the block).</li>
+      <li><b>The crosshair</b>: the HUD's bars stay down the sights (they went, "the sights are the aim"), framing the front
+        sight's tip; not through the sniper's scope.</li>
+      <li><b>The death</b> (<code>make_get_up.py</code> writes <code>Death_Back</code> into
+        <code>Soldier_GetUp.glb</code>; <code>Dummy.manim</code> plays it): the library's Death01, its left arm (bent a
+        right angle at the shoulder's height, the user's screenshot) settling from frame 40 into a relaxed one, 45 degrees
+        out toward the hips, the elbow a little bent. The hand as the forearm carries it standing (no twist at the wrist;
+        turned palm up it was wrung 157 degrees), the arm turned at the shoulder (of 24 ways of the elbow, the one that lays
+        the hand flattest), the wrist lowered until the hand touches the floor; on the way there the arm by IK along a path
+        a little off the floor (a blend of the bones' turns swung the hand 12 cm through it). Every frame checked against
+        Death01's own (its back sinks 3.2 cm).</li>
+      <li><b>The get-up's first phase</b> (the user: "a sudden move of head, shoulders and back upwards, while arms and
+        elbows supporting the body on the ground", then "from elbows supporting the body to hands"): lying, then in 0.4 s
+        the head, the shoulders and the back come up 39 degrees (as far as keeps the elbows under the shoulders on the
+        floor, the chin toward the chest), both elbows and forearms on the floor, the forearms flat ahead, the palms down;
+        the hands slide in along the floor (the right one, lying overhead, in an arc out to the side, flat and pointing
+        along the arm), carried as the forearm holds them and turned palm down as the forearms come forward (turned at once
+        the right wrist bent 176 degrees); then the left hand, then the right, slides back behind the hips (the user: they
+        rose off the floor and came down again; now the wrists stay within 3.5 cm of their height on it); sitting on the hands at 1.15 s, the buttocks on the floor (the sitting pose's hips were 6 cm up:
+        the body hovered on its hands). The second phase as before (the squat, standing at 2.55 s). The bake checks the
+        supports: on the elbows the forearms' skin 0 to 1.2 cm over the floor (0.2), sitting the hands' (0.3), the hips
+        down until sitting.</li>
+      <li><b>The arm in first person</b> (the user: down the pistol's sights "a cut off right arm" took the screen's whole
+        bottom right quarter; with the knife too): the view model plays its own pistol aim and shot,
+        <code>Pistol_Aim_Neutral_View</code> and <code>Pistol_Shoot_View</code> (<code>make_rifle_poses.py</code>: the
+        right collarbone turned 35 degrees down and 10 more forward, <code>PISTOL_VIEW_SHOULDER_DROP</code>,
+        <code>PISTOL_VIEW_PROTRACT</code>; the pistol where the eye puts it, the wrist bent 23 degrees), so the arm rises to
+        it diagonally from the corner; the weapon file's AimEye is the _View aim's. Not the reload (pulled in to the chest
+        the elbow rose over the shoulder-hand line: the first person crossfades into the body's). The knife's view model
+        5 cm lower (<code>Knife.weapon.json</code>'s Offset): the blade shows over the fist, and through the slash the
+        sleeve's cut end stays out of the view (photos at five moments of it).</li>
+      <li><b>The sniper's hand switch</b>: it follows the arms' clip time, not the weapon's clock (the fixed step runs ahead
+        of the animation by a frame, more after a slow one: in Debug at 30 frames a second the switch came a frame late,
+        7 to 8 mm and 2 degrees off now and then), and waits for a crossfade into the clip to end; each switch as early as
+        both hands hold the gun (the bolt's from 0, the reload's from 0, 0.6, 1.8 and 2.45 s), so a slow frame still lands
+        where both do. The right hand rests on the grip until 0.15 s in the bolt and 0.2 s in the reload; the body's
+        crossfade into a reload is 0.1 s, as the arms' (0.15 left its gun 1.5 cm off at the switch).</li>
+      <li><b>The editor</b>: the Project panel has New Project, Open Project and Close Project while a project is open (as
+        the File menu's).</li>
+      <li><b>Checked</b>: the test copy 107/107 in editor Play: the front sight's tip on the crosshair within 0.01 degrees,
+        the rifle's and the pistol's, and the rifle's looking 25 up, level, 25 and 50 down; the dummies falling with
+        Death_Back and getting up. The pistol walk down the sights moved aside (the user moved Dummy_3 into its way). No
+        validation messages.</li>
+      <li><b>Found</b>: a camera entity's <code>WorldTransform</code> (and its forward) has the pitch the other way from
+        the view the renderer draws (<code>GetCameraForward</code>: "a positive pitch looks down"; the entity's matrix turns
+        the same angle the other way). The game's code takes the look from its own yaw and pitch, so nothing in play is
+        wrong; the test does too now. Left as it is (a scene's cameras keep their angles).</li>
+      <li><b>Limits</b>: the sight line is measured on the level aim's pose; aimed up or down the body's (third person)
+        aim poses aren't corrected (the camera's ray decides the shot there).</li>
     </ul>
   </div>
   <h3 id="phase-3">Phase 3: health, pickups and the HUD</h3>

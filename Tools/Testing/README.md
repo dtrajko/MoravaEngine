@@ -181,7 +181,18 @@ dotnet build D:\Workspace\Temp\OutpostPlayerTest\Scripts\Outpost.csproj -p:Morav
 
 Without `-p:MoravaScriptCoreDir` the scripts build against the last ScriptCore copied into the project, and the editor
 runs an old one. The driver stops the game's time for its photos (`Time.TimeScale` 0 for a second or three): `-Seconds`
-counts them.
+counts them. The whole test takes about 145 seconds in Debug.
+
+**One section** (added 2026-11-22: checking the sniper waited through 75 s of earlier stages): set `OUTPOST_TEST_START`
+to `Sidearms`, `Sniper` or `Sights` and the driver starts there: its clock just before the section's first stage, and
+what the earlier stages leave behind for it (the dummies, the weapon effects) found; the rest of the game is fresh (the
+dummies standing, every weapon full, the rifle out). The sections then run to the end. Unset, the whole test runs.
+
+```powershell
+$env:OUTPOST_TEST_START = "Sniper"   # about 45 s: the sniper and the sights
+.\Tools\Testing\Run-Engine.ps1 -Editor -Play -Maximize -Project D:\Workspace\Temp\OutpostPlayerTest\Outpost.mproject -Seconds 45 -DebugOverlay
+Remove-Item Env:OUTPOST_TEST_START
+```
 
 ## Capture-OnLog.ps1
 
