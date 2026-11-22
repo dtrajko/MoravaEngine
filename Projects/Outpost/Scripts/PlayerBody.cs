@@ -145,7 +145,8 @@ namespace Outpost
         {
             if (animator == null)
                 return;
-            animator.Play(on ? reloadState : sprinting ? readyState : aimState, on ? 0.15f : 0.2f, "UpperBody");
+            // (into the reload in 0.1 s, as the first person's arms: the sniper's gun switches hands by the arms' clip time)
+            animator.Play(on ? reloadState : sprinting ? readyState : aimState, on ? 0.1f : 0.2f, "UpperBody");
         }
 
         /// <summary>A strike (the knife's slash: the state, on the upper body), or back to holding the weapon when it ended (null).</summary>

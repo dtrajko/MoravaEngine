@@ -149,6 +149,13 @@ namespace Outpost
         public Vector3 ViewModelOffset = new Vector3(0.11f, -0.09f, 0.0f);
         public Vector3 AimEye = new Vector3(-0.0912f, 1.4897f, 0.1031f);
 
+        /// <summary>
+        /// The sight line's direction in the arms' model (through the rear sight and the front one, as
+        /// Tools/CharacterPoses/make_rifle_poses.py measures it; zero: along the model's forward). Down the sights the view
+        /// model is turned so this line looks along the view: the front sight's tip on the crosshair, where the shot goes.
+        /// </summary>
+        public Vector3 SightDirection;
+
         /// <summary>The sounds: the shot ({0}: 1 to ShotVariants), the empty click, the magazine out and in, the fire mode's switch, taking it out.</summary>
         public string ShotSound = "", EmptySound = "", MagazineOutSound = "", MagazineInSound = "", FireModeSound = "", DrawSound = "";
         public int ShotVariants = 1;
@@ -328,6 +335,8 @@ namespace Outpost
                     d.ViewModelOffset = Vector(offset);
                 if (view.TryGetProperty("AimEye", out JsonElement aimEye))
                     d.AimEye = Vector(aimEye);
+                if (view.TryGetProperty("SightDirection", out JsonElement sightDirection))
+                    d.SightDirection = Vector(sightDirection);
             }
             if (root.TryGetProperty("Sounds", out JsonElement sounds))
             {

@@ -185,6 +185,34 @@ void OnImGuiRenderProjectPanel()
 	ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.6f);
 	save |= InputSetting("Name", project->Name);
 	ImGui::TextDisabled("%s", project->FilePath.c_str());
+	// Another project, or none (as the File menu's: they ask about unsaved changes first, not while playing, and happen
+	// after this frame, so the panel's project stays valid below)
+	if (ImGui::Button("New Project..."))
+	{
+		RequestNewProject();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Makes a project in a folder you pick (named after it) and opens it, closing this one");
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Open Project..."))
+	{
+		RequestOpenProject();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Opens another project (.mproject), closing this one");
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Close Project"))
+	{
+		RequestCloseProject();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Closes '%s': the editor works on scenes of its own again", project->Name.c_str());
+	}
 
 	// The scene the game starts with
 	ImGui::SeparatorText("Start Scene");

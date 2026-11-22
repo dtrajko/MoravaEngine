@@ -21,7 +21,7 @@
   },
   "ViewModel": {
     "Eye": [-0.0654, 1.345, 0.10],
-    "Offset": [-0.06, -0.02, 0.0]
+    "Offset": [-0.06, -0.07, 0.0]
   },
   "Sounds": {
     "Swing": "Assets/Audio/Knife_Swing_{0}.wav",

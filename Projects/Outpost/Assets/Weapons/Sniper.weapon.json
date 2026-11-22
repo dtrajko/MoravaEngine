@@ -25,14 +25,14 @@
     "After": 0.4,
     "Seconds": 1.1,
     "Cues": [
-      [0.2, "Assets/Audio/Sniper_BoltOpen.wav", 0.6],
-      [0.5, "Assets/Audio/Sniper_BoltClose.wav", 0.7]
+      [0.27, "Assets/Audio/Sniper_BoltOpen.wav", 0.6],
+      [0.55, "Assets/Audio/Sniper_BoltClose.wav", 0.7]
     ]
   },
   "LeftHand": {
-    "_": "While the right hand works the bolt the gun is in the left one (make_rifle_poses.py: 'the gun in hand_l').",
-    "Bolt": { "Windows": [[0.05, 1.01]], "Translation": [0.1685, -0.0743, -0.1342], "Rotation": [0.2134, 0.415, 0.3009, 0.8317] },
-    "Reload": { "Windows": [[0.05, 0.65], [1.85, 2.52]], "Translation": [0.0339, -0.0374, -0.2124], "Rotation": [0.164, 0.6878, 0.164, 0.6878] }
+    "_": "While the right hand works the bolt the gun is in the left one (make_rifle_poses.py: 'the gun in hand_l'). The windows are the clip's seconds (the arms' clip time, once a crossfade into it is done); each switch as early as both hands hold the gun, so a slow frame still lands where both do.",
+    "Bolt": { "Windows": [[0.0, 0.9]], "Translation": [0.1685, -0.0743, -0.1342], "Rotation": [0.2134, 0.415, 0.3009, 0.8317] },
+    "Reload": { "Windows": [[0.0, 0.6], [1.8, 2.45]], "Translation": [0.0339, -0.0374, -0.2124], "Rotation": [0.164, 0.6878, 0.164, 0.6878] }
   },
   "Spread": {
     "Still": 2.5,

@@ -47,7 +47,8 @@
   "ViewModel": {
     "Eye": [-0.1128, 1.5315, 0.2128],
     "Offset": [0.11, -0.09, 0.0],
-    "AimEye": [-0.0912, 1.512, 0.1031]
+    "AimEye": [-0.0912, 1.4902, 0.1034],
+    "SightDirection": [0.0, 0.0087, 0.99996]
   },
   "Sounds": {
     "Shot": "Assets/Audio/Rifle_Shot_{0}.wav",
