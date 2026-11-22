@@ -95,7 +95,7 @@ Animator:
           Speed: 1
           Loop: false
           InPlace: true
-        # Phase 2.4: the pistol in both hands at arm's length, and the knife
+        # Phase 2.4: the pistol in the right hand at arm's length, and the knife
         - Name: PistolAim
           BlendParameter: AimPitch
           Blend:

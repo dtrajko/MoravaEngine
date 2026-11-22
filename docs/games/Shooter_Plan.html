@@ -1459,18 +1459,20 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         the spread narrows (x0.35, x0.5), the walk slows (x0.6, x0.75), no sprint (Aim wins over Shift); third person, the
         camera comes in behind the shoulder (1.3 m, 1.6 m).</li>
       <li><b>The poses</b> (<code>make_rifle_poses.py --set sidearms</code> writes <code>Soldier_Sidearms.glb</code>):
-        the pistol in both hands at arm's length, its rear sight 31 cm in front of the right eye on its line, held in a
-        thumbs-forward grip (the user's two photographs): the right hand high, the backstrap in the web between the thumb
-        and the index finger, the index finger straight along the frame over the trigger guard, the right thumb forward
-        along the frame's left side just under the slide; the left palm on the grip's left side over the right fingertips,
-        the wrist canted so its fingers wrap round the front under the trigger guard, its thumb forward below and ahead of
-        the right one, the thumbs 2.5 cm apart. The thumbs' aims are searched (the bones a glove out of the gun, then the
-        skin itself), and the hands' skin is checked against the pistol's mesh (a part in it moves the hand out the
-        shortest way, or a finger closes less; a palm may press 2.5 mm, a finger 1.5); the level aim settles the hold,
-        which every pistol clip then keeps (the engine holds the pistol on the hand at one offset), its wrists locked
-        (the elbows where the level aim has them). The chest turned a little (8 degrees, a square stance); aim up and
-        down, a shot (9 degrees of rise), a reload (the magazine from the belt, pushed up into the grip), the ready (the
-        aim lowered 35 degrees). The knife (our own model,
+        the pistol in the right hand alone (the user, 2026-11-21: the two-handed grip's hands lay open on the grip, a
+        finger up by the slide; "you can make it hold and fire with single hand"), as in the user's GTA picture: the arm
+        reaching out nearly straight, the pistol 52 cm ahead of the right eye, 9 cm right of it toward the shoulder, 12 cm
+        under it, the right shoulder forward (the chest turned 15 degrees, the head ahead); the left arm hangs at the side,
+        its hand half closed. The right hand posed by hand (<code>ONE_HAND_*</code>: four automatic fits never held this
+        grip, the index finger's knuckle ending under the trigger guard's bar): its place on the grip and its tilt in the
+        palm's plane (12 degrees), each joint's bend as a fraction of the library's fist, judged on the close-up renders
+        (<code>right_hand_*</code>); a fist round the grip, the thumb along its left side, the index finger forward into
+        the guard; the wrist 6 degrees from straight. The fingers then open in steps until their skin is out of the
+        pistol (the level aim's, kept for every clip); the heel of the palm presses 3 mm (the curled fingers bend the
+        skin there; under the hand). Aim up and down, a shot, a reload (the left hand up from the belt with the magazine,
+        then back down), the ready (upright, only the arm and the pistol swung 35 degrees down about the shoulder;
+        pitching the whole aim down hunched the run over). The two-handed code stays (<code>PISTOL_ONE_HAND = False</code>).
+        The knife (our own model,
         <code>Tools/Models/make_knife.py</code>: 30 cm, its handle at a pistol grip's slant) held as a pistol grip is,
         blade forward and up, the left fist low in a guard; the slash: back by the right shoulder, across the chest to the
         left, back, the chest turning with it. The scene's weapons on <code>hand_r</code> take the script's offsets.</li>

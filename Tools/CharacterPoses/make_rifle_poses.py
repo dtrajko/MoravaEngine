@@ -19,10 +19,9 @@
 #   _Shoot            the kick of one shot (Sniper_Shoot is followed by Sniper_Bolt)
 #   _Reload           assault rifle: the magazine out, a new one from the belt, in; sniper: the bolt open, two rounds in
 #   Sniper_Bolt       the bolt worked after a shot
-#   Pistol_Idle_Loop, Pistol_Aim_Up/_Neutral/_Down, Pistol_Shoot, Pistol_Reload: the pistol in both hands at arm's
-#                     length, its rear sight on the right eye's line (aiming down the sights looks along it); the left
-#                     hand cups the right as the library's pistol stance has it; the reload: the magazine out, a new one
-#                     from the belt pushed up into the grip
+#   Pistol_Idle_Loop, Pistol_Aim_Up/_Neutral/_Down, Pistol_Shoot, Pistol_Reload: the pistol in the right hand alone
+#                     at arm's length (PISTOL_ONE_HAND; the hand posed by hand: ONE_HAND_*), the left arm at the side;
+#                     the reload: the magazine out, a new one from the belt pushed up into the grip by the left hand
 #   Knife_Idle_Loop   the knife in the right fist, its blade forward and up, the left fist up in a guard
 #   Knife_Slash       back to the right shoulder, a slash across to the left hip, back; the chest turns with it
 #
@@ -343,11 +342,14 @@ def right_hand_on_grip(w, turn=0.0):
     level = Matrix.Rotation(-math.atan2(KNUCKLE.z, KNUCKLE.y), 3, x)  # the knuckle's rise over the bone's line taken out
     # turn: degrees about the gun's up through the knuckle, the wrist out to the gun's right (away from the chest)
     rotation = Matrix.Rotation(math.radians(turn), 3, "Z") @ level @ frame_from_axes(x, y, z, Vector()).to_3x3()
+    one_hand = w.get("Hold") == "Pistol" and PISTOL_ONE_HAND
+    # (the one-handed pistol: the hand tilted in the palm's plane, about the gun's side axis through the knuckle)
+    rotation = Matrix.Rotation(math.radians(ONE_HAND_PITCH if one_hand else 0.0), 3, "Y") @ rotation
     back, up, out = TRIGGER_REACH
-    out += w.get("RightOut", 0.0)  # (the pistol's right hand moved out when its skin was in the grip)
+    out += 0.0 if one_hand else w.get("RightOut", 0.0)  # (the pistol's right hand moved out when its skin was in the grip)
     if w.get("Hold") == "Pistol":
-        up -= PISTOL_HAND_DOWN
-    knuckle = w["Trigger"] + Vector((-back, -out, up)) + w.get("RightPush", Vector())
+        up -= 0.0 if PISTOL_ONE_HAND else PISTOL_HAND_DOWN  # (one hand: from the rifle's height, the fit moves it)
+    knuckle = w["Trigger"] + Vector((-back, -out, up)) + (ONE_HAND_PUSH if one_hand else w.get("RightPush", Vector()))
     hand = rotation.to_4x4()
     hand.translation = knuckle - rotation @ KNUCKLE
     return hand
@@ -652,6 +654,28 @@ def close_finger_on(rig, fist, names, tree, margin, toward=None):
     return (armature.pose.bones[names[1]].tail - toward).length
 
 
+def set_one_hand_fingers(rig, fist, scale=None):
+    """The one-handed pistol's right fingers and thumb as ONE_HAND_FINGERS has them (the index finger spread in the
+    palm's plane at its root first)"""
+    armature = rig.armature
+    for finger in ONE_HAND_FINGERS:
+        for j in (1, 2, 3):
+            armature.pose.bones[f"{finger}_{j:02d}_r"].matrix_basis = Matrix.Identity(4)
+    rig.update()
+    root = armature.pose.bones["index_01_r"]
+    normal = (root.matrix.to_3x3().inverted() @ rig.bone("hand_r").col[0].to_3d()).normalized()
+    for finger, fractions in ONE_HAND_FINGERS.items():
+        for j, fraction in zip((1, 2, 3), fractions):
+            fraction *= (scale or {}).get(finger, 1.0)
+            name = f"{finger}_{j:02d}_r"
+            axis, angle = fist[name]
+            q = Quaternion(axis, angle * fraction)
+            if name == "index_01_r":
+                q = Quaternion(normal, math.radians(ONE_HAND_INDEX_SPREAD)) @ q
+            armature.pose.bones[name].matrix_basis = q.to_matrix().to_4x4()
+    rig.update()
+
+
 def close_rifle_thumb(rig, fist, tree):
     """The right thumb closed from open along the fist as far as keeps its bones a glove out of the gun and its skin
     pressed at most PALM_PRESS into it"""
@@ -683,7 +707,7 @@ def grip_right_fingers(rig, gun, w, fist, margins=None, tree=None):
     pistol's thumb is placed apart (place_pistol_thumbs). Returns how far the index finger's tip stays from it"""
     to_gun = gun.inverted()
     margins = margins or {}
-    if w["Hold"] == "Pistol" and tree is not None:
+    if w["Hold"] == "Pistol" and tree is not None and not PISTOL_ONE_HAND:
         # On the pistol's own surface: each finger round the grip as far as keeps it a glove out; the index finger as near
         # the trigger as that allows
         for finger in ("middle", "ring", "pinky"):
@@ -1124,6 +1148,33 @@ PISTOL_CUP_FORWARD = Vector((0.04, 0.0, 0.008))  # meters (the gun's frame) the 
 # the relaxed standing pose's the right shoulder was 26 cm behind the eye and the arms couldn't reach a pistol held out
 # with the wrists straight): each collarbone turned forward about the vertical
 PISTOL_PROTRACT = 24.0
+# One hand (the user, 2026-11-21: the two-handed grip's hands lay open on the grip, a finger up beside the slide; "you
+# can make it hold and fire with single hand, the right one"): the right hand a fist round the grip as the rifle's and
+# the knife's (the thumb round the grip's back, checked on the pistol's surface; the index finger on the trigger), the
+# arm reaching straight out, the right shoulder a little forward; the left arm hangs at the side (the reload: it brings
+# the magazine up from the belt and goes back down)
+PISTOL_ONE_HAND = True
+PISTOL_ONE_HAND_TWIST = 15.0    # degrees the chest turns (positive: the right shoulder forward; the head stays ahead)
+PISTOL_LEFT_RELAX = 0.45        # of a fist the hanging left hand's fingers curl
+PISTOL_ONE_HAND_RIGHT = 0.09    # meters right of the right eye the pistol is (toward the shoulder: the arm points ahead)
+PISTOL_ONE_HAND_REACH = 0.52    # meters ahead of the eye (the arm nearly straight)
+# The right hand posed by hand (the user, 2026-11-21: automatic fits never held this pistol's grip; the index finger's
+# knuckle ended under the trigger guard's bar once the palm cleared the slide's overhang): where the hand is on the
+# grip and how far each joint bends are set here, judged on the close-up renders (--preview: right_hand_*), the skin
+# check reporting any part of the hand in the pistol
+ONE_HAND_PUSH = Vector((0.004, -0.017, -0.015))  # meters the hand from the rifle rule's place (the gun's frame: along, left, up)
+ONE_HAND_PITCH = -12.0                        # degrees the hand tilts in the palm's plane (about the gun's side axis)
+ONE_HAND_FINGERS = {                         # each joint's turn, as a fraction of the library's fist's (root first)
+    "middle": (1.05, 1.0, 0.8),
+    "ring": (1.05, 1.0, 0.8),
+    "pinky": (1.05, 1.0, 0.8),
+    "index": (0.15, 1.1, 0.6),
+    "thumb": (0.9, 0.6, 0.4),
+}
+ONE_HAND_PALM_PRESS = 0.0035   # meters the heel of the palm may press into the grip (where the curled little and ring
+                                # fingers bend the skin; under the hand, unseen: moving the hand didn't change it)
+ONE_HAND_INDEX_SPREAD = -20.0                  # degrees the index finger spreads in the palm's plane (toward the trigger)
+PISTOL_ONE_HAND_STRETCH = 1.0   # of the arm's length the hand may be from the shoulder at the most (the level aim's)
 PISTOL_TWIST = 0.0        # degrees the chest turns (a little: the stance is square to the target, the arms in a narrow
                            # triangle; the rifle's -30 is a bladed stance)
 PISTOL_HEAD_DOWN = 4.0     # degrees the head bends down toward the sights (the rifle's 20 lay the cheek on the stock)
@@ -1155,7 +1206,7 @@ def protract(rig, w, clip):
     """The pistol's collarbones turned forward about the vertical (each toward the front), on the pose the rig has"""
     if w["Hold"] != "Pistol" or clip.low_ready:
         return
-    for side, sign in (("r", 1.0), ("l", -1.0)):
+    for side, sign in ((("r", 1.0),) if PISTOL_ONE_HAND else (("r", 1.0), ("l", -1.0))):
         pb = rig.armature.pose.bones[f"clavicle_{side}"]
         m = pb.matrix.copy()
         turn = Quaternion(UP, math.radians(PISTOL_PROTRACT * sign))
@@ -1166,7 +1217,8 @@ def protract(rig, w, clip):
 def gun_in_front(w, rig):
     """The pistol's frame in armature space, level and forward: its rear sight on the right eye's line, PISTOL_REACH ahead"""
     frame = frame_from_axes(FORWARD, LEFT, UP, Vector())
-    frame.translation = right_eye(rig) + FORWARD * PISTOL_REACH - UP * PISTOL_BELOW_EYE - frame.to_3x3() @ w["Eye"]
+    reach, right = (PISTOL_ONE_HAND_REACH, PISTOL_ONE_HAND_RIGHT) if PISTOL_ONE_HAND else (PISTOL_REACH, 0.0)
+    frame.translation = right_eye(rig) + FORWARD * reach - LEFT * right - UP * PISTOL_BELOW_EYE - frame.to_3x3() @ w["Eye"]
     return frame
 
 
@@ -1223,6 +1275,7 @@ class Clip:
         self.frames = frames         # None: as many as the base
         self.aim_pitch = aim_pitch   # degrees up: the spine bends, the gun follows the chest
         self.low_ready = low_ready
+        self.arms_down = 0.0         # degrees the arms and the gun swing down about the shoulders (the spine stays upright)
         self.gun_motion = []         # [(time, Matrix)]: the gun's motion in its own frame (kick, a tilt for the reload)
         self.left = None             # [(time, Matrix)] the left hand in the gun's frame, None: on the support
         self.right = None            # the same for the right hand, None: on the grip
@@ -1236,16 +1289,21 @@ class Clip:
         self.twist_keys = None        # [(time, degrees)]: the chest's turn through the clip (the knife's slash)
         self.knife_keys = None        # [(time, Matrix)]: the knife's frame (armature space, at the first frame's chest)
         self.left_chest = None        # the left hand off the weapon (a guard), armature space at the first frame's chest
+        self.left_hang = False        # the left arm hanging at the side (the one-handed pistol): left_chest from the rig
+        self.left_mag = None          # the one-handed reload: the left hand under the magazine (the gun's frame)
+        self.left_trip = None         # [(time, "side" | "pouch" | "mag_low" | "mag")]: its trip
         self.check_elbows = True      # the elbows' rules (below the hand, outside the shoulder): not for a slash
         self.problem = None           # the first rule the clip broke (the run fails after its previews)
 
 
 def pistol_clips(weapon):
     w = WEAPONS[weapon]
-    # The ready (sprinting forward): the aiming stance with the arms and the pistol lowered 35 degrees, a low ready (held
-    # in to the chest the wrist bent so far that the palm's skin went into the grip)
-    ready = Clip(f"{weapon}_Idle_Loop", "Pistol_Aim_Neutral", aim_pitch=-35.0)
-    ready.below_hand_margin = 0.20
+    # The ready (sprinting forward): the aiming stance, upright, with only the arms and the pistol swung down 35 degrees
+    # about the shoulders, a low ready (the user, 2026-11-21: pitching the whole aim down hunched the run over; held in
+    # to the chest the wrist bent so far that the palm's skin went into the grip)
+    ready = Clip(f"{weapon}_Idle_Loop", "Pistol_Aim_Neutral")
+    ready.arms_down = 35.0
+    ready.below_hand_margin = 0.25
     clips = []
     for name, pitch in (("Neutral", 0.0), ("Up", 45.0), ("Down", -45.0)):
         clips.append(Clip(f"{weapon}_Aim_{name}", "Pistol_Aim_Neutral", aim_pitch=pitch))
@@ -1273,6 +1331,19 @@ def pistol_clips(weapon):
     for clip in clips:
         clip.twist = PISTOL_TWIST
         clip.head_down = PISTOL_HEAD_DOWN
+        if PISTOL_ONE_HAND:
+            clip.twist = PISTOL_ONE_HAND_TWIST
+            clip.left_hang = True      # the left arm at the side (left_hang_frame), its hand relaxed
+            clip.below_hand_margin = max(clip.below_hand_margin, 0.02)  # (the arm nearly straight: the elbow level with the hand)
+            clip.left_free = True      # (its elbow's rules are a gun-holding arm's)
+            clip.left = None
+            clip.left_world = {}
+            clip.left_after = None
+    if PISTOL_ONE_HAND:
+        # The reload's left hand: from the side down to the belt pouch, up under the grip with the magazine, pushed in,
+        # back down to the side
+        reload.left_mag = mag
+        reload.left_trip = [(0.25, "side"), (0.6, "pouch"), (0.95, "mag_low"), (1.1, "mag"), (1.25, "mag"), (1.6, "side")]
     return clips
 
 
@@ -1384,6 +1455,20 @@ def make_clips(weapon):
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Baking
+
+def left_hang_frame(rig):
+    """The left hand hanging at the side, a little forward and out of the thigh: the wrist an arm's length (a little
+    bent) below the shoulder, the palm toward the thigh, the fingers down"""
+    bones = rig.armature.data.bones
+    arm = (bones["lowerarm_l"].head_local - bones["upperarm_l"].head_local).length + \
+        (bones["hand_l"].head_local - bones["lowerarm_l"].head_local).length
+    shoulder = rig.bone("upperarm_l").translation
+    wrist = shoulder - UP * arm * 0.95 + FORWARD * 0.06 + LEFT * 0.05
+    x = LEFT * -1.0                                   # the palm toward the body
+    y = (UP * -1.0 + FORWARD * 0.12).normalized()     # the fingers down, a little forward
+    y = (y - x * y.dot(x)).normalized()
+    return frame_from_axes(x, y, x.cross(y), wrist)
+
 
 def belt_pouch(rig):
     pelvis = rig.bone("pelvis").translation
@@ -1571,8 +1656,30 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
         rig.update()
         protract(rig, w, clip)
         placed = rig.bone("spine_03") @ chest_neutral.inverted() @ placed
+        if clip.arms_down:
+            # Swung down about the line through the shoulders (the gun's muzzle lowered, its place nearer the belt)
+            pivot = (rig.bone("upperarm_r").translation + rig.bone("upperarm_l").translation) * 0.5
+            along = placed.col[0].to_3d().normalized()
+            lateral = along.cross(UP).normalized()
+            swing = Matrix.Rotation(math.radians(-clip.arms_down), 4, lateral)
+            placed = Matrix.Translation(pivot) @ swing @ Matrix.Translation(-pivot) @ placed
+        if w["Hold"] == "Pistol" and PISTOL_ONE_HAND:
+            # Within the straight arm's reach (the spine's bend aiming up or down carries the pistol away from the
+            # shoulder): moved toward the shoulder until the hand's place is an arm's length (as the level aim's) from it
+            bones = rig.armature.data.bones
+            arm = (bones["lowerarm_r"].head_local - bones["upperarm_r"].head_local).length + \
+                (bones["hand_r"].head_local - bones["lowerarm_r"].head_local).length
+            shoulder = rig.bone("upperarm_r").translation
+            for _ in range(20):
+                hand_at = (placed @ right_hand_on_grip(w, 0.0)).translation
+                over = (hand_at - shoulder).length - arm * PISTOL_ONE_HAND_STRETCH
+                if over <= 0.001:
+                    break
+                placed = Matrix.Translation((shoulder - hand_at).normalized() * over) @ placed
     on_chest = rig.bone("spine_03").inverted() @ placed
     chest_first = rig.bone("spine_03")
+    if clip.left_hang:
+        clip.left_chest = left_hang_frame(rig)
 
     # (the library has its own Pistol_ clips, sampled at the start: renamed out of the way, else Blender names ours .001)
     existing = bpy.data.actions.get(clip.name)
@@ -1598,6 +1705,15 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
             gun = rig.bone("spine_03") @ on_chest @ motion
         right = gun @ (keyed(clip.right, time) if clip.right else right_hand_on_grip(w, clip.wrist_turn))
         left = follow @ clip.left_chest if clip.left_chest is not None else left_hand_at(clip, time, gun, rig)
+        if clip.left_trip:
+            places = {"side": left, "pouch": pouch_hand(rig), "mag": gun @ clip.left_mag,
+                      "mag_low": gun @ (Matrix.Translation((0.0, 0.0, -0.10)) @ clip.left_mag)}
+            keys = [(0.0, "side")] + clip.left_trip
+            left = places[keys[-1][1]]
+            for (t0, a), (t1, b) in zip(keys, keys[1:]):
+                if t0 <= time <= t1:
+                    left = lerp_matrix(places[a], places[b], smooth((time - t0) / (t1 - t0)) if t1 > t0 else 1.0)
+                    break
 
         def place(side, hand):
             rig.hand_target[side].matrix_world = armature.matrix_world @ hand
@@ -1610,12 +1726,16 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
             if side == "l" and clip.low_ready:
                 out, down = LOW_READY_ELBOW_L
             target = middle + outward * out - UP * down
+            if side == "l" and clip.left_hang:
+                target = middle - FORWARD * 0.4 + outward * 0.08  # (hanging: the elbow back, a little out)
             locked = w.get("ElbowInHand", {}).get(side) if w["Hold"] == "Pistol" else None
             if w["Hold"] == "Pistol" and locked is None and side == "r":
                 # The level aim: the forearm along the gun (the hand lies level along it: the wrist straight), the elbow
                 # behind the wrist on the gun's line, a little out and down
                 along = gun.col[0].to_3d().normalized()
                 target = hand.translation - along * 0.27 + outward * 0.05 - UP * 0.10
+                if PISTOL_ONE_HAND:
+                    target = hand.translation - along * 0.27 + outward * 0.12 - UP * 0.04  # (the arm nearly straight)
             if locked is not None and (side == "r" and clip.right is None or side == "l" and clip.left is None):
                 # The pistol's wrists locked as aiming level (a bent wrist's skin went into the grip): the elbow toward
                 # where the level aim has it from its hand
@@ -1785,10 +1905,11 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
 
         twist = 0.0
         if clip.left_chest is not None:
-            # A fist (Idle's), off the weapon
+            # A fist (Idle's), off the weapon; hanging at the side half closed
             for name in FINGERS:
                 if name.endswith("_l"):
                     axis, angle = clip.fist[name]
+                    angle *= PISTOL_LEFT_RELAX if clip.left_hang else 1.0
                     armature.pose.bones[name].matrix_basis = Quaternion(axis, angle).to_matrix().to_4x4()
             rig.update()
         elif clip.left is None and w["Hold"] == "Pistol":
@@ -1833,11 +1954,44 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
                 gun_frame.matrix_world = armature.matrix_world @ gun
                 rig.update()
                 tree = gun_tree(gun_frame.children[0])
-            trigger = grip_right_fingers(rig, gun, w, clip.fist, clip.right_margins, tree)
+            if w["Hold"] == "Pistol" and PISTOL_ONE_HAND:
+                if f == 0 and rig.chest:
+                    # Each finger (and the thumb) opened from the table in steps until its skin is out of the pistol (kept
+                    # for the clip): the table sets the grip's shape, this its last millimeters
+                    gun_frame.matrix_world = armature.matrix_world @ gun
+                    clip.one_hand_scale = dict(w.get("OneHandScale", {}))
+                    for _ in range(10 if "OneHandScale" not in w else 0):  # (the level aim's, first: every clip's fist)
+                        set_one_hand_fingers(rig, clip.fist, clip.one_hand_scale)
+                        _, deepest = rig.chest.against_gun(gun_frame.children[0], "r")
+                        over = [p for p, d in deepest.items() if p in ONE_HAND_FINGERS
+                                and d > (PALM_PRESS if p == "thumb" else HAND_PRESS) and clip.one_hand_scale.get(p, 1.0) > 0.6]
+                        if not over:
+                            break
+                        for p in over:
+                            clip.one_hand_scale[p] = clip.one_hand_scale.get(p, 1.0) - 0.04
+                    w.setdefault("OneHandScale", dict(clip.one_hand_scale))
+                    print(f"  {clip.name}: one hand: opened from the table: " +
+                          (", ".join(f"{p} to {s:.2f}" for p, s in sorted(clip.one_hand_scale.items())) or "nothing"))
+                set_one_hand_fingers(rig, clip.fist, getattr(clip, "one_hand_scale", None))
+                trigger = (armature.pose.bones["index_02_r"].tail - gun @ w["Trigger"]).length
+            else:
+                trigger = grip_right_fingers(rig, gun, w, clip.fist, clip.right_margins, tree)
             if f == 0:
                 print(f"  {clip.name}: the right index finger's last joint {trigger * 100:.1f} cm from the trigger")
-            if w["Hold"] == "Pistol":
+            if w["Hold"] == "Pistol" and not PISTOL_ONE_HAND:
                 pistol_hands(f)
+            elif w["Hold"] == "Pistol" and f == 0 and rig.chest:
+                gun_frame.matrix_world = armature.matrix_world @ gun
+                rig.update()
+                _, deepest = rig.chest.against_gun(gun_frame.children[0], "r")
+                bend = math.degrees(rig.bone("lowerarm_r").col[1].to_3d().angle(rig.bone("hand_r").col[1].to_3d()))
+                miss = (rig.bone("hand_r").translation - rig.hand_target["r"].matrix_world.translation).length
+                deep = {part: depth for part, depth in deepest.items()
+                        if depth > (ONE_HAND_PALM_PRESS if part == "palm" else PALM_PRESS if part == "thumb" else HAND_PRESS)}
+                print(f"  {clip.name}: one hand: the wrist bent {bend:.1f} degrees, the hand {miss * 100:.1f} cm short; its "
+                      f"skin in the pistol: " + (", ".join(f"{p} {d * 1000:.0f} mm at {rig.chest.deepest_at[p]} cm" for p, d in sorted(deepest.items())) or "nothing"))
+                if deep and clip.low_ready is False and clip.name.endswith("Aim_Neutral"):
+                    clip.problem = clip.problem or f"{clip.name}: the right hand's skin in the pistol: {deep}"
         if not clip.low_ready and not knife and rig.chest:
             # The face off the gun in every frame (the kick and the reload's tilt move the gun)
             gun_frame.matrix_world = armature.matrix_world @ gun
@@ -1861,7 +2015,7 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
                 clip.problem = clip.problem or (f"{clip.name}, frame {f}: the {'right' if side == 'r' else 'left'} elbow is "
                                                 f"{below * 100:.1f} cm below its hand and {outside * 100:.1f} cm outside its "
                                                 f"shoulder (both wanted above 0): check the elbow targets and the chest's twist")
-            if drop < ELBOW_MIN_DROP - (0.01 if w["Hold"] == "Pistol" else 0.0) and clip.check_elbows:  # (the pistol's arms nearly straight)
+            if drop < ELBOW_MIN_DROP - (0.01 if w["Hold"] == "Pistol" else 0.0) and clip.check_elbows and not (side == "l" and clip.left_hang):  # (the pistol's arms nearly straight)
                 clip.problem = clip.problem or (f"{clip.name}, frame {f}: the {'right' if side == 'r' else 'left'} elbow is "
                                                 f"{drop * 100:.1f} cm below the line from the shoulder to the hand (above it): "
                                                 f"check the arm's IK pole")
@@ -1981,6 +2135,8 @@ def render_preview(folder, rig, clip, poses, gun_mesh_frame):
         bpy.ops.render.render(write_still=True)
     # Close-ups of the hands on the gun: from the right and from the left, level with them
     hands = (rig.bone("hand_r").translation + rig.bone("hand_l").translation) * 0.5
+    if getattr(clip, "left_hang", False):
+        hands = rig.bone("hand_r").translation  # (one hand on the gun: on it)
     for view, (offset, rotation) in {"hands_right": ((-1.5, 0.0, 0.0), (math.radians(90), 0, math.radians(-90))),
                                      "hands_left": ((1.5, 0.0, 0.0), (math.radians(90), 0, math.radians(90)))}.items():
         camera.location = rig.armature.matrix_world @ (hands + Vector(offset))
@@ -1998,6 +2154,14 @@ def render_preview(folder, rig, clip, poses, gun_mesh_frame):
                 "left_hand_above": (left, (0.0, 0.0, 1.0), (0, 0, 0)),
                 "face_above": (face, (0.0, 0.0, 1.0), (0, 0, 0)),
                 "face_left": (face, (1.0, 0.0, 0.0), (math.radians(90), 0, math.radians(90)))}
+    if getattr(clip, "left_hang", False):
+        # One hand on the gun: the right hand's close-ups (from below, its back, the far side, above, the shooter's view)
+        right = gun @ WEAPONS[clip.weapon]["Grip"]  # (the grip in the middle)
+        closeups.update({"right_hand_below": (right, (0.0, 0.0, -1.0), (math.radians(180), 0, 0)),
+                         "right_hand_right": (right, (-1.0, 0.0, 0.0), (math.radians(90), 0, math.radians(-90))),
+                         "right_hand_left": (right, (1.0, 0.0, 0.0), (math.radians(90), 0, math.radians(90))),
+                         "right_hand_above": (right, (0.0, 0.0, 1.0), (0, 0, 0)),
+                         "right_hand_front": (right, (0.0, -1.0, 0.0), (math.radians(90), 0, 0))})
     for view, (at, direction, rotation) in closeups.items():
         camera.location = rig.armature.matrix_world @ (at + Vector(direction) * 1.0)
         camera.rotation_euler = rotation
