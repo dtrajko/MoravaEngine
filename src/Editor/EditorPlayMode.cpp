@@ -147,6 +147,8 @@ static void UpdateViewModelView()
 	const EnvMapVulkanEntityID cameraEntity = s_PlayState == PlayState::Play ? FindPrimaryCamera(s_Scene) : NoEntity;
 	const CameraComponent* lens = cameraEntity != NoEntity ? s_Scene.TryGet<CameraComponent>(cameraEntity) : nullptr;
 	EnvMapVulkanRenderer::SetViewModelView(lens != nullptr, lens ? lens->ViewModelFieldOfView : CameraComponent().ViewModelFieldOfView);
+	// The levels of detail as the game camera's zoom sees them (E10); the editor's view: as they are
+	EnvMapVulkanRenderer::SetDetailZoom(lens ? lens->DetailZoom() : 1.0f);
 }
 
 // The view of the primary game camera, with its lens: the game's view (none: the editor's view stays)

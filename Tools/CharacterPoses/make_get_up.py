@@ -362,30 +362,32 @@ def main():
         return knee
 
     hands, elbows = {}, {}
+    forward = Vector((0.0, -1.0, 0.0))
     for side in "lr":
         out = 1.0 if side == "l" else -1.0
         shoulder = L[f"upperarm_{side}"].translation
-        # (swept a little off the floor: the hand turns palm down on the way, its fingers clear of it)
-        swept = Vector((out * (abs(shoulder.x) + upperarm + lowerarm - 0.06), shoulder.y, 0.20))
+        # (swept a little off the floor: the hand turns palm down on the way, its fingers clear of it; the arm bent, the
+        # elbow out, so the hand points forward along the forearm, not out at full reach)
+        swept = Vector((out * (abs(shoulder.x) + 0.30), shoulder.y - 0.22, 0.20))
         beside = Vector((out * HANDS_BESIDE, lying_hips.y + 0.05, 0.055))
         sitting = Vector((out * SIT_HAND.x, SIT_HAND.y, SIT_HAND.z))
         # (first up off the floor as it lies, then turned on the way out); from sitting on, hand_target() below
         lifted = L[f"hand_{side}"].translation + Vector((0.0, -0.03, 0.12))
         place = PointTrack([(0.0, L[f"hand_{side}"].translation), (0.08, lifted), (0.22, swept), (T_KNEES, beside),
                             (T_SIT, sitting)])
-        down_toward_feet = palm_down(armature, side, Vector((0.0, -1.0, 0.0)), rest)
-        down_out = palm_down(armature, side, Vector((out, 0.0, 0.0)), rest)
-        sitting_turn = palm_down(armature, side, Vector((-0.2 * out, 1.0, 0.0)), rest)  # the fingers back, a little out
+        # The hands always point forward (the user, 2026-11-22: never backwards): palm down, the fingers toward the feet,
+        # on the floor beside the hips, behind them sitting, on the knees squatting
+        down_toward_feet = palm_down(armature, side, forward, rest)
         turn = TurnTrack([(0.0, L[f"hand_{side}"].to_quaternion()), (0.08, L[f"hand_{side}"].to_quaternion()),
-                          (0.22, down_out), (T_KNEES, down_toward_feet),
-                          (T_SIT, sitting_turn), (T_SQUAT, palm_down(armature, side, Vector((0.0, -1.0, 0.0)), rest)),
+                          (0.22, palm_down(armature, side, Vector((0.35 * out, -1.0, 0.0)), rest)),
+                          (T_KNEES, down_toward_feet), (T_SIT, down_toward_feet), (T_SQUAT, down_toward_feet),
                           (T_STAND, S[f"hand_{side}"].to_quaternion())])
         hands[side] = (place, turn)
         elbows[side] = VectorTrack([
             (0.0, joint_hint(L[f"upperarm_{side}"].translation, L[f"lowerarm_{side}"].translation, L[f"hand_{side}"].translation)),
             (0.22, Vector((0.0, 0.3, 1.0)).normalized()),                       # the swept arm's elbow up, a little back
             (T_KNEES, Vector((out * 0.4, 0.2, 1.0)).normalized()),
-            (T_SIT, Vector((out * 0.6, 0.8, 0.2)).normalized()),                # back and out, the hands behind
+            (T_SIT, Vector((out * 0.3, 1.0, 0.1)).normalized()),                # back, the hands behind, fingers forward
             (T_SQUAT, Vector((out, 0.3, -0.3)).normalized()),
             (T_STAND, joint_hint(S[f"upperarm_{side}"].translation, S[f"lowerarm_{side}"].translation, S[f"hand_{side}"].translation))])
 
@@ -413,6 +415,32 @@ def main():
         w = eased((t - T_SQUAT) / (T_STAND - T_SQUAT))
         return on_knee.lerp(shoulder + from_shoulder_standing[side], w)
 
+    # The elbows as Idle_Loop's (the user, 2026-11-22: not twisted): each arm bone's roll about its length is the one it
+    # has standing, measured from the arm's bend plane (the bone's direction and the way the elbow bends from the line
+    # shoulder-wrist), so the elbow stays a hinge and only the shoulder turns the arm. The wrist's turn from the
+    # forearm (Idle_Loop's way) is reported
+    def bend_frame(direction, bend):
+        x = direction.normalized()
+        z = (bend - x * bend.dot(x))
+        z = z.normalized() if z.length > 1e-6 else Vector((0.0, 0.0, 1.0))
+        y = z.cross(x)
+        return Matrix((x, y, z)).transposed().to_quaternion()
+
+    idle_roll, idle_wrist = {}, {}
+    for side in "lr":
+        sh, el, wr = (S[f"{b}_{side}"].translation for b in ARMS)
+        bend = joint_hint(sh, el, wr)
+        idle_roll[side] = (bend_frame(el - sh, bend).inverted() @ S[f"upperarm_{side}"].to_quaternion(),
+                           bend_frame(wr - el, bend).inverted() @ S[f"lowerarm_{side}"].to_quaternion())
+        idle_wrist[side] = S[f"lowerarm_{side}"].to_quaternion().inverted() @ S[f"hand_{side}"].to_quaternion()
+
+    def place_arm_bone(name, head, rotation):
+        pb = armature.pose.bones[name]
+        pb.matrix = Matrix.Translation(head) @ rotation.to_matrix().to_4x4()
+        update()
+
+    wrist_turn = {"l": (0.0, 0), "r": (0.0, 0)}
+
     # ---- Every frame
     poses = []
     stretched = {"legs": 0, "arms": 0}
@@ -435,15 +463,26 @@ def main():
             wrist = hand_target(side, t, shoulder, world(armature, f"calf_{side}").translation)
             elbow, over = two_bone(shoulder, wrist, upperarm, lowerarm, elbows[side].at(t))
             stretched["arms"] += over
-            aim_bone(armature, f"upperarm_{side}", elbow - shoulder)
-            aim_bone(armature, f"lowerarm_{side}", wrist - world(armature, f"lowerarm_{side}").translation)
+            bend = joint_hint(shoulder, elbow, wrist)
+            upper_roll, lower_roll = idle_roll[side]
+            place_arm_bone(f"upperarm_{side}", shoulder, bend_frame(elbow - shoulder, bend) @ upper_roll)
+            elbow_now = world(armature, f"lowerarm_{side}").translation
+            place_arm_bone(f"lowerarm_{side}", elbow_now, bend_frame(wrist - elbow_now, bend) @ lower_roll)
             set_world(armature, f"hand_{side}", world(armature, f"hand_{side}").translation, turn.at(t))
+            from_idle = (world(armature, f"lowerarm_{side}").to_quaternion() @ idle_wrist[side]).rotation_difference(
+                world(armature, f"hand_{side}").to_quaternion())
+            angle = math.degrees(from_idle.angle)
+            angle = min(angle, 360.0 - angle)
+            if 0 < f < duration_frames and angle > wrist_turn[side][0]:
+                wrist_turn[side] = (angle, f)
         poses.append(basis_of(armature))
 
     # The ends are the clips': the first frame Death01's last, the last Idle_Loop's first (the IK's roll differences gone)
     poses[0] = dict(lying)
     poses[-1] = dict(standing)
     print(f"{CLIP}: {len(poses)} frames ({T_STAND:.2f} s); IK at full stretch: {stretched['legs']} leg and {stretched['arms']} arm frames")
+    print(f"{CLIP}: the wrists turned from Idle_Loop's way at most: left {wrist_turn['l'][0]:.0f} degrees (frame "
+          f"{wrist_turn['l'][1]}), right {wrist_turn['r'][0]:.0f} (frame {wrist_turn['r'][1]})")
 
     through = check_floor(armature, poses)
     action = bake(armature, CLIP, poses)

@@ -1,4 +1,4 @@
-"""Generates the shooter's weapon sounds (docs/games/Shooter_Plan.html, Phases 2.2, 2.3 and 2.4), all synthesized here, no samples:
+"""Generates the shooter's weapon sounds (docs/games/Shooter_Plan.html, Phases 2.2 to 2.5), all synthesized here, no samples:
 
     Rifle_Shot_1.wav .. _3.wav  the assault rifle's shot: a sharp crack, the muzzle's blast, a low thump, the action's
                                 click and an outdoor tail (two slap echoes off buildings), a touch of tape saturation;
@@ -23,6 +23,12 @@
     Draw_Rifle.wav              the rifle brought up: the sling's rustle, a light rattle of the parts
     Draw_Pistol.wav             the pistol out of its holster: a short leather rub and a click
     Draw_Knife.wav              the knife out of its sheath: a quick metallic "shing"
+    Sniper_Shot_1.wav .. _3.wav the sniper rifle's shot (Phase 2.5): a harder crack, a heavier and darker blast, a deep
+                                thump and a long rolling tail over the yard (three echoes); no action's click (a bolt)
+    Sniper_Empty.wav            the trigger on an empty magazine: one heavy click
+    Sniper_BoltOpen.wav         the bolt worked open: the handle lifted (a click), pulled back (a long scrape), the case out
+    Sniper_BoltClose.wav        the bolt pushed forward and locked down: a scrape and a firm double clack
+    Sniper_RoundIn.wav          a round pressed into the magazine through the open port: a short click and slide
 
 Usage: python GenerateWeaponSounds.py [output folder]     (needs numpy; the default is the shooter's Assets/Audio)
 
@@ -338,6 +344,54 @@ def draw_knife():
     return fade_out(normalize(mix(0.3, (0.0, slide, 0.6), (0.0, shing * env * 0.25, 1.0)), 0.45), 0.02)
 
 
+def sniper_shot(variant):
+    rng = np.random.default_rng(500 + variant)
+    length = 2.2
+    crack = biquad(noise(rng, 0.008), "high", 2200.0) * decay(samples(0.008), 0.0016)
+    blast_n = noise(rng, 0.4)
+    bright = biquad(blast_n, "low", 4200.0 + 400.0 * variant) * decay(len(blast_n), 0.024)
+    dark = biquad(blast_n, "low", 650.0 + 90.0 * variant) * decay(len(blast_n), 0.09)
+    t = t_of(0.35)
+    freq = 38.0 + 120.0 * np.exp(-t / 0.035)
+    thump = np.sin(2 * np.pi * np.cumsum(freq) / RATE) * decay(len(t), 0.08, attack=0.001)
+    tail_n = noise(rng, 2.0)
+    tail = biquad(tail_n, "low", 900.0) * decay(len(tail_n), 0.5, attack=0.03)
+    body = mix(0.45, (0.0, crack, 1.0), (0.0, bright, 1.0), (0.0, dark, 1.1), (0.0, thump, 1.0))
+    echo = biquad(body, "low", 1600.0)
+    first, second, third = 0.14 + 0.02 * variant, 0.31 + 0.03 * variant, 0.62 + 0.05 * variant
+    out = mix(length, (0.0, body, 1.0), (0.04, tail, 0.3), (first, echo, 0.26), (second, echo, 0.16), (third, echo, 0.08))
+    return fade_out(normalize(saturate(normalize(out, 1.0), 2.0), 0.92), 0.08)
+
+
+def sniper_empty():
+    rng = np.random.default_rng(510)
+    return normalize(mix(0.1, (0.0, click(rng, 2100.0, 0.014, 5.0), 1.0)), 0.6)
+
+
+def sniper_bolt_open():
+    rng = np.random.default_rng(511)
+    lift = mix(0.03, (0.0, click(rng, 2500.0, 0.02, 4.0), 1.0), (0.0, click(rng, 1500.0, 0.025, 3.0), 0.5))
+    case = [(0.33 + 0.07 * k, click(rng, 5200.0 + 700.0 * k, 0.03, 12.0), 0.35 - 0.1 * k) for k in range(3)]  # the case's tinkle
+    out = mix(0.6, (0.0, lift, 0.9), (0.1, scrape(rng, 0.16, 800.0, 3600.0), 0.7), (0.26, click(rng, 1900.0, 0.02, 4.0), 0.6), *case)
+    return normalize(out, 0.65)
+
+
+def sniper_bolt_close():
+    rng = np.random.default_rng(512)
+    clack = mix(0.03, (0.0, click(rng, 1600.0, 0.03, 3.0), 1.0), (0.0, click(rng, 2900.0, 0.02, 4.0), 0.6))
+    thud = biquad(noise(rng, 0.05), "low", 320.0) * decay(samples(0.05), 0.012)
+    lock = click(rng, 2300.0, 0.02, 4.0)
+    out = mix(0.45, (0.0, scrape(rng, 0.14, 900.0, 3800.0), 0.6), (0.14, clack, 1.0), (0.14, thud, 0.7), (0.26, lock, 0.8))
+    return normalize(out, 0.7)
+
+
+def sniper_round_in():
+    rng = np.random.default_rng(513)
+    out = mix(0.2, (0.0, scrape(rng, 0.05, 1500.0, 5000.0), 0.4), (0.05, click(rng, 3100.0, 0.012, 6.0), 1.0),
+              (0.06, click(rng, 1800.0, 0.02, 4.0), 0.5))
+    return normalize(out, 0.5)
+
+
 def main():
     root = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
     folder = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "Projects", "Outpost", "Assets", "Audio")
@@ -367,6 +421,12 @@ def main():
     save(folder, "Draw_Rifle.wav", draw_rifle())
     save(folder, "Draw_Pistol.wav", draw_pistol())
     save(folder, "Draw_Knife.wav", draw_knife())
+    for variant in (1, 2, 3):
+        save(folder, f"Sniper_Shot_{variant}.wav", sniper_shot(variant))
+    save(folder, "Sniper_Empty.wav", sniper_empty())
+    save(folder, "Sniper_BoltOpen.wav", sniper_bolt_open())
+    save(folder, "Sniper_BoltClose.wav", sniper_bolt_close())
+    save(folder, "Sniper_RoundIn.wav", sniper_round_in())
 
 
 if __name__ == "__main__":

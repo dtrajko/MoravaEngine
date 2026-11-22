@@ -67,6 +67,9 @@ namespace Outpost
         /// </summary>
         public float AimSpeedScale { get; set; } = 1.0f;
 
+        /// <summary>The weapon out (Phase 2.5, set by the player each step): every moving speed times this (the sniper rifle's: slower).</summary>
+        public float CarrySpeedScale { get; set; } = 1.0f;
+
         /// <summary>How it really moves (after the last step), meters per second in the world.</summary>
         public Vector3 Velocity => character.Velocity;
 
@@ -117,7 +120,7 @@ namespace Outpost
             float speed = IsCrouched ? settings.CrouchSpeed : IsWalking ? settings.WalkSpeed : IsSprinting ? settings.SprintSpeed : settings.MoveSpeed;
             if (!IsCrouched && !IsSprinting)
                 speed *= SideScale(command.Move, settings.SideSpeedScale); // (crouched: the library's walk, forward only, no side clips yet)
-            speed *= AimSpeedScale;
+            speed *= AimSpeedScale * CarrySpeedScale;
             Vector3 wanted = (command.Forward * command.Move.Y + command.Right * command.Move.X) * speed;
             Vector2 horizontal = new Vector2(velocity.X, velocity.Z);
             horizontal = MoveTowards(horizontal, new Vector2(wanted.X, wanted.Z), (grounded ? settings.GroundAcceleration : settings.AirAcceleration) * dt);

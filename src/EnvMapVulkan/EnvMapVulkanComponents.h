@@ -22,6 +22,7 @@
 #include <glm/glm.hpp>
 
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -331,6 +332,24 @@ struct CameraComponent
 	// the gun keep their shape whatever the scene's field of view (a wide one would stretch them)
 	float ViewModelFieldOfView = 55.0f;
 
+	// Detail by the field of view (Shooter E10): the field of view the scene's levels of detail are meant for (degrees; 0:
+	// whatever FieldOfView is, no zoom). Narrower than it (a scope's zoom), every distance that picks a level of detail
+	// (the terrain's chunks, the foliage's impostors) is measured as the zoom sees it: times DetailZoom, so a tree 300 m
+	// away seen ten times larger keeps the detail of one 30 m away. The culling and the shadows' distance don't change
+	float NormalFieldOfView = 0.0f;
+
+	// The distances' scale for the levels of detail: tan(FieldOfView / 2) over tan(NormalFieldOfView / 2) (1: no zoom)
+	float DetailZoom() const
+	{
+		if (NormalFieldOfView <= 0.0f)
+		{
+			return 1.0f;
+		}
+		const float normal = std::tan(glm::radians(glm::clamp(NormalFieldOfView, MinFieldOfView, MaxFieldOfView)) * 0.5f);
+		const float now = std::tan(glm::radians(glm::clamp(FieldOfView, MinFieldOfView, MaxFieldOfView)) * 0.5f);
+		return now / normal;
+	}
+
 	// A render texture (7.5, a .mrtex file: absolute here, relative to the project in the scene file) the camera draws into
 	// instead of the screen: a mirror, a monitor, a minimap. Empty: the screen. A camera with a target never shows the
 	// game (Primary doesn't apply to it)
@@ -344,7 +363,7 @@ struct CameraComponent
 	// A camera with a Color target: how its picture's edges are smoothed (8.1). Off by default: its picture is small and cheap
 	AntialiasingMode Antialiasing = AntialiasingMode::Off;
 
-	static constexpr float MinFieldOfView = 10.0f;
+	static constexpr float MinFieldOfView = 2.0f; // (a sniper scope's 12x of 70 degrees: 6.7)
 	static constexpr float MaxFieldOfView = 120.0f;
 	static constexpr float MinNearClip = 0.001f;
 };

@@ -529,7 +529,7 @@ namespace Morava
         /// <summary>The game is seen through it. Set: the other cameras stop being primary.</summary>
         public bool Primary { get => Settings.Primary != 0; set { var s = Settings; s.Primary = value ? 1 : 0; Settings = s; } }
 
-        /// <summary>Degrees from the view's bottom edge to its top edge, 10 to 120: smaller zooms in.</summary>
+        /// <summary>Degrees from the view's bottom edge to its top edge, 2 to 120: smaller zooms in.</summary>
         public float FieldOfView { get => Settings.FieldOfView; set { var s = Settings; s.FieldOfView = value; Settings = s; } }
 
         /// <summary>Meters: nothing nearer is drawn.</summary>
@@ -564,9 +564,17 @@ namespace Morava
 
         /// <summary>
         /// Degrees the view models (Model.ViewModel: the first person's arms and gun) span from bottom to top while this camera
-        /// shows the game, 10 to 120: aiming down the sights narrows it with the view's.
+        /// shows the game, 2 to 120: aiming down the sights narrows it with the view's.
         /// </summary>
         public float ViewModelFieldOfView { get => Settings.ViewModelFieldOfView; set { var s = Settings; s.ViewModelFieldOfView = value; Settings = s; } }
+
+        /// <summary>
+        /// Detail by the field of view (Shooter E10): the degrees the levels of detail are meant for (0: whatever
+        /// FieldOfView is, no zoom). With FieldOfView narrower (a scope's zoom), far terrain and trees keep the detail of
+        /// their apparent size: at 10x a tree 300 m away is drawn as one 30 m away. Set it to the normal view's once, then
+        /// zoom with FieldOfView. The culling and the shadows' distance don't change.
+        /// </summary>
+        public float NormalFieldOfView { get => Settings.NormalFieldOfView; set { var s = Settings; s.NormalFieldOfView = MathF.Max(0.0f, value); Settings = s; } }
     }
 
     /// <summary>

@@ -153,6 +153,51 @@ namespace
 		{
 			AddRow(rows, "Decals", frame.Decals);
 		}
+		if (!frame.Foliage.empty())
+		{
+			AddRow(rows, "Foliage", frame.Foliage);
+		}
+
+		// The lights: the direct light, and how many point and spot lights (on, casting shadows; past the shaders' most in
+		// red: those are left out)
+		if (frame.LightCounts.Valid)
+		{
+			const DebugOverlayFrame::Lights& l = frame.LightCounts;
+			AddHeader(rows, "Lights");
+			AddRow(rows, "Direct light", !l.Sun ? "none" : !l.SunOn ? "off" :
+				Format("on, %.2f, %s", l.SunIntensity, l.SunShadows ? "shadows" : "no shadows"), l.Sun ? TextColor : DimColor);
+			auto count = [](uint32_t all, uint32_t on, uint32_t shadowed, uint32_t maxShadowed)
+			{
+				std::string text = Format("%u", all);
+				if (on != all)
+				{
+					text += Format(", %u on", on);
+				}
+				if (shadowed > 0)
+				{
+					text += shadowed > maxShadowed ? Format(", %u with shadows (%u drawn)", shadowed, maxShadowed) : Format(", %u with shadows", shadowed);
+				}
+				return text;
+			};
+			std::string point = count(l.Point, l.PointOn, l.PointShadowed, l.MaxPointShadowed);
+			if (l.Flashes > 0)
+			{
+				point += Format(" + %u %s", l.Flashes, l.Flashes == 1 ? "flash" : "flashes");
+			}
+			const bool pointOver = l.PointOn + l.Flashes > l.MaxPoint;
+			if (pointOver)
+			{
+				point += Format(" (only %u drawn)", l.MaxPoint);
+			}
+			AddRow(rows, "Point lights", point, pointOver || l.PointShadowed > l.MaxPointShadowed ? WarningColor : TextColor);
+			std::string spot = count(l.Spot, l.SpotOn, l.SpotShadowed, l.MaxSpotShadowed);
+			const bool spotOver = l.SpotOn > l.MaxSpot;
+			if (spotOver)
+			{
+				spot += Format(" (only %u drawn)", l.MaxSpot);
+			}
+			AddRow(rows, "Spot lights", spot, spotOver || l.SpotShadowed > l.MaxSpotShadowed ? WarningColor : TextColor);
+		}
 
 		// The passes that cost most
 		if (frame.GpuValid && !frame.Passes.empty())

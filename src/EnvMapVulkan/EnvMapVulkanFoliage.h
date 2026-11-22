@@ -66,8 +66,11 @@ namespace EnvMapVulkanFoliage
 	// The main view (the prepass and the scene pass draw the same): the cells in the frustum and within the draw distance
 	// of viewPosition, each copy as its model or its impostor. culling: false draws every cell (Frustum Culling off). Each
 	// frame, before those passes (it writes the main view's instance buffer)
-	// tint: the cards marked for the scene pass to tint (the debug view Show Impostors)
-	void CullMainView(const glm::vec4 planes[6], const glm::vec3& viewPosition, bool culling, LodMode lod = LodMode::Distance, bool tint = false);
+	// tint: the cards marked for the scene pass to tint (the debug view Show Impostors). detailZoom (Shooter E10,
+	// CameraComponent::DetailZoom): the distances that pick a model or its impostor are times it (a scope's zoom: under 1,
+	// the impostors start farther away); the draw distance doesn't change
+	void CullMainView(const glm::vec4 planes[6], const glm::vec3& viewPosition, bool culling, LodMode lod = LodMode::Distance, bool tint = false,
+		float detailZoom = 1.0f);
 	const std::vector<Draw>& GetMainViewDraws();
 	VkBuffer GetMainViewInstanceBuffer(); // the main view's draws' instances (VK_NULL_HANDLE: none this frame)
 	// A shadow map's view: the cells in its frustum within the shadow distance of the camera (and within lightRadius of

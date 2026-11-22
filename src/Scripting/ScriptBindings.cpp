@@ -1547,6 +1547,7 @@ static int32_t CameraGetSettings(uint64_t entity, ScriptCameraSettings* out)
 	out->Enabled = camera->Enabled ? 1 : 0;
 	out->DrawEvery = camera->DrawEvery;
 	out->ViewModelFieldOfView = camera->ViewModelFieldOfView;
+	out->NormalFieldOfView = camera->NormalFieldOfView;
 	return 1;
 }
 
@@ -1570,6 +1571,8 @@ static int32_t CameraSetSettings(uint64_t entity, const ScriptCameraSettings* va
 	camera->Enabled = value->Enabled != 0;
 	camera->DrawEvery = std::clamp(value->DrawEvery, 1u, 120u); // as the Inspector allows
 	camera->ViewModelFieldOfView = glm::clamp(value->ViewModelFieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView);
+	camera->NormalFieldOfView = value->NormalFieldOfView > 0.0f ?
+		glm::clamp(value->NormalFieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView) : 0.0f;
 	return 1;
 }
 

@@ -160,6 +160,8 @@ struct ScriptCameraSettings
 	uint32_t DrawEvery = 1;
 	// The view models' field of view (Shooter Phase 2.4: aiming down the sights narrows it too)
 	float ViewModelFieldOfView = 55.0f;
+	// The field of view the levels of detail are meant for (Shooter E10: 0, none)
+	float NormalFieldOfView = 0.0f;
 };
 
 // A UIRectComponent as a script reads and writes it (UIRect's properties)

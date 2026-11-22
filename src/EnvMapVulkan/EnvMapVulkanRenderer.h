@@ -102,6 +102,10 @@ public:
 	// The view models (ModelComponent::ViewModel, Shooter E2): active while the main view is the game camera's (Play, the
 	// player), with that camera's View Model Field Of View (degrees). Inactive (Edit, Simulate) they are drawn as any model
 	static void SetViewModelView(bool active, float fieldOfView);
+	// Detail by the field of view (Shooter E10): the main view's distances that pick a level of detail (the terrain's
+	// chunks, the foliage's impostors) are times zoom, the game camera's CameraComponent::DetailZoom (1: as they are; the
+	// editor's view). Set with SetViewModelView
+	static void SetDetailZoom(float zoom);
 	// What Auto picks for this GPU (QualityTier.h)
 	static QualityGPU GetQualityGPU();
 

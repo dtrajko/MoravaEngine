@@ -552,8 +552,9 @@ namespace EnvMapVulkanFoliage
 		std::vector<glm::mat4> Cards;
 	};
 
-	void CullMainView(const glm::vec4 planes[6], const glm::vec3& viewPosition, bool culling, LodMode lod, bool tint)
+	void CullMainView(const glm::vec4 planes[6], const glm::vec3& viewPosition, bool culling, LodMode lod, bool tint, float detailZoom)
 	{
+		const float zoom = glm::clamp(detailZoom, 0.01f, 100.0f); // distances times zoom: the start and the fade over it
 		for (CellBox& box : s_CellBoxes)
 		{
 			box.Drawn = false;
@@ -588,8 +589,8 @@ namespace EnvMapVulkanFoliage
 
 			// The whole range as models: no impostor, or all of it nearer than where the impostors start
 			const bool impostor = kind.Impostor && kind.ImpostorMaterial && lod != LodMode::ModelsOnly;
-			const float start = lod == LodMode::ImpostorsOnly ? -1.0f : kind.ImpostorDistance;
-			const float fade = lod == LodMode::ImpostorsOnly ? 0.0f : range.ImpostorFade;
+			const float start = lod == LodMode::ImpostorsOnly ? -1.0f : kind.ImpostorDistance / zoom;
+			const float fade = lod == LodMode::ImpostorsOnly ? 0.0f : range.ImpostorFade / zoom;
 			if (!impostor || FarthestOfBox(viewPosition, range.Min, range.Max) < start)
 			{
 				batch.Models.insert(batch.Models.end(), s_Transforms.begin() + range.First, s_Transforms.begin() + range.First + range.Count);

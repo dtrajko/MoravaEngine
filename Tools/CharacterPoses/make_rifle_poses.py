@@ -76,6 +76,8 @@ WEAPONS = {
         "Support": gun_point(1.75, 0.0, 0.40),      # under the handguard
         "Magazine": gun_point(1.2, 0.0, -0.15),    # the magazine's middle, for the reload
         "Bolt": None,
+        "LowReady": (30.0, 25.0, -0.01),           # the low ready: degrees the muzzle down and left about the butt, meters up
+                                                   # (2 cm up: the stock 4 mm in the jaw breathing)
     },
     "Sniper": {
         "File": "SniperRifle_3.fbx",
@@ -87,6 +89,7 @@ WEAPONS = {
         "Support": gun_point(1.4, 0.0, 0.08),      # under the forend
         "Magazine": gun_point(0.6, -0.12, 0.38),   # the open bolt's port, where the rounds go in (right side)
         "Bolt": gun_point(0.33, -0.25, 0.30),      # the bolt handle's knob, on the right
+        "LowReady": (30.0, 15.0, -0.03),          # lower and less across the chest: at the rifle's its comb was 1 cm in the jaw
     },
 }
 
@@ -459,11 +462,13 @@ def finger_fist(fist_pose):
     return turns
 
 
-def wrap_left_fingers(rig, gun, guard, fist, margins):
+def wrap_left_fingers(rig, gun, guard, fist, margins, limits=None):
     """Each finger of the left hand closed from open along the fist (its three joints together, a fraction of their fist
     turn) until its outer joints reach the handguard's surface (a binary search on the fraction); a finger that can't
     reach it closes as far as brings its tip nearest. margins: meters a finger stays further out (its skin was found in
-    the gun). Returns the farthest a tip stayed from the surface (meters) and by which"""
+    the gun); limits: the most a finger closes (a fraction of the fist: its skin was in the gun at the margins' most).
+    Returns the farthest a tip stayed from the surface (meters) and by which"""
+    limits = limits or {}
     to_gun = gun.inverted()
     worst = (0.0, "")
     middle, half = guard
@@ -476,8 +481,9 @@ def wrap_left_fingers(rig, gun, guard, fist, margins):
         finger_guard = out_by(margins.get(finger, 0.0))
         if finger == "thumb":
             continue  # place_thumb
-        value = close_finger(rig, fist, names, lambda tip: inside_guard(to_gun @ tip, finger_guard))
-        if value > 1.0:
+        limit = limits.get(finger)
+        value = close_finger(rig, fist, names, lambda tip: inside_guard(to_gun @ tip, finger_guard), limit=limit)
+        if value > 1.0 and limit is None:
             gap = (value ** 0.25 - 1.0) * min(half.y, half.z)
             if gap > worst[0]:
                 worst = (gap, finger)
@@ -544,14 +550,19 @@ def place_thumb(rig, gun, w, guard, fist, margin):
     return best[1]
 
 
-def close_finger(rig, fist, names, test, nearest=False, nearest_joint=-1):
+CURLED = {}  # each finger's (its first joint's name) last fraction of the fist close_finger left it at
+
+
+def close_finger(rig, fist, names, test, nearest=False, nearest_joint=-1, limit=None):
     """A finger (its three joints' names) closed from open along the fist: until test is at most 1 at its two outer
     joints or its tip (it lies on what it holds, none of it inside; the knuckle at the palm isn't tested; a binary search
     on the fraction), or, nearest, as far as makes test of its tip (or of the end of joint nearest_joint) smallest.
-    Returns test's value then"""
+    limit: the most it closes (a fraction of the fist; None: CURL_MAX), where the skin test found it in the gun further
+    closed. Returns test's value then (the fraction is kept in CURLED)"""
     armature = rig.armature
 
     def curl(fraction):
+        CURLED[names[0]] = fraction
         for name in names:
             axis, angle = fist[name]
             armature.pose.bones[name].matrix_basis = Quaternion(axis, angle * fraction).to_matrix().to_4x4()
@@ -560,10 +571,15 @@ def close_finger(rig, fist, names, test, nearest=False, nearest_joint=-1):
             return test(armature.pose.bones[names[nearest_joint]].tail)
         return min(test(armature.pose.bones[name].tail) for name in names[1:])
 
-    steps = [i * CURL_STEP for i in range(int(CURL_MAX / CURL_STEP) + 1)]
+    most = CURL_MAX if limit is None else min(CURL_MAX, limit)
+    steps = [i * CURL_STEP for i in range(int(most / CURL_STEP) + 1)]
+    if limit is not None and steps[-1] < most - 1e-6:
+        steps.append(most)
     values = [curl(t) for t in steps]
     touching = None if nearest else next((i for i, v in enumerate(values) if v <= 1.0), None)
     if touching is None or touching == 0:
+        if touching is None and not nearest and limit is not None:
+            return curl(steps[-1])  # held open at the limit: as far as it may close
         best = min(range(len(steps)), key=lambda i: values[i]) if touching is None else 0
         return curl(steps[best])
     low, high = steps[touching - 1], steps[touching]
@@ -1293,6 +1309,13 @@ class Clip:
         self.left_mag = None          # the one-handed reload: the left hand under the magazine (the gun's frame)
         self.left_trip = None         # [(time, "side" | "pouch" | "mag_low" | "mag")]: its trip
         self.check_elbows = True      # the elbows' rules (below the hand, outside the shoulder): not for a slash
+        # The sniper's bolt and reload (the right hand leaves the grip for the bolt): the seconds the gun is held by the
+        # left hand (on the forend) and by the right (on the grip); the game shows its model on that hand's bone then
+        # (Sniper.weapon.json's LeftHand). Measured: where the gun is in each hand over those frames
+        self.left_holds = None
+        self.right_holds = None
+        self.held_in = {"l": [], "r": []}
+        self.held_mean = {}
         self.problem = None           # the first rule the clip broke (the run fails after its previews)
 
 
@@ -1397,6 +1420,9 @@ def make_clips(weapon):
     clips = []
 
     clips.append(Clip(f"{weapon}_Idle_Loop", "Idle_Loop", low_ready=True))
+    if weapon == "Sniper":
+        # (its long forend low: the left arm reaches down along it, the elbow a little above the wrist)
+        clips[-1].below_hand_margin = 0.05
     for name, pitch in (("Up", 45.0), ("Neutral", 0.0), ("Down", -45.0)):
         clips.append(Clip(f"{weapon}_Aim_{name}", "Pistol_Aim_Neutral", aim_pitch=pitch))
         # Aimed down the left arm reaches nearly straight down the gun: its elbow above the wrist (under the handguard,
@@ -1434,21 +1460,32 @@ def make_clips(weapon):
         back = Matrix.Translation((-0.09, 0.0, 0.0)) @ up                                  # and pulled back
 
         cycle = Clip("Sniper_Bolt", "Pistol_Aim_Neutral", frames=int(FPS * 1.1))
-        # Rolled 6 degrees toward the bolt (10 brought the scope within 3 cm of the face)
-        cycle.gun_motion = [(0.0, Matrix.Identity(4)), (0.15, rot("X", -6.0)), (0.95, rot("X", -6.0)),
-                            (1.1, Matrix.Identity(4))]
-        cycle.right = [(0.0, grip), (0.2, knob), (0.35, up), (0.5, back), (0.65, up), (0.8, knob), (1.1, grip)]
+        # Not rolled toward the bolt (it was 6 degrees): the left hand, which holds the gun meanwhile (the game's model on
+        # its bone), followed the roll and moved 12 mm on the forend. The right hand rests on the grip a moment before it
+        # leaves and after it is back: the game switches the hand there
+        # (both hands hold it a tenth of a second either side of the game's switches, 0.05 and 1.01 s: the animation's
+        # frame and the fixed step's time differ by up to a frame)
+        cycle.right = [(0.0, grip), (0.1, grip), (0.22, knob), (0.36, up), (0.5, back), (0.64, up), (0.78, knob),
+                       (0.92, grip), (1.1, grip)]
+        cycle.left_holds = [(0.0, 1.1)]
+        cycle.right_holds = [(0.0, 0.1), (0.92, 1.1)]
         clips.append(cycle)
 
+        # The reload: one hand always holds the gun (the game's model is on a hand's bone). The right hand opens the bolt
+        # while the left holds the forend, goes back to the grip while the left loads two rounds through the port, then
+        # shuts the bolt while the left holds the forend again
         reload = Clip("Sniper_Reload", "Pistol_Aim_Neutral", frames=int(FPS * 2.6))
         reload.left_free = True
         reload.gun_motion = [(0.0, Matrix.Identity(4)), (0.3, tilt), (2.3, tilt), (2.6, Matrix.Identity(4))]
-        reload.right = [(0.0, grip), (0.25, knob), (0.4, up), (0.55, back), (1.95, back), (2.1, up), (2.25, knob),
-                        (2.6, grip)]
+        # (both hands hold it a tenth of a second either side of the game's switches: 0.05, 0.65, 1.85 and 2.52 s)
+        reload.right = [(0.0, grip), (0.1, grip), (0.22, knob), (0.33, up), (0.45, back), (0.55, grip), (1.95, grip),
+                        (2.08, back), (2.2, up), (2.32, knob), (2.42, grip), (2.6, grip)]
         port = left_hand_on(w["Magazine"])
-        reload.left = [(0.0, support), (0.6, support)]
-        reload.left_world = {"from": 0.6, "pouch": 0.85, "to": 1.1, "again": (1.3, 1.55, 1.8)}
-        reload.left_after = [(1.1, port), (1.25, port), (1.8, port), (1.95, port), (2.3, support)]
+        reload.left = [(0.0, support), (0.75, support)]
+        reload.left_world = {"from": 0.75, "pouch": 0.95, "to": 1.15, "again": (1.35, 1.52, 1.65)}
+        reload.left_after = [(1.15, port), (1.3, port), (1.65, port), (1.68, port), (1.75, support)]
+        reload.left_holds = [(0.0, 0.75), (1.75, 2.6)]
+        reload.right_holds = [(0.0, 0.1), (0.55, 1.95), (2.42, 2.6)]
         clips.append(reload)
     return clips
 
@@ -1567,6 +1604,7 @@ CHEST_TWIST = -30.0  # degrees (negative: the right shoulder further back)
 GUN_FORWARD = 0.065
 EYE_ABOVE = 0.055
 FACE_CLEARANCE = 0.03       # less than this between the face and the gun in any frame of a clip aiming: the bake fails
+FACE_LOW_READY_CLEARANCE = 0.01  # the rifles' low ready's (the muzzle down, the stock under the chin): off the face
 FACE_KICK_CLEARANCE = 0.01  # the same while the gun kicks back (a shot: for two frames)
 
 
@@ -1633,8 +1671,9 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
     elif clip.low_ready:
         at_shoulder = gun_at_shoulder(w, rig)
         pivot = at_shoulder @ Matrix.Translation(w["Butt"])
-        low = pivot @ rot("Y", 30.0) @ rot("Z", 25.0) @ Matrix.Translation(-w["Butt"])  # muzzle down and to the left
-        placed = low @ Matrix.Translation((0.0, 0.0, 0.02))
+        down, left, lift = w["LowReady"]  # muzzle down and to the left about the butt, then up
+        low = pivot @ rot("Y", down) @ rot("Z", left) @ Matrix.Translation(-w["Butt"])
+        placed = low @ Matrix.Translation((0.0, 0.0, lift))
         rig.set_pose(base_frames[0])
         rig.update()
     else:
@@ -1896,7 +1935,7 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
             for name in FINGERS:
                 if name.endswith("_l"):
                     armature.pose.bones[name].matrix_basis = Matrix.Identity(4)
-            result = wrap_left_fingers(rig, gun, clip.guard, clip.fist, clip.finger_margins)
+            result = wrap_left_fingers(rig, gun, clip.guard, clip.fist, clip.finger_margins, clip.finger_limits)
             if clip.thumb is None:  # how far out: searched on the first frame, kept for the clip
                 clip.thumb = place_thumb(rig, gun, w, clip.guard, clip.fist, clip.finger_margins.get("thumb", 0.0))
             else:
@@ -1939,6 +1978,24 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
                         if part == "thumb":
                             clip.thumb = None  # searched again, further out
                     twist, (gap, finger) = hold_left()
+                # A finger still in at the most it may be held out (the sniper's forend is wider above its keel than
+                # the box measured under the palm: its idle hold's index went 7 mm in): opened, a little at a time,
+                # until its skin is out (kept for the clip)
+                for _ in range(12):
+                    stuck = [part for part in deepest if part in LEFT_FINGERS and part != "thumb"
+                             and clip.finger_margins.get(part, 0.0) >= FINGER_MARGIN_MAX - 1e-6]
+                    if not stuck:
+                        break
+                    for part in stuck:
+                        now = clip.finger_limits.get(part, CURLED.get(f"{part}_01_l", 1.0))
+                        clip.finger_limits[part] = max(0.0, now - 0.05)
+                    twist, (gap, finger) = hold_left()
+                    rig.update()
+                    _, deepest = rig.chest.against_gun(gun_frame.children[0])
+                    deepest = {part: depth for part, depth in deepest.items() if depth > HAND_PRESS}
+                if clip.finger_limits:
+                    print(f"  {clip.name}: left fingers opened to (of the fist): " +
+                          ", ".join(f"{p} {m:.2f}" for p, m in sorted(clip.finger_limits.items())))
                 margins = ", ".join(f"{p} {m * 1000:.0f}" for p, m in sorted(clip.finger_margins.items())) or "none"
                 print(f"  {clip.name}: the left hand turned {twist:.1f} degrees about its forearm (half of it the forearm's "
                       f"roll), the palm {clip.palm_out * 100:.1f} cm under the support; fingers further out (mm): {margins}; the thumb "
@@ -1992,8 +2049,8 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
                       f"skin in the pistol: " + (", ".join(f"{p} {d * 1000:.0f} mm at {rig.chest.deepest_at[p]} cm" for p, d in sorted(deepest.items())) or "nothing"))
                 if deep and clip.low_ready is False and clip.name.endswith("Aim_Neutral"):
                     clip.problem = clip.problem or f"{clip.name}: the right hand's skin in the pistol: {deep}"
-        if not clip.low_ready and not knife and rig.chest:
-            # The face off the gun in every frame (the kick and the reload's tilt move the gun)
+        if not knife and rig.chest and (not clip.low_ready or w["Hold"] == "Rifle"):
+            # The face off the gun in every frame (the kick and the reload's tilt move the gun; the low ready breathes)
             gun_frame.matrix_world = armature.matrix_world @ gun
             rig.update()
             face, _ = rig.chest.against_gun(gun_frame.children[0])
@@ -2003,6 +2060,11 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
         if clip.left is None and twist:
             local = roll_forearm(local, armature, twist * 0.5)
         poses.append((local, gun.copy()))
+        # The hand that holds the gun now (the sniper's bolt: the left one while the right works the bolt): where the
+        # gun is in it, for the game's model on that hand's bone
+        for side, windows in (("l", clip.left_holds), ("r", clip.right_holds)):
+            if windows and any(a - 1e-6 <= time <= b + 1e-6 for a, b in windows):
+                clip.held_in[side].append(rig.bone(f"hand_{side}").inverted() @ gun)
         for side in "rl":
             drop = elbow_drop(rig, side)
             lowest[side] = min(lowest[side], drop)
@@ -2058,13 +2120,33 @@ def bake_clip(rig, clip, base_frames, finger_pose, gun_frame):
                   f" l {miss['l'] * 100:.1f} cm; elbows below the shoulder-hand line r {elbow_drop(rig, 'r') * 100:.1f} cm,"
                   f" l {elbow_drop(rig, 'l') * 100:.1f} cm")
 
+    for side in "lr":
+        held = clip.held_in[side]
+        if not held:
+            continue
+        mean_t = sum((m.translation for m in held), Vector()) / len(held)
+        q0 = held[0].to_quaternion()
+        total = [0.0, 0.0, 0.0, 0.0]
+        for m in held:
+            q = m.to_quaternion()
+            if q.dot(q0) < 0.0:
+                q.negate()
+            total = [total[0] + q.w, total[1] + q.x, total[2] + q.y, total[3] + q.z]
+        mean_q = Quaternion(total).normalized()
+        moved = max((m.translation - mean_t).length for m in held)
+        turned = max(math.degrees(m.to_quaternion().rotation_difference(mean_q).angle) for m in held)
+        print(f"  {clip.name}: the gun in hand_{side} over {len(held)} frames it holds it: at "
+              f"{tuple(round(v, 4) for v in mean_t)}, quaternion {tuple(round(v, 4) for v in mean_q)}; "
+              f"at most {moved * 1000:.1f} mm and {turned:.1f} degrees from that")
+        clip.held_mean[side] = (mean_t, mean_q, moved, turned)
     print(f"  {clip.name}: the elbows at least r {lowest['r'] * 100:.1f} cm, l {lowest['l'] * 100:.1f} cm below the "
           f"shoulder-hand line in every frame; below the hand at least r {worst_below['r'] * 100:.1f}, "
           f"l {worst_below['l'] * 100:.1f} cm; outside the shoulder at least r {worst_outside['r'] * 100:.1f}, "
           f"l {worst_outside['l'] * 100:.1f} cm")
     if nearest_face[0] < math.inf:
         print(f"  {clip.name}: the face at least {nearest_face[0] * 100:.2f} cm from the gun (frame {nearest_face[1]})")
-        wanted = FACE_KICK_CLEARANCE if clip.name.endswith("_Shoot") else FACE_CLEARANCE
+        wanted = (FACE_KICK_CLEARANCE if clip.name.endswith("_Shoot") else
+                  FACE_LOW_READY_CLEARANCE if clip.low_ready else FACE_CLEARANCE)
         if nearest_face[0] < wanted:
             clip.problem = clip.problem or (f"{clip.name}, frame {nearest_face[1]}: the face is {nearest_face[0] * 100:.1f} "
                                             f"cm from the gun (wanted {wanted * 100:.0f}): check GUN_FORWARD and EYE_ABOVE")
@@ -2256,6 +2338,7 @@ def main():
             clip.wrist_turn = 0.0
             clip.palm_out = 0.035      # the left hand's origin (the wrist) under the support, along the palm's normal
             clip.finger_margins = {}   # left fingers held further out from the handguard (meters)
+            clip.finger_limits = {}    # left fingers held open: the most they close (a fraction of the fist)
             clip.thumb = None          # the left thumb's degrees out from along the handguard: place_thumb
             clip.pistol_thumbs = None  # the pistol's thumbs' aims (right, left): place_pistol_thumbs
             clip.right_margins = {}    # right fingers held further out from the grip (meters)
@@ -2296,6 +2379,10 @@ def main():
 
     path = os.path.join(os.path.dirname(OUTPUT), output)
     os.makedirs(os.path.dirname(path), exist_ok=True)
+    # The keys are at frame numbers; the export makes them seconds by the scene's frame rate. Importing the guns (FBX) sets
+    # it to theirs (24): every clip played 25 % slow until 2026-11-22 (the rifle's 2.2 s reload took 2.7 s)
+    bpy.context.scene.render.fps = FPS
+    bpy.context.scene.render.fps_base = 1.0
     bpy.ops.export_scene.gltf(filepath=path, export_format="GLB", export_animations=True,
                               export_animation_mode="ACTIONS", export_force_sampling=True, export_skins=True,
                               export_yup=True)

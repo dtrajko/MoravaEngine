@@ -76,6 +76,12 @@ namespace Outpost
             set => leftShoulder = value;
         }
 
+        /// <summary>
+        /// Scoped (Phase 2.5): the camera at the eyes whatever the mode, gliding there and back as a switch does (the mode
+        /// and the shoulder are kept).
+        /// </summary>
+        public bool AtEyes { get; set; }
+
         /// <summary>The camera's place after the last Update.</summary>
         public Vector3 Position { get; private set; }
 
@@ -92,7 +98,7 @@ namespace Outpost
         public Vector3 Update(float dt, Vector3 eyes, float yaw, float pitch, Entity? ignore)
         {
             float glide = settings.SwitchSeconds > 0.0f ? dt / settings.SwitchSeconds : 1.0f;
-            thirdWeight = MoveTowards(thirdWeight, mode == ViewMode.ThirdPerson ? 1.0f : 0.0f, glide);
+            thirdWeight = MoveTowards(thirdWeight, mode == ViewMode.ThirdPerson && !AtEyes ? 1.0f : 0.0f, glide);
             side = MoveTowards(side, leftShoulder ? -1.0f : 1.0f, 2.0f * glide);
 
             Vector3 position = eyes;
@@ -108,7 +114,7 @@ namespace Outpost
             Position = position;
             // Third person, the switch done: shown unless the camera is inside the head. First person or gliding: hidden
             // while close (the glide passes the head)
-            bool settled = mode == ViewMode.ThirdPerson && thirdWeight >= 1.0f;
+            bool settled = mode == ViewMode.ThirdPerson && !AtEyes && thirdWeight >= 1.0f;
             HidesBody = Vector3.Distance(position, eyes) < (settled ? settings.InsideHeadWithin : settings.HideBodyWithin);
             return position;
         }

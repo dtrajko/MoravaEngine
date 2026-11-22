@@ -2038,6 +2038,15 @@ void OnImGuiRenderInspector()
 					ImGui::SetTooltip("The field of view of the view models (a model's View Model: the first-person arms and\n"
 						"gun) while this camera shows the game. Their own, so a wide view doesn't stretch them.");
 				}
+				ImGui::DragFloat("Normal Field of View", &camera.NormalFieldOfView, 0.5f, 0.0f, CameraComponent::MaxFieldOfView,
+					camera.NormalFieldOfView > 0.0f ? "%.0f deg" : "Off", ImGuiSliderFlags_AlwaysClamp);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("Detail by the field of view: the field of view the levels of detail are meant for (Off:\n"
+						"whatever the Field of View is). Narrower (a scope's zoom, set by a script), far terrain and trees\n"
+						"keep the detail of their apparent size: at 10x a tree 300 m away is drawn as one 30 m away.\n"
+						"The zoom now: %.2fx", 1.0f / camera.DetailZoom());
+				}
 			}
 			RenderTargetControls(camera);
 			ImGui::Spacing();

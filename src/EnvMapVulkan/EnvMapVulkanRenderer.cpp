@@ -239,6 +239,7 @@ static std::vector<SubmittedModel> s_SubmittedModels;
 static std::vector<SubmittedModel> s_SubmittedViewModels;
 static bool s_ViewModelViewActive = false;         // SetViewModelView: the game camera shows the main view
 static float s_ViewModelFieldOfView = 55.0f;       // degrees, vertical
+static float s_DetailZoom = 1.0f;                  // SetDetailZoom: the main view's level of detail distances' scale (E10)
 static constexpr float ViewModelDepthScale = 0.1f; // their depth, of what it would be: in front of everything but what nearly touches the near plane (Include/SSAO.glslh: ViewModelDepthMax)
 // For the motion vectors: where every mesh of the submitted models was drawn in the previous frame (GetMeshTransform then),
 // one matrix per mesh in the order of s_SubmittedModels. The G-buffer prepass reads them per draw (see EnvMapVulkanGBuffer).
@@ -3263,7 +3264,7 @@ static void CullMainView()
 	}
 	// The foliage's cells, against the same frustum (frozen with it), within its draw distance of the camera
 	EnvMapVulkanFoliage::CullMainView(planes, s_Data.SceneData.SceneCamera.Camera.GetPosition(), s_ViewOptions.FrustumCulling,
-		(EnvMapVulkanFoliage::LodMode)s_ViewOptions.FoliageLod, s_ViewOptions.ShowImpostors);
+		(EnvMapVulkanFoliage::LodMode)s_ViewOptions.FoliageLod, s_ViewOptions.ShowImpostors, s_DetailZoom);
 }
 
 const EnvMapVulkanRenderer::CullingStats& EnvMapVulkanRenderer::GetCullingStats()
@@ -4653,10 +4654,48 @@ static DebugOverlayFrame GatherDebugOverlayFrame()
 	{
 		frame.Decals = std::to_string(decals.Drawn) + " drawn (" + std::to_string(decals.Placed) + " placed, " + std::to_string(decals.Spawned) + " spawned)";
 	}
+	if (const EnvMapVulkanFoliage::Stats& foliage = EnvMapVulkanFoliage::GetStats(); foliage.Copies > 0)
+	{
+		// (a scope's zoom keeps far copies as models: E10)
+		frame.Foliage = std::to_string(foliage.CopiesDrawn) + " as models, " + std::to_string(foliage.ImpostorsDrawn) + " as impostors (" +
+			std::to_string(foliage.Fading) + " fading)";
+	}
 	if (const EnvMapVulkanTrails::Stats& trails = EnvMapVulkanTrails::GetStats(); trails.Trails > 0)
 	{
 		frame.Trails = std::to_string(trails.Points) + " points, " + std::to_string(trails.Trails) + (trails.Trails == 1 ? " trail" : " trails") +
 			" (" + std::to_string(trails.Emitting) + " emitting)";
+	}
+	{
+		// The lights (s_Lights: the scene's, then this frame's flashes among the point lights)
+		DebugOverlayFrame::Lights& l = frame.LightCounts;
+		l.Valid = true;
+		l.Sun = s_LightEntities.Sun != NoEntity;
+		l.SunOn = l.Sun && s_Lights.Sun.Enabled;
+		l.SunIntensity = s_Lights.Sun.Intensity;
+		l.SunShadows = l.SunOn && s_Lights.Sun.CastShadows;
+		const size_t scenePoints = s_Lights.PointLights.size() - std::min(s_FlashLightCount, s_Lights.PointLights.size());
+		for (size_t i = 0; i < s_Lights.PointLights.size(); i++)
+		{
+			const EnvMapVulkanPointLight& light = s_Lights.PointLights[i];
+			if (i >= scenePoints)
+			{
+				l.Flashes += light.Enabled ? 1 : 0;
+				continue;
+			}
+			l.Point++;
+			l.PointOn += light.Enabled ? 1 : 0;
+			l.PointShadowed += light.Enabled && light.CastShadows ? 1 : 0;
+		}
+		for (const EnvMapVulkanSpotLight& light : s_Lights.SpotLights)
+		{
+			l.Spot++;
+			l.SpotOn += light.Enabled ? 1 : 0;
+			l.SpotShadowed += light.Enabled && light.CastShadows ? 1 : 0;
+		}
+		l.MaxPoint = EnvMapVulkanLightsGPU::MaxPointLights;
+		l.MaxSpot = EnvMapVulkanLightsGPU::MaxSpotLights;
+		l.MaxPointShadowed = MaxShadowedPointLights;
+		l.MaxSpotShadowed = MaxShadowedSpotLights;
 	}
 	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
 	frame.Fps = EnvMapVulkanProfiler::GetFps();
@@ -5089,7 +5128,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	// their levels of detail from this camera, in every pass
 	EnvMapVulkanTerrain::Update(*s_Scene);
 	EnvMapVulkanFoliage::Update(*s_Scene); // on the terrains' heights
-	EnvMapVulkanTerrain::SetViewPosition(glm::vec3(glm::inverse(camera->GetViewMatrix())[3]));
+	EnvMapVulkanTerrain::SetViewPosition(glm::vec3(glm::inverse(camera->GetViewMatrix())[3]), s_DetailZoom);
 	stages.Next("Environment, lights, water, probes, terrains");
 
 	// Shadow map resolutions that differ from the settings (changed in the panel, a scene opened): the maps are recreated
@@ -5813,6 +5852,11 @@ void EnvMapVulkanRenderer::SetViewModelView(bool active, float fieldOfView)
 {
 	s_ViewModelViewActive = active;
 	s_ViewModelFieldOfView = fieldOfView;
+}
+
+void EnvMapVulkanRenderer::SetDetailZoom(float zoom)
+{
+	s_DetailZoom = glm::clamp(zoom, 0.01f, 100.0f);
 }
 
 QualityGPU EnvMapVulkanRenderer::GetQualityGPU()
