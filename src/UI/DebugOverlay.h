@@ -59,6 +59,7 @@ struct DebugOverlayFrame
 	std::string Particles;           // "about 1200 alive, 4 emitters (2 emitting)" (empty: none in the scene)
 	std::string Trails;              // "3200 points, 4 trails (2 emitting)" (empty: none in the scene)
 	std::string Decals;              // "120 drawn (2 placed, 118 spawned)" (empty: none)
+	std::string Foliage;             // "1200 as models, 5400 as impostors (80 fading)" (empty: none in the scene)
 	uint32_t FramesInFlight = 0;     // 2: the CPU records the next frame while the GPU draws the last; 1: it waits (0: not shown)
 	std::string Antialiasing;        // the main view's mode, cost and share of the frame: "SMAA, 0.24 ms  1.1 %", "Off" (empty: not shown)
 	bool GpuValid = false;           // the GPU's timestamps are measured
@@ -80,6 +81,22 @@ struct DebugOverlayFrame
 	};
 	std::vector<CpuStage> CpuStages;
 	std::vector<Camera> Cameras;     // empty without render texture cameras
+
+	// The scene's lights (the Lights section): the direct light (the sun), and how many point and spot lights there are
+	struct Lights
+	{
+		bool Valid = false;          // filled (a renderer that has lights)
+		bool Sun = false;            // the scene has a direct light
+		bool SunOn = false;
+		float SunIntensity = 0.0f;
+		bool SunShadows = false;
+		uint32_t Point = 0, PointOn = 0, PointShadowed = 0; // the scene's: all, enabled, enabled and casting shadows
+		uint32_t Flashes = 0;        // a running game's flash lights (Lights.Flash), drawn as point lights besides the scene's
+		uint32_t Spot = 0, SpotOn = 0, SpotShadowed = 0;
+		uint32_t MaxPoint = 0, MaxSpot = 0;       // the most the shaders draw (the rest are left out)
+		uint32_t MaxPointShadowed = 0, MaxSpotShadowed = 0;
+	};
+	Lights LightCounts;
 };
 
 /**

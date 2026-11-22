@@ -1,0 +1,86 @@
+{
+  "_": "The sniper rifle, bolt action (docs/games/Shooter_Plan.html, Phase 2.5 and 'The sniper scope'). Read by WeaponData.Load; meters, seconds, degrees.",
+  "Name": "Sniper",
+  "Model": "Assets/Models/QuaterniusGuns/SniperRifle_3.fbx",
+  "Slot": 2,
+  "DrawSeconds": 0.6,
+  "HolsterSeconds": 0.4,
+  "Muzzle": [531.1, 40.3, 0.0],
+  "FireModes": ["Bolt"],
+  "RoundsPerMinute": 40,
+  "Damage": 90,
+  "HeadMultiplier": 4.0,
+  "Range": 800,
+  "Magazine": 5,
+  "Reserve": 15,
+  "ReloadSeconds": 2.6,
+  "ReloadCues": [
+    [0.3, "Assets/Audio/Sniper_BoltOpen.wav", 0.6],
+    [1.2, "Assets/Audio/Sniper_RoundIn.wav", 0.6],
+    [1.68, "Assets/Audio/Sniper_RoundIn.wav", 0.6],
+    [2.05, "Assets/Audio/Sniper_BoltClose.wav", 0.7]
+  ],
+  "MoveSpeedScale": 0.9,
+  "Bolt": {
+    "After": 0.4,
+    "Seconds": 1.1,
+    "Cues": [
+      [0.2, "Assets/Audio/Sniper_BoltOpen.wav", 0.6],
+      [0.5, "Assets/Audio/Sniper_BoltClose.wav", 0.7]
+    ]
+  },
+  "LeftHand": {
+    "_": "While the right hand works the bolt the gun is in the left one (make_rifle_poses.py: 'the gun in hand_l').",
+    "Bolt": { "Windows": [[0.05, 1.01]], "Translation": [0.1685, -0.0743, -0.1342], "Rotation": [0.2134, 0.415, 0.3009, 0.8317] },
+    "Reload": { "Windows": [[0.05, 0.65], [1.85, 2.52]], "Translation": [0.0339, -0.0374, -0.2124], "Rotation": [0.164, 0.6878, 0.164, 0.6878] }
+  },
+  "Spread": {
+    "Still": 2.5,
+    "Moving": 7.0,
+    "MovingSpeed": 3.0,
+    "Crouched": 0.7,
+    "Air": 10.0,
+    "PerShot": 0.0,
+    "Max": 0.0,
+    "Recovery": 5.0,
+    "RecoveryDelay": 0.15
+  },
+  "Recoil": {
+    "Pitch": 2.5,
+    "Yaw": 0.6,
+    "Recovery": 4.0,
+    "RecoveryDelay": 0.25
+  },
+  "Scope": {
+    "Zooms": [4, 10],
+    "MinZoom": 2,
+    "MaxZoom": 12,
+    "WheelStep": 1.25,
+    "Seconds": 0.25,
+    "SpeedScale": 0.5,
+    "Spread": { "Still": 0.02, "Moving": 1.5, "MovingSpeed": 1.2, "Air": 6.0 },
+    "Sway": {
+      "Degrees": 0.05,
+      "Seconds": 4.5,
+      "SteadySeconds": 4.0,
+      "SteadyScale": 0.15,
+      "TiredScale": 1.8,
+      "RecoverSeconds": 6.0
+    }
+  },
+  "States": {
+    "BodyAim": "SniperAim", "BodyReady": "SniperReady", "BodyReload": "SniperReload", "BodyBolt": "SniperBolt",
+    "ViewAim": "SniperAim", "ViewFire": "SniperShoot", "ViewReload": "SniperReload", "ViewBolt": "SniperBolt"
+  },
+  "ViewModel": {
+    "Eye": [-0.1128, 1.5315, 0.2128],
+    "Offset": [0.11, -0.075, 0.0],
+    "AimEye": [-0.0912, 1.4897, 0.1034]
+  },
+  "Sounds": {
+    "Shot": "Assets/Audio/Sniper_Shot_{0}.wav",
+    "ShotVariants": 3,
+    "Empty": "Assets/Audio/Sniper_Empty.wav",
+    "Draw": "Assets/Audio/Draw_Rifle.wav"
+  }
+}

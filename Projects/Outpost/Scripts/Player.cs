@@ -23,6 +23,13 @@ namespace Outpost
     /// flash, the tracers, the hits), with a hit marker on the crosshair. Aim held aims down the sights: the view narrows,
     /// the first person's eye goes onto the sight line, the third person's camera comes closer.
     ///
+    /// Phase 2.5, the sniper rifle (slot 2): its bolt worked after each shot (the body's and the arms' clip, its sounds),
+    /// and its scope. Aim steps the zoom (4x, 10x, off), the wheel zooms between 2x and 12x. Scoping, the camera goes to
+    /// the eyes (in third person too, back after), the view model comes up to the eye, then the scope's overlay (the HUD's)
+    /// shows with a short darkening while the view narrows to the zoom; the view sways with the weapon's breathing (the
+    /// shot goes where it looks), the look turns slower in proportion to the zoom (times the ScopeSensitivity setting).
+    /// The camera's Normal Field of View is the unzoomed one, so far terrain and trees keep their detail (E10).
+    ///
     /// F2 (DebugFly) hands the view to the debug fly camera (the Camera entity's FlyCamera) and back: the player stands
     /// still meanwhile.
     /// </summary>
@@ -35,14 +42,20 @@ namespace Outpost
         public Entity? Body;
 
         /// <summary>The weapons in the body's right hand: the body's children on its hand_r bone (Inspector: Bone Attachment).</summary>
-        public Entity? BodyGun, BodyPistol, BodyKnife;
+        public Entity? BodyGun, BodySniper, BodyPistol, BodyKnife;
+
+        /// <summary>
+        /// The sniper rifle on the left hand's bone (hand_l): shown instead of the right hand's while the right hand works
+        /// the bolt (the weapon's LeftHand: its place there, by the clip). The body's, and the view model's below.
+        /// </summary>
+        public Entity? BodySniperLeft, ViewModelSniperLeft;
 
         /// <summary>
         /// First person's view model (Inspector: Model, View Model): the arms (ViewModel.manim), placed at the eyes each frame,
         /// and the weapons they hold, its children. Shown only in first person.
         /// </summary>
         public Entity? ViewModel;
-        public Entity? ViewModelGun, ViewModelPistol, ViewModelKnife;
+        public Entity? ViewModelGun, ViewModelSniper, ViewModelPistol, ViewModelKnife;
 
         /// <summary>Taking a weapon out, the view model comes up from this far below the view (meters), turned this far down (degrees).</summary>
         public float LoweredDrop = 0.28f, LoweredTilt = 35.0f;
@@ -81,8 +94,12 @@ namespace Outpost
         /// The weapons carried (Phase 2.4), their data files' names (Assets/Weapons/&lt;name&gt;.weapon.json) separated by
         /// commas; the first one is out at the start. The shots' volume, the knife's.
         /// </summary>
-        public string WeaponNames = "Rifle,Pistol,Knife";
+        public string WeaponNames = "Rifle,Sniper,Pistol,Knife";
         public float ShotVolume = 0.8f, KnifeVolume = 0.7f;
+
+        /// <summary>The scope's zoom stepped (Aim): its click, and the volume.</summary>
+        public string ScopeSound = "Assets/Audio/Rifle_FireMode.wav";
+        public float ScopeVolume = 0.25f;
 
         /// <summary>
         /// What the shots look like (Phase 2.3): the entity with the WeaponEffects script and its emitters. The hit marker's
@@ -112,13 +129,23 @@ namespace Outpost
         float baseFieldOfView = 70.0f, baseViewModelFieldOfView = 55.0f;
         float aimBlend;               // 0 at the hip, 1 down the sights (eased, the weapon's AimSeconds)
         Vector3 lastEyes, lastCamera; // the last frame's: where the shots of the next fixed steps aim from
-        int reloadSounds;             // the reload's sounds played so far (the magazine out, in)
+        int reloadSounds;             // the reload's sounds played so far (its cues)
+        int boltSounds;               // the bolt's sounds played so far (its cues)
+        float scopeBlend;             // 0 down, 1 up: the scope coming up (the view model to the eye, then the overlay)
+        float shownZoom = 1.0f;       // the zoom the view shows (eased toward the weapon's)
+        float sinceStep;              // seconds since the last fixed step (the sway between steps)
+        float scopeSensitivity = 1.0f;
         WeaponEffects? effects;
         readonly List<ShotResult> shotsToShow = new(); // fired in fixed steps, shown in the frame
         float hitMarker;              // seconds the hit marker still shows
 
         /// <summary>Each weapon's models: on the body's hand, on the view model's.</summary>
         readonly Dictionary<PlayerWeapon, (Entity? Body, Entity? View)> held = new();
+
+        /// <summary>The weapons' models on the left hand (the sniper rifle's: while the right hand works the bolt).</summary>
+        readonly Dictionary<PlayerWeapon, (Entity? Body, Entity? View)> heldLeft = new();
+        WeaponData.LeftHold? leftPlaced; // the left models' place now (the bolt's or the reload's)
+        bool inLeftHand;
 
         bool Flying => Camera is FlyCamera fly && fly.IsActive;
 
@@ -130,6 +157,17 @@ namespace Outpost
 
         /// <summary>Down the sights now (eased: 0 at the hip, 1 aiming), for the HUD and a test.</summary>
         public float AimBlend => aimBlend;
+
+        /// <summary>
+        /// The scope's overlay (Phase 2.5): shown (the view through the scope), how dark it still is coming up (0 to 1), and
+        /// the zoom the view shows.
+        /// </summary>
+        public bool ScopeShown { get; private set; }
+        public float ScopeDarkness { get; private set; }
+        public float ScopeZoom => ScopeShown ? shownZoom : 1.0f;
+
+        /// <summary>The setting the scope's turning is times (1: in proportion to the zoom alone).</summary>
+        public const string ScopeSensitivitySetting = "ScopeSensitivity";
 
         /// <summary>The debug fly camera has the view (F2): the player stands still, the HUD is hidden.</summary>
         public bool IsFlying => Flying;
@@ -225,7 +263,10 @@ namespace Outpost
             {
                 baseFieldOfView = camera.FieldOfView;
                 baseViewModelFieldOfView = camera.ViewModelFieldOfView;
+                // The levels of detail are meant for the normal view: zoomed in, far things keep the detail of their size (E10)
+                camera.NormalFieldOfView = baseFieldOfView;
             }
+            scopeSensitivity = Math.Clamp(Settings.GetFloat(ScopeSensitivitySetting, 1.0f), 0.1f, 3.0f);
             effects = Effects as WeaponEffects;
             if (Effects != null && effects == null)
                 Log.Warn($"{Name}: Effects has no WeaponEffects script: the shots show nothing");
@@ -253,7 +294,8 @@ namespace Outpost
         {
             Dictionary<string, (Entity? Body, Entity? View)> models = new()
             {
-                ["Rifle"] = (BodyGun, ViewModelGun), ["Pistol"] = (BodyPistol, ViewModelPistol), ["Knife"] = (BodyKnife, ViewModelKnife),
+                ["Rifle"] = (BodyGun, ViewModelGun), ["Sniper"] = (BodySniper, ViewModelSniper),
+                ["Pistol"] = (BodyPistol, ViewModelPistol), ["Knife"] = (BodyKnife, ViewModelKnife),
             };
             List<PlayerWeapon> carried = new();
             foreach (string name in WeaponNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
@@ -270,10 +312,19 @@ namespace Outpost
                 weapon.Swung += () => OnSwung(weapon);
                 weapon.Struck += OnStruck;
                 weapon.AttackEnded += () => { body?.Attack(null); PlayView(data.ViewAim, 0.15f); };
+                weapon.BoltStarted += () => { boltSounds = 0; body?.Attack(data.BodyBolt); PlayView(data.ViewBolt, 0.08f); };
+                weapon.BoltFinished += () => { body?.Attack(null); PlayView(data.ViewAim, 0.12f); };
+                weapon.ZoomStepped += zoom => PlaySound(ScopeSound, ScopeVolume);
                 carried.Add(weapon);
                 if (!models.TryGetValue(data.Name, out var pair))
                     Log.Warn($"{Name}: no models for the weapon {data.Name}");
                 held[weapon] = pair;
+                if (data.Name == "Sniper")
+                {
+                    heldLeft[weapon] = (BodySniperLeft, ViewModelSniperLeft);
+                    if (BodySniperLeft == null || ViewModelSniperLeft == null)
+                        Log.Warn($"{Name}: no left-hand models for the {data.Name}: it moves with the right hand on the bolt");
+                }
             }
             arsenal = new PlayerArsenal(carried);
             arsenal.Holstering += weapon => PlayView(weapon.Data.ViewAim, 0.1f);
@@ -285,6 +336,8 @@ namespace Outpost
             // Only the one out: the others' models hidden everywhere (nothing of them, not even a shadow)
             foreach (var (weapon, pair) in held)
                 SetVisible(pair, weapon == arsenal.Current);
+            foreach (var pair in heldLeft.Values)
+                SetVisible(pair, false);
             if (arsenal.Current != null)
                 ShowWeapon(arsenal.Current, quiet: true);
         }
@@ -294,6 +347,9 @@ namespace Outpost
         {
             foreach (var (other, pair) in held)
                 SetVisible(pair, other == weapon);
+            foreach (var pair in heldLeft.Values)
+                SetVisible(pair, false);
+            inLeftHand = false;
             Entity? bodyModel = held.TryGetValue(weapon, out var models) ? models.Body : null;
             WeaponData data = weapon.Data;
             body?.SetWeapon(bodyModel, data.BodyAim, data.BodyReady, data.BodyReload);
@@ -322,18 +378,24 @@ namespace Outpost
             arsenal.Step(command, dt);
             PlayerWeapon? weapon = arsenal.Current;
             // Aiming down the sights slows the walk and stops the sprint: Aim held wins over Shift (with a weapon that can
-            // aim, not reloading, not switching)
-            bool aiming = weapon != null && command.Aim && weapon.Data.CanAimDownSights && !weapon.IsReloading && !arsenal.IsSwitching;
+            // aim, not reloading, not switching). A scope: while its zoom is wanted (Aim pressed it), also during the bolt
+            bool aiming = weapon != null && !weapon.IsReloading && !arsenal.IsSwitching &&
+                (weapon.Data.HasScope ? weapon.Zoom > 0.0f || command.AimPressed : command.Aim && weapon.Data.CanAimDownSights);
             motor.AimSpeedScale = aiming ? weapon!.Data.AimSpeedScale : 1.0f;
+            motor.CarrySpeedScale = weapon?.Data.MoveSpeedScale ?? 1.0f;
             motor.Step(command, dt);
             lastCommand = command;
+            sinceStep = 0.0f;
             if (weapon != null)
             {
                 Vector3 velocity = motor.Velocity;
                 // While a switch is under way the weapon doesn't fire (nor aims): no buttons for it
                 PlayerCommand forWeapon = command;
                 if (arsenal.IsSwitching)
-                    forWeapon.Fire = forWeapon.FirePressed = forWeapon.Reload = forWeapon.FireMode = forWeapon.Aim = false;
+                {
+                    forWeapon.Fire = forWeapon.FirePressed = forWeapon.Reload = forWeapon.FireMode = forWeapon.Aim = forWeapon.AimPressed = false;
+                    forWeapon.Zoom = 0.0f;
+                }
                 weapon.Step(forWeapon, new AimContext
                 {
                     Camera = lastCamera, Eyes = lastEyes, Muzzle = MuzzlePosition,
@@ -440,6 +502,8 @@ namespace Outpost
                 LeftShoulder = !LeftShoulder;
 
             PlayerWeapon? weapon = Weapon;
+            sinceStep += dt;
+            UpdateScope(weapon, dt);
             if (CommandSource == null)
             {
                 input.UpdateLook(dt);
@@ -447,21 +511,26 @@ namespace Outpost
                     input.RecoverKick(dt, weapon.Data.RecoilRecovery, weapon.Data.RecoilRecoveryDelay);
             }
             ReloadSounds();
+            BoltSounds();
             float yaw = CommandSource != null ? lastCommand.Yaw : input.Yaw;
             float pitch = CommandSource != null ? lastCommand.Pitch : input.Pitch;
 
-            // Down the sights: eased in the weapon's time, the view and the view model narrowed, the third person's camera closer
+            // Down the sights: eased in the weapon's time, the view and the view model narrowed, the third person's camera
+            // closer. A scope: the view model up to the eye in the first half of its coming up, then the scope's view
             float aimSeconds = weapon != null ? MathF.Max(0.01f, weapon.Data.AimSeconds) : 0.2f;
             bool aiming = weapon != null && weapon.IsAiming && !arsenal.IsSwitching;
             aimBlend = Math.Clamp(aimBlend + (aiming ? dt : -dt) / aimSeconds, 0.0f, 1.0f);
             float aimEase = aimBlend * aimBlend * (3.0f - 2.0f * aimBlend);
+            float ads = 0.0f;
             if (weapon != null)
             {
                 WeaponData data = weapon.Data;
-                float ads = data.CanAimDownSights ? aimEase : 0.0f;
+                float raise = Math.Clamp(scopeBlend * 2.0f, 0.0f, 1.0f);
+                ads = data.HasScope ? raise * raise * (3.0f - 2.0f * raise) : data.CanAimDownSights ? aimEase : 0.0f;
                 if (camera != null)
                 {
-                    float fov = baseFieldOfView + (data.AimFieldOfView - baseFieldOfView) * ads;
+                    float sightsFov = data.HasScope ? baseFieldOfView : data.AimFieldOfView;
+                    float fov = ScopeShown ? ZoomedFieldOfView(shownZoom) : baseFieldOfView + (sightsFov - baseFieldOfView) * ads;
                     float viewFov = baseViewModelFieldOfView + (data.AimViewModelFieldOfView - baseViewModelFieldOfView) * ads;
                     if (MathF.Abs(camera.FieldOfView - fov) > 0.01f || MathF.Abs(camera.ViewModelFieldOfView - viewFov) > 0.01f)
                     {
@@ -484,17 +553,24 @@ namespace Outpost
             lastCamera = cameraPosition;
             if (body != null)
                 body.HiddenInMainView = view.HidesBody;
+            UpdateHand(weapon);
+            // The view model in first person (scoping in third person too), once the camera is at the eyes (not while a
+            // switch glides); the scope's view (from halfway up) hides it
+            bool atEyes = Vector3.DistanceSquared(cameraPosition, eyes) < 0.0001f;
+            bool firstPerson = (view.Mode == ViewMode.FirstPerson || view.AtEyes) && atEyes;
+            ScopeShown = weapon != null && weapon.Data.HasScope && scopeBlend >= 0.5f && atEyes;
+            ScopeDarkness = ScopeShown ? 0.85f * Math.Clamp(1.0f - (scopeBlend - 0.5f) / 0.5f, 0.0f, 1.0f) : 0.0f;
             if (Camera != null)
             {
+                // Scoped, the look sways with the breathing (the weapon's, as the shots aim)
+                Vector2 sway = ScopeShown && weapon != null ? weapon.SwayAt(sinceStep) : Vector2.Zero;
                 Camera.Translation = cameraPosition;
-                Camera.EulerAngles = new Vector3(pitch, yaw, 0.0f);
+                Camera.EulerAngles = new Vector3(pitch + sway.Y, yaw + sway.X, 0.0f);
             }
-            // The view model in first person, once the camera is at the eyes (not while a switch glides)
-            bool firstPerson = view.Mode == ViewMode.FirstPerson && Vector3.DistanceSquared(cameraPosition, eyes) < 0.0001f;
-            ShowViewModel(firstPerson);
+            ShowViewModel(firstPerson && !ScopeShown);
             if (firstPerson && weapon != null)
-                PlaceViewModel(cameraPosition, yaw, pitch, weapon.Data, aimEase);
-            ShowShots(firstPerson);
+                PlaceViewModel(cameraPosition, yaw, pitch, weapon.Data, ads);
+            ShowShots(firstPerson && !ScopeShown);
             hitMarker = MathF.Max(0.0f, hitMarker - dt);
 
             // The steps: one each stride walked on the ground, louder sprinting, quieter walking, none crouched
@@ -525,11 +601,10 @@ namespace Outpost
         // camera, moved by the offset in the camera's space (the model's X is the camera's left, its Z the camera's forward);
         // down the sights the eye is the weapon's AimEye (on the sight line) and nothing is moved. Switching, it drops below
         // the view, turned down
-        void PlaceViewModel(Vector3 cameraPosition, float yaw, float pitch, WeaponData data, float aimEase)
+        void PlaceViewModel(Vector3 cameraPosition, float yaw, float pitch, WeaponData data, float ads)
         {
             if (ViewModel == null)
                 return;
-            float ads = data.CanAimDownSights ? aimEase : 0.0f;
             Vector3 eye = Vector3.Lerp(data.ViewModelEye, data.AimEye, ads);
             Vector3 offset = Vector3.Lerp(data.ViewModelOffset, Vector3.Zero, ads);
             float lowered = arsenal.Lowered;
@@ -548,7 +623,48 @@ namespace Outpost
             Show(viewModelArms, shown);
             foreach (var (_, view) in held.Values)
                 Show(view?.GetComponent<Model>(), shown);
+            foreach (var (_, view) in heldLeft.Values)
+                Show(view?.GetComponent<Model>(), shown);
         }
+
+        // The hand that holds the weapon (Phase 2.5): the sniper rifle is in the left hand while the right works the bolt
+        // (its LeftHand windows, by the bolt's or the reload's time): the left hand's models shown, placed for that clip,
+        // the right hand's hidden; otherwise the other way round. The body's left model hidden from the main view with it
+        void UpdateHand(PlayerWeapon? weapon)
+        {
+            if (weapon == null || !heldLeft.TryGetValue(weapon, out var left))
+                return;
+            WeaponData data = weapon.Data;
+            WeaponData.LeftHold? hold = null;
+            if (arsenal.IsSwitching)
+                hold = null; // (put away or taken out in the right hand)
+            else if (weapon.IsWorkingBolt && weapon.BoltSeconds >= 0.0f && data.LeftInBolt != null && data.LeftInBolt.Holds(weapon.BoltSeconds))
+                hold = data.LeftInBolt;
+            else if (weapon.IsReloading && data.LeftInReload != null && data.LeftInReload.Holds(weapon.ReloadProgress * data.ReloadSeconds))
+                hold = data.LeftInReload;
+            if (hold != null && hold != leftPlaced)
+            {
+                foreach (Entity? e in new[] { left.Body, left.View })
+                    if (e != null)
+                    {
+                        e.Translation = hold.Translation;
+                        e.Rotation = hold.Rotation;
+                    }
+                leftPlaced = hold;
+            }
+            bool wanted = hold != null;
+            if (wanted != inLeftHand)
+            {
+                inLeftHand = wanted;
+                SetVisible(left, wanted);
+                SetVisible(held[weapon], !wanted);
+            }
+            if (body != null && left.Body?.GetComponent<Model>() is Model leftModel && leftModel.HiddenInMainView != body.HiddenInMainView)
+                leftModel.HiddenInMainView = body.HiddenInMainView;
+        }
+
+        /// <summary>The weapon is held in the left hand now (the sniper's bolt, a test reads it).</summary>
+        public bool InLeftHand => inLeftHand;
 
         static void Show(Model? model, bool shown)
         {
@@ -582,24 +698,61 @@ namespace Outpost
             Audio.PlayOneShot(string.Format(FootstepSound, variant), WorldPosition, volume, AudioBus.Effects, 0.95f + 0.1f * (float)random.NextDouble());
         }
 
-        // The reload's sounds at their moments in the clip: the magazine out, then a new one in
+        // The reload's sounds at their moments in the clip (its cues: the magazine out, then a new one in; the sniper's
+        // bolt open, the rounds in, the bolt shut)
         void ReloadSounds()
         {
             PlayerWeapon? weapon = Weapon;
             if (weapon == null || !weapon.IsReloading)
                 return;
             float seconds = weapon.ReloadProgress * weapon.Data.ReloadSeconds;
-            if (reloadSounds == 0 && seconds >= weapon.Data.MagazineOutAt)
+            var cues = weapon.Data.ReloadCues;
+            while (reloadSounds < cues.Count && seconds >= cues[reloadSounds].At)
             {
-                PlaySound(weapon.Data.MagazineOutSound, 0.6f);
-                reloadSounds = 1;
-            }
-            if (reloadSounds == 1 && seconds >= weapon.Data.MagazineInAt)
-            {
-                PlaySound(weapon.Data.MagazineInSound, 0.7f);
-                reloadSounds = 2;
+                PlaySound(cues[reloadSounds].Sound, cues[reloadSounds].Volume);
+                reloadSounds++;
             }
         }
+
+        // The bolt's sounds at their moments (open, shut) while it is worked
+        void BoltSounds()
+        {
+            PlayerWeapon? weapon = Weapon;
+            if (weapon == null || !weapon.IsWorkingBolt)
+                return;
+            float seconds = weapon.BoltSeconds;
+            var cues = weapon.Data.BoltCues;
+            while (boltSounds < cues.Count && seconds >= 0.0f && seconds >= cues[boltSounds].At)
+            {
+                PlaySound(cues[boltSounds].Sound, cues[boltSounds].Volume);
+                boltSounds++;
+            }
+        }
+
+        // The scope (Phase 2.5): coming up while the weapon is scoped (its ScopeSeconds), down at once (halfway: the
+        // overlay goes, the view model comes back down); the zoom shown eased to the wanted one (in proportion: as fast
+        // from 4x to 10x as from 2x to 5x); the camera at the eyes meanwhile, the wheel zooms, the look turns slower
+        void UpdateScope(PlayerWeapon? weapon, float dt)
+        {
+            bool scope = weapon != null && weapon.Data.HasScope;
+            bool scoped = scope && weapon!.IsAiming && !arsenal.IsSwitching;
+            float seconds = scope ? MathF.Max(0.01f, weapon!.Data.ScopeSeconds) : 0.25f;
+            if (scoped)
+                scopeBlend = MathF.Min(1.0f, scopeBlend + dt / seconds);
+            else
+                scopeBlend = MathF.Max(0.0f, MathF.Min(scopeBlend, 0.49f) - dt / seconds);
+            float wanted = scoped ? MathF.Max(1.0f, weapon!.Zoom) : 1.0f;
+            shownZoom = ScopeShown && scopeBlend < 1.0f ? wanted // (coming up: the darkening hides the jump)
+                : MathF.Exp(MathF.Log(shownZoom) + (MathF.Log(wanted) - MathF.Log(shownZoom)) * MathF.Min(1.0f, 12.0f * dt));
+            view.AtEyes = scope && (scoped || scopeBlend > 0.0f);
+            input.WheelZooms = scope && weapon!.Zoom > 0.0f;
+            input.LookScale = ScopeShown ? MathF.Tan(ZoomedFieldOfView(shownZoom) * MathF.PI / 360.0f) /
+                MathF.Tan(baseFieldOfView * MathF.PI / 360.0f) * scopeSensitivity : 1.0f;
+        }
+
+        // The field of view zoom times as narrow as the normal one (as a lens: the tangent of half of it)
+        float ZoomedFieldOfView(float zoom) =>
+            2.0f * MathF.Atan(MathF.Tan(baseFieldOfView * MathF.PI / 360.0f) / MathF.Max(1.0f, zoom)) * 180.0f / MathF.PI;
 
         void PlaySound(string clip, float volume)
         {

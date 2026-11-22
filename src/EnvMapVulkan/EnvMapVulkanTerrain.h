@@ -66,7 +66,8 @@ namespace EnvMapVulkanTerrain
 
 	// Levels of detail (TerrainLods): a chunk farther from the camera is drawn with fewer of its heights. The levels are
 	// chosen from the main view's camera in every pass (the shadow maps too), so the passes see the same ground
-	void SetViewPosition(const glm::vec3& worldPosition); // each frame, before the passes are recorded
+	// detailZoom (Shooter E10, CameraComponent::DetailZoom): the main view's distances times it (a scope's zoom: under 1)
+	void SetViewPosition(const glm::vec3& worldPosition, float detailZoom = 1.0f); // each frame, before the passes are recorded
 
 	// What a terrain's chunk draws: its level's triangles and skirt
 	struct ChunkDraw

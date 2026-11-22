@@ -36,6 +36,12 @@ namespace Outpost
     /// the owner's, so a server and a client would agree. A knife (Melee): a strike on Fire, its blade arriving HitAt
     /// seconds in, a sphere swept from the eyes along the look finds what it reaches; from behind the target a takedown.
     /// What is seen and heard (sounds, the arms' clips, the HUD) reacts to its events and state.
+    ///
+    /// Phase 2.5, the sniper rifle: a bolt worked after each shot (meanwhile the scope is down, no reload starts), and the
+    /// scope: Aim pressed steps through its zooms and back to none, the wheel zooms between, a reload, a sprint or putting
+    /// it away takes it down. Scoped the spread is the scope's (tiny standing, wide moving or in the air) and the look
+    /// sways with breathing, a slow figure of eight; held breath (Sprint or Walk held) steadies it for a few seconds, then
+    /// it sways more until the breath is back. The sway is part of the rules: the shot goes where the swaying view looks.
     /// </summary>
     public sealed class PlayerWeapon
     {
@@ -49,6 +55,12 @@ namespace Outpost
         float hitIn;           // seconds until the strike's blade arrives (negative: it has)
         int fireMode;
         int shots;
+        float boltIn, boltLeft;  // seconds until the bolt is worked after a shot, and of working it left
+        float zoom;              // the scope's magnification wanted (0: no scope)
+        float scopedSeconds;     // how long it has been scoped (the sway's time)
+        float breath = 1.0f;     // the breath to hold (1 full, 0 out of it)
+        bool tired;              // held until out of breath: the sway is larger until the breath is back
+        float swayScale = 1.0f;  // the sway now (eased: steadied, tired, normal)
 
         public PlayerWeapon(WeaponData data, Entity owner)
         {
@@ -77,9 +89,45 @@ namespace Outpost
         /// <summary>The spread now (degrees, the cone's half angle), from the last step: the HUD's crosshair shows it.</summary>
         public float Spread { get; private set; }
 
+        /// <summary>The bolt is being worked after a shot, or is about to be (no scope, no reload meanwhile).</summary>
+        public bool IsWorkingBolt => boltIn > 0.0f || boltLeft > 0.0f;
+
+        /// <summary>The scope's magnification wanted (0: none): the view zooms to it while IsAiming.</summary>
+        public float Zoom => zoom;
+
+        /// <summary>Holding breath to steady the scope, and how much breath is left (0 to 1).</summary>
+        public bool HoldingBreath { get; private set; }
+        public float Breath => breath;
+
+        /// <summary>The sway's size now: 1 normal, less steadied, more tired (eased between).</summary>
+        public float SwayScale => swayScale;
+
+        /// <summary>
+        /// The sway's turn of the look now (degrees: yaw, pitch), ahead seconds after the last step (the frames between two
+        /// steps): zero unless scoped.
+        /// </summary>
+        public Vector2 SwayAt(float ahead)
+        {
+            if (!data.HasScope || !IsAiming)
+                return Vector2.Zero;
+            float t = (scopedSeconds + ahead) * 2.0f * MathF.PI / MathF.Max(0.5f, data.SwaySeconds);
+            // A slow figure of eight (side to side once, up and down twice) with a little of a faster drift in it
+            float yaw = MathF.Sin(t) + 0.3f * MathF.Sin(2.7f * t + 1.1f);
+            float pitch = 0.8f * MathF.Sin(2.0f * t + 0.6f) + 0.25f * MathF.Sin(3.3f * t);
+            // (it starts from the middle: eased in over the first second scoped)
+            float ease = MathF.Min(1.0f, (scopedSeconds + ahead) / 1.0f);
+            return new Vector2(yaw, pitch) * data.SwayDegrees * swayScale * ease;
+        }
+
         public event Action<ShotResult>? Fired;
         public event Action? DryFired, ReloadStarted, ReloadFinished;
         public event Action<string>? FireModeChanged;
+
+        /// <summary>The bolt's working started (BoltAfter seconds after a shot), and ended (the scope may come back up).</summary>
+        public event Action? BoltStarted, BoltFinished;
+
+        /// <summary>The scope's zoom wanted changed (Aim stepped it; 0: down by Aim). The wheel's smooth zoom doesn't count.</summary>
+        public event Action<float>? ZoomStepped;
 
         /// <summary>The knife: a strike started; its blade arrived (what it hit, Hit false: nothing in reach); the strike ended.</summary>
         public event Action? Swung, AttackEnded;
@@ -91,6 +139,15 @@ namespace Outpost
             reloadLeft = 0.0f;
             strikeLeft = 0.0f;
             IsAiming = false;
+            zoom = 0.0f;
+            scopedSeconds = 0.0f;
+            HoldingBreath = false;
+            // A bolt being worked is finished on the way down (the round is in when it comes out again)
+            if (IsWorkingBolt)
+            {
+                boltIn = boltLeft = 0.0f;
+                BoltFinished?.Invoke();
+            }
         }
 
         public void Step(in PlayerCommand command, in AimContext aim, float dt)
@@ -104,8 +161,17 @@ namespace Outpost
             sinceShot += dt;
             if (sinceShot >= data.SpreadRecoveryDelay)
                 spreadExtra = MathF.Max(0.0f, spreadExtra - data.SpreadRecovery * dt);
-            IsAiming = command.Aim && data.CanAimDownSights && !IsReloading && !aim.Sprinting;
-            Spread = (BaseSpread(aim) + spreadExtra) * (IsAiming ? data.AimSpreadScale : 1.0f);
+            StepBolt(dt);
+            if (data.HasScope)
+            {
+                StepScope(command, aim, dt);
+                Spread = IsAiming ? ScopeSpread(aim) : BaseSpread(aim) + spreadExtra;
+            }
+            else
+            {
+                IsAiming = command.Aim && data.CanAimDownSights && !IsReloading && !aim.Sprinting;
+                Spread = (BaseSpread(aim) + spreadExtra) * (IsAiming ? data.AimSpreadScale : 1.0f);
+            }
 
             if (command.FireMode && data.FireModes.Length > 1)
             {
@@ -126,7 +192,7 @@ namespace Outpost
                 }
                 return; // no shots while reloading
             }
-            if (command.Reload && Ammo < data.Magazine && Reserve > 0)
+            if (command.Reload && Ammo < data.Magazine && Reserve > 0 && !IsWorkingBolt)
             {
                 StartReload();
                 return;
@@ -152,6 +218,87 @@ namespace Outpost
             sinceShot = 0.0f;
             Fired?.Invoke(Shoot(command, aim));
             spreadExtra = MathF.Min(data.SpreadMax, spreadExtra + data.SpreadPerShot);
+            // A bolt action: worked after the shot (not after the last round: the reload opens it anyway)
+            if (data.HasBolt && Ammo > 0)
+                boltIn = MathF.Max(0.001f, data.BoltAfter);
+        }
+
+        void StepBolt(float dt)
+        {
+            if (boltIn > 0.0f)
+            {
+                boltIn -= dt;
+                if (boltIn <= 0.0f)
+                {
+                    boltIn = 0.0f;
+                    boltLeft = MathF.Max(0.001f, data.BoltSeconds);
+                    BoltStarted?.Invoke();
+                }
+            }
+            else if (boltLeft > 0.0f)
+            {
+                boltLeft -= dt;
+                if (boltLeft <= 0.0f)
+                {
+                    boltLeft = 0.0f;
+                    BoltFinished?.Invoke();
+                }
+            }
+        }
+
+        /// <summary>Seconds into the bolt's working (negative: not started yet; meaningless when not working it).</summary>
+        public float BoltSeconds => boltLeft > 0.0f ? data.BoltSeconds - boltLeft : -boltIn;
+
+        // The scope: Aim pressed steps to the next zoom (from a zoom the wheel set: the next one above it), past the last
+        // one down; the wheel zooms smoothly; a reload or a sprint takes it down. Scoped (not during the bolt) it sways
+        void StepScope(in PlayerCommand command, in AimContext aim, float dt)
+        {
+            if (command.AimPressed && !IsReloading && !aim.Sprinting)
+            {
+                float next = 0.0f;
+                foreach (float level in data.ScopeZooms)
+                    if (level > zoom + 0.01f)
+                    {
+                        next = level;
+                        break;
+                    }
+                zoom = next;
+                ZoomStepped?.Invoke(zoom);
+            }
+            if (zoom > 0.0f && command.Zoom != 0.0f)
+                zoom = Math.Clamp(zoom * MathF.Pow(data.ScopeWheelStep, command.Zoom), data.ScopeMinZoom, data.ScopeMaxZoom);
+            if (IsReloading || aim.Sprinting)
+                zoom = 0.0f;
+            IsAiming = zoom > 0.0f && !IsReloading && !aim.Sprinting && !IsWorkingBolt;
+
+            // Breath: held (Sprint or Walk) while scoped and not out of it, used up in SteadySeconds; otherwise back in
+            // RecoverSeconds; once out of it, tired until most of it is back
+            HoldingBreath = IsAiming && (command.Sprint || command.Walk) && !tired && breath > 0.0f;
+            if (HoldingBreath)
+            {
+                breath = MathF.Max(0.0f, breath - dt / MathF.Max(0.1f, data.SteadySeconds));
+                if (breath <= 0.0f)
+                    tired = true;
+            }
+            else
+            {
+                breath = MathF.Min(1.0f, breath + dt / MathF.Max(0.1f, data.SteadyRecoverSeconds));
+                if (tired && breath >= 0.6f)
+                    tired = false;
+            }
+            float wanted = HoldingBreath ? data.SteadyScale : tired ? data.TiredScale : 1.0f;
+            swayScale += (wanted - swayScale) * MathF.Min(1.0f, 3.0f * dt);
+            scopedSeconds = IsAiming ? scopedSeconds + dt : 0.0f;
+        }
+
+        // Scoped: the scope's own spread, tiny standing still, wide moving or in the air (the scope's view is no help then)
+        float ScopeSpread(in AimContext aim)
+        {
+            if (!aim.Grounded)
+                return data.ScopeAir;
+            float moving = Math.Clamp(aim.Speed / MathF.Max(0.1f, data.ScopeMovingSpeed), 0.0f, 1.0f);
+            float spread = data.ScopeStill + (data.ScopeMoving - data.ScopeStill) * moving;
+            return aim.Crouched ? spread * data.SpreadCrouched : spread;
         }
 
         void StepMelee(in PlayerCommand command, in AimContext aim, float dt)
@@ -229,6 +376,7 @@ namespace Outpost
         {
             reloadLeft = data.ReloadSeconds;
             IsAiming = false;
+            zoom = 0.0f;
             ReloadStarted?.Invoke();
         }
 
@@ -252,7 +400,9 @@ namespace Outpost
         {
             int index = shots++;
             Random random = new Random(Seed(owner.Id, index));
-            Vector3 look = LookDirection(command.Yaw, command.Pitch);
+            // (scoped, where the swaying view looks: the reticle's middle)
+            Vector2 sway = SwayAt(0.0f);
+            Vector3 look = LookDirection(command.Yaw + sway.X, command.Pitch + sway.Y);
             Vector3 direction = InCone(look, Spread, random);
 
             ShotResult shot = new ShotResult { Index = index, Direction = direction, Zone = "" };

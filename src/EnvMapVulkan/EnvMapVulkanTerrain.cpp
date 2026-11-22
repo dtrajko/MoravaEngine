@@ -39,6 +39,7 @@ namespace EnvMapVulkanTerrain
 	static std::unordered_map<EnvMapVulkanEntityID, TerrainGPU> s_Terrains;
 	static std::unordered_map<const H2M::ModelH2M*, EnvMapVulkanEntityID> s_ByModel;
 	static glm::vec3 s_ViewPosition = glm::vec3(0.0f);
+	static float s_DetailZoom = 1.0f; // the main view's distances' scale (SetViewPosition)
 
 	static H2M::RefH2M<H2M::VulkanShaderH2M> GetMaterialShader()
 	{
@@ -300,9 +301,10 @@ namespace EnvMapVulkanTerrain
 		s_ByModel.clear();
 	}
 
-	void SetViewPosition(const glm::vec3& worldPosition)
+	void SetViewPosition(const glm::vec3& worldPosition, float detailZoom)
 	{
 		s_ViewPosition = worldPosition;
+		s_DetailZoom = glm::clamp(detailZoom, 0.01f, 100.0f);
 	}
 
 	bool ChooseChunk(const H2M::ModelH2M* model, size_t meshIndex, const glm::mat4& meshTransform, ChunkDraw& draw,
@@ -325,7 +327,9 @@ namespace EnvMapVulkanTerrain
 		const glm::vec3 extent = glm::abs(glm::vec3(meshTransform[0])) * half.x + glm::abs(glm::vec3(meshTransform[1])) * half.y +
 			glm::abs(glm::vec3(meshTransform[2])) * half.z;
 		const glm::vec3 view = viewPosition ? *viewPosition : s_ViewPosition;
-		const float distance = glm::length(glm::max(glm::abs(view - center) - extent, glm::vec3(0.0f)));
+		// (the main view's as its zoom sees it: E10; a probe's capture as it is)
+		const float zoom = viewPosition ? 1.0f : s_DetailZoom;
+		const float distance = glm::length(glm::max(glm::abs(view - center) - extent, glm::vec3(0.0f))) * zoom;
 		const TerrainLods::Chunk& chunk = gpu->second.Lods->Chunks[meshIndex];
 		draw.Level = TerrainLods::LevelAt(chunk, distance, gpu->second.LodTolerance * toleranceScale);
 		draw.Surface = chunk.Surface[draw.Level];

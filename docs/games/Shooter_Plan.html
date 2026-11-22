@@ -151,17 +151,29 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><a href="#risks">Risks</a></li>
       <li><a href="#performance">The performance target</a></li>
       <li><a href="#design">The game's design</a></li>
+      <li class="sub"><a href="#design-player">The player</a></li>
+      <li class="sub"><a href="#design-weapons">The weapons</a></li>
+      <li class="sub"><a href="#scope">The sniper scope</a></li>
+      <li class="sub"><a href="#design-mission">A mission</a></li>
       <li><a href="#views">First and third person</a></li>
       <li><a href="#ai">The guards' AI</a></li>
       <li><a href="#level">The level and how it is made</a></li>
       <li><a href="#content">Content: models, animations, sounds</a></li>
       <li><a href="#multiplayer">Keeping multiplayer possible</a></li>
       <li><a href="#engine">The engine work (E1–E11)</a></li>
-      <li class="sub"><a href="#e1-1">E1.1 the library and the bake</a></li>
-      <li class="sub"><a href="#e1-2">E1.2 the Nav Mesh, Bake, .mnav and the debug view</a></li>
-      <li class="sub"><a href="#e1-3">E1.3 the queries, C#'s Navigation and the two-click path</a></li>
-      <li class="sub"><a href="#e1-4">E1.4 the Nav Agent, the crowd and the character</a></li>
-      <li class="sub"><a href="#e1-5">E1.5 areas, links, Not Walkable, packs and the player</a></li>
+      <li class="sub"><a href="#e1">E1 Navigation</a></li>
+      <li class="sub2"><a href="#e1-1">E1.1 the library and the bake</a></li>
+      <li class="sub2"><a href="#e1-2">E1.2 the Nav Mesh, Bake, .mnav and the debug view</a></li>
+      <li class="sub2"><a href="#e1-3">E1.3 the queries, C#'s Navigation and the two-click path</a></li>
+      <li class="sub2"><a href="#e1-4">E1.4 the Nav Agent, the crowd and the character</a></li>
+      <li class="sub2"><a href="#e1-5">E1.5 areas, links, Not Walkable, packs and the player</a></li>
+      <li class="sub"><a href="#e2">E2 the first-person view model</a></li>
+      <li class="sub"><a href="#e3">E3 bone attachments, E4 hitboxes</a></li>
+      <li class="sub"><a href="#e5">E5 animation layers and aim offset</a></li>
+      <li class="sub"><a href="#e6">E6 decals</a></li>
+      <li class="sub"><a href="#e7">E7 crouch, E8 lights in C#, E9 sound in rooms</a></li>
+      <li class="sub"><a href="#e10">E10 detail by the field of view</a></li>
+      <li class="sub"><a href="#e11">E11 shadow optimization</a></li>
       <li><a href="#phases">The phases</a></li>
       <li class="sub"><a href="#phase-0">Phase 0: the project, and the content check</a></li>
       <li class="sub2"><a href="#phase-0-1">0.1 the project</a></li>
@@ -177,6 +189,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li class="sub2"><a href="#phase-2-2">2.2 the rifle fires</a></li>
       <li class="sub2"><a href="#phase-2-3">2.3 the effects</a></li>
       <li class="sub2"><a href="#phase-2-4">2.4 the pistol and the knife, switching, aiming down the sights</a></li>
+      <li class="sub2"><a href="#phase-2-5">2.5 the sniper rifle and its scope (E10)</a></li>
       <li class="sub"><a href="#phase-3">Phase 3: health, pickups and the HUD</a></li>
       <li class="sub"><a href="#phase-4">Phase 4: navigation (E1)</a></li>
       <li class="sub"><a href="#phase-5">Phase 5: the guards</a></li>
@@ -359,7 +372,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
 
 <section id="design">
   <h2>The game's design</h2>
-  <h3>The player</h3>
+  <h3 id="design-player">The player</h3>
   <ul>
     <li><b>Moving</b> (as built, the user's choices, 2026-11-17 and 18): a fast walk at 3 m/s (WASD), a sprint at 6.5 (Shift,
       forward), walking quietly at 2.2 (Alt: guards hear less), crouching at 1.8. Jumping 1 m (onto crates, over
@@ -368,7 +381,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       health comes from health packs (small +25, large +50) and armor from vests.</li>
     <li><b>Falling:</b> damage from about 5 m.</li>
   </ul>
-  <h3>The weapons</h3>
+  <h3 id="design-weapons">The weapons</h3>
   <div class="table-wrap"><table>
     <tr><th>Weapon</th><th>Fire</th><th>Damage (body, head)</th><th>Magazine, spare</th><th>Notes</th></tr>
     <tr><td>Assault rifle (AK-style)</td><td>Semi or automatic, 600 shots/min</td><td>30, ×4 to the head</td><td>30, 90</td><td>Recoil climbs in a set pattern then drifts; accurate when still, less when moving or jumping</td></tr>
@@ -410,7 +423,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       detail (<code>LodTolerance</code>) must then choose the detail of the nearer one. Shadows' distance and the probes
       are checked as well.</li>
   </ul>
-  <h3>A mission</h3>
+  <h3 id="design-mission">A mission</h3>
   <ul>
     <li>A briefing screen with the objectives, the level, then a debriefing with the time, accuracy, guards defeated,
       alarms raised and a rating.</li>
@@ -551,7 +564,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
   <p>Each is an engine feature for any game, written up in the engine guide (likely a new section, as 12.1 Particles
   was) with its Inspector, C# API, overlay or debug view, and a test scene. They are done inside the shooter's phases, as
   the racing game's particles were.</p>
-  <h3>E1 Navigation</h3>
+  <h3 id="e1">E1 Navigation</h3>
   <div class="box note"><b>It can come first, on its own</b>
     The user sees AI navigation as one of the major quality improvements for MoravaEngine (2026-11-15). It is the largest
     piece here, useful to any game (the Sample project's characters, companions, crowds), and it doesn't depend on the
@@ -801,7 +814,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         check clean.</li>
     </ul>
   </div>
-  <h3>E2 The first-person view model</h3>
+  <h3 id="e2">E2 The first-person view model</h3>
   <ul>
     <li>Entities marked <b>View Model</b> are drawn after the scene with their own field of view and a near depth range, so
       they never cut into a wall the player stands against. They are lit by the same lights and probes. They cast no
@@ -809,7 +822,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>Kept out of TAA's smearing (they move with the camera) and out of the ray-traced passes.</li>
     <li><b>Built in Phase 1.3</b> (its box below): the model's <i>View Model</i>, the camera's <i>View Model Field of View</i>.</li>
   </ul>
-  <h3>E3 Bone attachments, E4 Hitboxes</h3>
+  <h3 id="e3">E3 Bone attachments, E4 Hitboxes</h3>
   <ul>
     <li>A <b>Bone Attachment</b> component: the entity follows a named bone of an animated model (with an offset). Guns in
       hands, a helmet, a flashlight, hitboxes.</li>
@@ -819,7 +832,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>Built in Phase 2.1 (its box below): the Bone Attachment and <code>GetBoneTransform</code>. The hitboxes (E4) come
       with the guards (Phase 5).</li>
   </ul>
-  <h3>E5 Animation layers and aim offset</h3>
+  <h3 id="e5">E5 Animation layers and aim offset</h3>
   <ul>
     <li>The animator gets layers: a second state machine for the upper body (a bone mask from the spine up) on top of the
       legs' locomotion, with a weight.</li>
@@ -831,7 +844,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       blended up and down by the look's pitch; left and right need no poses, as the body holding a gun faces the look
       (the player's: walking every way by a blend of the move's direction).</li>
   </ul>
-  <h3>E6 Decals</h3>
+  <h3 id="e6">E6 Decals</h3>
   <ul>
     <li>A <b>Decal</b> component: a box that projects a texture onto the opaque surfaces inside it (bullet holes, scorch
       marks, posters, stains), drawn after the opaque pass from the depth and normals, multiplied (as the trails are) or
@@ -839,7 +852,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>C#: <code>Decals.Spawn(texture, position, normal, size, lifetime)</code> into a pool with a limit (the oldest
       fade out), not as entities, for the hundreds of bullet holes in a firefight.</li>
   </ul>
-  <h3>E7 Crouch, E8 Lights in C#, E9 Sound in rooms</h3>
+  <h3 id="e7">E7 Crouch, E8 Lights in C#, E9 Sound in rooms</h3>
   <ul>
     <li><b>E7:</b> <code>CharacterController.Height</code> can change while the game runs, refused (stays crouched) when
       something is above.</li>
@@ -848,15 +861,22 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li><b>E9:</b> sounds behind walls muffled (a ray from listener to source; a low-pass filter and less volume), and
       reverb zones (a hall, a corridor, outdoors) as trigger volumes. Optional: the game works without it.</li>
   </ul>
-  <h3>E10 Detail by the field of view</h3>
+  <h3 id="e10">E10 Detail by the field of view</h3>
   <ul>
     <li>Every distance that picks a level of detail (foliage impostors, the terrain's chunks, model LODs when they come) is
       measured as the camera's zoom sees it: the distance times the ratio of the zoomed field of view to the camera's
       normal one. Without a zoom nothing changes.</li>
     <li>The shadow cascades' distance and the culling stay as they are; the scope's narrow view draws less, not more.</li>
     <li>Checked in Racing's circuit with a test camera at 10× (the trees and the terrain far away), then in the base.</li>
+    <li><b>Built in Phase 2.5</b> (<a href="#phase-2-5">its box</a>): the camera's <i>Normal Field of View</i> (Inspector,
+      scene file, C# <code>Camera.NormalFieldOfView</code>; 0, off: as before), <code>CameraComponent::DetailZoom</code>
+      (the tangent of half the field of view over the normal one's), and the renderer's <code>SetDetailZoom</code> from the
+      game camera (the editor's view: 1): the terrain's chunks (in every pass, the shadows' too, so they fall on the ground
+      drawn; a probe's capture as before) and the foliage's impostor distance and fade divided by it. The fields of view
+      go down to 2 degrees now (12x of 70 is 6.7). Checked in Racing's circuit through a 7 degree camera: 195 trees as
+      impostors without it, as models with it.</li>
   </ul>
-  <h3>E11 Shadow optimization</h3>
+  <h3 id="e11">E11 Shadow optimization</h3>
   <div class="box">Added 2026-11-17 (the user): "we should seriously think how to optimize all types of shadows". Measured
     in Sample's Followers scene in the editor's Play (Debug, 1.65 M triangles): 46 ms of GPU time, of it 20 ms the point
     lights' shadows and 13.5 ms the sun's. Postponed to Phase 6 (the user's choice), where the base's many lamps need it
@@ -1317,7 +1337,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         rifle, so the first-person view keeps its picture. Aimed down, the left arm reaches nearly straight down the gun:
         its elbow may be 13 cm over the wrist there (was 6; the wrist is lower, under the handguard). The previews add
         close-ups of the left hand and the face and cross-sections through the handguard. Left for 2.5: the sniper's
-        idle hold has the index finger 7 mm in its forend (wider above its keel than the box).</li>
+        idle hold has the index finger 7 mm in its forend (wider above its keel than the box): fixed in <a href="#phase-2-5">2.5</a>.</li>
       <li><b>The back and the shoulders</b> (the user, 2026-11-20: the back, the shoulders and the upper arms unnaturally bent,
         not a person's). The aim poses started from the library's pistol stance, whose arms reach straight out: its
         collarbones shrugged the shoulders up and forward and its spine rounded the back, and the chest twisted 30 degrees on
@@ -1497,6 +1517,84 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         holstered weapons are hidden, not on the body (a holster and a sheath are content for later);
         the knife has no idle while moving of its own (the run's arms are the upper layer's); the pistol aimed up and down
         bends the back as the rifle's poses do; a strike can't miss its sphere's first hit (a wall in front stops it).</li>
+    </ul>
+  </div>
+  <div class="box ok" id="phase-2-5"><b>As built: 2.5 the sniper rifle and its scope, E10 (2026-11-22)</b>
+    <p>The last step of Phase 2, as <a href="#scope">the scope's design</a> has it. With it the user's two requests of the
+    day (the get-up's hands and elbows, a Lights section in the debug overlay) and a fix the hand switch found: the
+    weapons' clips played 25 % slow.</p>
+    <ul>
+      <li><b>The weapon</b> (<code>Assets/Weapons/Sniper.weapon.json</code>, slot 2): bolt action, one shot every 1.5 s, 90
+        damage (x4 to the head: one shot), 5 rounds and 15 more, an 800 m range. Unscoped its spread is 2.5 degrees
+        standing, 7 moving, 10 in the air: it is meant to be scoped. It slows its carrier (<code>MoveSpeedScale</code>
+        0.9, also the sprint). Its own sounds (<code>GenerateWeaponSounds.py</code>): a harder, heavier shot with a long
+        tail over the yard, the empty click, the bolt open (the case's tinkle) and shut, a round pressed in.</li>
+      <li><b>The bolt</b> (<code>Bolt</code>): worked 0.4 s after each shot (not after the last round: the reload opens it),
+        1.1 s, the body's and the arms' <code>Sniper_Bolt</code>, its sounds at their moments; meanwhile the scope is down
+        and no reload starts; put away mid-bolt, the round is in when it comes out again.</li>
+      <li><b>The scope</b> (<code>Scope</code>): Aim pressed steps off, 4x, 10x, off; scoped, the wheel zooms between 2x and
+        12x (1.25 times a notch) and doesn't switch weapons; a reload, a sprint or a switch takes it down. Coming up (0.25
+        s) the view model rises to the eye, then the overlay shows with a darkening that fades while the view narrows to
+        the zoom (a lens's: the half angle's tangent over the zoom; 70 degrees at 10x: 8.0). In third person the camera
+        glides to the eyes while scoped and back after (the view and the shoulder stay). The view model and the crosshair
+        are hidden; the HUD adds the zoom after the fire mode. The look turns slower in proportion to the zoom, times the
+        <code>ScopeSensitivity</code> setting (1). Scoped the spread is the scope's: 0.02 degrees standing (2 cm at 50 m),
+        1.5 walking (from 1.2 m/s: scoped it walks at half speed), 6 in the air.</li>
+      <li><b>The sway</b>: scoped, the look sways in a slow figure of eight (0.05 degrees at most, 4.5 s round, eased in
+        over the first second): 2 cm at 29 m, half the scope's width at 10x. It is part of the rules: the shot goes where
+        the swaying view looks. Holding breath steadies it to 0.15 for 4 s: Shift (Sprint) or Alt (Walk) held, the plan's
+        "Shift (walk)" and the input map's Walk both; out of breath it sways 1.8 times as much until 60 % of the breath is
+        back (6 s for all of it).</li>
+      <li><b>The overlay</b> (<code>Tools/Textures/GenerateScopeTextures.py</code> writes
+        <code>Assets/Textures/UI/Scope.png</code>, 1024 square): black outside the lens, a soft vignette, thin crosshairs,
+        thick posts from halfway out (none above), five mil dots each way, four range bars under the middle. It is on a
+        canvas of its own matched to the screen's height (Match 1), so the lens is always as high as the screen and round,
+        black bars beside it; under the HUD's canvas.</li>
+      <li><b>The gun held in the other hand</b>: every weapon is a model on the right hand's bone (E3), and the sniper's
+        bolt and reload take the right hand off the grip: the gun went with the hand. The sniper has a second model on
+        <code>hand_l</code> (body and view model), shown while the right hand works the bolt (the file's
+        <code>LeftHand</code>: the seconds into each clip, the gun's place in the left hand, which the bake measures:
+        rigid, 0.0 mm and 0.0 degrees over every frame the hand holds it). The poses give both hands a tenth of a second
+        on the gun either side of each switch; the reload was made so: the right hand opens the bolt while the left holds
+        the forend, goes back to the grip while the left loads two rounds through the port, then shuts the bolt while the
+        left holds the forend again. The bolt no longer rolls the gun 6 degrees (the left hand moved 12 mm on the forend
+        with it).</li>
+      <li><b>The weapons' clips played 25 % slow</b> (since 2.1, found by the hand switch: the left hand's model 3 cm and 20
+        degrees from the right's where both should hold): the pose script keys by frame and the export makes seconds by
+        the scene's frame rate, which importing the guns (FBX) set to 24. All of <code>Soldier_Rifles.glb</code> and
+        <code>Soldier_Sidearms.glb</code> are now 30 frames a second, as made (the rifle's reload 2.2 s, not 2.7; the
+        knife's slash 0.5, not 0.6); the fast walks and the get-up were right.</li>
+      <li><b>The poses</b> (<code>make_rifle_poses.py</code>): the scene's sniper offsets as the script prints them (on
+        <code>hand_r</code> the rifle's turn, 2 cm higher and 4 cm further along). 2.1's open point fixed: the sniper's
+        idle index finger 7 mm in the forend; a finger still in at the most it may be held out is now opened step by step
+        (<code>finger_limits</code>). The low ready is checked against the face in every frame too (1 cm), which found
+        the rifle's stock 4 mm in the jaw while breathing and the sniper's 1 cm: both lower (<code>LowReady</code> per
+        weapon), the sniper's also less across the chest (its left elbow may be 5 cm above the wrist there, the arm down
+        its long forend).</li>
+      <li><b>E10</b> (<a href="#e10">as built</a>): the camera's <code>NormalFieldOfView</code>; the player sets it to the
+        unzoomed view.</li>
+      <li><b>The get-up</b> (the user, 2026-11-22: the hands always forward, never backwards; the elbows not twisted, as in
+        idle): <code>make_get_up.py</code>'s hands point forward in every key pose (palm down, the fingers toward the feet:
+        beside the hips, behind them sitting, on the knees), the sweep from overhead bends the arm instead of reaching out
+        to the side. Each arm bone's roll about its length is Idle_Loop's measured from the arm's bend plane, so the elbow
+        stays a hinge (before, each bone took the least turn and its roll drifted). The wrists' turn from Idle's way is
+        reported: at most 91 and 82 degrees, where the palm lies flat on the floor (the wrist bent back).</li>
+      <li><b>The debug overlay</b> (the user, 2026-11-22): a Lights section, the direct light (on or off, its intensity,
+        shadows, or none), the point lights and the spot lights (how many in the scene, how many on and with shadows, a
+        running game's flashes counted apart; red past the 16 the shaders take or the 4 shadowed); and a Foliage row (the
+        copies drawn as models and as impostors), which shows E10 at work.</li>
+      <li><b>Checked</b>: the test copy 101/101 in editor Play (the 76 before, then the sniper 29 m from Dummy_2: out with
+        its models and states, E10's field set, 4x and 10x (19.9 and 8.0 degrees), the wheel to 12x and down three
+        notches, held breath steadying the sway (0.17), a scoped shot to the head (360), the scope down for the bolt and
+        back up, the gun in the left hand on the bolt, the hand switches 0.0 cm and 0.0 degrees apart in the bolt and the
+        reload, the reload (5/14, the scope down), walking scoped (1.35 m/s, spread 1.5), past 10x off, scoping from third
+        person (the camera at the eyes, the body hidden) and back over the shoulder, a switch while scoped). Racing's
+        circuit through a 7 degree camera, about 300 m off: without the normal field of view 195 trees drawn as
+        impostors, with it 195 as models; the terrain 61.5 k triangles, then 106 k. No validation messages.</li>
+      <li><b>Limits</b>: no blur when the scope comes up (no blur pass yet: the darkening alone); the shot's muzzle flash
+        while scoped is the body's, in the world (the view model is hidden); the left-hand model's place is set by the clip
+        (a crossfade into the bolt or the reload holds the right hand's until the switch); the sniper guards with a laser
+        or a glint wait for Phase 5, the long sight lines for Phase 6.</li>
     </ul>
   </div>
   <h3 id="phase-3">Phase 3: health, pickups and the HUD</h3>

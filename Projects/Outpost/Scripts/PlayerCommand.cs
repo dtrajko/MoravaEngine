@@ -35,8 +35,11 @@ namespace Outpost
         /// <summary>Reload was pressed; FireMode was pressed (the rifle: automatic or semi-automatic).</summary>
         public bool Reload, FireMode;
 
-        /// <summary>Aim is held: down the sights (Phase 2.4).</summary>
-        public bool Aim;
+        /// <summary>Aim is held: down the sights (Phase 2.4); was pressed since the last step: the scope's next zoom (Phase 2.5).</summary>
+        public bool Aim, AimPressed;
+
+        /// <summary>The wheel's notches while scoped (Phase 2.5): positive zooms in, negative out (0 none).</summary>
+        public float Zoom;
 
         /// <summary>
         /// Switching weapons (Phase 2.4): a slot's key was pressed (1 to 4; 0 none), the weapons were stepped through
@@ -76,6 +79,12 @@ namespace Outpost
         /// <summary>Times the input map's Look (0.1 degrees per pixel, 180 degrees per second on the stick).</summary>
         public float Sensitivity = 1.0f;
 
+        /// <summary>The look's turn times this too, set each frame (scoped: slower in proportion to the zoom; 1 otherwise).</summary>
+        public float LookScale = 1.0f;
+
+        /// <summary>Scoped (set each frame): the wheel zooms instead of switching weapons.</summary>
+        public bool WheelZooms;
+
         float yaw, pitch;
         bool crouchToggled;
         float kickUp;      // degrees the shots' kicks raised the look, not yet taken back
@@ -99,7 +108,7 @@ namespace Outpost
             InputAction look = Input.GetAction("Look");
             if (!Input.MouseCaptured && !look.FromGamepad)
                 return;
-            Vector2 turn = look.Value * Sensitivity;
+            Vector2 turn = look.Value * Sensitivity * LookScale;
             yaw = ((yaw - turn.X * dt) % 360.0f + 360.0f) % 360.0f;
             pitch = Math.Clamp(pitch - turn.Y * dt, -89.0f, 89.0f);
         }
@@ -126,7 +135,9 @@ namespace Outpost
                     slot = key;
             // The wheel down (negative notches) takes the next weapon, up the previous one
             int cycle = Input.WasPressed("NextWeapon") ? 1 : Input.WasPressed("PreviousWeapon") ? -1 : 0;
-            if (cycle == 0 && MathF.Abs(wheel) >= 0.5f)
+            // Scoped the wheel zooms (up: in), and doesn't switch weapons
+            float zoom = WheelZooms ? wheel : 0.0f;
+            if (cycle == 0 && !WheelZooms && MathF.Abs(wheel) >= 0.5f)
                 cycle = wheel < 0.0f ? 1 : -1;
             wheel = 0.0f;
             return new PlayerCommand
@@ -143,6 +154,8 @@ namespace Outpost
                 Reload = Input.WasPressed("Reload"),
                 FireMode = Input.WasPressed("FireMode"),
                 Aim = Input.IsHeld("Aim"),
+                AimPressed = Input.WasPressed("Aim"),
+                Zoom = zoom,
                 WeaponSlot = slot,
                 WeaponCycle = cycle,
                 LastWeapon = Input.WasPressed("LastWeapon"),

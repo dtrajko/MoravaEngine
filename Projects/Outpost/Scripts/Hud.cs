@@ -11,7 +11,9 @@ namespace Outpost
     /// uses the engine's font until the HUD gets its own (Phase 3). Phase 2.3: the hit marker, four short diagonal bars
     /// round the crosshair while a shot that hit fades (red when it downed its target). Phase 2.4: the weapon's name before
     /// its fire mode; the knife has no ammo and no spread (no bars); down the sights in first person the bars go (the
-    /// sights are the aim).
+    /// sights are the aim). Phase 2.5: the sniper's scope, on a canvas of its own matched to the screen's height (so the
+    /// lens stays round in any aspect ratio, black bars beside it): shown while the player's view is the scope's, with the
+    /// darkening of its coming up; the crosshair's bars go meanwhile, and the zoom shows after the fire mode.
     /// </summary>
     public class Hud : Entity
     {
@@ -19,6 +21,9 @@ namespace Outpost
         public Entity? CrosshairTop, CrosshairBottom, CrosshairLeft, CrosshairRight;
         public Entity? Ammo, FireMode;
         public Entity? HitTopLeft, HitTopRight, HitBottomLeft, HitBottomRight;
+
+        /// <summary>The scope's overlay: its root (the lens and the bars under it), and the darkening over it.</summary>
+        public Entity? Scope, ScopeDark;
 
         /// <summary>The hit marker's bars: pixels from the middle to their middles, and their colors (a hit, a kill).</summary>
         public float HitMarkerGap = 13.0f;
@@ -33,6 +38,9 @@ namespace Outpost
         UIRect?[] hitRects = Array.Empty<UIRect?>();
         UIImage?[] hitImages = Array.Empty<UIImage?>();
         Morava.Camera? camera;
+        UIRect? scopeRect;
+        UIRect? scopeDarkRect;
+        UIImage? scopeDarkImage;
 
         protected override void OnCreate()
         {
@@ -49,6 +57,9 @@ namespace Outpost
             Entity?[] hits = { HitTopLeft, HitTopRight, HitBottomLeft, HitBottomRight };
             hitRects = Array.ConvertAll(hits, e => e?.GetComponent<UIRect>());
             hitImages = Array.ConvertAll(hits, e => e?.GetComponent<UIImage>());
+            scopeRect = Scope?.GetComponent<UIRect>();
+            scopeDarkRect = ScopeDark?.GetComponent<UIRect>();
+            scopeDarkImage = ScopeDark?.GetComponent<UIImage>();
         }
 
         protected override void OnUpdate(float dt)
@@ -56,10 +67,12 @@ namespace Outpost
             PlayerWeapon? weapon = player?.Weapon;
             bool shown = weapon != null && player != null && !player.IsFlying;
             SetVisible(shown);
+            UpdateScope(shown && player != null && player.ScopeShown);
             if (!shown || weapon == null || player == null)
                 return;
-            // The bars: not for the knife, nor down the sights in first person
-            bool bars = !weapon.IsMelee && !(player.View == ViewMode.FirstPerson && player.AimBlend > 0.5f);
+            // The bars: not for the knife, nor down the sights in first person, nor through the scope
+            bool bars = !weapon.IsMelee && !(player.View == ViewMode.FirstPerson && player.AimBlend > 0.5f && !weapon.Data.HasScope) &&
+                !player.ScopeShown;
             foreach (UIRect? rect in new[] { top, bottom, left, right })
                 if (rect != null && rect.Visible != bars)
                     rect.Visible = bars;
@@ -84,6 +97,8 @@ namespace Outpost
             {
                 string name = weapon.Data.Name.ToUpperInvariant();
                 string text = weapon.IsMelee ? name : $"{name}   {weapon.FireMode.ToUpperInvariant()}";
+                if (player.ScopeShown)
+                    text += $"   {player.ScopeZoom:0.0}x";
                 if (fireMode.Text != text)
                     fireMode.Text = text;
             }
@@ -114,6 +129,19 @@ namespace Outpost
                 if (hitImages[i] is UIImage image)
                     image.Color = new Vector4(color.X, color.Y, color.Z, color.W * MathF.Min(1.0f, shown * 1.5f));
             }
+        }
+
+        // The scope's overlay while the view is the scope's, the darkening fading as it comes up
+        void UpdateScope(bool scoped)
+        {
+            if (scopeRect != null && scopeRect.Visible != scoped)
+                scopeRect.Visible = scoped;
+            float dark = scoped && player != null ? player.ScopeDarkness : 0.0f;
+            bool darkShown = dark > 0.001f;
+            if (scopeDarkRect != null && scopeDarkRect.Visible != darkShown)
+                scopeDarkRect.Visible = darkShown;
+            if (darkShown && scopeDarkImage != null)
+                scopeDarkImage.Color = new Vector4(0.0f, 0.0f, 0.0f, dark);
         }
 
         static void Place(UIRect? rect, Vector2 position)

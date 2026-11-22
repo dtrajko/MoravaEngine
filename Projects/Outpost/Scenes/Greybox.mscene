@@ -46,10 +46,14 @@ Entities:
         Camera: {Entity: 1001}
         Body: {Entity: 1101}
         BodyGun: {Entity: 1104}
+        BodySniper: {Entity: 1109}
+        BodySniperLeft: {Entity: 1111}
         BodyPistol: {Entity: 1105}
         BodyKnife: {Entity: 1106}
         ViewModel: {Entity: 1102}
         ViewModelGun: {Entity: 1103}
+        ViewModelSniper: {Entity: 1110}
+        ViewModelSniperLeft: {Entity: 1112}
         ViewModelPistol: {Entity: 1107}
         ViewModelKnife: {Entity: 1108}
         Effects: {Entity: 1500}
@@ -145,6 +149,54 @@ Entities:
       ViewModel: true
       Visible: false
     BoneAttachment: {Bone: hand_r}
+  - ID: 1109
+    Name: Sniper
+    Parent: 1101
+    Transform:
+      Translation: [-0.024, 0.1238, 0.0195]
+      Rotation: [90, -14.45, 90]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
+      Visible: false
+    BoneAttachment: {Bone: hand_r}
+  - ID: 1110
+    Name: ViewModel Sniper
+    Parent: 1102
+    Transform:
+      Translation: [-0.024, 0.1238, 0.0195]
+      Rotation: [90, -14.45, 90]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
+      HiddenInMainView: true
+      ViewModel: true
+      Visible: false
+    BoneAttachment: {Bone: hand_r}
+  - ID: 1111
+    Name: Sniper Left
+    Parent: 1101
+    Transform:
+      Translation: [0.1685, -0.0743, -0.1342]
+      Rotation: [0, 0, 0]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
+      Visible: false
+    BoneAttachment: {Bone: hand_l}
+  - ID: 1112
+    Name: ViewModel Sniper Left
+    Parent: 1102
+    Transform:
+      Translation: [0.1685, -0.0743, -0.1342]
+      Rotation: [0, 0, 0]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
+      HiddenInMainView: true
+      ViewModel: true
+      Visible: false
+    BoneAttachment: {Bone: hand_l}
   - ID: 1002
     Name: Environment
     Parent: 0
@@ -1201,6 +1253,8 @@ Entities:
         HitTopRight: {Entity: 1408}
         HitBottomLeft: {Entity: 1409}
         HitBottomRight: {Entity: 1410}
+        Scope: {Entity: 1421}
+        ScopeDark: {Entity: 1425}
     UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
   - ID: 1401
     Name: Crosshair Top
@@ -1308,6 +1362,58 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [2.5, 11], Visible: false}
     UIImage: {Texture: "", Color: [1, 1, 1, 0.95]}
+  - ID: 1420
+    Name: Scope Canvas
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 1, SortOrder: -1}
+  - ID: 1421
+    Name: Scope
+    Parent: 1420
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+  - ID: 1422
+    Name: Scope Lens
+    Parent: 1421
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [1080, 1080], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/Scope.png, Color: [1, 1, 1, 1]}
+  - ID: 1423
+    Name: Scope Left
+    Parent: 1421
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0.5, 1], Pivot: [0, 0.5], Position: [0, 0], Size: [-538, 0], Visible: true}
+    UIImage: {Texture: "", Color: [0, 0, 0, 1]}
+  - ID: 1424
+    Name: Scope Right
+    Parent: 1421
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0], AnchorMax: [1, 1], Pivot: [1, 0.5], Position: [0, 0], Size: [-538, 0], Visible: true}
+    UIImage: {Texture: "", Color: [0, 0, 0, 1]}
+  - ID: 1425
+    Name: Scope Dark
+    Parent: 1420
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0]}
   - ID: 60000
     Name: Level_Greybox
     Parent: 0

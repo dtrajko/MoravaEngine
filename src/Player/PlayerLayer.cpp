@@ -511,6 +511,7 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	// The view models (Shooter E2) with that camera's View Model Field of View
 	const CameraComponent* lens = cameraEntity != NoEntity ? m_Scene.TryGet<CameraComponent>(cameraEntity) : nullptr;
 	EnvMapVulkanRenderer::SetViewModelView(lens != nullptr, lens ? lens->ViewModelFieldOfView : CameraComponent().ViewModelFieldOfView);
+	EnvMapVulkanRenderer::SetDetailZoom(lens ? lens->DetailZoom() : 1.0f); // the levels of detail as its zoom sees them (E10)
 	UpdateDebugOverlay(window);
 }
 

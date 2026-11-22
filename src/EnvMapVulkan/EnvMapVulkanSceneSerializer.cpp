@@ -377,6 +377,10 @@ namespace EnvMapVulkanSceneSerializer
 			{
 				out << YAML::Key << "ViewModelFieldOfView" << YAML::Value << camera->ViewModelFieldOfView;
 			}
+			if (camera->NormalFieldOfView > 0.0f)
+			{
+				out << YAML::Key << "NormalFieldOfView" << YAML::Value << camera->NormalFieldOfView;
+			}
 			if (!camera->Target.empty())
 			{
 				AssetReference::Write(out, "Target", camera->Target);
@@ -1148,6 +1152,7 @@ namespace EnvMapVulkanSceneSerializer
 			Read(cameraNode, "NearClip", camera.NearClip);
 			Read(cameraNode, "FarClip", camera.FarClip);
 			Read(cameraNode, "ViewModelFieldOfView", camera.ViewModelFieldOfView);
+			Read(cameraNode, "NormalFieldOfView", camera.NormalFieldOfView);
 			camera.Target = AssetReference::Read(cameraNode, "Target");
 			Read(cameraNode, "DrawEvery", camera.DrawEvery);
 			camera.DrawEvery = std::max(camera.DrawEvery, 1u);

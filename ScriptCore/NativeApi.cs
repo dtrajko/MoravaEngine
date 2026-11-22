@@ -324,6 +324,7 @@ namespace Morava
         public int Enabled;
         public uint DrawEvery;
         public float ViewModelFieldOfView;
+        public float NormalFieldOfView;
     }
 
     [StructLayout(LayoutKind.Sequential)]
