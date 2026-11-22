@@ -1,0 +1,32 @@
+Material:
+  Version: 1
+  ID: 11305937500484513319
+  Name: MI_Hair_1 (2)
+  Source:
+    File: Assets/Models/QuaterniusCharacters/Soldier_Player.gltf
+    FileID: 9635712330392075091
+    Index: 6
+  AlbedoColor: [1, 1, 1]
+  Metalness: 0
+  Roughness: 0.82272726
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Cutoff: 0.5
+  FlipHorizontally: false
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 2
+    Solid: 1
+  Maps:
+    Albedo:
+      File: Assets/Models/QuaterniusCharacters/T_Hair_1_DarkBrown.png
+      FileID: 1374106604697943048
+      Enabled: true
+    Normal:
+      File: Assets/Models/QuaterniusCharacters/T_Hair_1_Normal.png
+      FileID: 4205079396440793625
+      Enabled: true

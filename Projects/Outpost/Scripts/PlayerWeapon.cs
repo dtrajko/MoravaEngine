@@ -37,7 +37,8 @@ namespace Outpost
     /// seconds in, a sphere swept from the eyes along the look finds what it reaches; from behind the target a takedown.
     /// What is seen and heard (sounds, the arms' clips, the HUD) reacts to its events and state.
     ///
-    /// Phase 2.5, the sniper rifle: a bolt worked after each shot (meanwhile the scope is down, no reload starts), and the
+    /// Phase 2.5, the sniper rifle: a bolt worked after each shot (meanwhile no reload starts; the scope stays up: the user,
+    /// 2026-11-22, a shot at 10x mustn't leave the zoom), and the
     /// scope: Aim pressed steps through its zooms and back to none, the wheel zooms between, a reload, a sprint or putting
     /// it away takes it down. Scoped the spread is the scope's (tiny standing, wide moving or in the air) and the look
     /// sways with breathing, a slow figure of eight; held breath (Sprint or Walk held) steadies it for a few seconds, then
@@ -269,7 +270,8 @@ namespace Outpost
                 zoom = Math.Clamp(zoom * MathF.Pow(data.ScopeWheelStep, command.Zoom), data.ScopeMinZoom, data.ScopeMaxZoom);
             if (IsReloading || aim.Sprinting)
                 zoom = 0.0f;
-            IsAiming = zoom > 0.0f && !IsReloading && !aim.Sprinting && !IsWorkingBolt;
+            // (the bolt worked after a shot keeps the scope up: behind it the arms work the bolt, the next shot waits for it)
+            IsAiming = zoom > 0.0f && !IsReloading && !aim.Sprinting;
 
             // Breath: held (Sprint or Walk) while scoped and not out of it, used up in SteadySeconds; otherwise back in
             // RecoverSeconds; once out of it, tired until most of it is back

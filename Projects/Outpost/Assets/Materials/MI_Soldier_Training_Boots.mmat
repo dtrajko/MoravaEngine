@@ -1,0 +1,25 @@
+Material:
+  Version: 1
+  ID: 17216574631323230394
+  Name: MI_Soldier_Training_Boots
+  Source:
+    File: Assets/Models/QuaterniusCharacters/Soldier_Training.gltf
+    FileID: 12773209306080062867
+    Index: 1
+  AlbedoColor: [0.04231141, 0.039546236, 0.034339808]
+  Metalness: 0
+  Roughness: 0.75
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Cutoff: 0.5
+  FlipHorizontally: false
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 2
+    Solid: 1
+  Maps:
+    {}

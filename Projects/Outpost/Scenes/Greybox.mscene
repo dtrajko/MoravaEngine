@@ -2,11 +2,54 @@ Scene:
   Version: 1
   Name: Greybox
 EditorCamera:
-  Translation: [18, 14, 26]
-  Rotation: [25, 35, 0]
+  Translation: [-15.256852, 10.780652, 2.1900268]
+  Rotation: [24.499926, -100.39997, 0]
   FieldOfView: 60
 RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
   Antialiasing: SMAA
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
 Entities:
   - ID: 1001
     Name: Camera
@@ -66,7 +109,8 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/QuaterniusCharacters/Soldier_Player.gltf
-    Animator: {Controller: Assets/Animators/Player.manim}
+      FileID: 9635712330392075091
+    Animator: {Controller: Assets/Animators/Player.manim, ControllerID: 12794802886602404453}
   - ID: 1104
     Name: Rifle
     Parent: 1101
@@ -76,31 +120,73 @@ Entities:
       Scale: [0.0017, 0.0017, 0.0017]
     Model:
       File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
+      FileID: 9436661445239629866
     BoneAttachment: {Bone: hand_r}
-  - ID: 1102
-    Name: ViewModel
-    Parent: 0
+  - ID: 11670857151971659532
+    Name: Cube.136
+    Parent: 1104
     Transform:
-      Translation: [0, 0, 16]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Model:
-      File: Assets/Models/QuaterniusCharacters/Soldier_Player_Arms.gltf
-      HiddenInMainView: true
-      ViewModel: true
-    Animator: {Controller: Assets/Animators/ViewModel.manim}
-  - ID: 1103
-    Name: ViewModel Rifle
-    Parent: 1102
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3033429430709765175
+        File: Assets/Materials/Wood.mmat
+        Name: Wood
+  - ID: 10492197144787467999
+    Name: Cube.136
+    Parent: 1104
     Transform:
-      Translation: [-0.024, 0.1035, -0.0244]
-      Rotation: [90, -14.45, 90]
-      Scale: [0.0017, 0.0017, 0.0017]
-    Model:
-      File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
-      HiddenInMainView: true
-      ViewModel: true
-    BoneAttachment: {Bone: hand_r}
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 9739365421438805862
+        File: Assets/Materials/Black_3.mmat
+        Name: Black (3)
+  - ID: 7394225601114348930
+    Name: Cube.136
+    Parent: 1104
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 9776079620742417639
+        File: Assets/Materials/DarkMetal_3.mmat
+        Name: DarkMetal (3)
+  - ID: 13277299037439956496
+    Name: Cube.136
+    Parent: 1104
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 10439414021644564986
+        File: Assets/Materials/Metal_2.mmat
+        Name: Metal (2)
+  - ID: 8257018337777025631
+    Name: Cube.136
+    Parent: 1104
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 8994249765764724785
+        File: Assets/Materials/DarkWood_2.mmat
+        Name: DarkWood (2)
   - ID: 1105
     Name: Pistol
     Parent: 1101
@@ -110,8 +196,74 @@ Entities:
       Scale: [0.00125, 0.00125, 0.00125]
     Model:
       File: Assets/Models/QuaterniusGuns/Pistol_1.fbx
+      FileID: 8230996212156842346
       Visible: false
     BoneAttachment: {Bone: hand_r}
+  - ID: 4162803009397515668
+    Name: Cube.204
+    Parent: 1105
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 11689916893947280075
+        File: Assets/Materials/DarkWood.mmat
+        Name: DarkWood
+  - ID: 1046957527170750551
+    Name: Cube.204
+    Parent: 1105
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 17299583633054787624
+        File: Assets/Materials/Metal.mmat
+        Name: Metal
+  - ID: 8852293632359813348
+    Name: Cube.204
+    Parent: 1105
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 9099860434176282026
+        File: Assets/Materials/Black_2.mmat
+        Name: Black (2)
+  - ID: 10764997174163054430
+    Name: Cube.204
+    Parent: 1105
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 710765576622741776
+        File: Assets/Materials/DarkMetal_2.mmat
+        Name: DarkMetal (2)
+  - ID: 3063884896919317805
+    Name: Cube.204
+    Parent: 1105
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 10946406823959204534
+        File: Assets/Materials/Black2.mmat
+        Name: Black2
   - ID: 1106
     Name: Knife
     Parent: 1101
@@ -121,34 +273,61 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/OutpostWeapons/Knife.glb
+      FileID: 12484951793233539249
       Visible: false
     BoneAttachment: {Bone: hand_r}
-  - ID: 1107
-    Name: ViewModel Pistol
-    Parent: 1102
+  - ID: 6605913371800674148
+    Name: Knife-0
+    Parent: 1106
     Transform:
-      Translation: [-0.041, 0.0994, 0.008]
-      Rotation: [90, -2.45, 90]
-      Scale: [0.00125, 0.00125, 0.00125]
-    Model:
-      File: Assets/Models/QuaterniusGuns/Pistol_1.fbx
-      HiddenInMainView: true
-      ViewModel: true
-      Visible: false
-    BoneAttachment: {Bone: hand_r}
-  - ID: 1108
-    Name: ViewModel Knife
-    Parent: 1102
-    Transform:
-      Translation: [-0.024, 0.0954, 0.0019]
-      Rotation: [90, -14.45, 90]
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
-    Model:
-      File: Assets/Models/OutpostWeapons/Knife.glb
-      HiddenInMainView: true
-      ViewModel: true
-      Visible: false
-    BoneAttachment: {Bone: hand_r}
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1203121750069809622
+        File: Assets/Materials/MI_Knife_Blade.mmat
+        Name: MI_Knife_Blade
+  - ID: 234575981191787628
+    Name: Knife-1
+    Parent: 1106
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 3892513603437275370
+        File: Assets/Materials/MI_Knife_Edge.mmat
+        Name: MI_Knife_Edge
+  - ID: 15196490989818723274
+    Name: Knife-2
+    Parent: 1106
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 10343830653886386522
+        File: Assets/Materials/MI_Knife_Guard.mmat
+        Name: MI_Knife_Guard
+  - ID: 13400494654555987212
+    Name: Knife-3
+    Parent: 1106
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 8588613432997649975
+        File: Assets/Materials/MI_Knife_Handle.mmat
+        Name: MI_Knife_Handle
   - ID: 1109
     Name: Sniper
     Parent: 1101
@@ -158,21 +337,74 @@ Entities:
       Scale: [0.0017, 0.0017, 0.0017]
     Model:
       File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
+      FileID: 5881775878705003505
       Visible: false
     BoneAttachment: {Bone: hand_r}
-  - ID: 1110
-    Name: ViewModel Sniper
-    Parent: 1102
+  - ID: 13102888450184659072
+    Name: Cylinder.034
+    Parent: 1109
     Transform:
-      Translation: [-0.024, 0.1238, 0.0195]
-      Rotation: [90, -14.45, 90]
-      Scale: [0.0017, 0.0017, 0.0017]
-    Model:
-      File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
-      HiddenInMainView: true
-      ViewModel: true
-      Visible: false
-    BoneAttachment: {Bone: hand_r}
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13723811661920973732
+        File: Assets/Materials/Black.mmat
+        Name: Black
+  - ID: 7921058291122266466
+    Name: Cylinder.034
+    Parent: 1109
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 672408468546030346
+        File: Assets/Materials/DarkMetal.mmat
+        Name: DarkMetal
+  - ID: 15652531977965895075
+    Name: Cylinder.034
+    Parent: 1109
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 10836824322186203141
+        File: Assets/Materials/Glass.mmat
+        Name: Glass
+  - ID: 1806844996502151454
+    Name: Cylinder.034
+    Parent: 1109
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 5907354864817269360
+        File: Assets/Materials/Green.mmat
+        Name: Green
+  - ID: 5408742707482193310
+    Name: Cylinder.034
+    Parent: 1109
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 15761228352703654942
+        File: Assets/Materials/Grey.mmat
+        Name: Grey
   - ID: 1111
     Name: Sniper Left
     Parent: 1101
@@ -182,8 +414,584 @@ Entities:
       Scale: [0.0017, 0.0017, 0.0017]
     Model:
       File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
+      FileID: 5881775878705003505
       Visible: false
     BoneAttachment: {Bone: hand_l}
+  - ID: 3836815826436433260
+    Name: Cylinder.034
+    Parent: 1111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13723811661920973732
+        File: Assets/Materials/Black.mmat
+        Name: Black
+  - ID: 3835771231375722724
+    Name: Cylinder.034
+    Parent: 1111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 672408468546030346
+        File: Assets/Materials/DarkMetal.mmat
+        Name: DarkMetal
+  - ID: 7141660708971136946
+    Name: Cylinder.034
+    Parent: 1111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 10836824322186203141
+        File: Assets/Materials/Glass.mmat
+        Name: Glass
+  - ID: 1626721020517580157
+    Name: Cylinder.034
+    Parent: 1111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 5907354864817269360
+        File: Assets/Materials/Green.mmat
+        Name: Green
+  - ID: 3681993877474951568
+    Name: Cylinder.034
+    Parent: 1111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 15761228352703654942
+        File: Assets/Materials/Grey.mmat
+        Name: Grey
+  - ID: 13523994907794678942
+    Name: Belt
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 18387260556769097068
+        File: Assets/Materials/MI_Soldier_Player_Belt.mmat
+        Name: MI_Soldier_Player_Belt
+  - ID: 15928057276449677310
+    Name: Boot_L_Hull.001-0
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 10223777868030534495
+        File: Assets/Materials/MI_Soldier_Player_Boots.mmat
+        Name: MI_Soldier_Player_Boots
+  - ID: 15390224794811338810
+    Name: Boot_L_Hull.001-1
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 13459617220838850995
+        File: Assets/Materials/MI_Soldier_Player_Soles.mmat
+        Name: MI_Soldier_Player_Soles
+  - ID: 4434858754686247787
+    Name: Boot_L_Hull.001-2
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 11622048415029027715
+        File: Assets/Materials/MI_Soldier_Player_Laces.mmat
+        Name: MI_Soldier_Player_Laces
+  - ID: 6266018145122649684
+    Name: Boot_R_Hull.001-0
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 10223777868030534495
+        File: Assets/Materials/MI_Soldier_Player_Boots.mmat
+        Name: MI_Soldier_Player_Boots
+  - ID: 4492979223784644853
+    Name: Boot_R_Hull.001-1
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 13459617220838850995
+        File: Assets/Materials/MI_Soldier_Player_Soles.mmat
+        Name: MI_Soldier_Player_Soles
+  - ID: 6876244940745026017
+    Name: Boot_R_Hull.001-2
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 11622048415029027715
+        File: Assets/Materials/MI_Soldier_Player_Laces.mmat
+        Name: MI_Soldier_Player_Laces
+  - ID: 11781603146576176712
+    Name: Buckle
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 4777742049498602640
+        File: Assets/Materials/MI_Soldier_Player_Buckle.mmat
+        Name: MI_Soldier_Player_Buckle
+  - ID: 5477464842603929987
+    Name: Collar
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 15335283970584165008
+        File: Assets/Materials/MI_Soldier_Player_Collar.mmat
+        Name: MI_Soldier_Player_Collar
+  - ID: 1736670558018114962
+    Name: Face
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 11305937500484513319
+        File: Assets/Materials/MI_Hair_1_2.mmat
+        Name: MI_Hair_1 (2)
+  - ID: 17240778670691969255
+    Name: Face.001
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 13982499740646585081
+        File: Assets/Materials/MI_Eyes_2.mmat
+        Name: MI_Eyes (2)
+  - ID: 183668200999332499
+    Name: Hems
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 10149475379894745179
+        File: Assets/Materials/MI_Soldier_Player_Hems.mmat
+        Name: MI_Soldier_Player_Hems
+  - ID: 5076537748474375657
+    Name: Loops
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 12137942849159841320
+        File: Assets/Materials/MI_Soldier_Player_Loops.mmat
+        Name: MI_Soldier_Player_Loops
+  - ID: 8202529133944775871
+    Name: Pockets
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 16814973895445489389
+        File: Assets/Materials/MI_Soldier_Player_2.mmat
+        Name: MI_Soldier_Player (2)
+  - ID: 6764716984882256276
+    Name: Sphere.005_Retopology.004
+    Parent: 1101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 16814973895445489389
+        File: Assets/Materials/MI_Soldier_Player_2.mmat
+        Name: MI_Soldier_Player (2)
+  - ID: 1102
+    Name: ViewModel
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 16]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/QuaterniusCharacters/Soldier_Player_Arms.gltf
+      FileID: 9206435631230003205
+      HiddenInMainView: true
+      ViewModel: true
+    Animator: {Controller: Assets/Animators/ViewModel.manim, ControllerID: 6689805028688044066}
+  - ID: 1103
+    Name: ViewModel Rifle
+    Parent: 1102
+    Transform:
+      Translation: [-0.024, 0.1035, -0.0244]
+      Rotation: [90, -14.45, 90]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/AssaultRifle_2.fbx
+      FileID: 9436661445239629866
+      HiddenInMainView: true
+      ViewModel: true
+    BoneAttachment: {Bone: hand_r}
+  - ID: 10745275202999082154
+    Name: Cube.136
+    Parent: 1103
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3033429430709765175
+        File: Assets/Materials/Wood.mmat
+        Name: Wood
+  - ID: 1909564354580020022
+    Name: Cube.136
+    Parent: 1103
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 9739365421438805862
+        File: Assets/Materials/Black_3.mmat
+        Name: Black (3)
+  - ID: 12429651328991164109
+    Name: Cube.136
+    Parent: 1103
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 9776079620742417639
+        File: Assets/Materials/DarkMetal_3.mmat
+        Name: DarkMetal (3)
+  - ID: 14752601259088740476
+    Name: Cube.136
+    Parent: 1103
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 10439414021644564986
+        File: Assets/Materials/Metal_2.mmat
+        Name: Metal (2)
+  - ID: 7815329621591115877
+    Name: Cube.136
+    Parent: 1103
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 8994249765764724785
+        File: Assets/Materials/DarkWood_2.mmat
+        Name: DarkWood (2)
+  - ID: 1107
+    Name: ViewModel Pistol
+    Parent: 1102
+    Transform:
+      Translation: [-0.041, 0.0994, 0.008]
+      Rotation: [90, -2.45, 90]
+      Scale: [0.00125, 0.00125, 0.00125]
+    Model:
+      File: Assets/Models/QuaterniusGuns/Pistol_1.fbx
+      FileID: 8230996212156842346
+      HiddenInMainView: true
+      ViewModel: true
+      Visible: false
+    BoneAttachment: {Bone: hand_r}
+  - ID: 2804822691852044963
+    Name: Cube.204
+    Parent: 1107
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 11689916893947280075
+        File: Assets/Materials/DarkWood.mmat
+        Name: DarkWood
+  - ID: 1770683587018417411
+    Name: Cube.204
+    Parent: 1107
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 17299583633054787624
+        File: Assets/Materials/Metal.mmat
+        Name: Metal
+  - ID: 2171118044666373759
+    Name: Cube.204
+    Parent: 1107
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 9099860434176282026
+        File: Assets/Materials/Black_2.mmat
+        Name: Black (2)
+  - ID: 15967264535351780739
+    Name: Cube.204
+    Parent: 1107
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 710765576622741776
+        File: Assets/Materials/DarkMetal_2.mmat
+        Name: DarkMetal (2)
+  - ID: 10593691505696536995
+    Name: Cube.204
+    Parent: 1107
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 10946406823959204534
+        File: Assets/Materials/Black2.mmat
+        Name: Black2
+  - ID: 1108
+    Name: ViewModel Knife
+    Parent: 1102
+    Transform:
+      Translation: [-0.024, 0.0954, 0.0019]
+      Rotation: [90, -14.45, 90]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/OutpostWeapons/Knife.glb
+      FileID: 12484951793233539249
+      HiddenInMainView: true
+      ViewModel: true
+      Visible: false
+    BoneAttachment: {Bone: hand_r}
+  - ID: 9781884592380681880
+    Name: Knife-0
+    Parent: 1108
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1203121750069809622
+        File: Assets/Materials/MI_Knife_Blade.mmat
+        Name: MI_Knife_Blade
+  - ID: 14312096947942135064
+    Name: Knife-1
+    Parent: 1108
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 3892513603437275370
+        File: Assets/Materials/MI_Knife_Edge.mmat
+        Name: MI_Knife_Edge
+  - ID: 10963470441106762583
+    Name: Knife-2
+    Parent: 1108
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 10343830653886386522
+        File: Assets/Materials/MI_Knife_Guard.mmat
+        Name: MI_Knife_Guard
+  - ID: 8188797990610881181
+    Name: Knife-3
+    Parent: 1108
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 8588613432997649975
+        File: Assets/Materials/MI_Knife_Handle.mmat
+        Name: MI_Knife_Handle
+  - ID: 1110
+    Name: ViewModel Sniper
+    Parent: 1102
+    Transform:
+      Translation: [-0.024, 0.1238, 0.0195]
+      Rotation: [90, -14.45, 90]
+      Scale: [0.0017, 0.0017, 0.0017]
+    Model:
+      File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
+      FileID: 5881775878705003505
+      HiddenInMainView: true
+      ViewModel: true
+      Visible: false
+    BoneAttachment: {Bone: hand_r}
+  - ID: 523398031414118929
+    Name: Cylinder.034
+    Parent: 1110
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13723811661920973732
+        File: Assets/Materials/Black.mmat
+        Name: Black
+  - ID: 13889834730621256856
+    Name: Cylinder.034
+    Parent: 1110
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 672408468546030346
+        File: Assets/Materials/DarkMetal.mmat
+        Name: DarkMetal
+  - ID: 11473366240230690891
+    Name: Cylinder.034
+    Parent: 1110
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 10836824322186203141
+        File: Assets/Materials/Glass.mmat
+        Name: Glass
+  - ID: 4172271196344504503
+    Name: Cylinder.034
+    Parent: 1110
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 5907354864817269360
+        File: Assets/Materials/Green.mmat
+        Name: Green
+  - ID: 17879834694459288476
+    Name: Cylinder.034
+    Parent: 1110
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 15761228352703654942
+        File: Assets/Materials/Grey.mmat
+        Name: Grey
   - ID: 1112
     Name: ViewModel Sniper Left
     Parent: 1102
@@ -193,10 +1001,89 @@ Entities:
       Scale: [0.0017, 0.0017, 0.0017]
     Model:
       File: Assets/Models/QuaterniusGuns/SniperRifle_3.fbx
+      FileID: 5881775878705003505
       HiddenInMainView: true
       ViewModel: true
       Visible: false
     BoneAttachment: {Bone: hand_l}
+  - ID: 11037788040803455366
+    Name: Cylinder.034
+    Parent: 1112
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13723811661920973732
+        File: Assets/Materials/Black.mmat
+        Name: Black
+  - ID: 12349087935096143983
+    Name: Cylinder.034
+    Parent: 1112
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 672408468546030346
+        File: Assets/Materials/DarkMetal.mmat
+        Name: DarkMetal
+  - ID: 7645777826855821677
+    Name: Cylinder.034
+    Parent: 1112
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 10836824322186203141
+        File: Assets/Materials/Glass.mmat
+        Name: Glass
+  - ID: 9691476396308129675
+    Name: Cylinder.034
+    Parent: 1112
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 5907354864817269360
+        File: Assets/Materials/Green.mmat
+        Name: Green
+  - ID: 1135988570501555957
+    Name: Cylinder.034
+    Parent: 1112
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 15761228352703654942
+        File: Assets/Materials/Grey.mmat
+        Name: Grey
+  - ID: 6624457272169375370
+    Name: Sphere.005_Retopology.004
+    Parent: 1102
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 8803229544242358781
+        File: Assets/Materials/MI_Soldier_Player.mmat
+        Name: MI_Soldier_Player
   - ID: 1002
     Name: Environment
     Parent: 0
@@ -206,12 +1093,14 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/rocky_ridge_puresky_2k.hdr
+      FileID: 6618138474726142396
       Rotation: 4
       Exposure: 1
       AutoExposure: true
       HuePreservation: 0.5
       ExtractSun: true
       SkyboxLod: 0
+      Haze: {Enabled: false, Density: 0.0015, StartDistance: 150, HeightFalloff: 0.015, BaseHeight: 0}
   - ID: 1003
     Name: Sun
     Parent: 0
@@ -265,7 +1154,8 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/QuaterniusCharacters/Soldier_Training.gltf
-    Animator: {Controller: Assets/Animators/Dummy.manim}
+      FileID: 12773209306080062867
+    Animator: {Controller: Assets/Animators/Dummy.manim, ControllerID: 14540130899583666572}
   - ID: 1302
     Name: Hitbox_Head
     Parent: 1301
@@ -273,7 +1163,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: Head}
     Collider:
       Shape: Sphere
       Offset: [0, 0.1, 0.02]
@@ -288,12 +1177,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Head}
         DamageScale: {Float: 1}
+    BoneAttachment: {Bone: Head}
   - ID: 1303
     Name: Hitbox_Torso
     Parent: 1301
@@ -301,7 +1194,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: spine_02}
     Collider:
       Shape: Capsule
       Offset: [0, 0.19, 0]
@@ -316,12 +1208,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Torso}
         DamageScale: {Float: 1}
+    BoneAttachment: {Bone: spine_02}
   - ID: 1304
     Name: Hitbox_Pelvis
     Parent: 1301
@@ -329,7 +1225,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: pelvis}
     Collider:
       Shape: Sphere
       Offset: [0, 0.05, 0]
@@ -344,12 +1239,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Pelvis}
         DamageScale: {Float: 0.9}
+    BoneAttachment: {Bone: pelvis}
   - ID: 1305
     Name: Hitbox_ThighL
     Parent: 1301
@@ -357,7 +1256,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: thigh_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.215, 0]
@@ -372,12 +1270,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: thigh_l}
   - ID: 1306
     Name: Hitbox_ThighR
     Parent: 1301
@@ -385,7 +1287,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: thigh_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.215, 0]
@@ -400,12 +1301,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: thigh_r}
   - ID: 1307
     Name: Hitbox_CalfL
     Parent: 1301
@@ -413,7 +1318,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: calf_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.23, 0]
@@ -428,12 +1332,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: calf_l}
   - ID: 1308
     Name: Hitbox_CalfR
     Parent: 1301
@@ -441,7 +1349,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: calf_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.23, 0]
@@ -456,12 +1363,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: calf_r}
   - ID: 1309
     Name: Hitbox_UpperArmL
     Parent: 1301
@@ -469,7 +1380,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: upperarm_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.125, 0]
@@ -484,12 +1394,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: upperarm_l}
   - ID: 1310
     Name: Hitbox_UpperArmR
     Parent: 1301
@@ -497,7 +1411,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: upperarm_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.125, 0]
@@ -512,12 +1425,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: upperarm_r}
   - ID: 1311
     Name: Hitbox_LowerArmL
     Parent: 1301
@@ -525,7 +1442,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: lowerarm_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.12, 0]
@@ -540,12 +1456,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: lowerarm_l}
   - ID: 1312
     Name: Hitbox_LowerArmR
     Parent: 1301
@@ -553,7 +1473,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: lowerarm_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.12, 0]
@@ -568,19 +1487,218 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1300}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: lowerarm_r}
+  - ID: 15186794501806756523
+    Name: Belt
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 14041324805156173203
+        File: Assets/Materials/MI_Soldier_Training_Belt.mmat
+        Name: MI_Soldier_Training_Belt
+  - ID: 8721526814183120515
+    Name: Boot_L_Hull.001-0
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 17216574631323230394
+        File: Assets/Materials/MI_Soldier_Training_Boots.mmat
+        Name: MI_Soldier_Training_Boots
+  - ID: 8126778615645096279
+    Name: Boot_L_Hull.001-1
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 7943670245642543470
+        File: Assets/Materials/MI_Soldier_Training_Soles.mmat
+        Name: MI_Soldier_Training_Soles
+  - ID: 1969405130529013170
+    Name: Boot_L_Hull.001-2
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 12338078763828077231
+        File: Assets/Materials/MI_Soldier_Training_Laces.mmat
+        Name: MI_Soldier_Training_Laces
+  - ID: 14665643505143083846
+    Name: Boot_R_Hull.001-0
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 17216574631323230394
+        File: Assets/Materials/MI_Soldier_Training_Boots.mmat
+        Name: MI_Soldier_Training_Boots
+  - ID: 3607311306917780169
+    Name: Boot_R_Hull.001-1
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 7943670245642543470
+        File: Assets/Materials/MI_Soldier_Training_Soles.mmat
+        Name: MI_Soldier_Training_Soles
+  - ID: 11082228301569331779
+    Name: Boot_R_Hull.001-2
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 12338078763828077231
+        File: Assets/Materials/MI_Soldier_Training_Laces.mmat
+        Name: MI_Soldier_Training_Laces
+  - ID: 14162533368168556328
+    Name: Buckle
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 5844288642649454043
+        File: Assets/Materials/MI_Soldier_Training_Buckle.mmat
+        Name: MI_Soldier_Training_Buckle
+  - ID: 17927936770868242957
+    Name: Collar
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 13133980160129780185
+        File: Assets/Materials/MI_Soldier_Training_Collar.mmat
+        Name: MI_Soldier_Training_Collar
+  - ID: 13737482556600624184
+    Name: Face
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 14970042546177262195
+        File: Assets/Materials/MI_Hair_1.mmat
+        Name: MI_Hair_1
+  - ID: 12638369642422061683
+    Name: Face.001
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 12202292851963823273
+        File: Assets/Materials/MI_Eyes.mmat
+        Name: MI_Eyes
+  - ID: 1378352745116425186
+    Name: Hems
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 7005944808048587705
+        File: Assets/Materials/MI_Soldier_Training_Hems.mmat
+        Name: MI_Soldier_Training_Hems
+  - ID: 5457306460342278865
+    Name: Loops
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 17064421680054604203
+        File: Assets/Materials/MI_Soldier_Training_Loops.mmat
+        Name: MI_Soldier_Training_Loops
+  - ID: 11305758467189554517
+    Name: Pockets
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 10570120885988486220
+        File: Assets/Materials/MI_Soldier_Training.mmat
+        Name: MI_Soldier_Training
+  - ID: 16234275585720259057
+    Name: Sphere.005_Retopology.004
+    Parent: 1301
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 10570120885988486220
+        File: Assets/Materials/MI_Soldier_Training.mmat
+        Name: MI_Soldier_Training
   - ID: 1320
     Name: Dummy_2
     Parent: 0
     Transform:
-      Translation: [13, 0, 9]
-      Rotation: [0, -15, 0]
-      Scale: [1, 1, 1]
+      Translation: [13, 0, 10.509389]
+      Rotation: [0, -14.999986, 0]
+      Scale: [0.99999964, 1, 0.99999964]
     Script:
       Class: Outpost.Dummy
       Fields:
@@ -594,7 +1712,8 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/QuaterniusCharacters/Soldier_Training.gltf
-    Animator: {Controller: Assets/Animators/Dummy.manim}
+      FileID: 12773209306080062867
+    Animator: {Controller: Assets/Animators/Dummy.manim, ControllerID: 14540130899583666572}
   - ID: 1322
     Name: Hitbox_Head
     Parent: 1321
@@ -602,7 +1721,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: Head}
     Collider:
       Shape: Sphere
       Offset: [0, 0.1, 0.02]
@@ -617,12 +1735,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Head}
         DamageScale: {Float: 1}
+    BoneAttachment: {Bone: Head}
   - ID: 1323
     Name: Hitbox_Torso
     Parent: 1321
@@ -630,7 +1752,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: spine_02}
     Collider:
       Shape: Capsule
       Offset: [0, 0.19, 0]
@@ -645,12 +1766,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Torso}
         DamageScale: {Float: 1}
+    BoneAttachment: {Bone: spine_02}
   - ID: 1324
     Name: Hitbox_Pelvis
     Parent: 1321
@@ -658,7 +1783,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: pelvis}
     Collider:
       Shape: Sphere
       Offset: [0, 0.05, 0]
@@ -673,12 +1797,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Pelvis}
         DamageScale: {Float: 0.9}
+    BoneAttachment: {Bone: pelvis}
   - ID: 1325
     Name: Hitbox_ThighL
     Parent: 1321
@@ -686,7 +1814,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: thigh_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.215, 0]
@@ -701,12 +1828,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: thigh_l}
   - ID: 1326
     Name: Hitbox_ThighR
     Parent: 1321
@@ -714,7 +1845,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: thigh_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.215, 0]
@@ -729,12 +1859,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: thigh_r}
   - ID: 1327
     Name: Hitbox_CalfL
     Parent: 1321
@@ -742,7 +1876,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: calf_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.23, 0]
@@ -757,12 +1890,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: calf_l}
   - ID: 1328
     Name: Hitbox_CalfR
     Parent: 1321
@@ -770,7 +1907,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: calf_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.23, 0]
@@ -785,12 +1921,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: calf_r}
   - ID: 1329
     Name: Hitbox_UpperArmL
     Parent: 1321
@@ -798,7 +1938,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: upperarm_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.125, 0]
@@ -813,12 +1952,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: upperarm_l}
   - ID: 1330
     Name: Hitbox_UpperArmR
     Parent: 1321
@@ -826,7 +1969,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: upperarm_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.125, 0]
@@ -841,12 +1983,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: upperarm_r}
   - ID: 1331
     Name: Hitbox_LowerArmL
     Parent: 1321
@@ -854,7 +2000,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: lowerarm_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.12, 0]
@@ -869,12 +2014,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: lowerarm_l}
   - ID: 1332
     Name: Hitbox_LowerArmR
     Parent: 1321
@@ -882,7 +2031,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: lowerarm_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.12, 0]
@@ -897,19 +2045,218 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1320}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: lowerarm_r}
+  - ID: 2611823835961991987
+    Name: Belt
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 14041324805156173203
+        File: Assets/Materials/MI_Soldier_Training_Belt.mmat
+        Name: MI_Soldier_Training_Belt
+  - ID: 12969429559398225097
+    Name: Boot_L_Hull.001-0
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 17216574631323230394
+        File: Assets/Materials/MI_Soldier_Training_Boots.mmat
+        Name: MI_Soldier_Training_Boots
+  - ID: 10024331256802260831
+    Name: Boot_L_Hull.001-1
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 7943670245642543470
+        File: Assets/Materials/MI_Soldier_Training_Soles.mmat
+        Name: MI_Soldier_Training_Soles
+  - ID: 15697189863415633578
+    Name: Boot_L_Hull.001-2
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 12338078763828077231
+        File: Assets/Materials/MI_Soldier_Training_Laces.mmat
+        Name: MI_Soldier_Training_Laces
+  - ID: 4843081323171901561
+    Name: Boot_R_Hull.001-0
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 17216574631323230394
+        File: Assets/Materials/MI_Soldier_Training_Boots.mmat
+        Name: MI_Soldier_Training_Boots
+  - ID: 7339062912368154455
+    Name: Boot_R_Hull.001-1
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 7943670245642543470
+        File: Assets/Materials/MI_Soldier_Training_Soles.mmat
+        Name: MI_Soldier_Training_Soles
+  - ID: 2552189661520809739
+    Name: Boot_R_Hull.001-2
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 12338078763828077231
+        File: Assets/Materials/MI_Soldier_Training_Laces.mmat
+        Name: MI_Soldier_Training_Laces
+  - ID: 308785771661163764
+    Name: Buckle
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 5844288642649454043
+        File: Assets/Materials/MI_Soldier_Training_Buckle.mmat
+        Name: MI_Soldier_Training_Buckle
+  - ID: 17829446438041342983
+    Name: Collar
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 13133980160129780185
+        File: Assets/Materials/MI_Soldier_Training_Collar.mmat
+        Name: MI_Soldier_Training_Collar
+  - ID: 17587628786349154072
+    Name: Face
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 14970042546177262195
+        File: Assets/Materials/MI_Hair_1.mmat
+        Name: MI_Hair_1
+  - ID: 11053241201465066896
+    Name: Face.001
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 12202292851963823273
+        File: Assets/Materials/MI_Eyes.mmat
+        Name: MI_Eyes
+  - ID: 925847025099816334
+    Name: Hems
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 7005944808048587705
+        File: Assets/Materials/MI_Soldier_Training_Hems.mmat
+        Name: MI_Soldier_Training_Hems
+  - ID: 10949121218862964221
+    Name: Loops
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 17064421680054604203
+        File: Assets/Materials/MI_Soldier_Training_Loops.mmat
+        Name: MI_Soldier_Training_Loops
+  - ID: 4498689090994140122
+    Name: Pockets
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 10570120885988486220
+        File: Assets/Materials/MI_Soldier_Training.mmat
+        Name: MI_Soldier_Training
+  - ID: 14130172780525797709
+    Name: Sphere.005_Retopology.004
+    Parent: 1321
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 10570120885988486220
+        File: Assets/Materials/MI_Soldier_Training.mmat
+        Name: MI_Soldier_Training
   - ID: 1340
     Name: Dummy_3
     Parent: 0
     Transform:
-      Translation: [16, 0, 6.5]
+      Translation: [16, 0, 9.37645]
       Rotation: [0, -25, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.99999994, 1, 0.99999994]
     Script:
       Class: Outpost.Dummy
       Fields:
@@ -923,7 +2270,8 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/QuaterniusCharacters/Soldier_Training.gltf
-    Animator: {Controller: Assets/Animators/Dummy.manim}
+      FileID: 12773209306080062867
+    Animator: {Controller: Assets/Animators/Dummy.manim, ControllerID: 14540130899583666572}
   - ID: 1342
     Name: Hitbox_Head
     Parent: 1341
@@ -931,7 +2279,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: Head}
     Collider:
       Shape: Sphere
       Offset: [0, 0.1, 0.02]
@@ -946,12 +2293,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Head}
         DamageScale: {Float: 1}
+    BoneAttachment: {Bone: Head}
   - ID: 1343
     Name: Hitbox_Torso
     Parent: 1341
@@ -959,7 +2310,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: spine_02}
     Collider:
       Shape: Capsule
       Offset: [0, 0.19, 0]
@@ -974,12 +2324,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Torso}
         DamageScale: {Float: 1}
+    BoneAttachment: {Bone: spine_02}
   - ID: 1344
     Name: Hitbox_Pelvis
     Parent: 1341
@@ -987,7 +2341,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: pelvis}
     Collider:
       Shape: Sphere
       Offset: [0, 0.05, 0]
@@ -1002,12 +2355,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Pelvis}
         DamageScale: {Float: 0.9}
+    BoneAttachment: {Bone: pelvis}
   - ID: 1345
     Name: Hitbox_ThighL
     Parent: 1341
@@ -1015,7 +2372,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: thigh_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.215, 0]
@@ -1030,12 +2386,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: thigh_l}
   - ID: 1346
     Name: Hitbox_ThighR
     Parent: 1341
@@ -1043,7 +2403,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: thigh_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.215, 0]
@@ -1058,12 +2417,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: thigh_r}
   - ID: 1347
     Name: Hitbox_CalfL
     Parent: 1341
@@ -1071,7 +2434,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: calf_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.23, 0]
@@ -1086,12 +2448,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: calf_l}
   - ID: 1348
     Name: Hitbox_CalfR
     Parent: 1341
@@ -1099,7 +2465,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: calf_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.23, 0]
@@ -1114,12 +2479,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Leg}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: calf_r}
   - ID: 1349
     Name: Hitbox_UpperArmL
     Parent: 1341
@@ -1127,7 +2496,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: upperarm_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.125, 0]
@@ -1142,12 +2510,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: upperarm_l}
   - ID: 1350
     Name: Hitbox_UpperArmR
     Parent: 1341
@@ -1155,7 +2527,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: upperarm_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.125, 0]
@@ -1170,12 +2541,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: upperarm_r}
   - ID: 1351
     Name: Hitbox_LowerArmL
     Parent: 1341
@@ -1183,7 +2558,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: lowerarm_l}
     Collider:
       Shape: Capsule
       Offset: [0, 0.12, 0]
@@ -1198,12 +2572,16 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: lowerarm_l}
   - ID: 1352
     Name: Hitbox_LowerArmR
     Parent: 1341
@@ -1211,7 +2589,6 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    BoneAttachment: {Bone: lowerarm_r}
     Collider:
       Shape: Capsule
       Offset: [0, 0.12, 0]
@@ -1226,12 +2603,211 @@ Entities:
       Mass: 1
       LinearDamping: 0.05
       AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
     Script:
       Class: Outpost.Hitbox
       Fields:
         Owner: {Entity: 1340}
         Zone: {String: Arm}
         DamageScale: {Float: 0.75}
+    BoneAttachment: {Bone: lowerarm_r}
+  - ID: 16711675724351457366
+    Name: Belt
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 14041324805156173203
+        File: Assets/Materials/MI_Soldier_Training_Belt.mmat
+        Name: MI_Soldier_Training_Belt
+  - ID: 10364450809657065257
+    Name: Boot_L_Hull.001-0
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 17216574631323230394
+        File: Assets/Materials/MI_Soldier_Training_Boots.mmat
+        Name: MI_Soldier_Training_Boots
+  - ID: 16344728246574771298
+    Name: Boot_L_Hull.001-1
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 7943670245642543470
+        File: Assets/Materials/MI_Soldier_Training_Soles.mmat
+        Name: MI_Soldier_Training_Soles
+  - ID: 6036811431844859174
+    Name: Boot_L_Hull.001-2
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 12338078763828077231
+        File: Assets/Materials/MI_Soldier_Training_Laces.mmat
+        Name: MI_Soldier_Training_Laces
+  - ID: 10875232576290748732
+    Name: Boot_R_Hull.001-0
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 17216574631323230394
+        File: Assets/Materials/MI_Soldier_Training_Boots.mmat
+        Name: MI_Soldier_Training_Boots
+  - ID: 16402058151246709117
+    Name: Boot_R_Hull.001-1
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 7943670245642543470
+        File: Assets/Materials/MI_Soldier_Training_Soles.mmat
+        Name: MI_Soldier_Training_Soles
+  - ID: 4219826300172036624
+    Name: Boot_R_Hull.001-2
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 6
+      Material:
+        ID: 12338078763828077231
+        File: Assets/Materials/MI_Soldier_Training_Laces.mmat
+        Name: MI_Soldier_Training_Laces
+  - ID: 14035961401492989794
+    Name: Buckle
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 7
+      Material:
+        ID: 5844288642649454043
+        File: Assets/Materials/MI_Soldier_Training_Buckle.mmat
+        Name: MI_Soldier_Training_Buckle
+  - ID: 18391447587007635681
+    Name: Collar
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 8
+      Material:
+        ID: 13133980160129780185
+        File: Assets/Materials/MI_Soldier_Training_Collar.mmat
+        Name: MI_Soldier_Training_Collar
+  - ID: 10627457313795890413
+    Name: Face
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 9
+      Material:
+        ID: 14970042546177262195
+        File: Assets/Materials/MI_Hair_1.mmat
+        Name: MI_Hair_1
+  - ID: 2686438314399106197
+    Name: Face.001
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 10
+      Material:
+        ID: 12202292851963823273
+        File: Assets/Materials/MI_Eyes.mmat
+        Name: MI_Eyes
+  - ID: 4805193231851189220
+    Name: Hems
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 11
+      Material:
+        ID: 7005944808048587705
+        File: Assets/Materials/MI_Soldier_Training_Hems.mmat
+        Name: MI_Soldier_Training_Hems
+  - ID: 171680875692820847
+    Name: Loops
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 12
+      Material:
+        ID: 17064421680054604203
+        File: Assets/Materials/MI_Soldier_Training_Loops.mmat
+        Name: MI_Soldier_Training_Loops
+  - ID: 3245220111531859947
+    Name: Pockets
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 13
+      Material:
+        ID: 10570120885988486220
+        File: Assets/Materials/MI_Soldier_Training.mmat
+        Name: MI_Soldier_Training
+  - ID: 6299307718445969911
+    Name: Sphere.005_Retopology.004
+    Parent: 1341
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 14
+      Material:
+        ID: 10570120885988486220
+        File: Assets/Materials/MI_Soldier_Training.mmat
+        Name: MI_Soldier_Training
   - ID: 1400
     Name: HUD
     Parent: 0
@@ -1386,7 +2962,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [1080, 1080], Visible: true}
-    UIImage: {Texture: Assets/Textures/UI/Scope.png, Color: [1, 1, 1, 1]}
+    UIImage: {Texture: Assets/Textures/UI/Scope.png, TextureID: 1091494954667628364, Color: [1, 1, 1, 1]}
   - ID: 1423
     Name: Scope Left
     Parent: 1421
@@ -1430,11 +3006,68 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/Levels/Greybox/Level_Greybox_Barracks_F0.gltf
+      FileID: 3220796870521547552
     Collider:
       Shape: TriangleMesh
+      Offset: [0, 0, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.5
+      HalfHeight: 0.5
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
+  - ID: 2095481963959462311
+    Name: Level_Greybox_Barracks_F0-0
+    Parent: 60001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 16574414847714255546
+        File: Assets/Materials/Greybox_Floor_3.mmat
+        Name: Greybox_Floor (3)
+  - ID: 12988987995994744737
+    Name: Level_Greybox_Barracks_F0-1
+    Parent: 60001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 1296782428444026401
+        File: Assets/Materials/Greybox_Stairs_3.mmat
+        Name: Greybox_Stairs (3)
+  - ID: 5614747365429931461
+    Name: Level_Greybox_Barracks_F0-2
+    Parent: 60001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 16410711280315010218
+        File: Assets/Materials/Greybox_Wall_3.mmat
+        Name: Greybox_Wall (3)
+  - ID: 15556047607357489107
+    Name: Level_Greybox_Barracks_F0-3
+    Parent: 60001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 8927355930450076712
+        File: Assets/Materials/Greybox_WallOutside_5.mmat
+        Name: Greybox_WallOutside (5)
   - ID: 60002
     Name: Level_Greybox_Barracks_F1
     Parent: 60000
@@ -1444,11 +3077,68 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/Levels/Greybox/Level_Greybox_Barracks_F1.gltf
+      FileID: 4529898581235201469
     Collider:
       Shape: TriangleMesh
+      Offset: [0, 0, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.5
+      HalfHeight: 0.5
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
+  - ID: 16213309293018710221
+    Name: Level_Greybox_Barracks_F1-0
+    Parent: 60002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17644673250975856262
+        File: Assets/Materials/Greybox_Floor_2.mmat
+        Name: Greybox_Floor (2)
+  - ID: 3553661085665996892
+    Name: Level_Greybox_Barracks_F1-1
+    Parent: 60002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 14159699517415524147
+        File: Assets/Materials/Greybox_Stairs_2.mmat
+        Name: Greybox_Stairs (2)
+  - ID: 6126431932295362143
+    Name: Level_Greybox_Barracks_F1-2
+    Parent: 60002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 9746222356010154511
+        File: Assets/Materials/Greybox_Wall_2.mmat
+        Name: Greybox_Wall (2)
+  - ID: 14497786324311682694
+    Name: Level_Greybox_Barracks_F1-3
+    Parent: 60002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 5250316015071026222
+        File: Assets/Materials/Greybox_WallOutside_4.mmat
+        Name: Greybox_WallOutside (4)
   - ID: 60003
     Name: Level_Greybox_Barracks_Roof
     Parent: 60000
@@ -1458,11 +3148,42 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/Levels/Greybox/Level_Greybox_Barracks_Roof.gltf
+      FileID: 737315206776343364
     Collider:
       Shape: TriangleMesh
+      Offset: [0, 0, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.5
+      HalfHeight: 0.5
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
+  - ID: 8297203895070959003
+    Name: Level_Greybox_Barracks_Roof-0
+    Parent: 60003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 2091608284573098429
+        File: Assets/Materials/Greybox_Roof_2.mmat
+        Name: Greybox_Roof (2)
+  - ID: 7763027165969874657
+    Name: Level_Greybox_Barracks_Roof-1
+    Parent: 60003
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 2698468405391966297
+        File: Assets/Materials/Greybox_WallOutside_3.mmat
+        Name: Greybox_WallOutside (3)
   - ID: 60004
     Name: Level_Greybox_Catwalk_Roofs
     Parent: 60000
@@ -1473,11 +3194,29 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/Levels/Greybox/Level_Greybox_Catwalk_Roofs.gltf
+      FileID: 17486336651171599253
     Collider:
       Shape: TriangleMesh
+      Offset: [0, 0, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.5
+      HalfHeight: 0.5
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
+  - ID: 17677180313912116038
+    Name: Level_Greybox_Catwalk_Roofs
+    Parent: 60004
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3466067542094465388
+        File: Assets/Materials/Greybox_Catwalk.mmat
+        Name: Greybox_Catwalk
   - ID: 60005
     Name: Level_Greybox_Ground
     Parent: 60000
@@ -1488,11 +3227,29 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/Levels/Greybox/Level_Greybox_Ground.gltf
+      FileID: 17589656580269549381
     Collider:
       Shape: TriangleMesh
+      Offset: [0, 0, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.5
+      HalfHeight: 0.5
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
+  - ID: 1309936661869334709
+    Name: Level_Greybox_Ground
+    Parent: 60005
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 11507523957763225398
+        File: Assets/Materials/Greybox_Ground.mmat
+        Name: Greybox_Ground
   - ID: 60006
     Name: Level_Greybox_Warehouse_F0
     Parent: 60000
@@ -1502,11 +3259,68 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/Levels/Greybox/Level_Greybox_Warehouse_F0.gltf
+      FileID: 12982322037920745620
     Collider:
       Shape: TriangleMesh
+      Offset: [0, 0, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.5
+      HalfHeight: 0.5
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
+  - ID: 9865593559453189009
+    Name: Level_Greybox_Warehouse_F0-0
+    Parent: 60006
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 4492935826732720373
+        File: Assets/Materials/Greybox_Floor_4.mmat
+        Name: Greybox_Floor
+  - ID: 17989596405811933823
+    Name: Level_Greybox_Warehouse_F0-1
+    Parent: 60006
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 14549874278874809166
+        File: Assets/Materials/Greybox_Stairs.mmat
+        Name: Greybox_Stairs
+  - ID: 6240845357323211094
+    Name: Level_Greybox_Warehouse_F0-2
+    Parent: 60006
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 7419277097395906637
+        File: Assets/Materials/Greybox_Wall.mmat
+        Name: Greybox_Wall
+  - ID: 16184163053201516741
+    Name: Level_Greybox_Warehouse_F0-3
+    Parent: 60006
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 15537772531654500217
+        File: Assets/Materials/Greybox_WallOutside_2.mmat
+        Name: Greybox_WallOutside (2)
   - ID: 60007
     Name: Level_Greybox_Warehouse_Roof
     Parent: 60000
@@ -1516,11 +3330,42 @@ Entities:
       Scale: [1, 1, 1]
     Model:
       File: Assets/Models/Levels/Greybox/Level_Greybox_Warehouse_Roof.gltf
+      FileID: 1391006358941385951
     Collider:
       Shape: TriangleMesh
+      Offset: [0, 0, 0]
+      HalfExtents: [0.5, 0.5, 0.5]
+      Radius: 0.5
+      HalfHeight: 0.5
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
+  - ID: 14707637124502384147
+    Name: Level_Greybox_Warehouse_Roof-0
+    Parent: 60007
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 16785007517076596777
+        File: Assets/Materials/Greybox_Roof.mmat
+        Name: Greybox_Roof
+  - ID: 16336984024599994560
+    Name: Level_Greybox_Warehouse_Roof-1
+    Parent: 60007
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 4053808240129418033
+        File: Assets/Materials/Greybox_WallOutside.mmat
+        Name: Greybox_WallOutside
   - ID: 1500
     Name: Weapon Effects
     Parent: 0
@@ -1565,6 +3410,7 @@ Entities:
       ColorEnd: [3, 1.6, 0.5, 0]
       SpinSpeed: 0
       Texture: Assets/Textures/Effects/MuzzleFlash.png
+      TextureID: 11928235595406909472
       Blend: Additive
       Lit: false
       SoftDistance: 0
@@ -1592,6 +3438,7 @@ Entities:
       ColorEnd: [3, 1.6, 0.5, 0]
       SpinSpeed: 0
       Texture: Assets/Textures/Effects/MuzzleFlash.png
+      TextureID: 11928235595406909472
       Blend: Additive
       Lit: false
       SoftDistance: 0

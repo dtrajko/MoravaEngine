@@ -413,8 +413,9 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       shot is the same hit test as every other weapon (camera ray, then muzzle ray).</li>
     <li><b>Feel:</b> the mouse turns slower in proportion to the zoom (the settings have a scope sensitivity too), the
       reticle sways slowly with breathing, and holding Shift (walk) steadies it for a few seconds. Moving or jumping while
-      scoped spreads the shot. The scope comes up in about 0.25 s with a short blur and darkening, and drops after each shot
-      until the bolt is worked.</li>
+      scoped spreads the shot. The scope comes up in about 0.25 s with a short blur and darkening, and stays up through the
+      shot and the bolt (the user, 2026-11-22: a shot at 10x mustn't leave the zoom; first planned to drop until the bolt
+      was worked).</li>
     <li><b>The guards:</b> a sniper on a rooftop or a watchtower is a guard type (Phase 5) with a visible laser line or a
       glint from the lens, so the player can spot the sniper first. The levels give long sight lines for it: the yard, the
       catwalks, the tower (Phase 6).</li>
@@ -1530,8 +1531,10 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         0.9, also the sprint). Its own sounds (<code>GenerateWeaponSounds.py</code>): a harder, heavier shot with a long
         tail over the yard, the empty click, the bolt open (the case's tinkle) and shut, a round pressed in.</li>
       <li><b>The bolt</b> (<code>Bolt</code>): worked 0.4 s after each shot (not after the last round: the reload opens it),
-        1.1 s, the body's and the arms' <code>Sniper_Bolt</code>, its sounds at their moments; meanwhile the scope is down
-        and no reload starts; put away mid-bolt, the round is in when it comes out again.</li>
+        1.1 s, the body's and the arms' <code>Sniper_Bolt</code>, its sounds at their moments; meanwhile no reload starts;
+        put away mid-bolt, the round is in when it comes out again. The scope first dropped for the bolt; since 2026-11-22
+        it stays up (the user: a shot at 10x mustn't leave the zoom), the bolt heard and the arms working it behind the
+        overlay, the next shot 1.5 s after the last as before.</li>
       <li><b>The scope</b> (<code>Scope</code>): Aim pressed steps off, 4x, 10x, off; scoped, the wheel zooms between 2x and
         12x (1.25 times a notch) and doesn't switch weapons; a reload, a sprint or a switch takes it down. Coming up (0.25
         s) the view model rises to the eye, then the overlay shows with a darkening that fades while the view narrows to
@@ -1586,7 +1589,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><b>Checked</b>: the test copy 101/101 in editor Play (the 76 before, then the sniper 29 m from Dummy_2: out with
         its models and states, E10's field set, 4x and 10x (19.9 and 8.0 degrees), the wheel to 12x and down three
         notches, held breath steadying the sway (0.17), a scoped shot to the head (360), the scope down for the bolt and
-        back up, the gun in the left hand on the bolt, the hand switches 0.0 cm and 0.0 degrees apart in the bolt and the
+        back up (since 2026-11-22: up through the bolt, at the same zoom), the gun in the left hand on the bolt, the hand switches 0.0 cm and 0.0 degrees apart in the bolt and the
         reload, the reload (5/14, the scope down), walking scoped (1.35 m/s, spread 1.5), past 10x off, scoping from third
         person (the camera at the eyes, the body hidden) and back over the shoulder, a switch while scoped). Racing's
         circuit through a 7 degree camera, about 300 m off: without the normal field of view 195 trees drawn as

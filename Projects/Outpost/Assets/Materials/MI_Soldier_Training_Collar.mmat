@@ -1,0 +1,25 @@
+Material:
+  Version: 1
+  ID: 13133980160129780185
+  Name: MI_Soldier_Training_Collar
+  Source:
+    File: Assets/Models/QuaterniusCharacters/Soldier_Training.gltf
+    FileID: 12773209306080062867
+    Index: 5
+  AlbedoColor: [0.43415365, 0.064803265, 0.02121901]
+  Metalness: 0
+  Roughness: 0.9
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Cutoff: 0.5
+  FlipHorizontally: false
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 2
+    Solid: 1
+  Maps:
+    {}

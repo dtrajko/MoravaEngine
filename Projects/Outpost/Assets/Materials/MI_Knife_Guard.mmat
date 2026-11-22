@@ -1,0 +1,25 @@
+Material:
+  Version: 1
+  ID: 10343830653886386522
+  Name: MI_Knife_Guard
+  Source:
+    File: Assets/Models/OutpostWeapons/Knife.glb
+    FileID: 12484951793233539249
+    Index: 2
+  AlbedoColor: [0.16, 0.16, 0.17]
+  Metalness: 0.8
+  Roughness: 0.45
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Cutoff: 0.5
+  FlipHorizontally: false
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 2
+    Solid: 1
+  Maps:
+    {}

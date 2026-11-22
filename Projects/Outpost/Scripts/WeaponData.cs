@@ -57,7 +57,7 @@ namespace Outpost
 
         /// <summary>
         /// A bolt worked after each shot (Bolt in the file; the sniper rifle): it starts BoltAfter seconds after the shot and
-        /// takes BoltSeconds (the clip's), meanwhile the scope is down; its sounds at their moments into it.
+        /// takes BoltSeconds (the clip's), the scope staying up; its sounds at their moments into it.
         /// </summary>
         public bool HasBolt;
         public float BoltAfter = 0.4f, BoltSeconds = 1.1f;
