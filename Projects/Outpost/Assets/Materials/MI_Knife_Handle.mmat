@@ -1,0 +1,25 @@
+Material:
+  Version: 1
+  ID: 8588613432997649975
+  Name: MI_Knife_Handle
+  Source:
+    File: Assets/Models/OutpostWeapons/Knife.glb
+    FileID: 12484951793233539249
+    Index: 3
+  AlbedoColor: [0.07, 0.075, 0.07]
+  Metalness: 0
+  Roughness: 0.75
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Cutoff: 0.5
+  FlipHorizontally: false
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 2
+    Solid: 1
+  Maps:
+    {}

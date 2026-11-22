@@ -1,0 +1,25 @@
+Material:
+  Version: 1
+  ID: 12338078763828077231
+  Name: MI_Soldier_Training_Laces
+  Source:
+    File: Assets/Models/QuaterniusCharacters/Soldier_Training.gltf
+    FileID: 12773209306080062867
+    Index: 3
+  AlbedoColor: [0.029556835, 0.027320892, 0.02518686]
+  Metalness: 0
+  Roughness: 0.85
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Cutoff: 0.5
+  FlipHorizontally: false
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 2
+    Solid: 1
+  Maps:
+    {}

@@ -1,0 +1,36 @@
+Material:
+  Version: 1
+  ID: 8803229544242358781
+  Name: MI_Soldier_Player
+  Source:
+    File: Assets/Models/QuaterniusCharacters/Soldier_Player_Arms.gltf
+    FileID: 9206435631230003205
+    Index: 0
+  AlbedoColor: [1, 1, 1]
+  Metalness: 0
+  Roughness: 1
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Cutoff: 0.5
+  FlipHorizontally: false
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 2
+    Solid: 1
+  Maps:
+    Albedo:
+      File: Assets/Models/QuaterniusCharacters/T_Soldier_Player_Color.png
+      FileID: 12473405129134452584
+      Enabled: true
+    Normal:
+      File: Assets/Models/QuaterniusCharacters/T_Soldier_Player_Normal.png
+      FileID: 16408250768535783620
+      Enabled: true
+    Roughness:
+      File: Assets/Models/QuaterniusCharacters/T_Soldier_Player_Roughness.png
+      FileID: 13780912765185498993
+      Enabled: true
