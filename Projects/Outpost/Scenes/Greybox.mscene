@@ -101,8 +101,8 @@ Entities:
     Name: Pistol
     Parent: 1101
     Transform:
-      Translation: [-0.0407, 0.1111, 0.017]
-      Rotation: [90, -14.45, 90]
+      Translation: [-0.041, 0.0994, 0.008]
+      Rotation: [90, -2.45, 90]
       Scale: [0.00125, 0.00125, 0.00125]
     Model:
       File: Assets/Models/QuaterniusGuns/Pistol_1.fbx
@@ -123,8 +123,8 @@ Entities:
     Name: ViewModel Pistol
     Parent: 1102
     Transform:
-      Translation: [-0.0407, 0.1111, 0.017]
-      Rotation: [90, -14.45, 90]
+      Translation: [-0.041, 0.0994, 0.008]
+      Rotation: [90, -2.45, 90]
       Scale: [0.00125, 0.00125, 0.00125]
     Model:
       File: Assets/Models/QuaterniusGuns/Pistol_1.fbx
