@@ -31,3 +31,8 @@ The pistol and knife clips (`Soldier_Sidearms.glb`, `Tools/CharacterPoses/make_r
 (`Soldier_GetUp.glb`, `Tools/CharacterPoses/make_get_up.py`)
 are our own on the animation library's rig, carrying its mannequin, CC0. The pistol's sounds (`Pistol_*.wav`), the knife's
 (`Knife_*.wav`) and taking the weapons out (`Draw_*.wav`) are synthesized by `Tools/Audio/GenerateWeaponSounds.py`.
+
+Phase 3.1: the pickups (the health packs, the vest, the ammo box) and the electric floor (`Assets/Models/OutpostPickups`)
+are our own, made by `Tools/Models/make_pickups.py`, CC0. Their sounds, the sparks' and the hum (`Pickup_*.wav`,
+`Electric_*.wav`) and the player's hurt and death (`Player_*.wav`) are synthesized by `Tools/Audio/GenerateGameSounds.py`;
+the HUD's hit vignette (`Assets/Textures/UI/DamageVignette.png`) is made by `Tools/Textures/GenerateHudTextures.py`.

@@ -134,6 +134,37 @@ namespace Outpost
         public event Action? Swung, AttackEnded;
         public event Action<ShotResult>? Struck;
 
+        /// <summary>
+        /// Spare rounds added (Phase 3.1: an ammo box), up to the most it carries (MaxReserve): how many it took (0: full,
+        /// or a knife).
+        /// </summary>
+        public int AddReserve(int rounds)
+        {
+            if (IsMelee || rounds <= 0)
+                return 0;
+            int added = Math.Min(rounds, data.MaxReserve - Reserve);
+            if (added <= 0)
+                return 0;
+            Reserve += added;
+            return added;
+        }
+
+        /// <summary>As it was at the start (Phase 3.1: the respawn): a full magazine and the starting spare, the first fire mode, nothing under way.</summary>
+        public void Restock()
+        {
+            Holster();
+            Ammo = IsMelee ? 0 : data.Magazine;
+            Reserve = IsMelee ? 0 : data.Reserve;
+            fireMode = 0;
+            cooldown = spreadExtra = 0.0f;
+            sinceShot = 10.0f;
+            hitIn = 0.0f;
+            breath = 1.0f;
+            tired = false;
+            swayScale = 1.0f;
+            Spread = 0.0f;
+        }
+
         /// <summary>Put away (another weapon comes out): a reload or a strike stops, the sights come down.</summary>
         public void Holster()
         {

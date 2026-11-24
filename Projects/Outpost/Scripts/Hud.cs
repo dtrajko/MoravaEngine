@@ -14,6 +14,11 @@ namespace Outpost
     /// user: they went, and the sights weren't quite where the shots go; now the front sight is on the middle). Phase 2.5: the sniper's scope, on a canvas of its own matched to the screen's height (so the
     /// lens stays round in any aspect ratio, black bars beside it): shown while the player's view is the scope's, with the
     /// darkening of its coming up; the crosshair's bars go meanwhile, and the zoom shows after the fire mode.
+    ///
+    /// Phase 3.1: health and armor at the bottom left (the numbers and a bar each; health red and pulsing when low), a
+    /// message above them (a pickup's "+25 HEALTH", "CHECKPOINT") fading out, the screen's edges red after a hit (the
+    /// DamageVignette texture, Tools/Textures/GenerateHudTextures.py), and dead: the screen darkened, the title, and once
+    /// Fire starts again the hint, slowly pulsing; the crosshair, the ammo and the hit marker go while dead.
     /// </summary>
     public class Hud : Entity
     {
@@ -24,6 +29,22 @@ namespace Outpost
 
         /// <summary>The scope's overlay: its root (the lens and the bars under it), and the darkening over it.</summary>
         public Entity? Scope, ScopeDark;
+
+        /// <summary>
+        /// Phase 3.1: health and armor (the numbers, the bars' fills: their full widths are the scene's, and their frames
+        /// and labels, shown with them), the message, the red at the edges after a hit, and the death screen (the
+        /// darkening, the title, the hint).
+        /// </summary>
+        public Entity? HealthValue, HealthBar, HealthFrame, HealthLabel, ArmorValue, ArmorBar, ArmorFrame, ArmorLabel;
+        public Entity? Message, DamageFlash, DeathDark, DeathTitle, DeathHint;
+
+        /// <summary>Health at or below this shows red, pulsing; the colors of the health, the low health and the armor.</summary>
+        public float LowHealth = 25.0f;
+        public Vector4 HealthColor = new Vector4(1.0f, 1.0f, 1.0f, 0.9f), LowHealthColor = new Vector4(1.0f, 0.25f, 0.2f, 1.0f);
+        public Vector4 ArmorColor = new Vector4(0.6f, 0.78f, 1.0f, 0.9f);
+
+        /// <summary>The hit's red at the screen's edges (its alpha the most, at a big hit).</summary>
+        public Vector4 DamageColor = new Vector4(0.75f, 0.02f, 0.0f, 0.85f);
 
         /// <summary>The hit marker's bars: pixels from the middle to their middles, and their colors (a hit, a kill).</summary>
         public float HitMarkerGap = 13.0f;
@@ -41,6 +62,11 @@ namespace Outpost
         UIRect? scopeRect;
         UIRect? scopeDarkRect;
         UIImage? scopeDarkImage;
+        UIText? healthValue, armorValue, message, deathTitle, deathHint;
+        UIRect? healthBar, armorBar;
+        UIImage? healthBarImage, armorBarImage, damageImage, deathDarkImage;
+        float healthBarWidth, armorBarWidth;
+        float pulse;
 
         protected override void OnCreate()
         {
@@ -60,12 +86,26 @@ namespace Outpost
             scopeRect = Scope?.GetComponent<UIRect>();
             scopeDarkRect = ScopeDark?.GetComponent<UIRect>();
             scopeDarkImage = ScopeDark?.GetComponent<UIImage>();
+            healthValue = HealthValue?.GetComponent<UIText>();
+            armorValue = ArmorValue?.GetComponent<UIText>();
+            message = Message?.GetComponent<UIText>();
+            deathTitle = DeathTitle?.GetComponent<UIText>();
+            deathHint = DeathHint?.GetComponent<UIText>();
+            healthBar = HealthBar?.GetComponent<UIRect>();
+            armorBar = ArmorBar?.GetComponent<UIRect>();
+            healthBarImage = HealthBar?.GetComponent<UIImage>();
+            armorBarImage = ArmorBar?.GetComponent<UIImage>();
+            damageImage = DamageFlash?.GetComponent<UIImage>();
+            deathDarkImage = DeathDark?.GetComponent<UIImage>();
+            healthBarWidth = healthBar?.Size.X ?? 0.0f;
+            armorBarWidth = armorBar?.Size.X ?? 0.0f;
         }
 
         protected override void OnUpdate(float dt)
         {
             PlayerWeapon? weapon = player?.Weapon;
-            bool shown = weapon != null && player != null && !player.IsFlying;
+            UpdateVitals(dt);
+            bool shown = weapon != null && player != null && !player.IsFlying && !player.IsDead;
             SetVisible(shown);
             UpdateScope(shown && player != null && player.ScopeShown);
             if (!shown || weapon == null || player == null)
@@ -129,6 +169,104 @@ namespace Outpost
                 if (hitImages[i] is UIImage image)
                     image.Color = new Vector4(color.X, color.Y, color.Z, color.W * MathF.Min(1.0f, shown * 1.5f));
             }
+        }
+
+        // Phase 3.1: health and armor, the message, the hit's red, the death screen (all hidden while the fly camera has the view)
+        void UpdateVitals(float dt)
+        {
+            bool shown = player != null && !player.IsFlying;
+            pulse += dt;
+            foreach (Entity? e in new[] { HealthValue, HealthFrame, HealthLabel, ArmorValue, ArmorFrame, ArmorLabel })
+                Show(e, shown);
+            if (player == null || !shown)
+            {
+                foreach (Entity? e in new[] { HealthBar, ArmorBar, Message, DamageFlash, DeathDark, DeathTitle, DeathHint })
+                    Show(e, false);
+                return;
+            }
+            float health = player.Health, armor = player.Armor;
+            bool low = health <= LowHealth;
+            Vector4 healthColor = HealthColor;
+            if (low)
+            {
+                // Low: red, pulsing faster the lower it is (dead: still)
+                float rate = player.IsDead ? 0.0f : 1.0f + 1.5f * (1.0f - health / MathF.Max(1.0f, LowHealth));
+                float beat = 0.75f + 0.25f * MathF.Cos(pulse * rate * MathF.PI * 2.0f);
+                healthColor = new Vector4(LowHealthColor.X, LowHealthColor.Y, LowHealthColor.Z, LowHealthColor.W * beat);
+            }
+            SetText(healthValue, $"{MathF.Ceiling(health):0}");
+            SetText(armorValue, $"{MathF.Ceiling(armor):0}");
+            if (healthValue != null && healthValue.Color != healthColor)
+                healthValue.Color = healthColor;
+            SetBar(healthBar, healthBarImage, healthBarWidth, health / MathF.Max(1.0f, player.Vitals.MaxHealth), healthColor);
+            SetBar(armorBar, armorBarImage, armorBarWidth, armor / MathF.Max(1.0f, player.Vitals.MaxArmor), ArmorColor);
+            if (armorValue != null)
+            {
+                Vector4 color = armor > 0.0f ? ArmorColor : new Vector4(ArmorColor.X, ArmorColor.Y, ArmorColor.Z, ArmorColor.W * 0.45f);
+                if (armorValue.Color != color)
+                    armorValue.Color = color;
+            }
+
+            // The message, fading out at its end (not while dead)
+            float messageShown = player.IsDead ? 0.0f : player.MessageShown;
+            Show(Message, messageShown > 0.0f);
+            if (message != null && messageShown > 0.0f)
+            {
+                SetText(message, player.Message);
+                Vector4 c = message.Color;
+                message.Color = new Vector4(c.X, c.Y, c.Z, 0.95f * messageShown);
+            }
+
+            // The hit's red at the edges; low on health a little stays, dead more
+            float flash = MathF.Max(player.HurtFlash, player.IsDead ? 0.5f : low ? 0.18f : 0.0f);
+            Show(DamageFlash, flash > 0.001f);
+            if (damageImage != null && flash > 0.001f)
+                damageImage.Color = new Vector4(DamageColor.X, DamageColor.Y, DamageColor.Z, DamageColor.W * flash);
+
+            // Dead: darkening over the first second, the title, then the hint once Fire starts again
+            float dark = player.IsDead ? Math.Clamp(player.DeadSeconds / 1.0f, 0.0f, 1.0f) : 0.0f;
+            Show(DeathDark, dark > 0.0f);
+            Show(DeathTitle, dark > 0.0f);
+            if (deathDarkImage != null && dark > 0.0f)
+                deathDarkImage.Color = new Vector4(0.0f, 0.0f, 0.0f, 0.45f * dark);
+            if (deathTitle != null && dark > 0.0f)
+            {
+                Vector4 c = deathTitle.Color;
+                deathTitle.Color = new Vector4(c.X, c.Y, c.Z, dark);
+            }
+            bool hint = player.CanRespawn;
+            Show(DeathHint, hint);
+            if (deathHint != null && hint)
+            {
+                Vector4 c = deathHint.Color;
+                deathHint.Color = new Vector4(c.X, c.Y, c.Z, 0.65f + 0.35f * MathF.Cos(pulse * MathF.PI));
+            }
+        }
+
+        static void SetBar(UIRect? bar, UIImage? image, float width, float fraction, Vector4 color)
+        {
+            if (bar == null)
+                return;
+            Vector2 size = new Vector2(width * Math.Clamp(fraction, 0.0f, 1.0f), bar.Size.Y);
+            if (bar.Size != size)
+                bar.Size = size;
+            bool visible = size.X > 0.5f;
+            if (bar.Visible != visible)
+                bar.Visible = visible;
+            if (image != null && image.Color != color)
+                image.Color = color;
+        }
+
+        static void SetText(UIText? text, string value)
+        {
+            if (text != null && text.Text != value)
+                text.Text = value;
+        }
+
+        static void Show(Entity? entity, bool shown)
+        {
+            if (entity?.GetComponent<UIRect>() is UIRect rect && rect.Visible != shown)
+                rect.Visible = shown;
         }
 
         // The scope's overlay while the view is the scope's, the darkening fading as it comes up
