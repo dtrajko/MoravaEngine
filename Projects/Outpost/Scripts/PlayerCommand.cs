@@ -100,6 +100,14 @@ namespace Outpost
         public float Yaw => yaw;
         public float Pitch => pitch;
 
+        /// <summary>The look set (Phase 3.1: a respawn faces the checkpoint's way), the kicks' climb forgotten.</summary>
+        public void SetLook(float yaw, float pitch)
+        {
+            this.yaw = (yaw % 360.0f + 360.0f) % 360.0f;
+            this.pitch = Math.Clamp(pitch, -89.0f, 89.0f);
+            kickUp = 0.0f;
+        }
+
         /// <summary>Each frame (OnUpdate): the look. The mouse only while it is the game's (a free cursor works the editor).</summary>
         public void UpdateLook(float dt)
         {

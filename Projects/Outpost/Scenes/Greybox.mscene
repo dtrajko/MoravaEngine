@@ -2831,6 +2831,19 @@ Entities:
         HitBottomRight: {Entity: 1410}
         Scope: {Entity: 1421}
         ScopeDark: {Entity: 1425}
+        HealthValue: {Entity: 1433}
+        HealthBar: {Entity: 1435}
+        HealthFrame: {Entity: 1434}
+        HealthLabel: {Entity: 1432}
+        ArmorValue: {Entity: 1437}
+        ArmorBar: {Entity: 1439}
+        ArmorFrame: {Entity: 1438}
+        ArmorLabel: {Entity: 1436}
+        Message: {Entity: 1440}
+        DamageFlash: {Entity: 1430}
+        DeathDark: {Entity: 1431}
+        DeathTitle: {Entity: 1441}
+        DeathHint: {Entity: 1442}
     UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
   - ID: 1401
     Name: Crosshair Top
@@ -2938,6 +2951,179 @@ Entities:
       Scale: [1, 1, 1]
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [2.5, 11], Visible: false}
     UIImage: {Texture: "", Color: [1, 1, 1, 0.95]}
+  - ID: 1430
+    Name: Damage Flash
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: Assets/Textures/UI/DamageVignette.png, Color: [0.75, 0.02, 0, 0]}
+  - ID: 1431
+    Name: Death Dark
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0]}
+  - ID: 1432
+    Name: Health Label
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [48, -110], Size: [200, 28], Visible: true}
+    UIText:
+      Text: HEALTH
+      Font: ""
+      Size: 20
+      Color: [1, 1, 1, 0.6]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1433
+    Name: Health Value
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [48, -40], Size: [128, 64], Visible: true}
+    UIText:
+      Text: 100
+      Font: ""
+      Size: 46
+      Color: [1, 1, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1434
+    Name: Health Bar Frame
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [176, -62], Size: [204, 14], Visible: true}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.4]}
+  - ID: 1435
+    Name: Health Bar
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [178, -64], Size: [200, 10], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.9]}
+  - ID: 1436
+    Name: Armor Label
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [430, -110], Size: [200, 28], Visible: true}
+    UIText:
+      Text: ARMOR
+      Font: ""
+      Size: 20
+      Color: [1, 1, 1, 0.6]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1437
+    Name: Armor Value
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [430, -40], Size: [128, 64], Visible: true}
+    UIText:
+      Text: 0
+      Font: ""
+      Size: 46
+      Color: [0.6, 0.78, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1438
+    Name: Armor Bar Frame
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [558, -62], Size: [204, 14], Visible: true}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.4]}
+  - ID: 1439
+    Name: Armor Bar
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [560, -64], Size: [200, 10], Visible: false}
+    UIImage: {Texture: "", Color: [0.6, 0.78, 1, 0.9]}
+  - ID: 1440
+    Name: Message
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [48, -150], Size: [700, 40], Visible: false}
+    UIText:
+      Text: ""
+      Font: ""
+      Size: 28
+      Color: [0.85, 1, 0.85, 0.95]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1441
+    Name: Death Title
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -60], Size: [1200, 120], Visible: false}
+    UIText:
+      Text: YOU DIED
+      Font: ""
+      Size: 84
+      Color: [0.9, 0.15, 0.1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1442
+    Name: Death Hint
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 40], Size: [1200, 50], Visible: false}
+    UIText:
+      Text: FIRE TO CONTINUE
+      Font: ""
+      Size: 30
+      Color: [1, 1, 1, 0.9]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
   - ID: 1420
     Name: Scope Canvas
     Parent: 0
@@ -3662,3 +3848,239 @@ Entities:
       Blend: Alpha
       Lit: true
       SoftDistance: 0
+  - ID: 1601
+    Name: Medkit Small
+    Parent: 0
+    Transform:
+      Translation: [-12, 0, 19.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 0.5, 0]
+      HalfExtents: [0.4, 0.5, 0.4]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Outpost.Pickup
+      Fields:
+        Kind: {Enum: Health}
+        Amount: {Float: 25}
+        RespawnSeconds: {Float: 20}
+        Visual: {Entity: 1602}
+        Sound: {String: Assets/Audio/Pickup_Health.wav}
+  - ID: 1602
+    Name: Medkit Small Model
+    Parent: 1601
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/OutpostPickups/Medkit_Small.glb
+  - ID: 1603
+    Name: Medkit Large
+    Parent: 0
+    Transform:
+      Translation: [-10.5, 0, 19.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 0.5, 0]
+      HalfExtents: [0.4, 0.5, 0.4]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Outpost.Pickup
+      Fields:
+        Kind: {Enum: Health}
+        Amount: {Float: 50}
+        RespawnSeconds: {Float: 20}
+        Visual: {Entity: 1604}
+        Sound: {String: Assets/Audio/Pickup_Health.wav}
+  - ID: 1604
+    Name: Medkit Large Model
+    Parent: 1603
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/OutpostPickups/Medkit_Large.glb
+  - ID: 1605
+    Name: Vest
+    Parent: 0
+    Transform:
+      Translation: [-9, 0, 19.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 0.5, 0]
+      HalfExtents: [0.4, 0.5, 0.4]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Outpost.Pickup
+      Fields:
+        Kind: {Enum: Armor}
+        Amount: {Float: 100}
+        RespawnSeconds: {Float: 20}
+        Visual: {Entity: 1606}
+        Sound: {String: Assets/Audio/Pickup_Armor.wav}
+  - ID: 1606
+    Name: Vest Model
+    Parent: 1605
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/OutpostPickups/Vest.glb
+  - ID: 1607
+    Name: Ammo Box
+    Parent: 0
+    Transform:
+      Translation: [-7.5, 0, 19.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 0.5, 0]
+      HalfExtents: [0.4, 0.5, 0.4]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Outpost.Pickup
+      Fields:
+        Kind: {Enum: Ammo}
+        Amount: {Float: 2}
+        RespawnSeconds: {Float: 20}
+        Visual: {Entity: 1608}
+        Sound: {String: Assets/Audio/Pickup_Ammo.wav}
+  - ID: 1608
+    Name: Ammo Box Model
+    Parent: 1607
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/OutpostPickups/AmmoBox.glb
+  - ID: 1610
+    Name: Electric Floor
+    Parent: 0
+    Transform:
+      Translation: [-9, 0, 14]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 1, 0]
+      HalfExtents: [1.4, 1, 1.4]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Outpost.HazardZone
+      Fields:
+        DamagePerSecond: {Float: 20}
+        Sparks: {Entity: 1613}
+        Area: {Vector3: [1.3, 0.06, 1.3]}
+    AudioSource:
+      Clip: Assets/Audio/Electric_Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 1.5
+      MaxDistance: 15
+  - ID: 1611
+    Name: Electric Floor Model
+    Parent: 1610
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/OutpostPickups/ElectricFloor.glb
+  - ID: 1612
+    Name: Electric Floor Box
+    Parent: 1610
+    Transform:
+      Translation: [1.15, 0, -1.2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 0.3, 0]
+      HalfExtents: [0.21, 0.3, 0.15]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 1613
+    Name: Electric Sparks
+    Parent: 1610
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    ParticleEmitter:
+      Emitting: false
+      Rate: 0
+      RatePerMeter: 0
+      MaxParticles: 256
+      Lifetime: [0.15, 0.45]
+      Speed: [1.5, 4.5]
+      ConeAngle: 50
+      StartRadius: 0.03
+      InheritVelocity: 0
+      Acceleration: [0, -9.81, 0]
+      Drag: 1
+      Size: [0.014, 0.005]
+      ColorStart: [4, 5.5, 10, 1]
+      ColorEnd: [0.8, 1.2, 4, 0]
+      SpinSpeed: 0
+      Texture: ""
+      Blend: Additive
+      Lit: false
+      SoftDistance: 0
+      Stretch: 0.03
+  - ID: 1620
+    Name: Checkpoint West
+    Parent: 0
+    Transform:
+      Translation: [-6, 0, 22]
+      Rotation: [0, 90, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 1, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Outpost.Checkpoint

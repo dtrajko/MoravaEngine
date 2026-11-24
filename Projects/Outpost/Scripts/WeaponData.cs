@@ -41,6 +41,12 @@ namespace Outpost
         public float Range = 300.0f;
         public int Magazine = 30;
         public int Reserve = 120;
+
+        /// <summary>
+        /// The most spare rounds it carries (Phase 3.1: an ammo box tops the spare up to it); 0 in the file: as many as it
+        /// starts with (Reserve).
+        /// </summary>
+        public int MaxReserve;
         public float ReloadSeconds = 2.2f;
 
         /// <summary>Seconds into the reload its sounds come: the magazine out, a new one in (the reload clip's moments).</summary>
@@ -220,6 +226,9 @@ namespace Outpost
             d.Range = Number(root, "Range", d.Range);
             d.Magazine = (int)Number(root, "Magazine", d.Magazine);
             d.Reserve = (int)Number(root, "Reserve", d.Reserve);
+            d.MaxReserve = (int)Number(root, "MaxReserve", 0);
+            if (d.MaxReserve <= 0)
+                d.MaxReserve = d.Reserve;
             d.ReloadSeconds = Number(root, "ReloadSeconds", d.ReloadSeconds);
             if (root.TryGetProperty("ReloadSounds", out JsonElement reloadSounds))
             {

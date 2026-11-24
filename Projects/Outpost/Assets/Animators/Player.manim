@@ -9,7 +9,8 @@
 # blended by AimPitch, the look's pitch in degrees, down positive), lowered to the ready while sprinting. Phase 2.4: the
 # pistol's the same (its own states: PistolAim, PistolReady, PistolReload) and the knife's (KnifeIdle, KnifeSlash): the
 # weapon in the hands picks them (Player.cs plays them when it comes out). Phase 2.5: the sniper rifle's (SniperAim,
-# SniperReady, SniperReload, and SniperBolt: the bolt worked after a shot).
+# SniperReady, SniperReload, and SniperBolt: the bolt worked after a shot). Phase 3.1: Death on both, the dummies' fall
+# (Death_Back): PlayerBody.Die plays it on the base and the UpperBody together, Revive stands it up again.
 Animator:
   Version: 1
   Entry: Idle
@@ -69,6 +70,12 @@ Animator:
       Speed: 1.6
       Loop: false
       InPlace: true
+    # Phase 3.1: dead, the body falls back (Death_Back, as the dummies'), not in place: it lies where the clip takes it
+    - Name: Death
+      Clip: {File: Assets/Models/SoldierAnimations/Soldier_GetUp.glb, Name: Death_Back}
+      Speed: 1
+      Loop: false
+      InPlace: false
   Transitions: []
   Layers:
     - Name: UpperBody
@@ -151,6 +158,12 @@ Animator:
           Speed: 1
           Loop: false
           InPlace: true
+        # Phase 3.1: dead, the same fall as the base's (played with it: nothing of the aim stays)
+        - Name: Death
+          Clip: {File: Assets/Models/SoldierAnimations/Soldier_GetUp.glb, Name: Death_Back}
+          Speed: 1
+          Loop: false
+          InPlace: false
       Transitions:
         - {From: Aim, To: Ready, Fade: 0.25, Conditions: [{Parameter: Sprinting, Test: True}]}
         - {From: Ready, To: Aim, Fade: 0.2, Conditions: [{Parameter: Sprinting, Test: False}]}

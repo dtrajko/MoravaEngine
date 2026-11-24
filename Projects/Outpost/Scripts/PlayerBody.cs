@@ -68,6 +68,7 @@ namespace Outpost
         float landing;      // seconds of the landing left
         bool jumped;        // since the jump (or a fall) until the landing
         bool sprinting;     // the UpperBody layer's: the rifle lowered
+        bool dead;          // lying dead (Die): Update leaves the clip alone
 
         /// <summary>gun: the rifle in the body's hand (a child on its bone), hidden with the body.</summary>
         public PlayerBody(Entity body, PlayerBodySettings settings, Entity? gun = null)
@@ -157,6 +158,38 @@ namespace Outpost
             animator.Play(state ?? (sprinting ? readyState : aimState), state != null ? 0.05f : 0.15f, "UpperBody");
         }
 
+        /// <summary>
+        /// Dead (Phase 3.1): the body falls (Death, Player.manim's Death_Back: the dummies' fall, not in place: it lies where
+        /// the clip takes it), the upper body with it (the UpperBody layer plays the same clip, so nothing of the aim stays);
+        /// Update leaves it lying until Revive.
+        /// </summary>
+        public void Die()
+        {
+            dead = true;
+            animator?.Play("Death", 0.12f);
+            animator?.Play("Death", 0.12f, "UpperBody");
+            state = "Death";
+        }
+
+        /// <summary>Alive again (the respawn): standing at once, facing heading degrees (the model's: the look's + 180), the weapon's aim.</summary>
+        public void Revive(float heading)
+        {
+            dead = false;
+            jumped = false;
+            airTime = landing = 0.0f;
+            speed = 0.0f;
+            sprinting = false;
+            animator?.SetBool("Sprinting", false);
+            body.Translation = Vector3.Zero; // (the death's clip moves only the bones; kept at the feet anyway)
+            body.EulerAngles = new Vector3(0.0f, (heading % 360.0f + 540.0f) % 360.0f - 180.0f, 0.0f);
+            animator?.Play("Idle", 0.0f);
+            animator?.Play(aimState, 0.0f, "UpperBody");
+            state = "Idle";
+        }
+
+        /// <summary>The body lies dead (Die, until Revive).</summary>
+        public bool IsDead => dead;
+
         /// <summary>The motor jumped (from the fixed step): the body leaves the ground at once.</summary>
         public void OnJumped() => jumped = true;
 
@@ -173,6 +206,8 @@ namespace Outpost
         /// <summary>Each frame: velocity (meters per second, the world's), the look (the command's yaw and pitch, degrees).</summary>
         public void Update(float dt, Vector3 velocity, bool grounded, bool crouched, bool walking, bool sprinting, float lookYaw, float lookPitch)
         {
+            if (dead)
+                return;
             float horizontal = new Vector2(velocity.X, velocity.Z).Length();
             speed += (horizontal - speed) * MathF.Min(1.0f, 12.0f * dt);
             airTime = grounded ? 0.0f : airTime + dt;

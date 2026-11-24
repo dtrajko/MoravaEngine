@@ -192,6 +192,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li class="sub2"><a href="#phase-2-5">2.5 the sniper rifle and its scope (E10)</a></li>
       <li class="sub2"><a href="#phase-sights-getup">The sights on the crosshair, the death, the get-up, the arm in first person (after 2.5)</a></li>
       <li class="sub"><a href="#phase-3">Phase 3: health, pickups and the HUD</a></li>
+      <li class="sub2"><a href="#phase-3-1">3.1 health, armor, pickups, death and starting again</a></li>
       <li class="sub"><a href="#phase-4">Phase 4: navigation (E1)</a></li>
       <li class="sub"><a href="#phase-5">Phase 5: the guards</a></li>
       <li class="sub"><a href="#phase-6">Phase 6: the base</a></li>
@@ -1676,6 +1677,56 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <code>DrawEvery</code> and UI images showing them exist. Which floors it shows (the player's, or the others
       faded) is decided then.</li>
   </ul>
+  <div class="box"><b>The split and the user's choices (2026-11-24)</b>
+    <p>Four PRs: <b>3.1</b> health, armor, the pickups (health packs, the vest, ammo boxes), death and starting again, health
+    and armor on the HUD; <b>3.2</b> the rest of the HUD (the direction damage came from, the weapons' slots, objectives,
+    the HUD's own font); <b>3.3</b> the menus and settings from Racing's (pause, the view, mouse sensitivity); <b>3.4</b>
+    the HUD's map. The user's choices: until the guards fight back (Phase 5) a <b>hazard zone</b> hurts the player in the
+    greybox (a live electric floor); dying shows a death screen, then the player starts again at the <b>last checkpoint</b>
+    passed (Checkpoint triggers; Phase 7 adds the mission's state to them) with full health and the weapons as at the
+    start; the pickups' models are <b>our own Blender scripts</b>, not a pack's.</p>
+  </div>
+  <div class="box ok" id="phase-3-1"><b>As built: 3.1 health, armor, pickups, death and starting again (2026-11-24)</b>
+    <ul>
+      <li><b>The rules</b> (<code>PlayerHealth</code>, the game's rules as the weapons' are): health 100, armor up to 100;
+        while armor lasts it takes two thirds of a hit and loses as many points, the rest goes to health; falls go through
+        it. No regeneration. The player's Inspector has <code>MaxHealth</code>, <code>MaxArmor</code>,
+        <code>StartArmor</code> and <code>RespawnDelay</code>.</li>
+      <li><b>Pickups</b> (<code>Pickup</code> on a trigger; its kind Health, Armor or Ammo, its Amount, its model's child
+        hidden while taken, its sound, <code>RespawnSeconds</code>: 20 in the greybox, 0 never): taken only if they give
+        something (a health pack stays at full health), and at once while standing in one when it would. Health and armor
+        up to their most; an ammo box gives each gun Amount magazines of spare (2), up to the new
+        <code>MaxReserve</code> of the weapon files (none given: as many as it starts with). The models
+        (<code>Tools/Models/make_pickups.py</code>, <code>Assets/Models/OutpostPickups</code>): a small olive drab case with
+        a white cross (+25), a larger one with a handle and a red cross on a white square (+50), a coyote tan plate carrier
+        with three pouches lying flat (+100 armor), a steel ammo can with a yellow band.</li>
+      <li><b>The electric floor</b> (<code>HazardZone</code>): whatever can be hurt in its trigger takes
+        <code>DamagePerSecond</code> (20) in ticks of 0.25 s through <code>Damage.Apply</code> (Kind Electric). It sparks
+        at random points (bursts of its emitter, blue-white, a light's flash, a crackle), more often with someone in it,
+        and hums (its AudioSource, looping). The model: a 3 m steel plate with hazard stripes round it, an open junction
+        box at a corner (solid), its cables across the plate with bare ends.</li>
+      <li><b>Dying</b>: the body falls (<code>Death_Back</code>, the dummies', on the base and the upper body together),
+        the weapons put away and hidden, the sights and the scope down; in both views a camera above the body looks down at
+        its chest, rising from 2.2 to 3.6 m and turning slowly round it, kept out of walls. The HUD darkens, "YOU DIED", and
+        after <code>RespawnDelay</code> (2 s) "FIRE TO CONTINUE"; Fire or Jump starts again at the last
+        <code>Checkpoint</code> passed (none: where the player started), facing its way, with full health,
+        <code>StartArmor</code> and every weapon as at the start (<code>PlayerWeapon.Restock</code>), the first one out.
+        The greybox's west yard has the four pickups, the electric floor and a checkpoint.</li>
+      <li><b>The HUD</b>: health and armor at the bottom left, a number and a bar each (health red and pulsing at 25 or
+        less; no armor: its number dim); a message above them (a pickup's "+25 HEALTH", "+100 ARMOR", "+AMMO",
+        "CHECKPOINT") fading out; the screen's edges red after a hit (<code>DamageVignette.png</code>,
+        <code>Tools/Textures/GenerateHudTextures.py</code>), stronger for more, a little of it while health is low. Dead,
+        the crosshair, the ammo and the hit marker go.</li>
+      <li><b>Sounds</b> (<code>Tools/Audio/GenerateGameSounds.py</code>, synthesized): the pickups' (the case's latches,
+        velcro and a buckle, the ammo can's lid and rattle), the sparks' crackles, the floor's hum (whole cycles: a loop
+        without a seam), the player's hurt grunt and death.</li>
+      <li><b>Checked</b>: the test copy's new Health section (<code>OUTPOST_TEST_START=Health</code>), 21 checks: the
+        checkpoint, a health pack left at full health, 20 a second on the floor and none off it, the vest, both packs, the
+        armor's two thirds (13.33 of 20), the ammo box up to 120, dying (the body's Death on both layers, the death camera
+        2.6 m away), Fire too early ignored, starting again at the checkpoint as at the start; photos of the pickups, the
+        floor's sparks, the death screen. No validation messages.</li>
+    </ul>
+  </div>
   <h3 id="phase-4">Phase 4: navigation (E1)</h3>
   <ul>
     <li>Recast/Detour in the engine, baking, the debug view, the C# API, agents; on the greybox level across floors.</li>

@@ -30,6 +30,11 @@ namespace Outpost
     /// shot goes where it looks), the look turns slower in proportion to the zoom (times the ScopeSensitivity setting).
     /// The camera's Normal Field of View is the unzoomed one, so far terrain and trees keep their detail (E10).
     ///
+    /// Phase 3.1, health: PlayerHealth's rules (armor takes two thirds of a hit while it lasts; falls go through it),
+    /// health packs, vests and ammo boxes (Pickup: TryPickUp), hazards (HazardZone). Dying, the body falls (both views: a
+    /// camera above it looks down at it), the weapons are put away; Fire or Jump after RespawnDelay starts again at the
+    /// last Checkpoint passed (none: where it started) with full health, StartArmor and every weapon as at the start.
+    ///
     /// F2 (DebugFly) hands the view to the debug fly camera (the Camera entity's FlyCamera) and back: the player stands
     /// still meanwhile.
     /// </summary>
@@ -74,8 +79,25 @@ namespace Outpost
         public float JumpHeight = 1.0f;
         public float CrouchHeight = 1.2f;
 
-        /// <summary>Health points; falls take from them (Phase 3: death, health packs, armor).</summary>
-        public float Health = 100.0f;
+        /// <summary>
+        /// Phase 3.1: the most health and armor (PlayerHealth: armor takes two thirds of a hit while it lasts), and the
+        /// armor at the start and after a respawn.
+        /// </summary>
+        public float MaxHealth = 100.0f, MaxArmor = 100.0f, StartArmor = 0.0f;
+
+        /// <summary>
+        /// Dead, Fire (or Jump) starts again at the last checkpoint (Checkpoint; none: where the player started) once this
+        /// many seconds passed: full health, StartArmor, every weapon as at the start, the first one out.
+        /// </summary>
+        public float RespawnDelay = 2.0f;
+
+        /// <summary>Heard when hurt (not more often than HurtSoundEvery seconds) and when dying.</summary>
+        public string HurtSound = "Assets/Audio/Player_Hurt.wav";
+        public string DeathSound = "Assets/Audio/Player_Death.wav";
+        public float HurtVolume = 0.7f, HurtSoundEvery = 0.3f;
+
+        /// <summary>Dead, the camera looks down at the body from this far, rising to DeathCameraRise over the first seconds, turning slowly round it (degrees a second).</summary>
+        public float DeathCameraDistance = 2.2f, DeathCameraRise = 3.6f, DeathCameraPitch = 55.0f, DeathCameraTurn = 8.0f;
 
         /// <summary>
         /// Steps: the sound ({0}: 1 to FootstepVariants), meters between steps and volumes by the way it moves. Crouched it
@@ -125,6 +147,7 @@ namespace Outpost
         readonly Random random = new Random(7);
         PlayerArsenal arsenal = null!;
         Animator? viewModelAnimator;
+        Animator? bodyAnimator;
         Morava.Camera? camera;
         float baseFieldOfView = 70.0f, baseViewModelFieldOfView = 55.0f;
         float aimBlend;               // 0 at the hip, 1 down the sights (eased, the weapon's AimSeconds)
@@ -146,6 +169,16 @@ namespace Outpost
         readonly Dictionary<PlayerWeapon, (Entity? Body, Entity? View)> heldLeft = new();
         WeaponData.LeftHold? leftPlaced; // the left models' place now (the bolt's or the reload's)
         bool inLeftHand;
+
+        // Phase 3.1: health and armor, dying and starting again
+        PlayerHealth health = null!;
+        float deadSeconds;            // since dying
+        float deathYaw;               // the look's yaw when it died (the death camera turns from it)
+        Vector3 spawnFeet;            // where it starts again: the last checkpoint's, or where it started
+        float spawnYaw;
+        float sinceHurtSound = 10.0f;
+        float hurtFlash;              // the HUD's red at the edges: 1 at a hit, fading
+        float messageLeft;            // seconds the HUD's pickup message still shows
 
         bool Flying => Camera is FlyCamera fly && fly.IsActive;
 
@@ -230,7 +263,7 @@ namespace Outpost
         public float BodyHeading => body?.Heading ?? 0.0f;
         public float BodyMoveAngle => body?.MoveAngle ?? 0.0f;
         public bool BodyHidden => body?.HiddenInMainView ?? false;
-        public Vector3 CameraPosition => view.Position;
+        public Vector3 CameraPosition => IsDead ? lastCamera : view.Position; // (dead: the death camera's)
         public bool ViewModelShown => viewModelArms != null && !viewModelArms.HiddenInMainView;
         public string ViewModelState => viewModelAnimator?.GetLayerState("") ?? "";
 
@@ -258,6 +291,7 @@ namespace Outpost
                 Log.Warn($"{Name}: no Body, the player has no model (and no shadow)");
             viewModelArms = ViewModel?.GetComponent<Model>();
             viewModelAnimator = ViewModel?.GetComponent<Animator>();
+            bodyAnimator = Body?.GetComponent<Animator>();
             camera = Camera?.GetComponent<Morava.Camera>();
             if (camera != null)
             {
@@ -271,6 +305,11 @@ namespace Outpost
             if (Effects != null && effects == null)
                 Log.Warn($"{Name}: Effects has no WeaponEffects script: the shots show nothing");
 
+            health = new PlayerHealth(MaxHealth, MaxArmor);
+            health.Reset(StartArmor);
+            health.Hurt += OnHurt;
+            health.Died += OnDied;
+
             CreateArsenal();
             viewSettings = new PlayerViewSettings { Distance = ThirdPersonDistance, ShoulderOffset = ShoulderOffset };
             view = new PlayerView(viewSettings, Settings.GetBool(ThirdPersonSetting) ? ViewMode.ThirdPerson : ViewMode.FirstPerson,
@@ -282,6 +321,8 @@ namespace Outpost
             Input.CursorLocked = true;
             lastFeet = WorldPosition;
             lastEyes = lastCamera = WorldPosition + new Vector3(0.0f, EyeHeight, 0.0f);
+            spawnFeet = WorldPosition;
+            spawnYaw = angles.Y;
             List<string> carried = new();
             foreach (PlayerWeapon w in arsenal.Weapons)
                 carried.Add($"{w.Data.Slot} {w.Data.Name}");
@@ -375,6 +416,17 @@ namespace Outpost
         {
             PlayerCommand command = CommandSource != null ? CommandSource(dt) :
                 Flying ? new PlayerCommand { Yaw = input.Yaw, Pitch = input.Pitch } : input.Sample();
+            if (IsDead)
+            {
+                // Lying: the character only falls (no move, no weapon); Fire or Jump starts again once RespawnDelay passed
+                deadSeconds += dt;
+                motor.Step(new PlayerCommand { Yaw = command.Yaw, Pitch = command.Pitch }, dt);
+                lastCommand = new PlayerCommand { Yaw = command.Yaw, Pitch = command.Pitch };
+                sinceStep = 0.0f;
+                if (CanRespawn && (command.FirePressed || command.Jump))
+                    Respawn();
+                return;
+            }
             arsenal.Step(command, dt);
             PlayerWeapon? weapon = arsenal.Current;
             // Aiming down the sights slows the walk and stops the sprint: Aim held wins over Shift (with a weapon that can
@@ -494,6 +546,14 @@ namespace Outpost
                     body.HiddenInMainView = false; // the fly camera sees the player standing there
                 ShowViewModel(false);
                 ShowShots(false);
+                return;
+            }
+            hurtFlash = MathF.Max(0.0f, hurtFlash - dt / 0.6f);
+            messageLeft = MathF.Max(0.0f, messageLeft - dt);
+            sinceHurtSound += dt;
+            if (IsDead)
+            {
+                UpdateDeathView(dt);
                 return;
             }
             if (Input.WasPressed("SwitchView"))
@@ -691,6 +751,28 @@ namespace Outpost
                 leftModel.HiddenInMainView = body.HiddenInMainView;
         }
 
+        /// <summary>Health and armor points now (Phase 3.1), and their most.</summary>
+        public float Health => health.Health;
+        public float Armor => health.Armor;
+        public PlayerHealth Vitals => health;
+
+        /// <summary>Dead: lying, the death camera's view, until a respawn. Since how long, and whether Fire starts again now.</summary>
+        public bool IsDead => health.IsDead;
+        public float DeadSeconds => IsDead ? deadSeconds : 0.0f;
+        public bool CanRespawn => IsDead && deadSeconds >= RespawnDelay;
+
+        /// <summary>Deaths and respawns so far, and the checkpoint the next respawn is at (null: where it started). A test reads them.</summary>
+        public int Deaths { get; private set; }
+        public int Respawns { get; private set; }
+        public Checkpoint? LastCheckpoint { get; private set; }
+
+        /// <summary>The HUD's red at the screen's edges after a hit: 1 at the hit, 0 gone (stronger the more it took).</summary>
+        public float HurtFlash => hurtFlash;
+
+        /// <summary>The HUD's message (a pickup's "+25 HEALTH", "CHECKPOINT"), and how much of it still shows (1 to 0).</summary>
+        public string Message { get; private set; } = "";
+        public float MessageShown => Math.Clamp(messageLeft / 0.6f, 0.0f, 1.0f);
+
         /// <summary>The weapon is held in the left hand now (the sniper's bolt, a test reads it).</summary>
         public bool InLeftHand => inLeftHand;
 
@@ -709,11 +791,202 @@ namespace Outpost
                 Damage.Apply(this, new DamageInfo { Amount = damage, Point = WorldPosition, Direction = -Vector3.UnitY, Kind = "Fall" });
         }
 
-        public void TakeDamage(in DamageInfo damage)
+        public void TakeDamage(in DamageInfo damage) => health.TakeDamage(damage);
+
+        // A hit taken (Phase 3.1): the screen's edges red for a moment (more for more), a grunt (not one per tick of a
+        // hazard), the log
+        void OnHurt(DamageInfo damage, float healthLost, float armorLost)
         {
-            Health = MathF.Max(0.0f, Health - damage.Amount);
-            Log.Info($"{Name}: {damage.Amount:0} damage ({damage.Kind}), {Health:0} health left");
+            float taken = healthLost + armorLost;
+            hurtFlash = MathF.Max(hurtFlash, Math.Clamp(0.35f + taken / 40.0f, 0.0f, 1.0f));
+            if (!health.IsDead && sinceHurtSound >= HurtSoundEvery)
+            {
+                sinceHurtSound = 0.0f;
+                Audio.PlayOneShot(HurtSound, WorldPosition, HurtVolume, AudioBus.Effects, 0.94f + 0.12f * (float)random.NextDouble());
+            }
+            Log.Info($"{Name}: {damage.Amount:0.#} damage ({damage.Kind}): {healthLost:0.#} health, {armorLost:0.#} armor; {health.Health:0.#} health, {health.Armor:0.#} armor left");
         }
+
+        // The last of the health gone: the body falls (in both views: the death camera looks at it), the weapon's put away
+        // and its models hidden (dropping it is for later), the sights and the scope down
+        void OnDied(DamageInfo damage)
+        {
+            Deaths++;
+            deadSeconds = 0.0f;
+            deathYaw = CommandSource != null ? lastCommand.Yaw : input.Yaw;
+            arsenal.Current?.Holster();
+            foreach (var pair in held.Values)
+                SetVisible(pair, false);
+            foreach (var pair in heldLeft.Values)
+                SetVisible(pair, false);
+            inLeftHand = false;
+            body?.Die();
+            ShowViewModel(false);
+            aimBlend = scopeBlend = 0.0f;
+            ScopeShown = false;
+            ScopeDarkness = 0.0f;
+            shownZoom = 1.0f;
+            view.AtEyes = false;
+            input.WheelZooms = false;
+            input.LookScale = 1.0f;
+            shotsToShow.Clear();
+            if (camera != null)
+            {
+                camera.FieldOfView = baseFieldOfView;
+                camera.ViewModelFieldOfView = baseViewModelFieldOfView;
+            }
+            Audio.PlayOneShot(DeathSound, WorldPosition, HurtVolume);
+            string from = damage.Source != null && damage.Source.Exists ? $" by {damage.Source.Name}" : "";
+            Log.Info($"{Name}: dead ({damage.Kind}{from}); Fire starts again in {RespawnDelay:0.#} s at {(LastCheckpoint != null ? LastCheckpoint.Name : "the start")}");
+        }
+
+        // Dead, each frame: the camera above the body looking down at its chest, rising and turning slowly round it, kept out
+        // of walls as the third person's is
+        void UpdateDeathView(float dt)
+        {
+            if (body != null)
+                body.HiddenInMainView = false;
+            ShowViewModel(false);
+            hitMarker = MathF.Max(0.0f, hitMarker - dt);
+            Vector3 pivot = WorldPosition + new Vector3(0.0f, 0.3f, 0.0f);
+            if (bodyAnimator != null)
+            {
+                Vector3 chest = bodyAnimator.GetBoneTransform("spine_03").Translation;
+                if (chest != Vector3.Zero)
+                    pivot = chest;
+            }
+            float t = Math.Clamp(deadSeconds / 2.5f, 0.0f, 1.0f);
+            t = t * t * (3.0f - 2.0f * t);
+            float yaw = deathYaw + DeathCameraTurn * deadSeconds;
+            float pitch = DeathCameraPitch;
+            float yawRadians = yaw * MathF.PI / 180.0f, pitchRadians = pitch * MathF.PI / 180.0f;
+            Vector3 look = new Vector3(-MathF.Sin(yawRadians) * MathF.Cos(pitchRadians), -MathF.Sin(pitchRadians), -MathF.Cos(yawRadians) * MathF.Cos(pitchRadians));
+            float distance = DeathCameraDistance + (DeathCameraRise - DeathCameraDistance) * t;
+            if (Physics.SphereCast(pivot, viewSettings.Radius, -look, distance, out RaycastHit hit, PhysicsLayers.Solid, this))
+                distance = MathF.Max(0.3f, hit.Distance - 0.05f);
+            Vector3 position = pivot - look * distance;
+            lastCamera = position;
+            if (Camera != null)
+            {
+                Camera.Translation = position;
+                Camera.EulerAngles = new Vector3(pitch, yaw, 0.0f);
+            }
+        }
+
+        /// <summary>
+        /// Starts again (Phase 3.1; Fire or Jump once dead RespawnDelay seconds, or a test): at the last checkpoint (or
+        /// where it started) facing its way, full health and StartArmor, every weapon as at the start with the first one out.
+        /// </summary>
+        public void Respawn()
+        {
+            health.Reset(StartArmor);
+            foreach (PlayerWeapon weapon in arsenal.Weapons)
+                weapon.Restock();
+            // (the first weapon named is out, as at the start)
+            string[] names = WeaponNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            int first = names.Length > 0 ? IndexOfName(names[0]) : -1;
+            arsenal.Choose(Math.Max(0, first));
+            Teleport(spawnFeet, spawnYaw, 0.0f);
+            body?.Revive(spawnYaw + 180.0f);
+            if (arsenal.Current != null)
+            {
+                foreach (var (weapon, pair) in held)
+                    SetVisible(pair, weapon == arsenal.Current);
+                ShowWeapon(arsenal.Current, quiet: true);
+            }
+            deadSeconds = 0.0f;
+            hurtFlash = 0.0f;
+            hitMarker = 0.0f;
+            eyeOffset = 0.0f;
+            Respawns++;
+            Log.Info($"{Name}: started again at {(LastCheckpoint != null ? LastCheckpoint.Name : "the start")} ({Fmt(spawnFeet)})");
+        }
+
+        int IndexOfName(string name)
+        {
+            for (int i = 0; i < arsenal.Weapons.Count; i++)
+                if (string.Equals(arsenal.Weapons[i].Data.Name, name, StringComparison.OrdinalIgnoreCase))
+                    return i;
+            return -1;
+        }
+
+        /// <summary>
+        /// Puts the player's feet here (the character follows at the next physics step), looking this way (degrees: yaw 0
+        /// along -Z, pitch positive down); the view and the steps start from there.
+        /// </summary>
+        public void Teleport(Vector3 feet, float yaw, float pitch)
+        {
+            Translation = feet;
+            input.SetLook(yaw, pitch);
+            lastCommand = new PlayerCommand { Yaw = yaw, Pitch = pitch };
+            lastFeet = feet;
+            lastEyes = lastCamera = feet + new Vector3(0.0f, EyeHeight, 0.0f);
+            stepDistance = 0.0f;
+        }
+
+        /// <summary>The respawn from now on (a Checkpoint the player passed): its feet and its facing (Y rotation).</summary>
+        public void SetCheckpoint(Checkpoint point)
+        {
+            if (IsDead || point == LastCheckpoint)
+                return;
+            LastCheckpoint = point;
+            spawnFeet = point.WorldPosition;
+            spawnYaw = point.EulerAngles.Y;
+            if (point.Message.Length > 0)
+                ShowMessage(point.Message);
+            Log.Info($"{Name}: checkpoint {point.Name} ({Fmt(spawnFeet)})");
+        }
+
+        /// <summary>
+        /// A pickup reached (from its fixed step): what it gives taken, if anything (false: nothing to take, the pickup
+        /// stays): health and armor up to their most, ammo Amount magazines for each gun up to its most spare.
+        /// </summary>
+        public bool TryPickUp(Pickup pickup)
+        {
+            if (IsDead)
+                return false;
+            string text;
+            switch (pickup.Kind)
+            {
+                case PickupKind.Health:
+                {
+                    float added = health.Heal(pickup.Amount);
+                    if (added <= 0.0f)
+                        return false;
+                    text = $"+{added:0} {pickup.DisplayName}";
+                    break;
+                }
+                case PickupKind.Armor:
+                {
+                    float added = health.AddArmor(pickup.Amount);
+                    if (added <= 0.0f)
+                        return false;
+                    text = $"+{added:0} {pickup.DisplayName}";
+                    break;
+                }
+                default:
+                {
+                    int total = 0;
+                    foreach (PlayerWeapon weapon in arsenal.Weapons)
+                        total += weapon.AddReserve((int)MathF.Round(pickup.Amount * weapon.Data.Magazine));
+                    if (total <= 0)
+                        return false;
+                    text = $"+{pickup.DisplayName}";
+                    break;
+                }
+            }
+            ShowMessage(text);
+            Log.Info($"{Name}: picked up {pickup.Name} ({text}): {health.Health:0} health, {health.Armor:0} armor");
+            return true;
+        }
+
+        void ShowMessage(string text)
+        {
+            Message = text;
+            messageLeft = 2.0f;
+        }
+
+        static string Fmt(Vector3 v) => $"{v.X:0.00}, {v.Y:0.00}, {v.Z:0.00}";
 
         void PlayFootstep(float volume)
         {
