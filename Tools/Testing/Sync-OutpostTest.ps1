@@ -11,7 +11,7 @@
 #   dotnet build <copy>\Scripts\Outpost.csproj -p:MoravaScriptCoreDir=D:\Workspace\MoravaEngine\build\Debug\
 #   .\Tools\Testing\Run-Engine.ps1 -Editor -Play -Project <copy>\Outpost.mproject -Seconds 145 -DebugOverlay
 #
-# One section only (the README): $env:OUTPOST_TEST_START = "Sidearms", "Sniper", "Sights", "Health" or "Hud" before the run
+# One section only (the README): $env:OUTPOST_TEST_START = "Sidearms", "Sniper", "Sights", "Health", "Hud" or "Menus" before the run
 param(
     [string]$Copy = "D:\Workspace\Temp\OutpostPlayerTest"
 )
@@ -73,5 +73,10 @@ if ($scene.Contains("Name: PlayerTest")) { throw "The game's Greybox already has
 $scene = $scene.TrimEnd() + "`r`n" + ($test -replace "`r?`n", "`r`n") + "`r`n"
 New-Item -ItemType Directory -Force -Path (Join-Path $Copy "Scenes") | Out-Null
 [System.IO.File]::WriteAllText((Join-Path $Copy "Scenes\Greybox.mscene"), $scene)
+# The main menu (Phase 3.3) as it is: the pause menu's Main Menu loads it
+foreach ($file in "MainMenu.mscene", "MainMenu.mscene.meta")
+{
+    if (Test-Path (Join-Path $source "Scenes\$file")) { Copy-Item (Join-Path $source "Scenes\$file") (Join-Path $Copy "Scenes\$file") -Force }
+}
 Write-Host "OutpostPlayerTest synced from $source (Greybox with TestSlab and PlayerTest)"
 exit 0

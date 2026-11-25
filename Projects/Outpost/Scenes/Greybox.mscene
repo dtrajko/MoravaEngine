@@ -4767,3 +4767,2736 @@ Entities:
         Title: {String: Reach the warehouse}
         Kind: {Enum: Reach}
         Order: {Int: 3}
+  - ID: 2000
+    Name: Pause Menu
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Outpost.PauseMenu
+      Fields:
+        Menu: {Entity: 2001}
+        ResumeButton: {Entity: 2010}
+        CheckpointButton: {Entity: 2011}
+        SettingsButton: {Entity: 2012}
+        MainMenuButton: {Entity: 2013}
+        SettingsScreen: {Entity: 2100}
+        Player: {Entity: 1100}
+        Hud: {Entity: 1400}
+        Title: {Entity: 2003}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 10}
+  - ID: 2001
+    Name: Pause Panel
+    Parent: 2000
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.55]}
+  - ID: 2002
+    Name: Pause Box
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0.5], AnchorMax: [0, 0.5], Pivot: [0, 0.5], Position: [80, 0], Size: [460, 560], Visible: true}
+    UIImage: {Texture: "", Color: [0.03, 0.035, 0.03, 0.93]}
+  - ID: 2004
+    Name: Accent
+    Parent: 2002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 1], Pivot: [0, 0.5], Position: [0, 0], Size: [8, 0], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.78, 0.35, 1]}
+  - ID: 2003
+    Name: Title
+    Parent: 2002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -200], Size: [400, 100], Visible: true}
+    UIText:
+      Text: PAUSED
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 76
+      Color: [0.95, 0.78, 0.35, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2010
+    Name: Resume Button
+    Parent: 2002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -90], Size: [380, 78], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Resume
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2011
+    Name: Checkpoint Button
+    Parent: 2002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 5], Size: [380, 78], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Last checkpoint
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2012
+    Name: Settings Button
+    Parent: 2002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 100], Size: [380, 78], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Settings
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2013
+    Name: Main Menu Button
+    Parent: 2002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 195], Size: [380, 78], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: Main menu
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2020
+    Name: Hint
+    Parent: 2001
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -40], Size: [1600, 50], Visible: true}
+    UIText:
+      Text: "Escape or Start: back to the game"
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 30
+      Color: [1, 1, 1, 0.65]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2100
+    Name: Settings Menu
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Outpost.SettingsMenu
+      Fields:
+        Panel: {Entity: 2101}
+        MusicSlider: {Entity: 2111}
+        MusicValue: {Entity: 2112}
+        EffectsSlider: {Entity: 2115}
+        EffectsValue: {Entity: 2116}
+        MouseSlider: {Entity: 2119}
+        MouseValue: {Entity: 2120}
+        ScopeSlider: {Entity: 2123}
+        ScopeValue: {Entity: 2124}
+        FieldOfViewSlider: {Entity: 2127}
+        FieldOfViewValue: {Entity: 2128}
+        QualityDropdown: {Entity: 2131}
+        DisplayDropdown: {Entity: 2135}
+        ResolutionDropdown: {Entity: 2139}
+        VSyncDropdown: {Entity: 2143}
+        FrameRateDropdown: {Entity: 2147}
+        BatteryDropdown: {Entity: 2151}
+        ApplyButton: {Entity: 2191}
+        ControlsPanel: {Entity: 2200}
+        ControlsHint: {Entity: 2290}
+    UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 20}
+  - ID: 2101
+    Name: Settings Panel
+    Parent: 2100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.015, 0.017, 0.015, 0.92]}
+  - ID: 2102
+    Name: Title
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -455], Size: [900, 110], Visible: true}
+    UIText:
+      Text: SETTINGS
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 84
+      Color: [0.95, 0.78, 0.35, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2110
+    Name: Music Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -350], Size: [420, 64], Visible: true}
+    UIText:
+      Text: Music
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2111
+    Name: Music Slider
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -350], Size: [560, 12], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.17, 0.15, 0.95]}
+    UISlider:
+      Value: 0.5
+      Min: 0
+      Max: 1
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.95, 0.78, 0.35, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [24, 44]
+      Normal: [0.8, 0.8, 0.8, 1]
+      Highlighted: [1, 0.85, 0.4, 1]
+      Pressed: [0.6, 0.6, 0.6, 1]
+      Disabled: [0.5, 0.5, 0.5, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 2112
+    Name: Music Value
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -350], Size: [180, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2114
+    Name: Effects Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -288], Size: [420, 64], Visible: true}
+    UIText:
+      Text: Effects
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2115
+    Name: Effects Slider
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -288], Size: [560, 12], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.17, 0.15, 0.95]}
+    UISlider:
+      Value: 1
+      Min: 0
+      Max: 1
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.95, 0.78, 0.35, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [24, 44]
+      Normal: [0.8, 0.8, 0.8, 1]
+      Highlighted: [1, 0.85, 0.4, 1]
+      Pressed: [0.6, 0.6, 0.6, 1]
+      Disabled: [0.5, 0.5, 0.5, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 2116
+    Name: Effects Value
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -288], Size: [180, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2118
+    Name: Mouse sensitivity Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -226], Size: [420, 64], Visible: true}
+    UIText:
+      Text: Mouse sensitivity
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2119
+    Name: Mouse sensitivity Slider
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -226], Size: [560, 12], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.17, 0.15, 0.95]}
+    UISlider:
+      Value: 1
+      Min: 0.2
+      Max: 3
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.95, 0.78, 0.35, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [24, 44]
+      Normal: [0.8, 0.8, 0.8, 1]
+      Highlighted: [1, 0.85, 0.4, 1]
+      Pressed: [0.6, 0.6, 0.6, 1]
+      Disabled: [0.5, 0.5, 0.5, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 2120
+    Name: Mouse sensitivity Value
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -226], Size: [180, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2122
+    Name: Scope sensitivity Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -164], Size: [420, 64], Visible: true}
+    UIText:
+      Text: Scope sensitivity
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2123
+    Name: Scope sensitivity Slider
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -164], Size: [560, 12], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.17, 0.15, 0.95]}
+    UISlider:
+      Value: 1
+      Min: 0.25
+      Max: 2
+      WholeNumbers: false
+      Step: 0.05
+      Interactable: true
+      FillColor: [0.95, 0.78, 0.35, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [24, 44]
+      Normal: [0.8, 0.8, 0.8, 1]
+      Highlighted: [1, 0.85, 0.4, 1]
+      Pressed: [0.6, 0.6, 0.6, 1]
+      Disabled: [0.5, 0.5, 0.5, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 2124
+    Name: Scope sensitivity Value
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -164], Size: [180, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2126
+    Name: Field of view Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -102], Size: [420, 64], Visible: true}
+    UIText:
+      Text: Field of view
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2127
+    Name: Field of view Slider
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -102], Size: [560, 12], Visible: true}
+    UIImage: {Texture: "", Color: [0.16, 0.17, 0.15, 0.95]}
+    UISlider:
+      Value: 70
+      Min: 55
+      Max: 90
+      WholeNumbers: false
+      Step: 1
+      Interactable: true
+      FillColor: [0.95, 0.78, 0.35, 1]
+      HandleColor: [1, 1, 1, 1]
+      HandleSize: [24, 44]
+      Normal: [0.8, 0.8, 0.8, 1]
+      Highlighted: [1, 0.85, 0.4, 1]
+      Pressed: [0.6, 0.6, 0.6, 1]
+      Disabled: [0.5, 0.5, 0.5, 0.5]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+  - ID: 2128
+    Name: Field of view Value
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [470, -102], Size: [180, 64], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2130
+    Name: Quality Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, -40], Size: [420, 64], Visible: true}
+    UIText:
+      Text: Quality
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2131
+    Name: Quality Dropdown
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, -40], Size: [560, 54], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIDropdown:
+      Options: [Automatic, Low, Medium, High, Ultra]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.05, 0.97]
+      ItemHighlight: [0.8, 0.6, 0.2, 1]
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2134
+    Name: Display Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 22], Size: [420, 64], Visible: true}
+    UIText:
+      Text: Display
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2135
+    Name: Display Dropdown
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 22], Size: [560, 54], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIDropdown:
+      Options: [Fullscreen, Window]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.05, 0.97]
+      ItemHighlight: [0.8, 0.6, 0.2, 1]
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2138
+    Name: Resolution Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 84], Size: [420, 64], Visible: true}
+    UIText:
+      Text: Resolution
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2139
+    Name: Resolution Dropdown
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 84], Size: [560, 54], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIDropdown:
+      Options: ["The editor's Viewport"]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.05, 0.97]
+      ItemHighlight: [0.8, 0.6, 0.2, 1]
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2142
+    Name: VSync Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 146], Size: [420, 64], Visible: true}
+    UIText:
+      Text: VSync
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2143
+    Name: VSync Dropdown
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 146], Size: [560, 54], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIDropdown:
+      Options: [Off, On]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.05, 0.97]
+      ItemHighlight: [0.8, 0.6, 0.2, 1]
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2146
+    Name: Frame rate limit Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 208], Size: [420, 64], Visible: true}
+    UIText:
+      Text: Frame rate limit
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2147
+    Name: Frame rate limit Dropdown
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 208], Size: [560, 54], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIDropdown:
+      Options: [Off, 60, 120, 144, 240]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.05, 0.97]
+      ItemHighlight: [0.8, 0.6, 0.2, 1]
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2150
+    Name: On battery Label
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-430, 270], Size: [420, 64], Visible: true}
+    UIText:
+      Text: On battery
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2151
+    Name: On battery Dropdown
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [80, 270], Size: [560, 54], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIDropdown:
+      Options: [60 fps, As plugged in]
+      Value: 0
+      Interactable: true
+      ListColor: [0.05, 0.055, 0.05, 0.97]
+      ItemHighlight: [0.8, 0.6, 0.2, 1]
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnValueChanged: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 36
+      Color: [1, 1, 1, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2190
+    Name: Controls Button
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-400, 375], Size: [360, 80], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: OpenControls}
+    UIText:
+      Text: Controls
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2191
+    Name: Apply Button
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 375], Size: [360, 80], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: Apply}
+    UIText:
+      Text: Apply
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2192
+    Name: Back Button
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [400, 375], Size: [360, 80], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: Back}
+    UIText:
+      Text: Back
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2193
+    Name: Hint
+    Parent: 2101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 1], AnchorMax: [0.5, 1], Pivot: [0.5, 1], Position: [0, -40], Size: [1700, 56], Visible: true}
+    UIText:
+      Text: "Up and down: the next setting. Left and right: a slider. Enter or A: open a list, choose, then Apply. Escape or Start: back"
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 30
+      Color: [1, 1, 1, 0.65]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2200
+    Name: Controls Panel
+    Parent: 2100
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0.5, 0.5], Position: [0, 0], Size: [0, 0], Visible: false}
+    UIImage: {Texture: "", Color: [0.015, 0.017, 0.015, 0.92]}
+  - ID: 2201
+    Name: Title
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -455], Size: [900, 110], Visible: true}
+    UIText:
+      Text: CONTROLS
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 84
+      Color: [0.95, 0.78, 0.35, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2202
+    Name: Keyboard Header 1
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -375], Size: [260, 50], Visible: true}
+    UIText:
+      Text: Keyboard and mouse
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2203
+    Name: Gamepad Header 1
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -375], Size: [260, 50], Visible: true}
+    UIText:
+      Text: Gamepad
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2204
+    Name: Keyboard Header 2
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -375], Size: [260, 50], Visible: true}
+    UIText:
+      Text: Keyboard and mouse
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2205
+    Name: Gamepad Header 2
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -375], Size: [260, 50], Visible: true}
+    UIText:
+      Text: Gamepad
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2210
+    Name: Control 1 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -318], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2211
+    Name: Control 1 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -318], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2212
+    Name: Control 1 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -318], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2213
+    Name: Control 2 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -262], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2214
+    Name: Control 2 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -262], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2215
+    Name: Control 2 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -262], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2216
+    Name: Control 3 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -206], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2217
+    Name: Control 3 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -206], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2218
+    Name: Control 3 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -206], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2219
+    Name: Control 4 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -150], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2220
+    Name: Control 4 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -150], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2221
+    Name: Control 4 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -150], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2222
+    Name: Control 5 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -94], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2223
+    Name: Control 5 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -94], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2224
+    Name: Control 5 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -94], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2225
+    Name: Control 6 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -38], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2226
+    Name: Control 6 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -38], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2227
+    Name: Control 6 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -38], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2228
+    Name: Control 7 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 18], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2229
+    Name: Control 7 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 18], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2230
+    Name: Control 7 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 18], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2231
+    Name: Control 8 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 74], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2232
+    Name: Control 8 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 74], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2233
+    Name: Control 8 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 74], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2234
+    Name: Control 9 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 130], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2235
+    Name: Control 9 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 130], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2236
+    Name: Control 9 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 130], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2237
+    Name: Control 10 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 186], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2238
+    Name: Control 10 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 186], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2239
+    Name: Control 10 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 186], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2240
+    Name: Control 11 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 242], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2241
+    Name: Control 11 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 242], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2242
+    Name: Control 11 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 242], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2243
+    Name: Control 12 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 298], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2244
+    Name: Control 12 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 298], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2245
+    Name: Control 12 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 298], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2246
+    Name: Control 13 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -318], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2247
+    Name: Control 13 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -318], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2248
+    Name: Control 13 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -318], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2249
+    Name: Control 14 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -262], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2250
+    Name: Control 14 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -262], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2251
+    Name: Control 14 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -262], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2252
+    Name: Control 15 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -206], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2253
+    Name: Control 15 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -206], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2254
+    Name: Control 15 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -206], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2255
+    Name: Control 16 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -150], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2256
+    Name: Control 16 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -150], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2257
+    Name: Control 16 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -150], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2258
+    Name: Control 17 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -94], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2259
+    Name: Control 17 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -94], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2260
+    Name: Control 17 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -94], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2261
+    Name: Control 18 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -38], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2262
+    Name: Control 18 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -38], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2263
+    Name: Control 18 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -38], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2264
+    Name: Control 19 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 18], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2265
+    Name: Control 19 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 18], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2266
+    Name: Control 19 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 18], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2267
+    Name: Control 20 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 74], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2268
+    Name: Control 20 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 74], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2269
+    Name: Control 20 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 74], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2270
+    Name: Control 21 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 130], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2271
+    Name: Control 21 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 130], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2272
+    Name: Control 21 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 130], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2273
+    Name: Control 22 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 186], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2274
+    Name: Control 22 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 186], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2275
+    Name: Control 22 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 186], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2276
+    Name: Control 23 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 242], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2277
+    Name: Control 23 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 242], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2278
+    Name: Control 23 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 242], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2279
+    Name: Control 24 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 298], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2280
+    Name: Control 24 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 298], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2281
+    Name: Control 24 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 298], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2290
+    Name: Controls Hint
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 360], Size: [1400, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 0.75]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2291
+    Name: Reset Button
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-240, 430], Size: [440, 80], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ResetControls}
+    UIText:
+      Text: Reset to the defaults
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2292
+    Name: Back Button
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [240, 430], Size: [440, 80], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: Back}
+    UIText:
+      Text: Back
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 42
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1

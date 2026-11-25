@@ -1768,6 +1768,53 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         lines; photos of each.</li>
     </ul>
   </div>
+  <div class="box ok" id="phase-3-3"><b>As built: 3.3 the menus and settings (2026-11-25)</b>
+    <ul>
+      <li><b>The user's choices</b>: a main menu scene as the start scene and the in-game pause menu; the pause menu
+        offers Resume, Last checkpoint (as after dying), Settings and Main menu, with the objectives' full list beside it;
+        the Settings are Racing's general ones plus the mouse's and the scope's sensitivity and the field of view (the view
+        and the shoulder stay on V and X); the Controls screen binds every action the player uses, two columns, no
+        scrolling.</li>
+      <li><b>The main menu</b> (<code>Scenes/MainMenu.mscene</code>, <code>MainMenu</code>): the greybox's level, sky and
+        sun with OUTPOST, Play, Settings and Quit at the left over a shade, the camera circling the buildings' middle
+        slowly (44 m out, 17 m up, looking a little left of it so the base sits right of the menu). Play loads the
+        greybox. The project's <code>StartScene</code> and the build's first scene; the editor's Play still plays the
+        scene that is open.</li>
+      <li><b>The pause menu</b> (<code>PauseMenu</code>): Pause (Escape, Start) stops the game (TimeScale 0), frees the
+        mouse, shows the menu at the left with Resume selected and the HUD's objectives panel in the middle
+        (<code>Hud.ShowObjectives</code>); not while the fly camera has the view. While paused and 0.15 s after Resume
+        (its click mustn't shoot) <code>PauseMenu.BlocksGame</code> holds the game's keys:
+        <code>LocalPlayerInput.Blocked</code> drops the presses and keeps only the crouch as it was, the look stands, V
+        and X wait. Last checkpoint is <code>Player.Respawn</code>; Main menu loads the main menu.</li>
+      <li><b>The options</b> (<code>GameOptions</code>, kept in Settings): the mouse's sensitivity (0.2 to 3, times the
+        Player's own), the scope's (0.25 to 2; the key <code>ScopeSensitivity</code> as before) and the field of view
+        (55 to 90 degrees from the view's bottom to its top, 70 the default; the scene's camera value is no longer used).
+        The Player reads them each frame, so a slider counts at once, also while paused; the E10 normal field of view
+        follows. Down the sights the view narrows as much as from 70 to the weapon's <code>AimFieldOfView</code> (as a
+        lens, by the tangents), from whatever was chosen; the scope's zoom already went from the base.</li>
+      <li><b>Settings</b> (<code>SettingsMenu</code>, Racing's remade, the same canvas in both scenes): Music, Effects,
+        Mouse sensitivity, Scope sensitivity, Field of view (sliders), Quality, Display, Resolution, VSync, Frame rate
+        limit, On battery (lists waiting for Apply), Controls, Apply, Back. <b>Controls</b>: 24 rows (Forward, Back,
+        Left, Right: WASD's keys; Jump, Crouch hold and toggle, Sprint, Walk quietly, Use, Objectives, Switch view, Swap
+        shoulder, Fire, Aim / scope, Reload, Fire mode, the four weapons, Last, Next and Previous weapon), the keyboard's
+        (with the mouse's buttons) and the gamepad's column; the rows are a table in the script and the scene's
+        <code>Control {n} Label/Key/Pad</code> entities, so a row is added in both. A column without a binding of its kind
+        shows a dash and can't be chosen (the stick, the mouse's wheel); the gamepad's names drop "Gamepad " (the
+        header says it). Found: <code>Input.GetBindingText</code> with a composite's part throws for a binding that
+        isn't one (the gamepad's stick): the screen asks through a guard.</li>
+      <li><b>The look</b>: Barlow Condensed, amber titles and buttons (the HUD's amber), dark panels. The entities were
+        written by a one-off script; they are the scenes' own now, edited in the editor.</li>
+      <li><b>Checked</b>: the test copy's Menus section (<code>OUTPOST_TEST_START=Menus</code>, run on real time in
+        OnUpdate: a pause stops the fixed steps), 18 checks: paused with TimeScale 0, the keys held, the menu and the
+        objectives shown, Resume selected, the mouse free; Settings open with the values, the field of view 85 on the
+        camera at once while paused and back to 70; the Controls rows (Forward W / -, Fire Mouse Left / Right
+        Trigger, Previous weapon - / Left Bumper, a dash not choosable); Back to Settings, Back to the pause menu with
+        Settings selected; Last checkpoint going on with full health and the keys back after 0.15 s; then Main menu
+        loads the main menu (captured). Photos of the pause menu, Settings, Controls and the main menu. The test's
+        knife photos waited on the clock alone and fired at a late start: now only in their stages. The full run: 166 of
+        166, no validation messages (<code>-Seconds 200</code>).</li>
+    </ul>
+  </div>
   <h3 id="phase-4">Phase 4: navigation (E1)</h3>
   <ul>
     <li>Recast/Detour in the engine, baking, the debug view, the C# API, agents; on the greybox level across floors.</li>
