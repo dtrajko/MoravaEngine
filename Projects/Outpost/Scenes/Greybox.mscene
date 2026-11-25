@@ -2844,6 +2844,12 @@ Entities:
         DeathDark: {Entity: 1431}
         DeathTitle: {Entity: 1441}
         DeathHint: {Entity: 1442}
+        Slots: {Entity: 1454}
+        ObjectiveList: {Entity: 1470}
+        ObjectivesPanel: {Entity: 1480}
+        ObjectiveBanner: {Entity: 1443}
+        ObjectiveBannerTitle: {Entity: 1444}
+        ObjectiveBannerText: {Entity: 1445}
     UICanvas: {ReferenceResolution: [1920, 1080], MatchWidthOrHeight: 0.5, SortOrder: 0}
   - ID: 1401
     Name: Crosshair Top
@@ -2891,7 +2897,7 @@ Entities:
     UIRect: {AnchorMin: [1, 1], AnchorMax: [1, 1], Pivot: [1, 1], Position: [-48, -40], Size: [480, 64], Visible: true}
     UIText:
       Text: 30  /  120
-      Font: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
       Size: 46
       Color: [1, 1, 1, 0.9]
       Align: Right
@@ -2908,7 +2914,7 @@ Entities:
     UIRect: {AnchorMin: [1, 1], AnchorMax: [1, 1], Pivot: [1, 1], Position: [-48, -104], Size: [480, 40], Visible: true}
     UIText:
       Text: AUTO
-      Font: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
       Size: 26
       Color: [1, 1, 1, 0.9]
       Align: Right
@@ -2979,7 +2985,7 @@ Entities:
     UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [48, -110], Size: [200, 28], Visible: true}
     UIText:
       Text: HEALTH
-      Font: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
       Size: 20
       Color: [1, 1, 1, 0.6]
       Align: Left
@@ -2996,7 +3002,7 @@ Entities:
     UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [48, -40], Size: [128, 64], Visible: true}
     UIText:
       Text: 100
-      Font: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
       Size: 46
       Color: [1, 1, 1, 0.9]
       Align: Left
@@ -3031,7 +3037,7 @@ Entities:
     UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [430, -110], Size: [200, 28], Visible: true}
     UIText:
       Text: ARMOR
-      Font: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
       Size: 20
       Color: [1, 1, 1, 0.6]
       Align: Left
@@ -3048,7 +3054,7 @@ Entities:
     UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [430, -40], Size: [128, 64], Visible: true}
     UIText:
       Text: 0
-      Font: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
       Size: 46
       Color: [0.6, 0.78, 1, 0.9]
       Align: Left
@@ -3083,7 +3089,7 @@ Entities:
     UIRect: {AnchorMin: [0, 1], AnchorMax: [0, 1], Pivot: [0, 1], Position: [48, -150], Size: [700, 40], Visible: false}
     UIText:
       Text: ""
-      Font: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
       Size: 28
       Color: [0.85, 1, 0.85, 0.95]
       Align: Left
@@ -3100,7 +3106,7 @@ Entities:
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -60], Size: [1200, 120], Visible: false}
     UIText:
       Text: YOU DIED
-      Font: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
       Size: 84
       Color: [0.9, 0.15, 0.1, 1]
       Align: Center
@@ -3117,7 +3123,7 @@ Entities:
     UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 40], Size: [1200, 50], Visible: false}
     UIText:
       Text: FIRE TO CONTINUE
-      Font: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
       Size: 30
       Color: [1, 1, 1, 0.9]
       Align: Center
@@ -4084,3 +4090,680 @@ Entities:
       IsTrigger: true
     Script:
       Class: Outpost.Checkpoint
+  - ID: 1443
+    Name: Objective Banner
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0], AnchorMax: [0.5, 0], Pivot: [0.5, 0], Position: [0, 150], Size: [1200, 100], Visible: false}
+  - ID: 1444
+    Name: Objective Banner Title
+    Parent: 1443
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [0, 0], Size: [1200, 52], Visible: true}
+    UIText:
+      Text: OBJECTIVE COMPLETE
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 42
+      Color: [0.95, 0.78, 0.35, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1445
+    Name: Objective Banner Text
+    Parent: 1443
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [0, 54], Size: [1200, 40], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1450
+    Name: Damage Arc 1
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -204], Size: [256, 64], Visible: false}
+    UIImage: {Texture: Assets/Textures/UI/DamageArc.png, Color: [0.95, 0.12, 0.05, 0]}
+  - ID: 1451
+    Name: Damage Arc 2
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -204], Size: [256, 64], Visible: false}
+    UIImage: {Texture: Assets/Textures/UI/DamageArc.png, Color: [0.95, 0.12, 0.05, 0]}
+  - ID: 1452
+    Name: Damage Arc 3
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -204], Size: [256, 64], Visible: false}
+    UIImage: {Texture: Assets/Textures/UI/DamageArc.png, Color: [0.95, 0.12, 0.05, 0]}
+  - ID: 1453
+    Name: Damage Arc 4
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -204], Size: [256, 64], Visible: false}
+    UIImage: {Texture: Assets/Textures/UI/DamageArc.png, Color: [0.95, 0.12, 0.05, 0]}
+  - ID: 1454
+    Name: Weapon Slots
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 1], AnchorMax: [1, 1], Pivot: [1, 1], Position: [-48, -156], Size: [624, 84], Visible: false}
+  - ID: 1455
+    Name: Slot 1 Frame
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [0, 0], Size: [150, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.45]}
+  - ID: 1456
+    Name: Slot 1 Icon
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0.5, 0.5], Position: [75, 48], Size: [128, 40], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.45]}
+  - ID: 1457
+    Name: Slot 1 Number
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [8, 2], Size: [30, 26], Visible: true}
+    UIText:
+      Text: 1
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.45]
+      Align: Left
+      VerticalAlign: Top
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1458
+    Name: Slot 2 Frame
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [158, 0], Size: [150, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.45]}
+  - ID: 1459
+    Name: Slot 2 Icon
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0.5, 0.5], Position: [233, 48], Size: [128, 40], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.45]}
+  - ID: 1460
+    Name: Slot 2 Number
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [166, 2], Size: [30, 26], Visible: true}
+    UIText:
+      Text: 2
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.45]
+      Align: Left
+      VerticalAlign: Top
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1461
+    Name: Slot 3 Frame
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [316, 0], Size: [150, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.45]}
+  - ID: 1462
+    Name: Slot 3 Icon
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0.5, 0.5], Position: [391, 48], Size: [128, 40], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.45]}
+  - ID: 1463
+    Name: Slot 3 Number
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [324, 2], Size: [30, 26], Visible: true}
+    UIText:
+      Text: 3
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.45]
+      Align: Left
+      VerticalAlign: Top
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1464
+    Name: Slot 4 Frame
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [474, 0], Size: [150, 84], Visible: true}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.45]}
+  - ID: 1465
+    Name: Slot 4 Icon
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0.5, 0.5], Position: [549, 48], Size: [128, 40], Visible: true}
+    UIImage: {Texture: "", Color: [1, 1, 1, 0.45]}
+  - ID: 1466
+    Name: Slot 4 Number
+    Parent: 1454
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [482, 2], Size: [30, 26], Visible: true}
+    UIText:
+      Text: 4
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.45]
+      Align: Left
+      VerticalAlign: Top
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1470
+    Name: Objective List
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [1, 0], AnchorMax: [1, 0], Pivot: [1, 0], Position: [-48, 40], Size: [640, 180], Visible: false}
+  - ID: 1471
+    Name: Objective List Title
+    Parent: 1470
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [0, 0], Size: [640, 30], Visible: true}
+    UIText:
+      Text: OBJECTIVES
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [0.95, 0.78, 0.35, 0.85]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1472
+    Name: Objective Line 1
+    Parent: 1470
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [0, 34], Size: [640, 34], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1473
+    Name: Objective Line 2
+    Parent: 1470
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [0, 70], Size: [640, 34], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1474
+    Name: Objective Line 3
+    Parent: 1470
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [0, 106], Size: [640, 34], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1475
+    Name: Objective Line 4
+    Parent: 1470
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [0, 142], Size: [640, 34], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1480
+    Name: Objectives Panel
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -40], Size: [820, 440], Visible: false}
+    UIImage: {Texture: "", Color: [0, 0, 0, 0.62]}
+  - ID: 1481
+    Name: Objectives Panel Title
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 24], Size: [740, 50], Visible: true}
+    UIText:
+      Text: OBJECTIVES
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.95, 0.78, 0.35, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1482
+    Name: Objectives Panel Rule
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 82], Size: [740, 2], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.78, 0.35, 0.6]}
+  - ID: 1484
+    Name: Objectives Panel Line 1
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 100], Size: [560, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1492
+    Name: Objectives Panel Status 1
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [600, 100], Size: [180, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1485
+    Name: Objectives Panel Line 2
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 140], Size: [560, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1493
+    Name: Objectives Panel Status 2
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [600, 140], Size: [180, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1486
+    Name: Objectives Panel Line 3
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 180], Size: [560, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1494
+    Name: Objectives Panel Status 3
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [600, 180], Size: [180, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1487
+    Name: Objectives Panel Line 4
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 220], Size: [560, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1495
+    Name: Objectives Panel Status 4
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [600, 220], Size: [180, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1488
+    Name: Objectives Panel Line 5
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 260], Size: [560, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1496
+    Name: Objectives Panel Status 5
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [600, 260], Size: [180, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1489
+    Name: Objectives Panel Line 6
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 300], Size: [560, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1497
+    Name: Objectives Panel Status 6
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [600, 300], Size: [180, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1490
+    Name: Objectives Panel Line 7
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 340], Size: [560, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1498
+    Name: Objectives Panel Status 7
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [600, 340], Size: [180, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1491
+    Name: Objectives Panel Line 8
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 380], Size: [560, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-Medium.ttf
+      Size: 28
+      Color: [1, 1, 1, 0.9]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1499
+    Name: Objectives Panel Status 8
+    Parent: 1480
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [600, 380], Size: [180, 38], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 22
+      Color: [1, 1, 1, 0.9]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 1630
+    Name: Objective Armor
+    Parent: 0
+    Transform:
+      Translation: [-9, 0, 19.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Outpost.Objective
+      Fields:
+        Title: {String: Collect the body armor}
+        Kind: {Enum: PickUp}
+        Target: {Entity: 1605}
+        Order: {Int: 1}
+  - ID: 1631
+    Name: Objective Ammo
+    Parent: 0
+    Transform:
+      Translation: [-7.5, 0, 19.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Script:
+      Class: Outpost.Objective
+      Fields:
+        Title: {String: Restock ammunition}
+        Kind: {Enum: PickUp}
+        Target: {Entity: 1607}
+        Optional: {Bool: true}
+        Order: {Int: 2}
+  - ID: 1632
+    Name: Objective Warehouse
+    Parent: 0
+    Transform:
+      Translation: [15, 0, -6]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Collider:
+      Shape: Box
+      Offset: [0, 2, 0]
+      HalfExtents: [5, 2, 6]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Outpost.Objective
+      Fields:
+        Title: {String: Reach the warehouse}
+        Kind: {Enum: Reach}
+        Order: {Int: 3}

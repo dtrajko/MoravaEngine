@@ -11,7 +11,7 @@
 #   dotnet build <copy>\Scripts\Outpost.csproj -p:MoravaScriptCoreDir=D:\Workspace\MoravaEngine\build\Debug\
 #   .\Tools\Testing\Run-Engine.ps1 -Editor -Play -Project <copy>\Outpost.mproject -Seconds 145 -DebugOverlay
 #
-# One section only (the README): $env:OUTPOST_TEST_START = "Sidearms", "Sniper", "Sights" or "Health" before the run
+# One section only (the README): $env:OUTPOST_TEST_START = "Sidearms", "Sniper", "Sights", "Health" or "Hud" before the run
 param(
     [string]$Copy = "D:\Workspace\Temp\OutpostPlayerTest"
 )

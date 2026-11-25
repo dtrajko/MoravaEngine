@@ -5,6 +5,15 @@ using Morava;
 
 namespace Outpost
 {
+    /// <summary>Where a hit came from (Phase 3.2, Player.HitDirections).</summary>
+    public record struct HitDirection
+    {
+        public Entity? Source;   // what it came from, while it exists (null: the world, or gone)
+        public Vector3 From;     // the point it came from, in the world
+        public float Left;       // how much of its time is left: 1 just hit, 0 gone
+        public float Strength;   // 0.4 a scratch to 1 a big hit
+    }
+
     /// <summary>
     /// The player (docs/games/Shooter_Plan.html, Phase 1), on a Character (Inspector: Physics) whose entity stands at the
     /// feet. Each fixed step the local input becomes a PlayerCommand and the PlayerMotor moves the character by it (a
@@ -179,6 +188,7 @@ namespace Outpost
         float sinceHurtSound = 10.0f;
         float hurtFlash;              // the HUD's red at the edges: 1 at a hit, fading
         float messageLeft;            // seconds the HUD's pickup message still shows
+        readonly List<HitDirection> hitDirections = new(); // Phase 3.2: where the recent hits came from (the HUD's arcs)
 
         bool Flying => Camera is FlyCamera fly && fly.IsActive;
 
@@ -550,6 +560,7 @@ namespace Outpost
             }
             hurtFlash = MathF.Max(0.0f, hurtFlash - dt / 0.6f);
             messageLeft = MathF.Max(0.0f, messageLeft - dt);
+            AgeHitDirections(dt);
             sinceHurtSound += dt;
             if (IsDead)
             {
@@ -773,6 +784,20 @@ namespace Outpost
         public string Message { get; private set; } = "";
         public float MessageShown => Math.Clamp(messageLeft / 0.6f, 0.0f, 1.0f);
 
+        /// <summary>
+        /// Phase 3.2: where the recent hits came from, for the HUD's arcs round the crosshair (at most MaxHitDirections, the
+        /// oldest replaced): the point it came from (the source's place while it exists, so the arc follows it), how much
+        /// of the arc still shows (1 to 0) and how strong it was.
+        /// </summary>
+        public IReadOnlyList<HitDirection> HitDirections => hitDirections;
+
+        /// <summary>Seconds a hit's direction shows (fading over the last part), and how many show at once.</summary>
+        public float HitDirectionSeconds = 1.6f;
+        public const int MaxHitDirections = 4;
+
+        /// <summary>The look's yaw now (degrees: 0 along -Z, positive turning left), the command's or the input's.</summary>
+        public float LookYaw => CommandSource != null ? lastCommand.Yaw : input.Yaw;
+
         /// <summary>The weapon is held in the left hand now (the sniper's bolt, a test reads it).</summary>
         public bool InLeftHand => inLeftHand;
 
@@ -799,6 +824,7 @@ namespace Outpost
         {
             float taken = healthLost + armorLost;
             hurtFlash = MathF.Max(hurtFlash, Math.Clamp(0.35f + taken / 40.0f, 0.0f, 1.0f));
+            AddHitDirection(damage, taken);
             if (!health.IsDead && sinceHurtSound >= HurtSoundEvery)
             {
                 sinceHurtSound = 0.0f;
@@ -896,6 +922,7 @@ namespace Outpost
             }
             deadSeconds = 0.0f;
             hurtFlash = 0.0f;
+            hitDirections.Clear();
             hitMarker = 0.0f;
             eyeOffset = 0.0f;
             Respawns++;
@@ -978,6 +1005,46 @@ namespace Outpost
             ShowMessage(text);
             Log.Info($"{Name}: picked up {pickup.Name} ({text}): {health.Health:0} health, {health.Armor:0} armor");
             return true;
+        }
+
+        // A hit with a way it came along the ground (a shot; not a fall, nor a floor's current from below) shows from where:
+        // the source's place (an arc already showing for it is renewed), else back along its direction from where it hit
+        void AddHitDirection(in DamageInfo damage, float taken)
+        {
+            Vector3 along = new Vector3(damage.Direction.X, 0.0f, damage.Direction.Z);
+            if (along.Length() < 0.3f * MathF.Max(1e-4f, damage.Direction.Length()))
+                return;
+            Entity? source = damage.Source != null && damage.Source.Exists && damage.Source != this ? damage.Source : null;
+            Vector3 from = source?.WorldPosition ?? damage.Point - Vector3.Normalize(along) * 10.0f;
+            float strength = Math.Clamp(0.4f + taken / 30.0f, 0.4f, 1.0f);
+            int index = source != null ? hitDirections.FindIndex(h => h.Source == source) : -1;
+            if (index < 0 && hitDirections.Count >= MaxHitDirections)
+            {
+                index = 0; // (the oldest: they're added at the end)
+                for (int i = 1; i < hitDirections.Count; i++)
+                    if (hitDirections[i].Left < hitDirections[index].Left)
+                        index = i;
+            }
+            HitDirection hit = new HitDirection { Source = source, From = from, Left = 1.0f, Strength = strength };
+            if (index >= 0)
+                hitDirections[index] = hit with { Strength = MathF.Max(strength, hitDirections[index].Strength * hitDirections[index].Left) };
+            else
+                hitDirections.Add(hit);
+        }
+
+        void AgeHitDirections(float dt)
+        {
+            for (int i = hitDirections.Count - 1; i >= 0; i--)
+            {
+                HitDirection h = hitDirections[i];
+                h.Left -= dt / MathF.Max(0.05f, HitDirectionSeconds);
+                if (h.Source != null && h.Source.Exists)
+                    h.From = h.Source.WorldPosition;
+                if (h.Left <= 0.0f || IsDead)
+                    hitDirections.RemoveAt(i);
+                else
+                    hitDirections[i] = h;
+            }
         }
 
         void ShowMessage(string text)
