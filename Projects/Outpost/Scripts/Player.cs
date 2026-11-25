@@ -166,7 +166,6 @@ namespace Outpost
         float scopeBlend;             // 0 down, 1 up: the scope coming up (the view model to the eye, then the overlay)
         float shownZoom = 1.0f;       // the zoom the view shows (eased toward the weapon's)
         float sinceStep;              // seconds since the last fixed step (the sway between steps)
-        float scopeSensitivity = 1.0f;
         WeaponEffects? effects;
         readonly List<ShotResult> shotsToShow = new(); // fired in fixed steps, shown in the frame
         float hitMarker;              // seconds the hit marker still shows
@@ -209,8 +208,8 @@ namespace Outpost
         public float ScopeDarkness { get; private set; }
         public float ScopeZoom => ScopeShown ? shownZoom : 1.0f;
 
-        /// <summary>The setting the scope's turning is times (1: in proportion to the zoom alone).</summary>
-        public const string ScopeSensitivitySetting = "ScopeSensitivity";
+        /// <summary>The setting the scope's turning is times (1: in proportion to the zoom alone; GameOptions keeps it).</summary>
+        public const string ScopeSensitivitySetting = GameOptions.ScopeKey;
 
         /// <summary>The debug fly camera has the view (F2): the player stands still, the HUD is hidden.</summary>
         public bool IsFlying => Flying;
@@ -303,14 +302,13 @@ namespace Outpost
             viewModelAnimator = ViewModel?.GetComponent<Animator>();
             bodyAnimator = Body?.GetComponent<Animator>();
             camera = Camera?.GetComponent<Morava.Camera>();
+            GameOptions.ApplyAtStart(); // (the level played directly: no main menu put the saved options in place)
             if (camera != null)
             {
-                baseFieldOfView = camera.FieldOfView;
                 baseViewModelFieldOfView = camera.ViewModelFieldOfView;
-                // The levels of detail are meant for the normal view: zoomed in, far things keep the detail of their size (E10)
-                camera.NormalFieldOfView = baseFieldOfView;
+                camera.FieldOfView = GameOptions.FieldOfView;
             }
-            scopeSensitivity = Math.Clamp(Settings.GetFloat(ScopeSensitivitySetting, 1.0f), 0.1f, 3.0f);
+            ApplyOptions();
             effects = Effects as WeaponEffects;
             if (Effects != null && effects == null)
                 Log.Warn($"{Name}: Effects has no WeaponEffects script: the shots show nothing");
@@ -327,7 +325,7 @@ namespace Outpost
 
             // The look starts as the camera was placed in the scene
             Vector3 angles = Camera != null ? Camera.EulerAngles : EulerAngles;
-            input = new LocalPlayerInput(angles.Y, angles.X) { Sensitivity = Sensitivity };
+            input = new LocalPlayerInput(angles.Y, angles.X) { Sensitivity = Sensitivity * GameOptions.MouseSensitivity };
             Input.CursorLocked = true;
             lastFeet = WorldPosition;
             lastEyes = lastCamera = WorldPosition + new Vector3(0.0f, EyeHeight, 0.0f);
@@ -545,9 +543,24 @@ namespace Outpost
             return x.LengthSquared() > 1e-10f ? Vector3.Normalize(x) : Vector3.UnitZ;
         }
 
+        // The options (GameOptions) as they are now: the pause menu's Settings change them while the game stands still
+        void ApplyOptions()
+        {
+            baseFieldOfView = GameOptions.FieldOfView;
+            // The levels of detail are meant for the normal view: zoomed in, far things keep the detail of their size (E10)
+            if (camera != null && MathF.Abs(camera.NormalFieldOfView - baseFieldOfView) > 0.01f)
+                camera.NormalFieldOfView = baseFieldOfView;
+            if (input != null)
+                input.Sensitivity = Sensitivity * GameOptions.MouseSensitivity;
+        }
+
         protected override void OnUpdate(float dt)
         {
-            if (Input.WasPressed("DebugFly") && Camera is FlyCamera fly)
+            ApplyOptions();
+            // Paused (and a moment after: the click on Resume), the game's keys wait; the look neither turns nor reads the wheel
+            bool blocked = PauseMenu.BlocksGame;
+            input.Blocked = blocked;
+            if (!blocked && Input.WasPressed("DebugFly") && Camera is FlyCamera fly)
                 fly.IsActive = !fly.IsActive;
             if (Flying)
             {
@@ -567,9 +580,9 @@ namespace Outpost
                 UpdateDeathView(dt);
                 return;
             }
-            if (Input.WasPressed("SwitchView"))
+            if (!blocked && Input.WasPressed("SwitchView"))
                 View = View == ViewMode.FirstPerson ? ViewMode.ThirdPerson : ViewMode.FirstPerson;
-            if (Input.WasPressed("SwapShoulder"))
+            if (!blocked && Input.WasPressed("SwapShoulder"))
                 LeftShoulder = !LeftShoulder;
 
             PlayerWeapon? weapon = Weapon;
@@ -600,7 +613,10 @@ namespace Outpost
                 ads = data.HasScope ? raise * raise * (3.0f - 2.0f * raise) : data.CanAimDownSights ? aimEase : 0.0f;
                 if (camera != null)
                 {
-                    float sightsFov = data.HasScope ? baseFieldOfView : data.AimFieldOfView;
+                    // The sights narrow the view as much as from the default (70) to the weapon's AimFieldOfView, from whatever
+                    // the player chose (as a lens: by the tangents of the halves)
+                    float sightsFov = data.HasScope ? baseFieldOfView : ZoomedFieldOfView(
+                        MathF.Tan(GameOptions.DefaultFieldOfView * MathF.PI / 360.0f) / MathF.Tan(data.AimFieldOfView * MathF.PI / 360.0f));
                     float fov = ScopeShown ? ZoomedFieldOfView(shownZoom) : baseFieldOfView + (sightsFov - baseFieldOfView) * ads;
                     float viewFov = baseViewModelFieldOfView + (data.AimViewModelFieldOfView - baseViewModelFieldOfView) * ads;
                     if (MathF.Abs(camera.FieldOfView - fov) > 0.01f || MathF.Abs(camera.ViewModelFieldOfView - viewFov) > 0.01f)
@@ -1115,7 +1131,7 @@ namespace Outpost
             view.AtEyes = scope && (scoped || scopeBlend > 0.0f);
             input.WheelZooms = scope && weapon!.Zoom > 0.0f;
             input.LookScale = ScopeShown ? MathF.Tan(ZoomedFieldOfView(shownZoom) * MathF.PI / 360.0f) /
-                MathF.Tan(baseFieldOfView * MathF.PI / 360.0f) * scopeSensitivity : 1.0f;
+                MathF.Tan(baseFieldOfView * MathF.PI / 360.0f) * GameOptions.ScopeSensitivity : 1.0f;
         }
 
         // The field of view zoom times as narrow as the normal one (as a lens: the tangent of half of it)

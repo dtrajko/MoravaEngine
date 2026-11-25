@@ -186,7 +186,8 @@ counts them. The whole test takes about 175 seconds in Debug (Phase 3.1's Health
 
 **One section** (added 2026-11-22: checking the sniper waited through 75 s of earlier stages): set `OUTPOST_TEST_START`
 to `Sidearms`, `Sniper`, `Sights`, `Health` (about 40 s: health, armor, the pickups, dying) or `Hud` (about 30 s: the damage
-direction, the weapons' slots, the objectives) and the driver starts there: its clock just before the section's first stage, and
+direction, the weapons' slots, the objectives) or `Menus` (about 25 s: the pause menu, Settings, the Controls screen,
+Last checkpoint; on real time while paused) and the driver starts there: its clock just before the section's first stage, and
 what the earlier stages leave behind for it (the dummies, the weapon effects) found; the rest of the game is fresh (the
 dummies standing, every weapon full, the rifle out). The sections then run to the end. Unset, the whole test runs.
 

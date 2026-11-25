@@ -85,6 +85,12 @@ namespace Outpost
         /// <summary>Scoped (set each frame): the wheel zooms instead of switching weapons.</summary>
         public bool WheelZooms;
 
+        /// <summary>
+        /// The game's keys wait (set each frame: paused, and a moment after Resume so its click doesn't fire): the look
+        /// stands, the commands only hold the crouch as it was, presses are dropped.
+        /// </summary>
+        public bool Blocked;
+
         float yaw, pitch;
         bool crouchToggled;
         float kickUp;      // degrees the shots' kicks raised the look, not yet taken back
@@ -111,6 +117,11 @@ namespace Outpost
         /// <summary>Each frame (OnUpdate): the look. The mouse only while it is the game's (a free cursor works the editor).</summary>
         public void UpdateLook(float dt)
         {
+            if (Blocked)
+            {
+                wheel = 0.0f;
+                return;
+            }
             if (Input.MouseCaptured)
                 wheel += Input.GetValue("WeaponScroll");
             InputAction look = Input.GetAction("Look");
@@ -124,6 +135,8 @@ namespace Outpost
         /// <summary>Each fixed step (OnFixedUpdate): the step's command.</summary>
         public PlayerCommand Sample()
         {
+            if (Blocked)
+                return new PlayerCommand { Yaw = yaw, Pitch = pitch, Crouch = crouchToggled || Input.IsHeld("Crouch") };
             if (Input.WasPressed("CrouchToggle"))
                 crouchToggled = !crouchToggled;
             bool crouchHeld = Input.IsHeld("Crouch");
