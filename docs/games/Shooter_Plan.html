@@ -257,7 +257,8 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li><b>Stylized low-poly</b>, like the Racing game.</li>
     <li><b>The first level: a military and industrial base.</b></li>
     <li><b>Missions with objectives</b> (GoldenEye-style): reach places, find things, deal with guards, get out.</li>
-    <li><b>CC0 assets only</b>, or our own (scripts, Blender), as in Racing.</li>
+    <li><b>CC0 assets only</b>, or our own (scripts, Blender), as in Racing. One exception, the user's (2026-11-24): the
+      HUD's font is SIL OFL (Barlow Condensed; good condensed fonts are seldom CC0), free to ship in a game.</li>
     <li><b>A sniper rifle with a scope view</b>, "a very distinctive and unavoidable feature in shooter games"
       (<a href="#scope">the scope</a>).</li>
   </ul>
@@ -538,6 +539,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       recordings (Kenney's audio, Freesound's CC0 only)</td><td>Phases 2, 8</td></tr>
     <tr><td>Music</td><td>Our own generator (the user liked MenuMusic's effects)</td><td>Phase 8</td></tr>
     <tr><td>Bullet holes, smoke, sparks</td><td>Our own scripts (as the tire textures)</td><td>Phase 2</td></tr>
+    <tr><td>The HUD's font</td><td>Barlow Condensed (SIL OFL 1.1, the one exception to CC0)</td><td>Phase 3.2</td></tr>
   </table></div>
   <p>Each source gets a license note in the project, as Racing's models have.</p>
 </section>
@@ -1401,7 +1403,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><b>The HUD</b> (<code>Hud.cs</code> on a canvas, the start of Phase 3's): four crosshair bars whose gap is where
         the spread's cone meets the screen, the ammo (the magazine and the reserve; RELOADING) and the fire mode at the
         bottom right; hidden while the debug fly camera has the view. The text uses the engine's font until Phase 3 picks a
-        CC0 one (the racing game's is OFL). The canvas's y runs down.</li>
+        CC0 one (the racing game's is OFL; Phase 3.2 chose an OFL one too). The canvas's y runs down.</li>
       <li><b>Checked</b>: the test copy 46/46 (the 34 before, then 7 m from Dummy_2: a torso shot 25, a head shot 100 and
         the dummy down, Semi one shot while held, 1 s of Auto 9 to 10 shots with the spread grown to 3.3 degrees, the reload
         with the body's upper layer in it, the reserve, the dummy up again, a third-person shot aimed from the camera that
@@ -1725,6 +1727,45 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         armor's two thirds (13.33 of 20), the ammo box up to 120, dying (the body's Death on both layers, the death camera
         2.6 m away), Fire too early ignored, starting again at the checkpoint as at the start; photos of the pickups, the
         floor's sparks, the death screen. No validation messages.</li>
+    </ul>
+  </div>
+  <div class="box"><b>3.2's choices (the user, 2026-11-24)</b>
+    <p>The HUD's font an SIL OFL condensed one (Barlow Condensed), listed in <code>Licenses.md</code> as the one exception to
+    CC0; the weapons' slots a row of four with our own silhouettes, shown for a moment when switching, the chosen one lit;
+    the objectives an <code>Objective</code> script with simple kinds (reach a place, take a pickup), their list at the top
+    right, all of them while Tab is held, a banner when one is done, three test ones in the greybox. Phase 7 adds the rest
+    of the mission.</p>
+  </div>
+  <div class="box ok" id="phase-3-2"><b>As built: 3.2 the rest of the HUD (2026-11-24)</b>
+    <ul>
+      <li><b>The font</b>: Barlow Condensed (SemiBold for numbers and titles, Medium for the objectives' lines) in
+        <code>Assets/Fonts</code> with its <code>OFL.txt</code>, set on every text of the HUD in the scene.</li>
+      <li><b>Where hits came from</b>: a red arc round the crosshair toward each recent hit (at most four, 1.6 s each,
+        fading; stronger for more damage), turning as the player turns, following its source while that exists.
+        <code>Player.HitDirections</code> keeps them: a hit with a way along the ground (a shot), not a fall nor the
+        electric floor's current. The texture (<code>DamageArc.png</code>, <code>Tools/Textures/GenerateHudTextures.py</code>)
+        is a piece of a ring whose middle is 204 pixels below the picture's: the HUD puts it that far from the
+        crosshair, turned toward the hit.</li>
+      <li><b>The weapons' slots</b>: four at the bottom right above the fire mode (1 rifle, 2 sniper, 3 pistol, 4 knife:
+        the weapon files' <code>Slot</code>), each its number and the weapon's white silhouette
+        (<code>Weapon_*.png</code>, rendered from the weapons' own models by <code>Tools/Textures/RenderWeaponIcons.py</code>
+        in Blender's Workbench, flat white), shown for 2 s when the weapon chosen changes (number keys, wheel, Q; not when
+        starting again), the chosen one lit amber, a gun with no rounds left red.
+        <code>PlayerArsenal.Selected</code> is the one a switch goes to.</li>
+      <li><b>Objectives</b> (<code>Objective</code>: Title, Kind Reach (its trigger), PickUp (a Pickup taken) or Manual
+        (a script calls <code>Complete</code>), Optional, Order; <code>Objectives</code> lists them, polled, no events: the
+        scripts' statics may outlive a Play): those not done at the top right (the ones to do first, then the optional
+        ones), all of them with COMPLETE or OPTIONAL in a panel while Objectives (Tab) is held (or
+        <code>Hud.ShowObjectives</code>: a test, the pause menu of 3.3), and when one is done a banner at the top,
+        "OBJECTIVE COMPLETE" (the last one: "ALL OBJECTIVES COMPLETE") with its title, and a field radio's two tones
+        (<code>Objective_Complete.wav</code>, <code>Tools/Audio/GenerateGameSounds.py</code>). Done stays done after
+        dying. The greybox: collect the body armor (the vest), restock ammunition (the ammo box, optional), reach the
+        warehouse.</li>
+      <li><b>Checked</b>: the test copy's Hud section (<code>OUTPOST_TEST_START=Hud</code>), 21 checks: the font, two hits
+        (from the right and from behind) as arcs at 90 and 180 degrees and turning with the view to 180 and -90, a fall
+        without one, the arcs gone after 1.6 s; the slots shown on switching to the pistol, its slot lit, the silhouettes,
+        gone after 2 s; the objectives' order, the list, the vest's and the warehouse's done, the banner, the panel's
+        lines; photos of each.</li>
     </ul>
   </div>
   <h3 id="phase-4">Phase 4: navigation (E1)</h3>

@@ -1,5 +1,5 @@
 """Generates the shooter's game sounds besides the weapons' (docs/games/Shooter_Plan.html, Phase 3.1: health, pickups and
-the hazards), synthesized here, no recordings, with GenerateWeaponSounds.py's tools:
+the hazards; Phase 3.2: the objectives), synthesized here, no recordings, with GenerateWeaponSounds.py's tools:
 
     Pickup_Health.wav           a health pack taken: the case's two plastic latches snapping open, a short rustle
     Pickup_Armor.wav            a vest taken: a velcro strap torn open and pressed shut, the buckle's click
@@ -9,6 +9,8 @@ the hazards), synthesized here, no recordings, with GenerateWeaponSounds.py's to
                                 a transformer's buzz, faint crackle; whole cycles, so the loop has no seam
     Player_Hurt.wav             the player hit: a body's dull thump and a short breathy grunt
     Player_Death.wav            the player dying: a longer grunt falling away, the body and its gear hitting the ground
+    Objective_Complete.wav      Phase 3.2, an objective done: a radio's squelch, then two soft rising tones through the
+                                radio's narrow band (a field radio's confirmation, not a fanfare)
 
 Usage: python GenerateGameSounds.py [output folder]   (needs numpy; the default is the shooter project's Assets/Audio)
 
@@ -172,6 +174,33 @@ def player_death():
     return fade_out(normalize(saturate(out, 1.3), 0.75), 0.05)
 
 
+def radio_tone(freq, seconds):
+    """A soft tone: a sine with a little of its third (a hollow, square-ish edge), a quick swell and a smooth fade"""
+    t = t_of(seconds)
+    tone = np.sin(2.0 * math.pi * freq * t) + 0.18 * np.sin(2.0 * math.pi * 3.0 * freq * t)
+    n = len(t)
+    attack = min(n, samples(0.012))
+    shape = np.ones(n)
+    shape[:attack] = np.linspace(0.0, 1.0, attack)
+    shape *= np.exp(-t / (seconds * 0.6))
+    return tone * shape
+
+
+def objective_complete():
+    rng = np.random.default_rng(900)
+    squelch = biquad(biquad(noise(rng, 0.07), "high", 500.0), "low", 3200.0) * decay(samples(0.07), 0.02)
+    out = mix(0.75,
+              (0.0, click(rng, 1800.0, 0.01, 3.0), 0.5),     # the key
+              (0.005, squelch, 0.35),
+              (0.09, radio_tone(784.0, 0.22), 0.8),           # G5
+              (0.27, radio_tone(1175.0, 0.42), 0.8),          # D6, a fifth up
+              (0.68, click(rng, 1500.0, 0.01, 3.0), 0.3))     # the key let go
+    # The radio's narrow band and a little grit
+    out = biquad(biquad(out, "high", 350.0), "low", 3800.0)
+    out += biquad(noise(rng, 0.75), "band", 2500.0, 0.8) * 0.012
+    return fade_out(normalize(saturate(out, 1.4), 0.6), 0.02)
+
+
 def main():
     root = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
     folder = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "Projects", "Outpost", "Assets", "Audio")
@@ -184,6 +213,7 @@ def main():
     save(folder, "Electric_Hum.wav", electric_hum())
     save(folder, "Player_Hurt.wav", player_hurt())
     save(folder, "Player_Death.wav", player_death())
+    save(folder, "Objective_Complete.wav", objective_complete())
 
 
 if __name__ == "__main__":

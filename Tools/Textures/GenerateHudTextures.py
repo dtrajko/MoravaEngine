@@ -1,9 +1,14 @@
-"""Generates the shooter's HUD textures (docs/games/Shooter_Plan.html, Phase 3.1: health and the death screen), made
-here, no images:
+"""Generates the shooter's HUD textures (docs/games/Shooter_Plan.html, Phases 3.1 and 3.2: health, the death screen, where
+hits come from), made here, no images:
 
     DamageVignette.png  the red at the screen's edges after a hit (the HUD tints it and fades it): white, its alpha 0 in
                         the middle and rising toward the edges and more into the corners, with a soft, uneven inner edge
                         (a few slow waves round it) so it reads as a glow, not a frame. It is stretched over the screen.
+    DamageArc.png       Phase 3.2: the direction a hit came from, a piece of a ring round the crosshair (ARC_RADIUS
+                        pixels from its middle, ARC_HALF_ANGLE each way), white, brightest in its middle and fading to its
+                        ends, soft across. Drawn at its own size (256 x 64 on the 1080 canvas), the ring's middle is
+                        ARC_CENTER_BELOW pixels below the picture's middle: the HUD puts it that far from the crosshair,
+                        turned toward the hit.
 
 Usage: python GenerateHudTextures.py [output folder]   (needs numpy; the default is the shooter project's
 Assets/Textures/UI)
@@ -46,13 +51,42 @@ def damage_vignette():
     return rgba
 
 
+ARC_W, ARC_H = 256, 64
+ARC_RADIUS = 220.0       # pixels from the ring's middle to the arc's middle line
+ARC_THICK = 6.0          # half its thickness (full alpha), and the soft edge beyond it
+ARC_SOFT = 4.0
+ARC_HALF_ANGLE = 28.0    # degrees each way from its middle
+ARC_TOP = 6.0            # the arc's outer edge at its middle, below the picture's top
+ARC_CENTER_Y = ARC_TOP + ARC_THICK + ARC_SOFT + ARC_RADIUS  # the ring's middle, from the picture's top
+ARC_CENTER_BELOW = ARC_CENTER_Y - ARC_H / 2.0              # ... from the picture's middle (the HUD's distance)
+
+
+def damage_arc():
+    x = np.arange(ARC_W) + 0.5 - ARC_W / 2.0
+    y = np.arange(ARC_H) + 0.5
+    x, y = np.meshgrid(x, y)
+    dy = ARC_CENTER_Y - y  # up from the ring's middle
+    r = np.sqrt(x * x + dy * dy)
+    angle = np.degrees(np.arctan2(x, dy))
+    across = 1.0 - smoothstep(ARC_THICK, ARC_THICK + ARC_SOFT, np.abs(r - ARC_RADIUS))
+    along = 1.0 - smoothstep(0.35 * ARC_HALF_ANGLE, ARC_HALF_ANGLE, np.abs(angle))
+    # A little thicker in the middle: the outer side grows toward it
+    a = across * along ** 1.2
+    rgba = np.zeros((ARC_H, ARC_W, 4), dtype=np.uint8)
+    rgba[..., :3] = 255
+    rgba[..., 3] = (np.clip(a, 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8)
+    return rgba
+
+
 def main():
     root = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "Projects", "Outpost", "Assets", "Textures", "UI")
     os.makedirs(out, exist_ok=True)
-    path = os.path.join(out, "DamageVignette.png")
-    write_png(path, damage_vignette())
-    print(f"wrote {path}")
+    for name, image in (("DamageVignette.png", damage_vignette()), ("DamageArc.png", damage_arc())):
+        path = os.path.join(out, name)
+        write_png(path, image)
+        print(f"wrote {path}")
+    print(f"DamageArc: the ring's middle {ARC_CENTER_BELOW:.1f} pixels below the picture's middle")
 
 
 if __name__ == "__main__":

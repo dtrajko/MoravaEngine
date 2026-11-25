@@ -28,6 +28,9 @@ namespace Outpost
         /// <summary>The weapon in the hands (null: none carried); during a switch the one going away, then the one coming out.</summary>
         public PlayerWeapon? Current => weapons.Count > 0 ? weapons[current] : null;
 
+        /// <summary>The weapon chosen: the one a switch goes to while it is under way, else the one in the hands (the HUD's slots).</summary>
+        public PlayerWeapon? Selected => next >= 0 && next < weapons.Count ? weapons[next] : Current;
+
         /// <summary>A switch is under way (putting one away or taking the next out): nothing fires.</summary>
         public bool IsSwitching => holsterLeft > 0.0f || drawLeft > 0.0f;
 
