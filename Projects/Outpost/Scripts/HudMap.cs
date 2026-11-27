@@ -127,10 +127,10 @@ namespace Outpost
         public Vector3 CameraPosition(float x, float z, float yaw)
         {
             float back = CameraHeight / MathF.Tan(PitchRadians); // (it looks this far ahead of under itself)
-            return new Vector3(x, CutHeight + CameraHeight, z) - Forward(yaw) * back;
+            return new Vector3(x, CutHeight + CameraHeight, z) - LevelForward(yaw) * back;
         }
 
-        static Vector3 Forward(float yaw)
+        static Vector3 LevelForward(float yaw)
         {
             float a = yaw * MathF.PI / 180.0f;
             return new Vector3(-MathF.Sin(a), 0.0f, -MathF.Cos(a));
@@ -276,7 +276,7 @@ namespace Outpost
         Vector2 Project(Vector3 point, Vector3 camera, float yaw, float range)
         {
             float a = yaw * MathF.PI / 180.0f, s = MathF.Sin(PitchRadians), c = MathF.Cos(PitchRadians);
-            Vector3 level = Forward(yaw), right = new Vector3(MathF.Cos(a), 0.0f, -MathF.Sin(a));
+            Vector3 level = LevelForward(yaw), right = new Vector3(MathF.Cos(a), 0.0f, -MathF.Sin(a));
             Vector3 view = level * c - Vector3.UnitY * s, up = level * s + Vector3.UnitY * c;
             Vector3 d = point - camera;
             float half = 0.5f * range / AxisDistance * MathF.Max(1.0f, Vector3.Dot(d, view)); // the half width seen at its depth
