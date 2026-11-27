@@ -81,6 +81,9 @@ Actions:
   - Name: Objectives    # held: the mission's objectives
     Type: Button
     Bindings: [ { Key: Tab }, { Gamepad: Back } ]
+  - Name: Map           # a press: the big map over the screen (Phase 3.4); again: the minimap
+    Type: Button
+    Bindings: [ { Key: M }, { Gamepad: DPadUp } ]
   - Name: Pause
     Type: Button
     Bindings: [ { Key: Escape }, { Gamepad: Start } ]

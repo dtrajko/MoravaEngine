@@ -360,6 +360,10 @@ struct CameraComponent
 	// nothing (a monitor nobody looks at, a closed menu's portrait). Enabled again, it draws at once. The screen's cameras
 	// don't use it (Primary chooses the game's view)
 	bool Enabled = true;
+	// A camera with a target: its picture has the lights' shadows (the sun's, the spot and point lights'). Off: lit as if
+	// nothing cast a shadow (a map seen from above: the sun's cascades are fitted to the main camera, so its shadows would
+	// show only round the player, and a plan reads better without them)
+	bool Shadows = true;
 	// A camera with a Color target: how its picture's edges are smoothed (8.1). Off by default: its picture is small and cheap
 	AntialiasingMode Antialiasing = AntialiasingMode::Off;
 

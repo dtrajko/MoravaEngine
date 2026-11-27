@@ -41,7 +41,8 @@ struct EnvMapVulkanWaterSettings;
  * own copy of its scene for the glass to look through, EnvMapVulkanGlass). So it has no ambient occlusion and no
  * ray-traced reflections (the probes' indirect light and the environment's reflection instead), no bloom and no water.
  * The sun's shadow cascades are fitted to the main camera: where they don't reach, the texture view's surfaces are lit as
- * if unshadowed. A camera draws every Draw Every frames (CameraComponent::DrawEvery); its texture keeps the last picture.
+ * if unshadowed. A camera with Shadows off (CameraComponent::Shadows) gets a Shadows block of zeros instead of the main
+ * view's: no sun shadow, and no spot or point shadow maps (Include/Shadows.glslh). A camera draws every Draw Every frames (CameraComponent::DrawEvery); its texture keeps the last picture.
  *
  * A Color render texture gets the view exposed and tonemapped with the scene's exposure (RenderTextureComposite.glsl),
  * then copied bit for bit into the texture (the composite is gamma encoded as the sRGB texture expects); an HDR one gets
@@ -130,6 +131,7 @@ private:
 		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet FrameSet;     // set 0 of the PBR shaders
 		H2M::VulkanShaderH2M::UniformBufferH2M CameraBuffer;            // binding 0: Camera
 		H2M::VulkanShaderH2M::UniformBufferH2M SceneDataBuffer;         // binding 1: SceneData
+		H2M::VulkanShaderH2M::UniformBufferH2M NoShadowsBuffer;         // binding 7 when its camera has Shadows off: all zero
 		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet SkyboxSet;    // the skybox shader's set
 		H2M::VulkanShaderH2M::UniformBufferH2M SkyboxCameraBuffer;      // its binding 0: Camera
 		uint32_t SkyboxEnvironmentVersion = 0;                          // the cube map its set points to (0: none yet; the renderer's start at 1)

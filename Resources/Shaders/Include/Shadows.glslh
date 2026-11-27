@@ -168,6 +168,10 @@ vec3 CascadeDebugColor(vec3 worldPosition)
 // perspective map. distance: from the light to the fragment.
 vec3 SpotShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 L, float distance)
 {
+	if (u_LocalShadowParams.z <= 0.0)
+	{
+		return vec3(1.0); // no spot shadow maps (a texture view without shadows: its Shadows block is zeros)
+	}
 	// Normal offset, in proportion to the size of a shadow map texel at this distance
 	float cosTheta = clamp(dot(geometryNormal, L), 0.0, 1.0);
 	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
@@ -208,6 +212,10 @@ vec3 SpotShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 L, float
 // view depth in the face the direction selects, see ComputePointShadowFaceViewProjections).
 vec3 PointShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 lightPosition, vec3 L, float distance)
 {
+	if (u_LocalShadowParams.w <= 0.0)
+	{
+		return vec3(1.0); // no point shadow maps (likewise)
+	}
 	// Normal offset, in proportion to the size of a cube face texel at this distance (90 degree faces)
 	float cosTheta = clamp(dot(geometryNormal, L), 0.0, 1.0);
 	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);

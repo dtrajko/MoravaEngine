@@ -41,6 +41,7 @@ namespace Outpost
         protected override void OnCreate()
         {
             animator = Body?.GetComponent<Animator>();
+            MapMarks.Add(this); // (the HUD's map, Phase 3.4: a guard's mark)
             if (animator == null)
                 Log.Warn($"{Name}: no Body with an Animator, the dummy won't move");
             Health = MaxHealth;

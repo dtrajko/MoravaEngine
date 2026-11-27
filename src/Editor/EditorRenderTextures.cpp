@@ -195,4 +195,10 @@ void RenderTargetControls(CameraComponent& camera)
 		ImGui::SetTooltip("The camera draws into its texture. Off: the texture keeps its last picture and the camera costs\n"
 			"nothing (a monitor nobody looks at; a script turns it on and off with Camera.Enabled).");
 	}
+	ImGui::Checkbox("Shadows", &camera.Shadows);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The lights' shadows in the camera's picture. Off: lit as if nothing cast a shadow (a map seen from\n"
+			"above: the sun's shadows are fitted to the game camera and would show only round the player).");
+	}
 }

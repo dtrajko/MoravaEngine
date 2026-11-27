@@ -273,6 +273,8 @@ namespace Outpost
         public float BodyMoveAngle => body?.MoveAngle ?? 0.0f;
         public bool BodyHidden => body?.HiddenInMainView ?? false;
         public Vector3 CameraPosition => IsDead ? lastCamera : view.Position; // (dead: the death camera's)
+        /// <summary>Degrees the view faces, positive to the left (0: north, along -Z): the HUD's map turns with it.</summary>
+        public float Yaw => CommandSource != null ? lastCommand.Yaw : input.Yaw;
         public bool ViewModelShown => viewModelArms != null && !viewModelArms.HiddenInMainView;
         public string ViewModelState => viewModelAnimator?.GetLayerState("") ?? "";
 

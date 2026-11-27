@@ -56,6 +56,7 @@ namespace Outpost
         protected override void OnCreate()
         {
             model = Visual?.GetComponent<Model>();
+            MapMarks.Add(this); // (the HUD's map, Phase 3.4)
             if (!HasComponent<Collider>())
                 Log.Warn($"{Name}: no Collider (Is Trigger) for Pickup: nothing can take it");
         }

@@ -386,6 +386,10 @@ namespace EnvMapVulkanSceneSerializer
 				AssetReference::Write(out, "Target", camera->Target);
 				out << YAML::Key << "DrawEvery" << YAML::Value << camera->DrawEvery;
 				out << YAML::Key << "Enabled" << YAML::Value << camera->Enabled;
+				if (!camera->Shadows)
+				{
+					out << YAML::Key << "Shadows" << YAML::Value << camera->Shadows;
+				}
 				if (camera->Antialiasing != AntialiasingMode::Off)
 				{
 					out << YAML::Key << "Antialiasing" << YAML::Value << GetAntialiasingModeName(camera->Antialiasing);
@@ -1162,6 +1166,7 @@ namespace EnvMapVulkanSceneSerializer
 				camera.Antialiasing = AntialiasingMode::Off; // texture views have no history
 			}
 			Read(cameraNode, "Enabled", camera.Enabled); // scenes saved before 7.5.4: enabled
+			Read(cameraNode, "Shadows", camera.Shadows); // saved only when off
 		}
 		if (YAML::Node testNode = node["InputTest"])
 		{
