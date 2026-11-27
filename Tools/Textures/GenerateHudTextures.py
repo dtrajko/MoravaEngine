@@ -1,4 +1,4 @@
-"""Generates the shooter's HUD textures (docs/games/Shooter_Plan.html, Phases 3.1 and 3.2: health, the death screen, where
+"""Generates the shooter's HUD textures (docs/games/Shooter_Plan.html, Phases 3.1, 3.2 and 3.4: health, the death screen, where
 hits come from), made here, no images:
 
     DamageVignette.png  the red at the screen's edges after a hit (the HUD tints it and fades it): white, its alpha 0 in
@@ -9,6 +9,10 @@ hits come from), made here, no images:
                         ends, soft across. Drawn at its own size (256 x 64 on the 1080 canvas), the ring's middle is
                         ARC_CENTER_BELOW pixels below the picture's middle: the HUD puts it that far from the crosshair,
                         turned toward the hit.
+    Map*.png            Phase 3.4: the HUD map's marks (64 x 64), white with a dark outline (the HUD tints the white, the
+                        outline stays dark, so they read on any ground): MapArrow (the player, pointing up), MapDot
+                        (a guard, for now a training dummy), MapCross (a health pack), MapShield (the vest), MapBox (an
+                        ammo box) and MapObjective (a diamond with a hole: an objective's place).
 
 Usage: python GenerateHudTextures.py [output folder]   (needs numpy; the default is the shooter project's
 Assets/Textures/UI)
@@ -78,11 +82,66 @@ def damage_arc():
     return rgba
 
 
+MARK = 64            # the map marks' size
+MARK_OUTLINE = 0.16  # the dark outline's width (of the half size)
+MARK_DARK = 0.08     # its brightness
+
+
+def mark_coords():
+    c = (np.arange(MARK) + 0.5) / MARK * 2.0 - 1.0
+    x, y = np.meshgrid(c, -c)  # y up
+    return x, y
+
+
+def polygon(x, y, points):
+    """The exact distance to a polygon's edge (any polygon, its points in order), negative inside."""
+    d = np.full(x.shape, np.inf)
+    inside = np.zeros(x.shape, dtype=bool)
+    for (x0, y0), (x1, y1) in zip(points, points[1:] + points[:1]):
+        ex, ey = x1 - x0, y1 - y0
+        wx, wy = x - x0, y - y0
+        t = np.clip((wx * ex + wy * ey) / (ex * ex + ey * ey), 0.0, 1.0)
+        d = np.minimum(d, np.hypot(wx - ex * t, wy - ey * t))
+        crosses = (y0 > y) != (y1 > y)
+        inside ^= crosses & (x < x0 + (y - y0) * ex / np.where(ey == 0.0, 1.0, ey))
+    return np.where(inside, -d, d)
+
+
+def box(x, y, half_x, half_y, round_by=0.0):
+    qx, qy = np.abs(x) - half_x + round_by, np.abs(y) - half_y + round_by
+    return np.hypot(np.maximum(qx, 0.0), np.maximum(qy, 0.0)) + np.minimum(np.maximum(qx, qy), 0.0) - round_by
+
+
+def mark(d):
+    """A mark from its shape's distance: white inside, the dark outline round it, soft by a pixel."""
+    pixel = 2.0 / MARK
+    fill = 1.0 - smoothstep(-pixel, pixel, d)
+    outer = 1.0 - smoothstep(MARK_OUTLINE - pixel, MARK_OUTLINE + pixel, d)
+    rgba = np.zeros((MARK, MARK, 4), dtype=np.uint8)
+    rgb = MARK_DARK + (1.0 - MARK_DARK) * fill
+    rgba[..., :3] = (np.clip(rgb, 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8)[..., None]
+    rgba[..., 3] = (np.clip(np.maximum(outer * 0.9, fill), 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8)
+    return rgba
+
+
+def map_marks():
+    x, y = mark_coords()
+    arrow = polygon(x, y, [(0.0, 0.7), (0.56, -0.62), (0.0, -0.3), (-0.56, -0.62)])
+    dot = np.hypot(x, y) - 0.5
+    cross = np.minimum(box(x, y, 0.2, 0.62, 0.04), box(x, y, 0.62, 0.2, 0.04))
+    shield = polygon(x, y, [(-0.56, 0.62), (0.56, 0.62), (0.56, 0.1), (0.0, -0.66), (-0.56, 0.1)]) + 0.02
+    ammo = box(x, y, 0.5, 0.42, 0.1)
+    diamond = np.abs(x) + np.abs(y)
+    objective = np.maximum((diamond - 0.64) / np.sqrt(2.0), -(diamond - 0.26) / np.sqrt(2.0))
+    return (("MapArrow.png", mark(arrow)), ("MapDot.png", mark(dot)), ("MapCross.png", mark(cross)),
+            ("MapShield.png", mark(shield)), ("MapBox.png", mark(ammo)), ("MapObjective.png", mark(objective)))
+
+
 def main():
     root = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "Projects", "Outpost", "Assets", "Textures", "UI")
     os.makedirs(out, exist_ok=True)
-    for name, image in (("DamageVignette.png", damage_vignette()), ("DamageArc.png", damage_arc())):
+    for name, image in (("DamageVignette.png", damage_vignette()), ("DamageArc.png", damage_arc())) + map_marks():
         path = os.path.join(out, name)
         write_png(path, image)
         print(f"wrote {path}")

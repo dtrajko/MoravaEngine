@@ -81,6 +81,7 @@ namespace Outpost
             ("Walk quietly", "Walk", BindingPart.Whole),
             ("Use", "Use", BindingPart.Whole),
             ("Objectives", "Objectives", BindingPart.Whole),
+            ("Map", "Map", BindingPart.Whole),
             ("Switch view", "SwitchView", BindingPart.Whole),
             ("Swap shoulder", "SwapShoulder", BindingPart.Whole),
             ("Fire", "Fire", BindingPart.Whole),

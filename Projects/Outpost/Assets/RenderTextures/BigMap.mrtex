@@ -1,0 +1,5 @@
+RenderTexture:
+  Version: 1
+  Width: 1024
+  Height: 1024
+  Format: Color

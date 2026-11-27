@@ -1815,6 +1815,49 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
         166, no validation messages (<code>-Seconds 200</code>).</li>
     </ul>
   </div>
+  <div class="box ok" id="phase-3-4"><b>As built: 3.4 the HUD's map (2026-11-26)</b>
+    <ul>
+      <li><b>The user's choices</b>: a minimap at the top left, always on, turned with the player's view, and a big map
+        over the screen's middle on a key (Map: M, the D-pad's up; again, closed), north up; cut at the player's floor;
+        marks for the player, the training dummies (the guards' marks for Phase 5), the pickups and the objectives.</li>
+      <li><b>The pictures</b> (<code>HudMap</code>, on the HUD's <i>Map</i> entity): two cameras with render textures,
+        <code>Minimap.mrtex</code> (384²) and <code>BigMap.mrtex</code> (1024²), shown by UI images; each draws only
+        while its map shows (<code>Camera.Enabled</code>), every 2 frames. The minimap's camera is over the player, 44 m
+        across, its forward the view's (the player's facing up, an amber N on the rim where north is); the big map's over
+        the greybox's middle, 86 m across, north up, the player's arrow turned to the view (new
+        <code>Player.Yaw</code>). Its band says <i>MAP · FLOOR n</i> and the key that closes it. The big map waits while
+        paused, dead or with the objectives' panel shown; neither shows while dead or flying.</li>
+      <li><b>The cut</b>: the cameras are 150 m over a plane 1.6 m above the floor the player last stood on (not a
+        jump's height), and their near clip is that plane, so the roofs and the floors above go and the walls show cut
+        below the doors' tops: the rooms of the player's floor as a plan, the barracks' upper one when upstairs. The
+        engine tilts a camera 89 degrees down at most (<code>PlaceCamera</code>), so each camera leans back 2.6 m to keep
+        what it shows under its picture's middle, and the marks are projected with the same tilt; the cut leans 1 degree
+        with it (on the big map 0.35 m higher at the buildings' north walls than at their south ones).</li>
+      <li><b>The marks</b> (<code>Tools/Textures/GenerateHudTextures.py</code>: <code>Map*.png</code>, white with a
+        dark outline, tinted): the player's arrow, red dots for the dummies (grey while down), a green cross, a blue
+        shield and a yellow box for the health packs, the vest and the ammo boxes while they can be taken, white diamonds
+        for the objectives not done; an objective that is a pickup frames the pickup's mark (twice its size, under it).
+        On the minimap the objectives stay on the rim when they are off it; the rest show where they fit. A mark more
+        than 2.2 m above or below the player's floor is faded. They are UI images in the scene found by name
+        (<i>Minimap Mark 1..16</i>, <i>Big Map Mark 1..24</i>); the pickups and the dummies add themselves to
+        <code>MapMarks</code>.</li>
+      <li><b>Controls</b>: the Map row after Objectives, 25 rows now (13 and 12 in the two columns, in both scenes).</li>
+      <li><b>Found and fixed</b> (the engine): a render texture's camera drew nothing nearer than 2 near far / (near +
+        far), not near (OpenGL's depth range in Vulkan): unseen at 0.05 m, nothing at the map's 150 m. Texture views
+        project with Vulkan's range now (Game Engine Runtime Guide, 7.5.2); the main view keeps its projection.</li>
+      <li><b>No shadows on the maps</b> (the user's request after the first try): the sun's cascades are fitted to the
+        main camera, so the big map showed the buildings' shadows only round the player. A texture camera's new
+        <i>Shadows</i> setting (on by default) is off for both map cameras (Runtime Guide, 7.5.2).</li>
+      <li><b>Checked</b>: the test copy's Map section (<code>OUTPOST_TEST_START=Map</code>, before Menus), 13 checks:
+        the minimap shown with its camera drawing and the big map's off, the camera over the player leaning back for
+        89 degrees with the near clip at the cut, floor 1, N at the top facing north and on the right facing west, the
+        camera turned with the view; Map: the big map shown and the minimap off, the arrow turned west, every mark on
+        it; upstairs in the barracks: floor 2, the cut 1.6 m over that floor; the objectives' panel holding the big map
+        back; closed. Photos of the minimap both ways and the big map on both floors. The Controls checks follow the new
+        row (Map M / DPad Up, Fire row 15, Previous weapon row 25). The full run: 180 of 180, no validation messages
+        (<code>-Seconds 210</code>).</li>
+    </ul>
+  </div>
   <h3 id="phase-4">Phase 4: navigation (E1)</h3>
   <ul>
     <li>Recast/Detour in the engine, baking, the debug view, the C# API, agents; on the greybox level across floors.</li>

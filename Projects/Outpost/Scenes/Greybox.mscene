@@ -4767,6 +4767,529 @@ Entities:
         Title: {String: Reach the warehouse}
         Kind: {Enum: Reach}
         Order: {Int: 3}
+  - ID: 2600
+    Name: Map
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [1, 1], Pivot: [0, 0], Position: [0, 0], Size: [0, 0], Visible: true}
+    Script:
+      Class: Outpost.HudMap
+      Fields:
+        Player: {Entity: 1100}
+        Hud: {Entity: 1400}
+        MinimapCamera: {Entity: 2690}
+        BigMapCamera: {Entity: 2691}
+        Minimap: {Entity: 2601}
+        MinimapView: {Entity: 2602}
+        MinimapNorth: {Entity: 2604}
+        MinimapPlayer: {Entity: 2603}
+        BigMap: {Entity: 2630}
+        BigMapView: {Entity: 2631}
+        BigMapPlayer: {Entity: 2632}
+        BigMapTitle: {Entity: 2633}
+        BigMapHint: {Entity: 2634}
+  - ID: 2601
+    Name: Minimap
+    Parent: 2600
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0, 0], AnchorMax: [0, 0], Pivot: [0, 0], Position: [40, 40], Size: [300, 300], Visible: false}
+    UIImage: {Texture: "", Color: [0.03, 0.04, 0.03, 0.65]}
+  - ID: 2602
+    Name: Minimap View
+    Parent: 2601
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [288, 288], Visible: true}
+    UIImage: {Texture: Assets/RenderTextures/Minimap.mrtex, Color: [1, 1, 1, 0.92]}
+  - ID: 2610
+    Name: Minimap Mark 1
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2611
+    Name: Minimap Mark 2
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2612
+    Name: Minimap Mark 3
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2613
+    Name: Minimap Mark 4
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2614
+    Name: Minimap Mark 5
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2615
+    Name: Minimap Mark 6
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2616
+    Name: Minimap Mark 7
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2617
+    Name: Minimap Mark 8
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2618
+    Name: Minimap Mark 9
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2619
+    Name: Minimap Mark 10
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2620
+    Name: Minimap Mark 11
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2621
+    Name: Minimap Mark 12
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2622
+    Name: Minimap Mark 13
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2623
+    Name: Minimap Mark 14
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2624
+    Name: Minimap Mark 15
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2625
+    Name: Minimap Mark 16
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [22, 22], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2603
+    Name: Minimap Player
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [28, 28], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/MapArrow.png, Color: [0.95, 0.78, 0.35, 1]}
+  - ID: 2604
+    Name: Minimap North
+    Parent: 2602
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, -130], Size: [30, 30], Visible: true}
+    UIText:
+      Text: N
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 30
+      Color: [0.95, 0.78, 0.35, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2630
+    Name: Big Map
+    Parent: 2600
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [920, 990], Visible: false}
+    UIImage: {Texture: "", Color: [0.03, 0.04, 0.03, 0.82]}
+  - ID: 2631
+    Name: Big Map View
+    Parent: 2630
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 35], Size: [900, 900], Visible: true}
+    UIImage: {Texture: Assets/RenderTextures/BigMap.mrtex, Color: [1, 1, 1, 1]}
+  - ID: 2640
+    Name: Big Map Mark 1
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2641
+    Name: Big Map Mark 2
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2642
+    Name: Big Map Mark 3
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2643
+    Name: Big Map Mark 4
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2644
+    Name: Big Map Mark 5
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2645
+    Name: Big Map Mark 6
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2646
+    Name: Big Map Mark 7
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2647
+    Name: Big Map Mark 8
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2648
+    Name: Big Map Mark 9
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2649
+    Name: Big Map Mark 10
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2650
+    Name: Big Map Mark 11
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2651
+    Name: Big Map Mark 12
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2652
+    Name: Big Map Mark 13
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2653
+    Name: Big Map Mark 14
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2654
+    Name: Big Map Mark 15
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2655
+    Name: Big Map Mark 16
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2656
+    Name: Big Map Mark 17
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2657
+    Name: Big Map Mark 18
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2658
+    Name: Big Map Mark 19
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2659
+    Name: Big Map Mark 20
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2660
+    Name: Big Map Mark 21
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2661
+    Name: Big Map Mark 22
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2662
+    Name: Big Map Mark 23
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2663
+    Name: Big Map Mark 24
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [26, 26], Visible: false}
+    UIImage: {Texture: "", Color: [1, 1, 1, 1]}
+  - ID: 2632
+    Name: Big Map Player
+    Parent: 2631
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 0], Size: [34, 34], Visible: true}
+    UIImage: {Texture: Assets/Textures/UI/MapArrow.png, Color: [0.95, 0.78, 0.35, 1]}
+  - ID: 2633
+    Name: Big Map Title
+    Parent: 2630
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-200, -457], Size: [480, 60], Visible: true}
+    UIText:
+      Text: MAP
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 40
+      Color: [0.95, 0.78, 0.35, 1]
+      Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2634
+    Name: Big Map Hint
+    Parent: 2630
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [240, -457], Size: [400, 60], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 30
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2690
+    Name: Minimap Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: false
+      FieldOfView: 16
+      NearClip: 150
+      FarClip: 180
+      Target: Assets/RenderTextures/Minimap.mrtex
+      TargetID: 5778354762581538593
+      DrawEvery: 2
+      Enabled: false
+      Shadows: false
+  - ID: 2691
+    Name: Big Map Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      Primary: false
+      FieldOfView: 16
+      NearClip: 150
+      FarClip: 180
+      Target: Assets/RenderTextures/BigMap.mrtex
+      TargetID: 960123052474651985
+      DrawEvery: 2
+      Enabled: false
+      Shadows: false
   - ID: 2000
     Name: Pause Menu
     Parent: 0
@@ -5782,7 +6305,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -318], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -322], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -5799,7 +6322,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -318], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -322], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -5825,7 +6348,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -318], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -322], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -5851,7 +6374,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -262], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -270], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -5868,7 +6391,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -262], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -270], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -5894,7 +6417,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -262], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -270], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -5920,7 +6443,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -206], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -218], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -5937,7 +6460,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -206], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -218], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -5963,7 +6486,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -206], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -218], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -5989,7 +6512,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -150], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -166], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6006,7 +6529,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -150], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -166], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6032,7 +6555,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -150], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -166], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6058,7 +6581,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -94], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -114], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6075,7 +6598,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -94], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -114], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6101,7 +6624,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -94], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -114], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6127,7 +6650,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -38], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -62], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6144,7 +6667,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -38], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -62], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6170,7 +6693,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -38], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -62], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6196,7 +6719,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 18], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, -10], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6213,7 +6736,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 18], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, -10], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6239,7 +6762,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 18], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, -10], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6265,7 +6788,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 74], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 42], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6282,7 +6805,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 74], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 42], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6308,7 +6831,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 74], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 42], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6334,7 +6857,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 130], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 94], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6351,7 +6874,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 130], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 94], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6377,7 +6900,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 130], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 94], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6403,7 +6926,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 186], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 146], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6420,7 +6943,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 186], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 146], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6446,7 +6969,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 186], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 146], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6472,7 +6995,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 242], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 198], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6489,7 +7012,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 242], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 198], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6515,7 +7038,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 242], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 198], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6541,7 +7064,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 298], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 250], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6558,7 +7081,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 298], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 250], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6584,7 +7107,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 298], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 250], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6610,7 +7133,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -318], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-755, 302], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6627,7 +7150,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -318], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-480, 302], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6653,7 +7176,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -318], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [-210, 302], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6679,7 +7202,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -262], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -322], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6696,7 +7219,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -262], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -322], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6722,7 +7245,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -262], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -322], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6748,7 +7271,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -206], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -270], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6765,7 +7288,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -206], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -270], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6791,7 +7314,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -206], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -270], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6817,7 +7340,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -150], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -218], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6834,7 +7357,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -150], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -218], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6860,7 +7383,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -150], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -218], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6886,7 +7409,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -94], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -166], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6903,7 +7426,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -94], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -166], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6929,7 +7452,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -94], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -166], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6955,7 +7478,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -38], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -114], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -6972,7 +7495,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -38], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -114], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -6998,7 +7521,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -38], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -114], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7024,7 +7547,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 18], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -62], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -7041,7 +7564,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 18], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -62], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7067,7 +7590,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 18], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -62], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7093,7 +7616,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 74], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, -10], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -7110,7 +7633,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 74], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, -10], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7136,7 +7659,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 74], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, -10], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7162,7 +7685,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 130], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 42], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -7179,7 +7702,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 130], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 42], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7205,7 +7728,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 130], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 42], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7231,7 +7754,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 186], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 94], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -7248,7 +7771,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 186], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 94], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7274,7 +7797,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 186], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 94], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7300,7 +7823,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 242], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 146], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -7317,7 +7840,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 242], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 146], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7343,7 +7866,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 242], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 146], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7369,7 +7892,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 298], Size: [250, 50], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 198], Size: [250, 50], Visible: true}
     UIText:
       Text: ""
       Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
@@ -7386,7 +7909,7 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 298], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 198], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true
@@ -7412,7 +7935,76 @@ Entities:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 298], Size: [260, 48], Visible: true}
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 198], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2282
+    Name: Control 25 Label
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [205, 250], Size: [250, 50], Visible: true}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 34
+      Color: [0.72, 0.75, 0.7, 1]
+      Align: Right
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2283
+    Name: Control 25 Key
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [480, 250], Size: [260, 48], Visible: true}
+    UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
+    UIButton:
+      Interactable: true
+      Normal: [0.42, 0.42, 0.42, 1]
+      Highlighted: [1, 1, 1, 1]
+      Pressed: [0.3, 0.3, 0.3, 1]
+      Disabled: [0.25, 0.25, 0.25, 0.45]
+      FadeDuration: 0.08
+      OnClick: {Target: 0, Method: ""}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 32
+      Color: [1, 1, 1, 1]
+      Align: Center
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2284
+    Name: Control 25 Pad
+    Parent: 2200
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [750, 250], Size: [260, 48], Visible: true}
     UIImage: {Texture: "", Color: [0.95, 0.7, 0.25, 1]}
     UIButton:
       Interactable: true

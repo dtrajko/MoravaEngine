@@ -24,6 +24,8 @@
 #include <cstring>
 #include <vector>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 
 static constexpr uint32_t FrameSet = 0; // the PBR shaders' per-frame set
 
@@ -137,6 +139,11 @@ void EnvMapVulkanTextureViews::CreateView(View& view, const FrameInputs& inputs)
 	view.FrameSet = pbrShader->CreateDescriptorSets(FrameSet);
 	CreateUniformBuffer(view.CameraBuffer, 2 * sizeof(glm::mat4)); // the Camera block: view-projection, previous view-projection
 	CreateUniformBuffer(view.SceneDataBuffer, sizeof(EnvMapVulkanSceneDataGPU));
+	// The Shadows block (binding 7, 704 bytes) of a camera without shadows: zeros (u_ShadowsEnabled 0, no local shadow maps)
+	static constexpr uint32_t ShadowsBlockSize = 704;
+	CreateUniformBuffer(view.NoShadowsBuffer, ShadowsBlockSize);
+	const std::array<uint8_t, ShadowsBlockSize> zeros = {};
+	WriteUniformBuffer(view.NoShadowsBuffer, zeros.data(), ShadowsBlockSize);
 	std::array<VkWriteDescriptorSet, 4> writes;
 	const char* names[4] = { "Camera", "SceneData", "u_AOImage", "u_ReflectionImage" };
 	for (size_t i = 0; i < writes.size(); i++)
@@ -201,6 +208,7 @@ void EnvMapVulkanTextureViews::DestroyView(View& view)
 {
 	DestroyUniformBuffer(view.CameraBuffer);
 	DestroyUniformBuffer(view.SceneDataBuffer);
+	DestroyUniformBuffer(view.NoShadowsBuffer);
 	DestroyUniformBuffer(view.SkyboxCameraBuffer);
 	view.FrameSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
 	view.SkyboxSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
@@ -282,7 +290,13 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 		Camera camera;
 		EnvMapVulkanSceneData::PlaceGameCamera(camera, scene, entity);
 		camera.SetViewportSize((float)view.Width, (float)view.Height);
-		view.Draw.ViewProjection = camera.GetViewProjection();
+		// Vulkan's depth range, 0 to 1: the camera's own projection is OpenGL's (-1 to 1), whose nearer half Vulkan clips
+		// away, so it would draw nothing nearer than 2 near far / (near + far): near 0.05, far 1000 draws from 0.1 m, but
+		// a map's camera high above the level with its near clip at a floor's cut (Shooter 3.4: 150 m, far 180) from 200 m,
+		// nothing. The views unproject their depth with the inverse view-projection (the glass), so either range works there
+		const glm::mat4 projection = glm::perspectiveRH_ZO(glm::radians(camera.GetPerspectiveVerticalFOV()), (float)view.Width / (float)view.Height,
+			camera.GetPerspectiveNearClip(), camera.GetPerspectiveFarClip());
+		view.Draw.ViewProjection = projection * camera.GetViewMatrix();
 		view.Draw.Position = camera.GetPosition();
 
 		// The view writes no motion: its previous view-projection is this frame's
@@ -317,6 +331,15 @@ void EnvMapVulkanTextureViews::Update(const EnvMapVulkanScene& scene, const Fram
 			copy.descriptorCount = 1;
 		}
 		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 0, nullptr, (uint32_t)copies.size(), copies.data());
+		if (!lens.Shadows)
+		{
+			// The Shadows block of zeros in place of the main view's (after the copies: a write in the same call goes first)
+			VkWriteDescriptorSet write = *GetShader("HazelPBR_Static")->GetDescriptorSet("Shadows", FrameSet);
+			write.dstSet = view.FrameSet.DescriptorSets[0];
+			write.descriptorCount = 1;
+			write.pBufferInfo = &view.NoShadowsBuffer.Descriptor;
+			vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+		}
 
 		// The skybox's cube map, when the environment has new cube maps
 		if (view.SkyboxEnvironmentVersion != inputs.EnvironmentVersion)
