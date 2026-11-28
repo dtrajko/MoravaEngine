@@ -26,6 +26,7 @@ import numpy as np
 
 LEVEL_IDS = 60000          # the level's entities in the scene: 60000 and up (one level per scene in version 1)
 LEVEL_IDS_END = 69999
+DOOR_IDS = LEVEL_IDS + 500  # the doors' leaves and their Nav Areas (after the models')
 
 DEFAULTS = {
     "StoryHeight": 3.5,    # from one floor's top to the next
@@ -45,6 +46,8 @@ DEFAULTS = {
     "CatwalkThickness": 0.15,
     "RailingHeight": 1.0,  # a catwalk's railings above its deck and steps (0: none)
     "RailingThickness": 0.05,
+    "DoorLeafThickness": 0.05,  # a door's leaf (an opening with a Leaf), in the wall's middle
+    "DoorScript": "",      # the script class of a door's leaves (Outpost.Door), "" none: the leaves only collide
 }
 
 # The greybox materials: a base color (sRGB) under a grid of 1 m lines; the floor's lines are darker every 5 m
@@ -56,6 +59,8 @@ MATERIALS = {
     "Stairs": ((0.85, 0.52, 0.22), 0.8),
     "Roof": ((0.36, 0.37, 0.40), 0.9),
     "Catwalk": ((0.30, 0.42, 0.55), 0.6),
+    "Door": ((0.46, 0.33, 0.22), 0.7),
+    "Handle": ((0.12, 0.12, 0.13), 0.4),
 }
 
 DIRECTIONS = {  # the engine's: Y up, North is -Z
@@ -277,6 +282,58 @@ def outer_walls(model, building, floor, bottom, top, s):
 
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Doors: an opening of Kind Door with a Leaf gets one (Hinged) or two (Double) leaves on hinges, models of their own,
+# and a Nav Area (Door) in the doorway, closed while the door is locked
+
+LEAF_GAP = 0.01  # between a leaf and its frame, the floor and the other leaf
+
+
+def leaf_model(width, height, s):
+    """A leaf from its hinge (the model's origin) along +X, the floor at y 0: its slab and a handle on each side near
+    its free end"""
+    builder = MeshBuilder()
+    half = s["DoorLeafThickness"] / 2
+    builder.box("Door", (LEAF_GAP, LEAF_GAP, -half), (width - LEAF_GAP, height - LEAF_GAP, half))
+    for side in (-1, 1):
+        z0, z1 = sorted((side * half, side * (half + 0.035)))
+        builder.box("Handle", (width - 0.16, 0.98, z0), (width - 0.04, 1.02, z1))
+    return builder
+
+
+def outer_doors(building, floor, bottom, s):
+    """The doors of a building's floor: (name, leaves, area, locked); a leaf is (its hinge, its yaw in degrees: the
+    leaf's +X along the wall, its width, its height), the area (its middle, yaw, half extents)"""
+    mx, mz = building["Min"]
+    width, depth = building["Size"]
+    t = s["WallThickness"]
+    doors = []
+    for o in building.get("Openings", []):
+        if o.get("Floor", 0) != floor or o.get("Kind") != "Door" or not o.get("Leaf"):
+            continue
+        side = o["Wall"]
+        w = o.get("Width", s["DoorWidth"])
+        h = o.get("Height", s["DoorHeight"])
+        if side in ("North", "South"):
+            middle = (mx + o["Offset"], mz + t / 2 if side == "North" else mz + depth - t / 2)
+            along, yaw = (1.0, 0.0), 0.0       # the hinge at the west end, the leaf east of it
+        else:
+            middle = (mx + width - t / 2 if side == "East" else mx + t / 2, mz + o["Offset"])
+            along, yaw = (0.0, 1.0), -90.0     # the hinge at the north end, the leaf south of it
+        low = (middle[0] - along[0] * w / 2, bottom, middle[1] - along[1] * w / 2)
+        high = (middle[0] + along[0] * w / 2, bottom, middle[1] + along[1] * w / 2)
+        if o["Leaf"] == "Hinged":
+            leaves = [(low, yaw, w, h)]
+        elif o["Leaf"] == "Double":
+            leaves = [(low, yaw, w / 2, h), (high, yaw + 180.0, w / 2, h)]
+        else:
+            raise SystemExit(f"build_level: {building['Name']}: a door's Leaf is Hinged or Double, not {o['Leaf']}")
+        name = f"Door_{building['Name']}_{side}" + (f"_F{floor}" if floor else "")
+        area = ((middle[0], bottom + 1.0, middle[1]), 0.0 if side in ("North", "South") else 90.0, (w / 2, 1.0, 0.45))
+        doors.append((name, leaves, area, bool(o.get("Locked", False))))
+    return doors
+
+
+# ---------------------------------------------------------------------------------------------------------------------
 # The level
 
 WALL_SIDES = ("North", "South", "East", "West")
@@ -286,6 +343,8 @@ def build_level(data):
     settings = dict(DEFAULTS)
     settings.update(data.get("Settings", {}))
     models = {}       # model name -> MeshBuilder
+    leaves = {}       # the doors' leaf models, by name
+    doors = []        # (name, leaves: (hinge, yaw, width, height, model name), area, locked)
     report = []
 
     footprints = []
@@ -335,6 +394,16 @@ def build_level(data):
             # The outer walls, in the footprint's edge
             bottom, wall_top = top, top + story - slab
             outer_walls(model, building, f, bottom, wall_top, s)
+            for door_name, door_leaves, area, locked in outer_doors(building, f, bottom, s):
+                named = []
+                for hinge, yaw, w, h in door_leaves:
+                    model_name = f"DoorLeaf_{round(w * 100)}x{round(h * 100)}"
+                    if model_name not in leaves:
+                        leaves[model_name] = leaf_model(w, h, s)
+                    named.append((hinge, yaw, w, h, model_name))
+                doors.append((door_name, named, area, locked))
+                report.append(f"{door_name}: {len(named)} leaf(s) of {named[0][2]:.2f} x {named[0][3]:.2f} m" +
+                              (", locked" if locked else ""))
 
             # The rooms' walls
             for w in building.get("Walls", []):
@@ -365,7 +434,7 @@ def build_level(data):
         model = models.setdefault("Ground", MeshBuilder())
         for x0, z0, x1, z1 in subtract_rects((gx, gz, gx + gw, gz + gd), footprints):
             model.box("Ground", (x0, -thickness, z0), (x1, 0.0, z1))
-    return models, report
+    return models, leaves, doors, report
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -448,17 +517,90 @@ def export_model(path, obj, texture_dir):
 # ---------------------------------------------------------------------------------------------------------------------
 # The scene
 
-def update_scene(scene_path, project_dir, level, files):
+def door_entities(project_dir, doors, leaf_files, settings):
+    """A door's leaves (a model on its hinge, a Box collider, a Kinematic body: the navmesh's bake leaves them out; the
+    door script, its fields the Area, the other leaf, Locked) and its Nav Area (Door: closed while locked)"""
+    entities = []
+    next_id = DOOR_IDS
+    script = settings["DoorScript"]
+    half = settings["DoorLeafThickness"] / 2
+    for name, leaves, (middle, area_yaw, extents), locked in doors:
+        area_id = next_id + len(leaves)
+        ids = [next_id + i for i in range(len(leaves))]
+        for i, (hinge, yaw, w, h, model) in enumerate(leaves):
+            relative = os.path.relpath(leaf_files[model], project_dir).replace("\\", "/")
+            fields = f"        Area: {{Entity: {area_id}}}\n        Width: {{Float: {w:g}}}\n"
+            if len(leaves) > 1:
+                fields += f"        Partner: {{Entity: {ids[1 - i]}}}\n"
+            if locked:
+                fields += "        Locked: {Bool: true}\n"
+            behavior = (f"    Script:\n      Class: {script}\n      Fields:\n{fields}") if script else ""
+            leaf_name = name if len(leaves) == 1 else f"{name}_{'AB'[i]}"
+            entities.append(f"""  - ID: {ids[i]}
+    Name: {leaf_name}
+    Parent: {LEVEL_IDS}
+    Transform:
+      Translation: [{hinge[0]:g}, {hinge[1]:g}, {hinge[2]:g}]
+      Rotation: [0, {yaw:g}, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: {relative}
+    Collider:
+      Shape: Box
+      Offset: [{w / 2:g}, {h / 2:g}, 0]
+      HalfExtents: [{w / 2 - LEAF_GAP:g}, {h / 2 - LEAF_GAP:g}, {half:g}]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+{behavior}""")
+        entities.append(f"""  - ID: {area_id}
+    Name: {name} Area
+    Parent: {LEVEL_IDS}
+    Transform:
+      Translation: [{middle[0]:g}, {middle[1]:g}, {middle[2]:g}]
+      Rotation: [0, {area_yaw:g}, 0]
+      Scale: [1, 1, 1]
+    NavArea:
+      Type: Door
+      HalfExtents: [{extents[0]:g}, {extents[1]:g}, {extents[2]:g}]
+      Cost: 1
+      Open: {"false" if locked else "true"}
+""")
+        next_id = area_id + 1
+    if next_id > LEVEL_IDS_END:
+        raise SystemExit("build_level: too many doors for the level's IDs")
+    return entities
+
+
+def update_scene(scene_path, project_dir, level, files, extra=()):
     """Replaces the level's entities in the scene (IDs LEVEL_IDS to LEVEL_IDS_END) by an entity Level_<Level> with a
-    model per file, each with a TriangleMesh collider; the scene's other entities stay as they are"""
-    with open(scene_path, encoding="utf-8") as f:
-        text = f.read()
+    model per file, each with a TriangleMesh collider, and the extra entities (the doors); the scene's other entities
+    stay as they are. The level's entities go where the old ones were; an old one that has every line the new one would
+    (the editor's save adds some: a model's FileID, a collider's unused sizes) stays as it is, so a run that changes
+    nothing changes nothing in the scene. The file keeps its line ends"""
+    with open(scene_path, "rb") as f:
+        raw = f.read().decode("utf-8")
+    newline = "\r\n" if "\r\n" in raw else "\n"
+    text = raw.replace("\r\n", "\n")
     head, sep, body = text.partition("Entities:\n")
     if not sep:
         raise SystemExit(f"build_level: {scene_path} has no Entities")
     blocks = re.split(r"(?m)^(?=  - ID: )", body)
-    kept = [b for b in blocks if b and not (b.startswith("  - ID: ") and
-                                             LEVEL_IDS <= int(b.split()[2]) <= LEVEL_IDS_END)]
+
+    def is_level(b):
+        return b.startswith("  - ID: ") and LEVEL_IDS <= int(b.split()[2]) <= LEVEL_IDS_END
+
+    old = {int(b.split()[2]): b for b in blocks if is_level(b)}
     entities = [f"""  - ID: {LEVEL_IDS}
     Name: Level_{level}
     Parent: 0
@@ -485,8 +627,29 @@ def update_scene(scene_path, project_dir, level, files):
       Restitution: 0
       IsTrigger: false
 """)
-    with open(scene_path, "w", encoding="utf-8", newline="\n") as f:
-        f.write(head + sep + "".join(kept) + "".join(entities))
+
+    def keep_old(new):
+        before = old.get(int(new.split()[2]))
+        if before is None:
+            return new
+        lines = before.rstrip("\n").split("\n")
+        return before if all(line in lines for line in new.rstrip("\n").split("\n")) else new
+
+    # Each in the old one's place (a model's mesh parts, the editor's, follow it), the new ones after the last
+    level = {int(e.split()[2]): keep_old(e) for e in entities + list(extra)}
+    last = max((i for i, b in enumerate(blocks) if is_level(b)), default=len(blocks) - 1)
+    out = []
+    for i, b in enumerate(blocks):
+        if is_level(b):
+            out.append(level.pop(int(b.split()[2]), ""))
+        elif b:
+            out.append(b)
+        if i == last:
+            out.extend(level.pop(key) for key in sorted(level))
+    out.extend(level[key] for key in sorted(level))
+    text = head + sep + "".join(out)
+    with open(scene_path, "wb") as f:
+        f.write(text.replace("\n", newline).encode("utf-8"))
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -507,7 +670,7 @@ def main():
     os.makedirs(models_dir, exist_ok=True)
     os.makedirs(texture_dir, exist_ok=True)
 
-    models, report = build_level(data)
+    models, leaves, doors, report = build_level(data)
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     materials = {name: make_material(name, texture_dir) for name in MATERIALS}
@@ -526,14 +689,24 @@ def main():
         written.append(path)
         print(f"build_level: {os.path.basename(path)}: {builder.triangles()} triangles")
         bpy.data.objects.remove(obj)
+    leaf_files = {}
+    for name, builder in sorted(leaves.items()):
+        obj = make_object(f"Level_{level}_{name}", builder, materials)
+        path = os.path.join(models_dir, f"Level_{level}_{name}.gltf")
+        export_model(path, obj, texture_dir)
+        leaf_files[name] = path
+        print(f"build_level: {os.path.basename(path)}: {builder.triangles()} triangles (a door's leaf)")
+        bpy.data.objects.remove(obj)
 
     for line in report:
         print(f"build_level: {line}")
     scene = data.get("Scene")
     if scene:
         scene_path = os.path.normpath(os.path.join(data_dir, scene))
-        update_scene(scene_path, project_dir, level, written)
-        print(f"build_level: {len(written)} models in {scene_path}")
+        settings = dict(DEFAULTS)
+        settings.update(data.get("Settings", {}))
+        update_scene(scene_path, project_dir, level, written, door_entities(project_dir, doors, leaf_files, settings))
+        print(f"build_level: {len(written)} models and {len(doors)} doors in {scene_path}")
 
 
 main()

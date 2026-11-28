@@ -47,6 +47,9 @@ namespace Outpost
         public Entity? HealthValue, HealthBar, HealthFrame, HealthLabel, ArmorValue, ArmorBar, ArmorFrame, ArmorLabel;
         public Entity? Message, DamageFlash, DeathDark, DeathTitle, DeathHint;
 
+        /// <summary>Phase 4.1: under the crosshair, the key and what Use does to what is looked at ("E  OPEN", "LOCKED").</summary>
+        public Entity? UsePrompt;
+
         /// <summary>
         /// Phase 3.2: the roots of the weapons' slots, the objectives' list at the top right, the panel shown while
         /// Objectives is held, and the banner when one is done (its title and its line under it).
@@ -102,7 +105,7 @@ namespace Outpost
         UIRect? scopeRect;
         UIRect? scopeDarkRect;
         UIImage? scopeDarkImage;
-        UIText? healthValue, armorValue, message, deathTitle, deathHint;
+        UIText? healthValue, armorValue, message, deathTitle, deathHint, usePrompt;
         UIRect? healthBar, armorBar;
         UIImage? healthBarImage, armorBarImage, damageImage, deathDarkImage;
         float healthBarWidth, armorBarWidth;
@@ -139,6 +142,7 @@ namespace Outpost
             healthValue = HealthValue?.GetComponent<UIText>();
             armorValue = ArmorValue?.GetComponent<UIText>();
             message = Message?.GetComponent<UIText>();
+            usePrompt = UsePrompt?.GetComponent<UIText>();
             deathTitle = DeathTitle?.GetComponent<UIText>();
             deathHint = DeathHint?.GetComponent<UIText>();
             healthBar = HealthBar?.GetComponent<UIRect>();
@@ -278,7 +282,7 @@ namespace Outpost
                 Show(e, shown);
             if (player == null || !shown)
             {
-                foreach (Entity? e in new[] { HealthBar, ArmorBar, Message, DamageFlash, DeathDark, DeathTitle, DeathHint })
+                foreach (Entity? e in new[] { HealthBar, ArmorBar, Message, DamageFlash, DeathDark, DeathTitle, DeathHint, UsePrompt })
                     Show(e, false);
                 return;
             }
@@ -314,6 +318,12 @@ namespace Outpost
                 Vector4 c = message.Color;
                 message.Color = new Vector4(c.X, c.Y, c.Z, 0.95f * messageShown);
             }
+
+            // What Use does to what is looked at (not while dead or scoped)
+            IUsable? usable = player.IsDead || player.ScopeShown ? null : player.UseTarget;
+            Show(UsePrompt, usable != null);
+            if (usable != null)
+                SetText(usePrompt, usable.CanUse ? $"{HudMap.Binding("Use")}  {usable.UseText}" : usable.UseText);
 
             // The hit's red at the edges; low on health a little stays, dead more
             float flash = MathF.Max(player.HurtFlash, player.IsDead ? 0.5f : low ? 0.18f : 0.0f);

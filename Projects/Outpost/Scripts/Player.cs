@@ -437,6 +437,9 @@ namespace Outpost
                     Respawn();
                 return;
             }
+            // Use: the door (or whatever can be used) looked at within its reach (Phase 4.1)
+            if (command.Use && Usables.Find(lastEyes, PlayerWeapon.LookDirection(command.Yaw, command.Pitch)) is IUsable usable)
+                usable.Use(this);
             arsenal.Step(command, dt);
             PlayerWeapon? weapon = arsenal.Current;
             // Aiming down the sights slows the walk and stops the sprint: Aim held wins over Shift (with a weapon that can
@@ -640,6 +643,7 @@ namespace Outpost
             Vector3 cameraPosition = view.Update(dt, eyes, yaw, pitch, this);
             lastEyes = eyes;
             lastCamera = cameraPosition;
+            UseTarget = IsDead || Flying ? null : Usables.Find(eyes, PlayerWeapon.LookDirection(yaw, pitch));
             if (body != null)
                 body.HiddenInMainView = view.HidesBody;
             UpdateHand(weapon);
@@ -812,6 +816,9 @@ namespace Outpost
         /// <summary>Seconds a hit's direction shows (fading over the last part), and how many show at once.</summary>
         public float HitDirectionSeconds = 1.6f;
         public const int MaxHitDirections = 4;
+
+        /// <summary>Phase 4.1: what Use would use now (the door looked at within reach; null nothing), for the HUD's prompt.</summary>
+        public IUsable? UseTarget { get; private set; }
 
         /// <summary>The look's yaw now (degrees: 0 along -Z, positive turning left), the command's or the input's.</summary>
         public float LookYaw => CommandSource != null ? lastCommand.Yaw : input.Yaw;

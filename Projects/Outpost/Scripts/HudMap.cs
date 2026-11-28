@@ -297,7 +297,8 @@ namespace Outpost
             return new Vector2(p.X * half, -p.Y * half);
         }
 
-        static string Binding(string action)
+        /// <summary>An action's first binding as the HUD shows it (M, E); the action's name when it has none.</summary>
+        internal static string Binding(string action)
         {
             try
             {

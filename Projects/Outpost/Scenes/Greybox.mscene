@@ -2840,6 +2840,7 @@ Entities:
         ArmorFrame: {Entity: 1438}
         ArmorLabel: {Entity: 1436}
         Message: {Entity: 1440}
+        UsePrompt: {Entity: 2700}
         DamageFlash: {Entity: 1430}
         DeathDark: {Entity: 1431}
         DeathTitle: {Entity: 1441}
@@ -3093,6 +3094,23 @@ Entities:
       Size: 28
       Color: [0.85, 1, 0.85, 0.95]
       Align: Left
+      VerticalAlign: Middle
+      Wrap: false
+      LineSpacing: 1
+  - ID: 2700
+    Name: Use Prompt
+    Parent: 1400
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    UIRect: {AnchorMin: [0.5, 0.5], AnchorMax: [0.5, 0.5], Pivot: [0.5, 0.5], Position: [0, 72], Size: [600, 40], Visible: false}
+    UIText:
+      Text: ""
+      Font: Assets/Fonts/BarlowCondensed-SemiBold.ttf
+      Size: 30
+      Color: [0.95, 0.95, 0.9, 0.95]
+      Align: Center
       VerticalAlign: Middle
       Wrap: false
       LineSpacing: 1
@@ -3532,6 +3550,212 @@ Entities:
       Friction: 0.6
       Restitution: 0
       IsTrigger: false
+  - ID: 60500
+    Name: Door_Barracks_South
+    Parent: 60000
+    Transform:
+      Translation: [-8.6, 0, -4.1]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Levels/Greybox/Level_Greybox_DoorLeaf_120x220.gltf
+    Collider:
+      Shape: Box
+      Offset: [0.6, 1.1, 0]
+      HalfExtents: [0.59, 1.09, 0.025]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+    Script:
+      Class: Outpost.Door
+      Fields:
+        Area: {Entity: 60501}
+        Width: {Float: 1.2}
+  - ID: 60501
+    Name: Door_Barracks_South Area
+    Parent: 60000
+    Transform:
+      Translation: [-8, 1, -4.1]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    NavArea:
+      Type: Door
+      HalfExtents: [0.6, 1, 0.45]
+      Cost: 1
+      Open: true
+  - ID: 60502
+    Name: Door_Barracks_East
+    Parent: 60000
+    Transform:
+      Translation: [3.9, 0, -6.5]
+      Rotation: [0, -90, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Levels/Greybox/Level_Greybox_DoorLeaf_100x220.gltf
+    Collider:
+      Shape: Box
+      Offset: [0.5, 1.1, 0]
+      HalfExtents: [0.49, 1.09, 0.025]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+    Script:
+      Class: Outpost.Door
+      Fields:
+        Area: {Entity: 60503}
+        Width: {Float: 1}
+  - ID: 60503
+    Name: Door_Barracks_East Area
+    Parent: 60000
+    Transform:
+      Translation: [3.9, 1, -6]
+      Rotation: [0, 90, 0]
+      Scale: [1, 1, 1]
+    NavArea:
+      Type: Door
+      HalfExtents: [0.5, 1, 0.45]
+      Cost: 1
+      Open: true
+  - ID: 60504
+    Name: Door_Warehouse_West_A
+    Parent: 60000
+    Transform:
+      Translation: [8.1, 0, -6]
+      Rotation: [0, -90, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Levels/Greybox/Level_Greybox_DoorLeaf_200x450.gltf
+    Collider:
+      Shape: Box
+      Offset: [1, 2.25, 0]
+      HalfExtents: [0.99, 2.24, 0.025]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+    Script:
+      Class: Outpost.Door
+      Fields:
+        Area: {Entity: 60506}
+        Width: {Float: 2}
+        Partner: {Entity: 60505}
+  - ID: 60505
+    Name: Door_Warehouse_West_B
+    Parent: 60000
+    Transform:
+      Translation: [8.1, 0, -2]
+      Rotation: [0, 90, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Levels/Greybox/Level_Greybox_DoorLeaf_200x450.gltf
+    Collider:
+      Shape: Box
+      Offset: [1, 2.25, 0]
+      HalfExtents: [0.99, 2.24, 0.025]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+    Script:
+      Class: Outpost.Door
+      Fields:
+        Area: {Entity: 60506}
+        Width: {Float: 2}
+        Partner: {Entity: 60504}
+  - ID: 60506
+    Name: Door_Warehouse_West Area
+    Parent: 60000
+    Transform:
+      Translation: [8.1, 1, -4]
+      Rotation: [0, 90, 0]
+      Scale: [1, 1, 1]
+    NavArea:
+      Type: Door
+      HalfExtents: [2, 1, 0.45]
+      Cost: 1
+      Open: true
+  - ID: 60507
+    Name: Door_Warehouse_South
+    Parent: 60000
+    Transform:
+      Translation: [17.5, 0, 3.9]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Assets/Models/Levels/Greybox/Level_Greybox_DoorLeaf_100x220.gltf
+    Collider:
+      Shape: Box
+      Offset: [0.5, 1.1, 0]
+      HalfExtents: [0.49, 1.09, 0.025]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+    Script:
+      Class: Outpost.Door
+      Fields:
+        Area: {Entity: 60508}
+        Width: {Float: 1}
+        Locked: {Bool: true}
+  - ID: 60508
+    Name: Door_Warehouse_South Area
+    Parent: 60000
+    Transform:
+      Translation: [18, 1, 3.9]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    NavArea:
+      Type: Door
+      HalfExtents: [0.5, 1, 0.45]
+      Cost: 1
+      Open: false
   - ID: 14707637124502384147
     Name: Level_Greybox_Warehouse_Roof-0
     Parent: 60007
@@ -5290,6 +5514,18 @@ Entities:
       DrawEvery: 2
       Enabled: false
       Shadows: false
+  - ID: 2701
+    Name: Electric Floor Area
+    Parent: 1610
+    Transform:
+      Translation: [0, 0.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    NavArea:
+      Type: Blocked
+      HalfExtents: [1.4, 0.5, 1.4]
+      Cost: 1
+      Open: true
   - ID: 2000
     Name: Pause Menu
     Parent: 0

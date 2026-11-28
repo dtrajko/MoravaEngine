@@ -48,6 +48,9 @@ namespace Outpost
         public int WeaponSlot, WeaponCycle;
         public bool LastWeapon;
 
+        /// <summary>Use was pressed since the last step (Phase 4.1: the door looked at opens or closes).</summary>
+        public bool Use;
+
         /// <summary>The horizontal direction the yaw faces (length 1).</summary>
         public Vector3 Forward
         {
@@ -180,6 +183,7 @@ namespace Outpost
                 WeaponSlot = slot,
                 WeaponCycle = cycle,
                 LastWeapon = Input.WasPressed("LastWeapon"),
+                Use = Input.WasPressed("Use"),
             };
         }
 

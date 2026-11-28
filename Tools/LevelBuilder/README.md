@@ -18,6 +18,7 @@ It writes, for a level named `<Level>`:
 | `Assets/Models/Levels/<Level>/Level_<Level>_<Building>_Roof.gltf` | the roof: a model of its own, to hide it and look inside |
 | `Assets/Models/Levels/<Level>/Level_<Level>_Ground.gltf` | the ground around the buildings |
 | `Assets/Models/Levels/<Level>/Level_<Level>_<Catwalk>.gltf` | a catwalk: its deck, its steps, its railings |
+| `Assets/Models/Levels/<Level>/Level_<Level>_DoorLeaf_<w>x<h>.gltf` | a door's leaf, <w> by <h> cm, from its hinge (one model per size) |
 | `Assets/Models/Levels/Textures/Greybox_<Material>.png` | the greybox materials: a color with a line every meter, shared by all levels |
 
 The models are `.gltf` files with their `.bin` and the textures in a folder of their own (not `.glb`): the engine reads a
@@ -28,7 +29,16 @@ building or floor taken out of the data leaves nothing behind.
 with one child entity per model, each with a `TriangleMesh` collider (the greybox's boxes are their own colliders; the
 stairs' steps are 0.18 m at most, under a character's step height of 0.35 m). These entities have the IDs 60000 to 69999
 and are replaced on each run; the scene's other entities (the camera, the sun, the environment, what was added by hand)
-stay as they are.
+stay as they are. Each goes where the old one was in the file, and an old one that already has every line the new one
+would (the editor's save adds a model's `FileID`, a collider's unused sizes, a tag) stays as it is: a run that changes
+nothing in the data changes nothing in the scene. The file keeps its line ends.
+
+**Doors** (Phase 4.1 of the shooter's plan): an outer wall's opening of Kind Door with a `Leaf` gets a door. Each leaf is
+an entity from 60500 up, at its hinge (the leaf along its +X): its model, a Box collider, a Kinematic body (the navmesh's
+bake leaves it out, it pushes what it swings into) and the `DoorScript` setting's script with its fields `Area`,
+`Width`, `Partner` (a double door's other leaf) and `Locked`. After its leaves, the doorway's Nav Area (Type Door, open
+unless the door is locked: a closed door is on the paths, whoever walks one opens it). Bake the navmesh again after
+adding or moving doors.
 
 The script prints each model's triangles and, per building, its size, floors and stairs (the steps, their height, the
 stairs' length).
@@ -70,7 +80,9 @@ Coordinates are the engine's: meters, Y up; North is -Z, East is +X. A building'
   (0: the ground's top).
 - **Openings** in the outer walls: `Wall` North, South, East or West, `Floor` (0 if left out), `Kind` Door or Window,
   `Offset` from the building's west edge (North and South walls) or north edge (East and West) to the opening's middle;
-  optional `Width`, `Height`, and a window's `Sill` (its bottom above the floor).
+  optional `Width`, `Height`, and a window's `Sill` (its bottom above the floor). A door's `Leaf`: `Hinged` (one leaf,
+  its hinge at the opening's west or north end) or `Double` (two, hinged at both ends; a wide doorway); none: an open
+  doorway. `Locked`: true for a door locked at the start.
 - **Walls**: the rooms' walls, straight along X or Z from `From` to `To` (their middle line), on a `Floor`, from the
   floor up to the slab above; optional `Thickness`. Their `Openings` have an `Offset` from the wall's west or north end.
 - **Stairs**: straight, from floor `From` to the one above (from the top floor: onto the roof, through a hole in it). `At` is the middle of the first step's front edge,
@@ -89,11 +101,12 @@ Coordinates are the engine's: meters, Y up; North is -Z, East is +X. A building'
 - **Settings** (the level's, and a building's own to override them): `StoryHeight` (3.5), `FloorThickness` (0.3),
   `WallThickness` (0.2), `DoorWidth` (1.0), `DoorHeight` (2.2), `WindowWidth` (1.6), `WindowSill` (1.0), `WindowHeight`
   (1.2), `StairWidth` (1.2), `StairRiser` (0.18), `StairTread` (0.28), `GroundThickness` (0.5), `Parapet` (0), `CatwalkWidth`
-  (1.2), `CatwalkThickness` (0.15), `RailingHeight` (1.0), `RailingThickness` (0.05).
+  (1.2), `CatwalkThickness` (0.15), `RailingHeight` (1.0), `RailingThickness` (0.05), `DoorLeafThickness` (0.05),
+  `DoorScript` (the doors' script class, e.g. `Outpost.Door`; "" none: the leaves only collide).
 
 ## Not yet (Phase 6: the level builder in full)
 
-Ramps, ladders, lifts, stairs with a landing or a turn, railings on stairs and at holes; catwalks that turn or slope
+Ramps, ladders (Phase 4.2), lifts, doors in the rooms' walls (outer walls only now), stairs with a landing or a turn, railings on stairs and at holes; catwalks that turn or slope
 without steps; props, lights, probe volumes; the spots file
 (spawns, patrol routes, cover, pickups, objectives); materials beyond the greybox; collider meshes simpler than the drawn
 ones (the engine has no model that only collides yet).

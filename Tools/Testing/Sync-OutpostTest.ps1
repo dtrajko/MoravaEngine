@@ -1,15 +1,15 @@
 # Brings the Outpost test copy up to date with Projects/Outpost: assets, settings, levels, scripts and the Greybox scene.
 # The copy keeps its own project file (name OutpostPlayerTest: its own settings, a window) and its own test scripts
-# (PlayerTest.cs beside the game's), and its Greybox gets the test's two entities: the low slab the crouch test walks
-# under (TestSlab) and the test driver (PlayerTest), which drives the player through a timed list of commands and logs
-# PASS/FAIL (Run-Engine.ps1 counts them).
+# (PlayerTest.cs beside the game's), and its Greybox gets the test's entities: the low slab the crouch test walks under
+# (TestSlab), the test driver (PlayerTest), which drives the player through a timed list of commands and logs PASS/FAIL
+# (Run-Engine.ps1 counts them), and a walker on the navmesh (Test Walker, Phase 4.1: a character with a Nav Agent).
 #
 #   .\Tools\Testing\Sync-OutpostTest.ps1 [-Copy D:\Workspace\Temp\OutpostPlayerTest]
 #
 # Then build its scripts and run it in the editor with Play:
 #
 #   dotnet build <copy>\Scripts\Outpost.csproj -p:MoravaScriptCoreDir=D:\Workspace\MoravaEngine\build\Debug\
-#   .\Tools\Testing\Run-Engine.ps1 -Editor -Play -Project <copy>\Outpost.mproject -Seconds 145 -DebugOverlay
+#   .\Tools\Testing\Run-Engine.ps1 -Editor -Play -Project <copy>\Outpost.mproject -Seconds 228 -DebugOverlay
 #
 # One section only (the README): $env:OUTPOST_TEST_START = "Sidearms", "Sniper", "Sights", "Health", "Hud", "Map" or "Menus" before the run
 param(
@@ -67,14 +67,35 @@ $test = @"
       Scale: [1, 1, 1]
     Script:
       Class: Outpost.PlayerTest
+  - ID: 1903
+    Name: Test Walker
+    Parent: 0
+    Transform:
+      Translation: [-30, 0.05, 30]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CharacterController:
+      Height: 1.8
+      Radius: 0.3
+      Offset: [0, 0.9, 0]
+      MaxSlopeDegrees: 45
+      StepHeight: 0.35
+      Mass: 70
+      PushStrength: 100
+    NavAgent:
+      Speed: 2.5
+      Acceleration: 8
+      StoppingDistance: 0.2
+      Avoidance: Medium
 "@
 $scene = [System.IO.File]::ReadAllText((Join-Path $source "Scenes\Greybox.mscene"))
 if ($scene.Contains("Name: PlayerTest")) { throw "The game's Greybox already has a PlayerTest" }
 $scene = $scene.TrimEnd() + "`r`n" + ($test -replace "`r?`n", "`r`n") + "`r`n"
 New-Item -ItemType Directory -Force -Path (Join-Path $Copy "Scenes") | Out-Null
 [System.IO.File]::WriteAllText((Join-Path $Copy "Scenes\Greybox.mscene"), $scene)
-# The main menu (Phase 3.3) as it is: the pause menu's Main Menu loads it
-foreach ($file in "MainMenu.mscene", "MainMenu.mscene.meta")
+# The main menu (Phase 3.3) as it is: the pause menu's Main Menu loads it; the greybox's navmesh (Phase 4.1: the test's
+# walker and paths; baked without the TestSlab, which the navmesh then calls out of date)
+foreach ($file in "MainMenu.mscene", "MainMenu.mscene.meta", "Greybox.mnav")
 {
     if (Test-Path (Join-Path $source "Scenes\$file")) { Copy-Item (Join-Path $source "Scenes\$file") (Join-Path $Copy "Scenes\$file") -Force }
 }

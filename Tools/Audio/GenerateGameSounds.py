@@ -1,5 +1,5 @@
 """Generates the shooter's game sounds besides the weapons' (docs/games/Shooter_Plan.html, Phase 3.1: health, pickups and
-the hazards; Phase 3.2: the objectives), synthesized here, no recordings, with GenerateWeaponSounds.py's tools:
+the hazards; Phase 3.2: the objectives; Phase 4.1: the doors), synthesized here, no recordings, with GenerateWeaponSounds.py's tools:
 
     Pickup_Health.wav           a health pack taken: the case's two plastic latches snapping open, a short rustle
     Pickup_Armor.wav            a vest taken: a velcro strap torn open and pressed shut, the buckle's click
@@ -11,6 +11,11 @@ the hazards; Phase 3.2: the objectives), synthesized here, no recordings, with G
     Player_Death.wav            the player dying: a longer grunt falling away, the body and its gear hitting the ground
     Objective_Complete.wav      Phase 3.2, an objective done: a radio's squelch, then two soft rising tones through the
                                 radio's narrow band (a field radio's confirmation, not a fanfare)
+    Door_Open.wav               Phase 4.1, a door opened: the handle's latch drawn back, a short creak of its hinges,
+                                the leaf's air
+    Door_Close.wav              a door shut: the leaf's air, a hollow wooden thud in the frame, the latch snapping in
+    Door_Locked.wav             a locked door tried: the handle pressed down twice, its latch knocking on the bolt, the
+                                leaf rattling a little in the frame (nothing gives)
 
 Usage: python GenerateGameSounds.py [output folder]   (needs numpy; the default is the shooter project's Assets/Audio)
 
@@ -201,6 +206,71 @@ def objective_complete():
     return fade_out(normalize(saturate(out, 1.4), 0.6), 0.02)
 
 
+def latch(rng, seconds=0.05):
+    """A door's latch: a steel tongue sliding against its spring, a dry metal tick at each end"""
+    slide = biquad(biquad(noise(rng, seconds), "band", 3200.0, 1.5), "high", 1500.0) * np.sin(np.linspace(0.0, math.pi, samples(seconds)))
+    return mix(seconds + 0.02, (0.0, click(rng, 3400.0, 0.008, 6.0), 0.6), (0.004, slide, 0.25),
+               (seconds, click(rng, 2900.0, 0.01, 6.0), 0.8))
+
+
+def creak(rng, seconds, pitch_from, pitch_to):
+    """A hinge's creak: stick-slip, a train of tiny pulses whose rate wanders, through a wooden body's resonances"""
+    t = t_of(seconds)
+    rate = pitch_from + (pitch_to - pitch_from) * (t / seconds) + 12.0 * biquad(rng.standard_normal(len(t)), "low", 18.0) * 6.0
+    phase = np.cumsum(np.maximum(rate, 40.0)) / RATE
+    pulses = np.maximum(0.0, np.sin(2 * np.pi * phase)) ** 8
+    body = np.zeros(len(t))
+    for f, q, g in ((900.0, 6.0, 1.0), (1650.0, 7.0, 0.7), (2600.0, 8.0, 0.35)):
+        body += biquad(pulses, "band", f, q) * g
+    return body * np.sin(np.linspace(0.0, math.pi, len(t))) ** 0.8
+
+
+def swish(rng, seconds):
+    """A leaf pushing the air: soft low noise, swelling and fading"""
+    return biquad(biquad(noise(rng, seconds), "low", 600.0), "high", 80.0) * np.sin(np.linspace(0.0, math.pi, samples(seconds))) ** 2
+
+
+def door_thud(rng, seconds=0.3):
+    """A wooden leaf hitting its frame: a hollow low knock (the panel's modes ringing briefly) and a slap"""
+    t = t_of(seconds)
+    ring = np.zeros(len(t))
+    for freq, gain, tau in ((95.0, 1.0, 0.07), (180.0, 0.7, 0.05), (310.0, 0.4, 0.035), (520.0, 0.25, 0.02)):
+        ring += gain * np.sin(2 * np.pi * freq * t + rng.random() * 6.0) * np.exp(-t / tau)
+    slap = biquad(noise(rng, 0.03), "low", 1800.0) * decay(samples(0.03), 0.006)
+    return mix(seconds, (0.0, ring, 1.0), (0.0, slap, 0.7))
+
+
+def door_open():
+    rng = np.random.default_rng(1000)
+    out = mix(0.8,
+              (0.0, latch(rng), 0.9),
+              (0.1, creak(rng, 0.38, 260.0, 170.0), 0.45),
+              (0.12, swish(rng, 0.55), 0.5))
+    return fade_out(normalize(out, 0.6), 0.05)
+
+
+def door_close():
+    rng = np.random.default_rng(1010)
+    out = mix(0.7,
+              (0.0, swish(rng, 0.3), 0.5),
+              (0.24, door_thud(rng), 1.0),
+              (0.25, click(rng, 3100.0, 0.012, 6.0), 0.7),      # the latch snapping into the strike
+              (0.27, rustle(rng, 0.12, 300.0, 2500.0), 0.15))   # the frame settling
+    return fade_out(normalize(saturate(out, 1.3), 0.65), 0.05)
+
+
+def door_locked():
+    rng = np.random.default_rng(1020)
+    parts = []
+    for k, at in enumerate((0.0, 0.32)):
+        parts.append((at, click(rng, 2300.0 + 200.0 * k, 0.012, 5.0), 0.7))     # the handle down
+        parts.append((at + 0.05, door_thud(rng, 0.12), 0.35))                   # the latch on the bolt, the leaf a little
+        parts.append((at + 0.055, click(rng, 1900.0, 0.015, 4.0), 0.6))
+        parts.append((at + 0.16, click(rng, 2600.0, 0.01, 6.0), 0.35))          # the handle back up
+    out = mix(0.6, *parts)
+    return fade_out(normalize(saturate(out, 1.2), 0.6), 0.04)
+
+
 def main():
     root = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
     folder = sys.argv[1] if len(sys.argv) > 1 else os.path.join(root, "Projects", "Outpost", "Assets", "Audio")
@@ -214,6 +284,9 @@ def main():
     save(folder, "Player_Hurt.wav", player_hurt())
     save(folder, "Player_Death.wav", player_death())
     save(folder, "Objective_Complete.wav", objective_complete())
+    save(folder, "Door_Open.wav", door_open())
+    save(folder, "Door_Close.wav", door_close())
+    save(folder, "Door_Locked.wav", door_locked())
 
 
 if __name__ == "__main__":
