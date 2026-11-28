@@ -4,7 +4,8 @@
   "Settings": {
     "StoryHeight": 3.5,
     "WallThickness": 0.2,
-    "FloorThickness": 0.3
+    "FloorThickness": 0.3,
+    "DoorScript": "Outpost.Door"
   },
   "Ground": {
     "Min": [-40, -40],
@@ -17,12 +18,12 @@
       "Size": [16, 10],
       "Floors": 2,
       "Openings": [
-        { "Floor": 0, "Wall": "South", "Offset": 4, "Kind": "Door", "Width": 1.2 },
+        { "Floor": 0, "Wall": "South", "Offset": 4, "Kind": "Door", "Width": 1.2, "Leaf": "Hinged" },
         { "Floor": 0, "Wall": "South", "Offset": 10, "Kind": "Window" },
         { "Floor": 0, "Wall": "South", "Offset": 13.5, "Kind": "Window" },
         { "Floor": 0, "Wall": "North", "Offset": 4, "Kind": "Window" },
         { "Floor": 0, "Wall": "North", "Offset": 12, "Kind": "Window" },
-        { "Floor": 0, "Wall": "East", "Offset": 8, "Kind": "Door" },
+        { "Floor": 0, "Wall": "East", "Offset": 8, "Kind": "Door", "Leaf": "Hinged" },
         { "Floor": 0, "Wall": "West", "Offset": 5, "Kind": "Window" },
         { "Floor": 1, "Wall": "South", "Offset": 4, "Kind": "Window" },
         { "Floor": 1, "Wall": "South", "Offset": 8, "Kind": "Window" },
@@ -78,8 +79,8 @@
       "Floors": 1,
       "Settings": { "StoryHeight": 6, "Parapet": 1.0 },
       "Openings": [
-        { "Wall": "West", "Offset": 12, "Kind": "Door", "Width": 4, "Height": 4.5 },
-        { "Wall": "South", "Offset": 10, "Kind": "Door" },
+        { "Wall": "West", "Offset": 12, "Kind": "Door", "Width": 4, "Height": 4.5, "Leaf": "Double" },
+        { "Wall": "South", "Offset": 10, "Kind": "Door", "Leaf": "Hinged", "Locked": true },
         { "Wall": "North", "Offset": 4, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },
         { "Wall": "North", "Offset": 10, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },
         { "Wall": "East", "Offset": 6, "Kind": "Window", "Sill": 3.5, "Height": 1.5, "Width": 3 },

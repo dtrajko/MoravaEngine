@@ -194,6 +194,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li class="sub"><a href="#phase-3">Phase 3: health, pickups and the HUD</a></li>
       <li class="sub2"><a href="#phase-3-1">3.1 health, armor, pickups, death and starting again</a></li>
       <li class="sub"><a href="#phase-4">Phase 4: navigation (E1)</a></li>
+      <li class="sub2"><a href="#phase-4-1">4.1 doors, the Use prompt, the locked door, the hazard</a></li>
       <li class="sub"><a href="#phase-5">Phase 5: the guards</a></li>
       <li class="sub"><a href="#phase-6">Phase 6: the base</a></li>
       <li class="sub"><a href="#phase-7">Phase 7: the mission</a></li>
@@ -1864,6 +1865,50 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <li>If E1 was built ahead as its own engine phase (<a href="#engine">the note in E1</a>), this phase is only the bake
       and the door links for the shooter's levels.</li>
   </ul>
+  <div class="box"><b>The split and the user's choices (2026-11-27)</b>
+    <p>E1 was built ahead (E1.1 to E1.5), and the greybox's navmesh was baked in 1.1. The user's choices: <b>doors</b> in the
+    greybox's outside doorways, opened and closed with Use, <b>one locked</b>; the electric floor <b>Blocked</b> for the
+    navmesh (the guards walk round it); a <b>Use prompt</b> on the HUD; a <b>ladder</b> to a roof, climbable by the player
+    and on the guards' paths; walkers <b>in the test copy only</b> (the game's own come with the guards, Phase 5). Two PRs:
+    <b>4.1</b> the doors, the prompt, the locked door, the hazard's area and the checks; <b>4.2</b> the ladder (the player's
+    climbing and a climbing clip of our own, the libraries have none, and its Nav Link).</p>
+  </div>
+  <div class="box ok" id="phase-4-1"><b>As built: 4.1 doors, the Use prompt, the locked door, the hazard (2026-11-27)</b>
+    <ul>
+      <li><b>The level builder</b> makes the doors (<code>Tools/LevelBuilder</code>, its README): an outer wall's opening of
+        Kind Door with a <code>Leaf</code>, <i>Hinged</i> or <i>Double</i>, gets leaves on hinges (models of their own,
+        <code>Level_Greybox_DoorLeaf_&lt;w&gt;x&lt;h&gt;</code>, brown with a dark handle on each side; a Box collider, a
+        Kinematic body) with the level's <code>DoorScript</code>, and a Nav Area (Door) in the doorway; <code>Locked</code>
+        locks one. The greybox: the barracks' south and east doors, the warehouse's west doorway (4 x 4.5 m) a double door,
+        its south door locked. The builder now keeps the scene's level entities in place (an unchanged one as the editor
+        saved it, with its FileID and tags: the first run had dropped the catwalk's Metal tag) and its line ends: the scene's
+        diff is the doors only.</li>
+      <li><b><code>Door</code></b> (<code>Door.cs</code>): Use opens it 100 degrees <b>away from whoever opens it</b> (both
+        leaves of a double door) at 160 degrees a second, and closes it; sounds of our own
+        (<code>GenerateGameSounds.py</code>: Door_Open, Door_Close, Door_Locked). The navmesh: a door's area is closed only
+        while it is <b>locked</b>. A shut door that isn't locked stays on the paths, and whoever walks one opens it on
+        arriving: <code>Door.OpenAlong(position, path)</code> opens the shut doors the path's next 2.5 m cross (not those it
+        passes by) and says when one is locked; Phase 5's guards call it. A locked door's paths go round by another way;
+        <code>SetLocked</code> (the mission, Phase 7) changes them at once, no bake.</li>
+      <li><b>Use</b> (<code>Usable.cs</code>): <code>PlayerCommand.Use</code>; <code>Usables.Find</code> picks the usable thing
+        looked at, its point within reach (a door: the doorway's line at a hand's height, 2.2 m from the eyes) and within 35
+        degrees of the look. <code>Player.UseTarget</code> for the HUD's <b>prompt</b> under the crosshair: "E  OPEN",
+        "E  CLOSE" (the binding's key), "LOCKED" (no key: nothing to do); not while dead or scoped. Switches and the like
+        will be <code>IUsable</code> too.</li>
+      <li><b>The electric floor</b> has a Blocked Nav Area (2.8 m square): the paths go round it. The navmesh baked again
+        (<code>--bake-navmesh</code>): 179 polygons in one island from the yard to the roofs, 5 areas.</li>
+      <li><b>Checked</b>: the test copy's Navigation section (<code>OUTPOST_TEST_START=Navigation</code>, after Map), 21
+        checks: five leaves, the navmesh loaded; before the barracks' south door the prompt "E  OPEN", Use: open 100 degrees
+        away from the player (its free end inside), "E  CLOSE", walked in, closed from inside; the locked door "LOCKED",
+        Use leaves it shut; the way in past it 28.0 m round by the west doors while locked, 5.0 m through it unlocked, round
+        again locked again; across the yard round the electric floor (8.2 m, no point on it); the yard to the barracks'
+        upper floor (33.8 m); a walker (a Nav Agent in the test copy) from the alley into the barracks: its path through
+        the shut east door, which it opens on arriving (<code>OpenAlong</code>), the warehouse's doors it passed left shut,
+        0.2 m from its goal. Photo: the door open, the prompt (<code>Tools/Testing/Output/nav_1.png</code>). The full run:
+        200 passed, 0 failed, no validation messages (<code>-Seconds 228</code>; the sniper's bolt hand-switch check is
+        timing-dependent and sometimes doesn't run).</li>
+    </ul>
+  </div>
   <h3 id="phase-5">Phase 5: the guards</h3>
   <ul>
     <li>The guard prefab: model (the player's mesh, <code>Soldier_Player</code>'s, in the guards' textures: one mesh for
